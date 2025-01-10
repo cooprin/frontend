@@ -22,6 +22,7 @@ RUN npm install
 
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
+RUN npm install axios pinia
 
 # Відкриваємо порт
 EXPOSE 9000

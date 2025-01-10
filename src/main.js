@@ -1,17 +1,15 @@
-import { createApp } from 'vue';
-import { Quasar } from 'quasar';
-import App from './App.vue';
-import router from './router';
-import quasarLang from 'quasar/lang/en-US';
+import { createApp } from 'vue'
+import { Quasar } from 'quasar'
+import quasarUserOptions from './quasar-user-options'
+import App from './App.vue'
+import router from './router'
+import { createPinia } from 'pinia'
 
-import 'quasar/dist/quasar.css';
+const app = createApp(App)
+const pinia = createPinia()
 
-const app = createApp(App);
+app.use(Quasar, quasarUserOptions)
+app.use(pinia)
+app.use(router)
 
-app.use(Quasar, {
-  lang: quasarLang,
-});
-
-app.use(router);
-
-app.mount('#app');
+app.mount('#app')
