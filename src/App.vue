@@ -15,7 +15,7 @@ watch(
     document.title = newTitle || 'CRM for You (Cooprin)'; // Встановлюємо назву вкладки
   },
 );
-
+//new test
 // Для першого завантаження сторінки
 document.title = route.meta.title || 'CRM for You (Cooprin)';
 
