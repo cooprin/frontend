@@ -6,7 +6,9 @@ const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: {
+      title: 'Панель керування',
+      requiresAuth: true },
     children: [
       {
         path: '',
@@ -42,7 +44,7 @@ export default route(function () {
 
   Router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
-    
+
     console.log('Route check:', {
       path: to.path,
       requiresAuth: to.matched.some(record => record.meta.requiresAuth),
