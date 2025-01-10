@@ -3,10 +3,21 @@
 </template>
 
 <script setup>
-console.log('App component mounted') // для дебагу
-watch: {
-  $route(to) {
-    document.title = to.meta.title || 'Назва за замовчуванням';
-  }
-}
+import { watch } from 'vue'; // Імпортуємо watch
+import { useRoute } from 'vue-router'; // Отримуємо поточний маршрут
+
+const route = useRoute(); // Підключаємо Vue Router
+
+// Спостерігаємо за змінами маршруту
+watch(
+  () => route.meta.title, // Відстежуємо зміни в meta.title
+  (newTitle) => {
+    document.title = newTitle || 'CRM for You'; // Встановлюємо назву вкладки
+  },
+);
+
+// Для першого завантаження сторінки
+document.title = route.meta.title || 'CRM for You';
+
+console.log('App component mounted');
 </script>
