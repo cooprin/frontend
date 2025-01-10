@@ -3,21 +3,28 @@
 </template>
 
 <script setup>
-import { watch } from 'vue'; // Імпортуємо watch
-import { useRoute } from 'vue-router'; // Отримуємо поточний маршрут
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-const route = useRoute(); // Підключаємо Vue Router
+const route = useRoute();
 
-// Спостерігаємо за змінами маршруту
-watch(
-  () => route.meta.title, // Відстежуємо зміни в meta.title
-  (newTitle) => {
-    document.title = newTitle || 'CRM for You (Cooprin)'; // Встановлюємо назву вкладки
-  },
-);
+// Функція для оновлення назви вкладки
+const updateTitle = (to) => {
+  document.title = to.meta.title || 'Назва за замовчуванням';
+};
 
-// Для першого завантаження сторінки
-document.title = route.meta.title || 'CRM for You (Cooprin)';
+// Встановлюємо назву при першому завантаженні
+updateTitle(route);
 
+// Спостерігаємо за змінами маршруту і оновлюємо назву
+watch(route, (newRoute) => {
+  updateTitle(newRoute);
+});
+
+// Дебаг: підтверджуємо, що компонент монтується
 console.log('App component mounted');
 </script>
+
+<style>
+/* Ваші стилі тут */
+</style>
