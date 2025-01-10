@@ -6,14 +6,13 @@ const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    meta: {
-      title: 'Панель керування',
-      requiresAuth: true },
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
         name: 'dashboard',
-        component: () => import('pages/DashboardPage.vue')
+        component: () => import('pages/DashboardPage.vue'),
+        meta: { title: 'Cooprins CRM' }
       }
     ]
   },
@@ -24,7 +23,8 @@ const routes = [
       {
         path: 'login',
         name: 'login',
-        component: () => import('pages/LoginPage.vue')
+        component: () => import('pages/LoginPage.vue'),
+        meta: { title: 'Cooprins Login' }
       },
       {
         path: 'register',
