@@ -12,12 +12,12 @@ const route = useRoute(); // Підключаємо Vue Router
 watch(
   () => route.meta.title, // Відстежуємо зміни в meta.title
   (newTitle) => {
-    document.title = newTitle || 'CRM for You'; // Встановлюємо назву вкладки
+    document.title = newTitle || 'CRM for You (Cooprin)'; // Встановлюємо назву вкладки
   },
 );
-
+//for test
 // Для першого завантаження сторінки
-document.title = route.meta.title || 'CRM for You';
+document.title = route.meta.title || 'CRM for You (Cooprin)';
 
 console.log('App component mounted');
 </script>
