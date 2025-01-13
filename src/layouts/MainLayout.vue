@@ -2,10 +2,9 @@
   <q-layout view="hHh LpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-toolbar-title> CRM System </q-toolbar-title>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
         <q-toolbar-title>
-          {{ $t('message.hello') }}
+          {{ $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
         <!-- Language switcher -->
