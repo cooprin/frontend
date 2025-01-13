@@ -83,6 +83,7 @@ export default defineConfig((/* ctx */) => {
     framework: {
       config: {
         dark: localStorage.getItem('darkMode') === 'true',
+        storage: 'local',
       },
 
       // iconSet: 'material-icons', // Quasar icon set
