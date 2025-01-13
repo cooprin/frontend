@@ -1,7 +1,7 @@
 export default {
   DashboardPage: {
-    title: 'hello',
-    description: 'Hello',
+    hello: 'Привіт',
+    description: 'Привіт',
   },
   about: {
     title: 'Про нас',

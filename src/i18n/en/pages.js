@@ -1,6 +1,6 @@
 export default {
   DashboardPage: {
-    title: 'hello',
+    hello: 'Hello',
     description: 'Hello',
   },
   about: {
