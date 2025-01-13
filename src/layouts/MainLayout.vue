@@ -118,6 +118,7 @@ const toggleLeftDrawer = () => {
 }
 const toggleDarkMode = () => {
   $q.dark.toggle()
+  localStorage.setItem('darkMode', $q.dark.isActive.toString())
 }
 
 const changeLanguage = (lang) => {
