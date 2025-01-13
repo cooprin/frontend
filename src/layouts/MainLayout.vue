@@ -28,8 +28,50 @@
         </q-btn>
         <q-btn flat round dense icon="account_circle">
           <q-menu>
-            <q-list style="min-width: 100px">
+            <q-list style="min-width: 200px">
+              <!-- Аватар і основна інформація -->
+              <q-item>
+                <q-item-section avatar>
+                  <q-avatar>
+                    <img
+                      src="https://cdn.quasar.dev/img/avatar.png"
+                      v-if="!authStore.currentUser?.avatar"
+                    />
+                    <img :src="authStore.currentUser?.avatar" v-else />
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">{{
+                    authStore.currentUser?.full_name
+                  }}</q-item-label>
+                  <q-item-label caption>{{ authStore.currentUser?.email }}</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <!-- Додаткові опції -->
+              <q-item clickable v-close-popup to="/profile">
+                <q-item-section avatar>
+                  <q-icon name="person" />
+                </q-item-section>
+                <q-item-section>Профіль</q-item-section>
+              </q-item>
+
+              <q-item clickable v-close-popup to="/settings">
+                <q-item-section avatar>
+                  <q-icon name="settings" />
+                </q-item-section>
+                <q-item-section>Налаштування</q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <!-- Кнопка виходу -->
               <q-item clickable v-close-popup @click="logout">
+                <q-item-section avatar>
+                  <q-icon name="logout" />
+                </q-item-section>
                 <q-item-section>Вийти</q-item-section>
               </q-item>
             </q-list>
