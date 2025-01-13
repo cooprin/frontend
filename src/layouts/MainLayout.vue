@@ -122,6 +122,7 @@ const toggleDarkMode = () => {
 
 const changeLanguage = (lang) => {
   locale.value = lang
+  localStorage.setItem('userLanguage', lang)
 }
 
 const logout = async () => {

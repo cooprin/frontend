@@ -4,7 +4,7 @@ import en from './en'
 
 export default createI18n({
   legacy: false,
-  locale: 'uk',
+  locale: localStorage.getItem('userLanguage') || 'uk',
   fallbackLocale: 'en',
   messages: {
     uk,
