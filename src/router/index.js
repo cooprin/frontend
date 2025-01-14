@@ -14,8 +14,15 @@ const routes = [
         component: () => import('pages/DashboardPage.vue'),
         meta: { title: 'Cooprins CRM' },
       },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('pages/ProfilePage.vue'),
+        meta: { title: 'Profile' },
+      },
     ],
   },
+
   {
     path: '/auth',
     component: () => import('layouts/AuthLayout.vue'),
@@ -32,12 +39,6 @@ const routes = [
         component: () => import('pages/RegisterPage.vue'),
       },
     ],
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    component: () => import('pages/ProfilePage.vue'),
-    meta: { requiresAuth: true },
   },
 ]
 
