@@ -12,9 +12,9 @@ const routes = [
         path: '',
         name: 'dashboard',
         component: () => import('pages/DashboardPage.vue'),
-        meta: { title: 'Cooprins CRM' }
-      }
-    ]
+        meta: { title: 'Cooprins CRM' },
+      },
+    ],
   },
   {
     path: '/auth',
@@ -24,22 +24,28 @@ const routes = [
         path: 'login',
         name: 'login',
         component: () => import('pages/LoginPage.vue'),
-        meta: { title: 'Cooprins Login' }
+        meta: { title: 'Cooprins Login' },
       },
       {
         path: 'register',
         name: 'register',
-        component: () => import('pages/RegisterPage.vue')
-      }
-    ]
-  }
+        component: () => import('pages/RegisterPage.vue'),
+      },
+    ],
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('pages/ProfilePage.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 export default route(function () {
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-    history: createWebHistory()
+    history: createWebHistory(),
   })
 
   Router.beforeEach((to, from, next) => {
@@ -47,11 +53,11 @@ export default route(function () {
 
     console.log('Route check:', {
       path: to.path,
-      requiresAuth: to.matched.some(record => record.meta.requiresAuth),
-      isAuthenticated: authStore.isAuthenticated
+      requiresAuth: to.matched.some((record) => record.meta.requiresAuth),
+      isAuthenticated: authStore.isAuthenticated,
     })
 
-    if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+    if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isAuthenticated) {
       console.log('Redirecting to login')
       next({ name: 'login' })
     } else {
