@@ -55,14 +55,14 @@
                 <q-item-section avatar>
                   <q-icon name="person" />
                 </q-item-section>
-                <q-item-section>Профіль</q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
               </q-item>
 
               <q-item clickable v-close-popup to="/settings">
                 <q-item-section avatar>
                   <q-icon name="settings" />
                 </q-item-section>
-                <q-item-section>Налаштування</q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
               </q-item>
 
               <q-separator />
@@ -72,7 +72,7 @@
                 <q-item-section avatar>
                   <q-icon name="logout" />
                 </q-item-section>
-                <q-item-section>Вийти</q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.exit') }}</q-item-section>
               </q-item>
             </q-list>
           </q-menu>

@@ -15,7 +15,7 @@ const routes = [
         meta: { title: 'Cooprins CRM' },
       },
       {
-        path: '/profile',
+        path: 'profile',
         name: 'profile',
         component: () => import('pages/ProfilePage.vue'),
         meta: { title: 'Profile' },

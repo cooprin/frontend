@@ -1,14 +1,12 @@
 <template>
-  <q-page padding>
-    <div class="q-pa-md">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6 text-center">{{ $t('pages.profile.title') }}</div>
-        </q-card-section>
+  <q-page class="flex flex-center">
+    <q-card class="profile-card">
+      <q-card-section>
+        <div class="text-h6 text-center">{{ $t('pages.profile.title') }}</div>
+      </q-card-section>
 
-        <q-separator />
-
-        <q-card-section>
+      <q-card-section>
+        <q-form @submit.prevent="onSubmit" class="q-gutter-md">
           <!-- Зміна аватара -->
           <div class="q-mb-md text-center">
             <q-avatar size="100px">
@@ -19,7 +17,6 @@
             </q-avatar>
             <q-uploader
               v-model="avatar"
-              class="q-mt-md"
               label="{{ $t('pages.profile.uploadAvatar') }}"
               accept="image/*"
               auto-upload="false"
@@ -34,102 +31,94 @@
           <q-input
             v-model="password"
             label="{{ $t('pages.profile.newPassword') }}"
+            type="password"
             outlined
             dense
-            type="password"
-            class="q-mt-md"
           />
-
           <q-input
             v-model="confirmPassword"
             label="{{ $t('pages.profile.confirmPassword') }}"
+            type="password"
             outlined
             dense
-            type="password"
-            class="q-mt-md"
           />
 
           <q-btn
-            :label="$t('pages.profile.saveChanges')"
+            label="{{ $t('pages.profile.saveChanges') }}"
+            type="submit"
             color="primary"
+            :loading="authStore.loading"
             class="q-mt-lg"
-            @click="saveProfile"
           />
-        </q-card-section>
-      </q-card>
-    </div>
+        </q-form>
+      </q-card-section>
+    </q-card>
   </q-page>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 
-export default {
-  name: 'ProfilePage',
-  setup() {
-    const q = useQuasar()
-    const { t } = useI18n()
-    const authStore = useAuthStore()
-    const fullName = ref(authStore.currentUser?.full_name || '')
-    const password = ref('')
-    const confirmPassword = ref('')
-    const avatar = ref(null)
-    const avatarPreview = ref(null)
-    const defaultAvatar = 'https://cdn.quasar.dev/img/avatar.png'
+const authStore = useAuthStore()
+const q = useQuasar()
+const { t } = useI18n()
 
-    const onAvatarAdded = (files) => {
-      const file = files[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          avatarPreview.value = e.target.result
-        }
-        reader.readAsDataURL(file)
-      }
+const fullName = ref(authStore.currentUser?.full_name || '')
+const password = ref('')
+const confirmPassword = ref('')
+const avatar = ref(null)
+const avatarPreview = ref(null)
+const defaultAvatar = 'https://cdn.quasar.dev/img/avatar.png'
+
+const onAvatarAdded = (files) => {
+  const file = files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      avatarPreview.value = e.target.result
     }
+    reader.readAsDataURL(file)
+  }
+}
 
-    const saveProfile = async () => {
-      if (password.value !== confirmPassword.value) {
-        q.notify({
-          type: 'negative',
-          message: t('pages.profile.passwordMismatch'),
-        })
-        return
-      }
+const onSubmit = async () => {
+  if (password.value !== confirmPassword.value) {
+    q.notify({
+      type: 'negative',
+      message: t('pages.profile.passwordMismatch'),
+    })
+    return
+  }
 
-      try {
-        await authStore.updateProfile({
-          full_name: fullName.value,
-          password: password.value,
-          avatar: avatar.value,
-        })
+  try {
+    await authStore.updateProfile({
+      full_name: fullName.value,
+      password: password.value,
+      avatar: avatar.value,
+    })
 
-        q.notify({
-          type: 'positive',
-          message: t('pages.profile.success'),
-        })
-      } catch {
-        q.notify({
-          type: 'negative',
-          message: t('pages.profile.error'),
-        })
-      }
-    }
-
-    return {
-      authStore,
-      fullName,
-      password,
-      confirmPassword,
-      avatar,
-      avatarPreview,
-      defaultAvatar,
-      onAvatarAdded,
-      saveProfile,
-    }
-  },
+    q.notify({
+      type: 'positive',
+      message: t('pages.profile.success'),
+    })
+  } catch {
+    q.notify({
+      type: 'negative',
+      message: t('pages.profile.error'),
+    })
+  }
 }
 </script>
+
+<style scoped>
+.profile-card {
+  width: 100%;
+  max-width: 400px;
+}
+.q-avatar {
+  margin: auto;
+}
+</style>
