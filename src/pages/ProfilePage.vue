@@ -17,7 +17,7 @@
             </q-avatar>
             <q-uploader
               v-model="avatar"
-              label="{{ $t('pages.profile.uploadAvatar') }}"
+              :label="$t('pages.profile.uploadAvatar')"
               accept="image/*"
               auto-upload="false"
               @added="onAvatarAdded"
@@ -25,26 +25,26 @@
           </div>
 
           <!-- Зміна імені -->
-          <q-input v-model="fullName" label="{{ $t('pages.profile.fullName') }}" outlined dense />
+          <q-input v-model="fullName" :label="$t('pages.profile.fullName')" outlined dense />
 
           <!-- Зміна пароля -->
           <q-input
             v-model="password"
-            label="$t('pages.profile.newPassword')"
+            :label="$t('pages.profile.newPassword')"
             type="password"
             outlined
             dense
           />
           <q-input
             v-model="confirmPassword"
-            label="$t('pages.profile.confirmPassword')"
+            :label="$t('pages.profile.confirmPassword')"
             type="password"
             outlined
             dense
           />
 
           <q-btn
-            label="t('pages.profile.saveChanges')"
+            :label="t('pages.profile.saveChanges')"
             type="submit"
             color="primary"
             :loading="authStore.loading"
