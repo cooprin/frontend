@@ -7,7 +7,7 @@ export default {
     title: 'About Us',
     description: 'About page description',
   },
-  rofile: {
+  profile: {
     title: 'Profile',
     uploadAvatar: 'Upload Avatar',
     fullName: 'Full Name',

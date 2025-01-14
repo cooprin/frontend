@@ -8,7 +8,7 @@
       <q-card-section>
         <q-form @submit.prevent="onSubmit" class="q-gutter-md">
           <!-- Зміна аватара -->
-          <div class="q-mb-md text-center">
+          <div class="row justify-center items-center q-mb-md">
             <q-avatar size="100px">
               <img
                 :src="avatarPreview || authStore.currentUser?.avatar || defaultAvatar"
