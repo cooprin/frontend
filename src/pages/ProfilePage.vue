@@ -30,21 +30,21 @@
           <!-- Зміна пароля -->
           <q-input
             v-model="password"
-            label="{{ $t('pages.profile.newPassword') }}"
+            label="$t('pages.profile.newPassword')"
             type="password"
             outlined
             dense
           />
           <q-input
             v-model="confirmPassword"
-            label="{{ $t('pages.profile.confirmPassword') }}"
+            label="$t('pages.profile.confirmPassword')"
             type="password"
             outlined
             dense
           />
 
           <q-btn
-            label="{{ $t('pages.profile.saveChanges') }}"
+            label="t('pages.profile.saveChanges')"
             type="submit"
             color="primary"
             :loading="authStore.loading"
