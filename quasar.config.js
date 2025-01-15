@@ -49,7 +49,10 @@ export default defineConfig((/* ctx */) => {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        API_URL: process.env.VUE_APP_API_URL || 'http://localhost:3000',
+        CORS_ORIGIN: process.env.VUE_APP_CORS_ORIGIN || 'http://localhost:9000',
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
