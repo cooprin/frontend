@@ -132,7 +132,7 @@ const uploadAvatar = async () => {
 
     // Update user data after successful upload
     await authStore.fetchUser()
-  } catch (error) {
+  } catch {
     q.notify({
       type: 'negative',
       message: t('pages.profile.avatarError'),
