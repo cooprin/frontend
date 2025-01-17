@@ -9,19 +9,26 @@
         <q-form @submit.prevent="onSubmit" class="q-gutter-md">
           <!-- Зміна аватара -->
           <div class="row justify-center items-center q-mb-md">
-            <q-avatar size="100px">
-              <img
-                :src="avatarPreview || authStore.user?.avatar_url || defaultAvatar"
-                alt="avatar"
-              />
-            </q-avatar>
-            <q-uploader
-              v-model="avatar"
-              :label="$t('pages.profile.uploadAvatar')"
-              accept="image/*"
-              auto-upload="false"
-              @added="onAvatarAdded"
+            <q-img
+              v-if="avatarPreview || user?.avatar"
+              :src="avatarPreview || `${api.defaults.baseURL}${user.avatar}`"
+              class="avatar-preview"
             />
+
+            <q-file
+              v-model="avatarFile"
+              label="Виберіть аватар"
+              accept="image/*"
+              @update:model-value="onAvatarAdded"
+            >
+              <template v-slot:prepend>
+                <q-icon name="attach_file" />
+              </template>
+            </q-file>
+
+            <q-btn color="primary" :loading="loading" @click="uploadAvatar" :disable="!avatarFile">
+              Завантажити
+            </q-btn>
           </div>
 
           <!-- Зміна імені -->
@@ -62,6 +69,7 @@ import { ref } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
+import { api } from 'boot/axios'
 
 const authStore = useAuthStore()
 const q = useQuasar()
@@ -72,13 +80,12 @@ const firstName = ref(authStore.user?.first_name || '')
 const lastName = ref(authStore.user?.last_name || '')
 const password = ref('')
 const confirmPassword = ref('')
-const avatar = ref(null)
+const avatarFile = ref(null)
 const avatarPreview = ref(null)
-const defaultAvatar = 'https://cdn.quasar.dev/img/avatar.png'
+const loading = ref(false)
 
-// Завантаження аватара
 const onAvatarAdded = (files) => {
-  const file = files[0]
+  const file = files[0] // Вибираємо перший файл
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -103,7 +110,7 @@ const onSubmit = async () => {
       first_name: firstName.value,
       last_name: lastName.value,
       password: password.value,
-      avatar: avatar.value,
+      avatar: avatarFile.value, // передаємо avatarFile
     })
 
     q.notify({
