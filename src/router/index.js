@@ -66,7 +66,7 @@ export default route(function () {
     if (requiresAuth && !authStore.isAuthenticated) {
       console.log('Redirecting to login')
       next('/login')
-    } else if (to.path === '/login' && authStore.isAuthenticated) {
+    } else if (to.path === '/auth/login' && authStore.isAuthenticated) {
       // Додаємо редірект з логіну якщо користувач вже автентифікований
       console.log('Already authenticated, redirecting to home')
       next('/')
