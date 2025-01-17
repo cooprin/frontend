@@ -34,9 +34,7 @@
                 <q-item-section avatar>
                   <q-avatar>
                     <img
-                      :src="
-                        authStore.currentUser?.avatar_url || 'https://cdn.quasar.dev/img/avatar.png'
-                      "
+                      :src="authStore.User?.avatar_url || 'https://cdn.quasar.dev/img/avatar.png'"
                       alt="Avatar"
                     />
                   </q-avatar>
@@ -44,10 +42,10 @@
                 <q-item-section>
                   <q-item-label class="text-weight-bold">
                     {{
-                      `${authStore.currentUser?.first_name || ''} ${authStore.currentUser?.last_name || ''}`.trim()
+                      `${authStore.tUser?.first_name || ''} ${authStore.User?.last_name || ''}`.trim()
                     }}
                   </q-item-label>
-                  <q-item-label caption>{{ authStore.currentUser?.email }}</q-item-label>
+                  <q-item-label caption>{{ authStore.User?.email }}</q-item-label>
                 </q-item-section>
               </q-item>
 

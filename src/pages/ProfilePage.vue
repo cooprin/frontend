@@ -11,7 +11,7 @@
           <div class="row justify-center items-center q-mb-md">
             <q-avatar size="100px">
               <img
-                :src="avatarPreview || authStore.currentUser?.avatar_url || defaultAvatar"
+                :src="avatarPreview || authStore.user?.avatar_url || defaultAvatar"
                 alt="avatar"
               />
             </q-avatar>
@@ -68,8 +68,8 @@ const q = useQuasar()
 const { t } = useI18n()
 
 // Оновлені поля
-const firstName = ref(authStore.currentUser?.first_name || '')
-const lastName = ref(authStore.currentUser?.last_name || '')
+const firstName = ref(authStore.user?.first_name || '')
+const lastName = ref(authStore.user?.last_name || '')
 const password = ref('')
 const confirmPassword = ref('')
 const avatar = ref(null)
