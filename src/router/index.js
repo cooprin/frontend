@@ -52,15 +52,24 @@ export default route(function () {
   Router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
 
+    // Перевіряємо метадані маршруту
+    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+
     console.log('Route check:', {
       path: to.path,
-      requiresAuth: to.matched.some((record) => record.meta.requiresAuth),
+      requiresAuth,
+      token: !!authStore.token,
+      user: !!authStore.user,
       isAuthenticated: authStore.isAuthenticated,
     })
 
-    if (to.matched.some((record) => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+    if (requiresAuth && !authStore.isAuthenticated) {
       console.log('Redirecting to login')
-      next({ name: 'login' })
+      next('/login')
+    } else if (to.path === '/login' && authStore.isAuthenticated) {
+      // Додаємо редірект з логіну якщо користувач вже автентифікований
+      console.log('Already authenticated, redirecting to home')
+      next('/')
     } else {
       console.log('Proceeding to route')
       next()
