@@ -119,7 +119,7 @@ const uploadAvatar = async () => {
     const formData = new FormData()
     formData.append('avatar', avatarFile.value)
 
-    await api.post('/users/avatar', formData, {
+    await api.post('/user/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
