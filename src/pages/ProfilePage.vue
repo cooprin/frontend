@@ -7,35 +7,45 @@
 
       <q-card-section>
         <q-form @submit.prevent="onSubmit" class="q-gutter-md">
-          <!-- Зміна аватара -->
-          <div class="row justify-center items-center q-mb-md">
+          <!-- Avatar Section -->
+          <div class="row justify-center items-center q-mb-md column">
+            <!-- Avatar Preview -->
             <q-img
               v-if="avatarPreview || user?.avatar"
               :src="avatarPreview || `${api.defaults.baseURL}${user.avatar}`"
-              class="avatar-preview"
+              class="avatar-preview q-mb-md"
+              style="width: 150px; height: 150px; border-radius: 50%"
             />
 
-            <q-file
-              v-model="avatarFile"
-              label="Виберіть аватар"
-              accept="image/*"
-              @update:model-value="onAvatarAdded"
-            >
-              <template v-slot:prepend>
-                <q-icon name="attach_file" />
-              </template>
-            </q-file>
+            <div class="row items-center q-gutter-md">
+              <q-file
+                v-model="avatarFile"
+                label="Виберіть аватар"
+                accept="image/*"
+                @update:model-value="onAvatarAdded"
+                style="max-width: 200px"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
 
-            <q-btn color="primary" :loading="loading" @click="uploadAvatar" :disable="!avatarFile">
-              Завантажити
-            </q-btn>
+              <q-btn
+                color="primary"
+                :loading="loading"
+                @click="uploadAvatar"
+                :disable="!avatarFile"
+              >
+                Завантажити
+              </q-btn>
+            </div>
           </div>
 
-          <!-- Зміна імені -->
+          <!-- Profile Fields -->
           <q-input v-model="firstName" :label="$t('pages.profile.firstName')" outlined dense />
           <q-input v-model="lastName" :label="$t('pages.profile.lastName')" outlined dense />
 
-          <!-- Зміна пароля -->
+          <!-- Password Fields -->
           <q-input
             v-model="password"
             :label="$t('pages.profile.newPassword')"
@@ -56,7 +66,7 @@
             type="submit"
             color="primary"
             :loading="authStore.loading"
-            class="q-mt-lg"
+            class="q-mt-lg full-width"
           />
         </q-form>
       </q-card-section>
@@ -65,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -75,9 +85,10 @@ const authStore = useAuthStore()
 const q = useQuasar()
 const { t } = useI18n()
 
-// Оновлені поля
-const firstName = ref(authStore.user?.first_name || '')
-const lastName = ref(authStore.user?.last_name || '')
+// User data
+const user = computed(() => authStore.user)
+const firstName = ref(user.value?.first_name || '')
+const lastName = ref(user.value?.last_name || '')
 const password = ref('')
 const confirmPassword = ref('')
 const avatarFile = ref(null)
@@ -85,7 +96,12 @@ const avatarPreview = ref(null)
 const loading = ref(false)
 
 const onAvatarAdded = (files) => {
-  const file = files[0] // Вибираємо перший файл
+  if (!files) {
+    avatarPreview.value = null
+    return
+  }
+
+  const file = files
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -95,7 +111,37 @@ const onAvatarAdded = (files) => {
   }
 }
 
-// Збереження профілю
+const uploadAvatar = async () => {
+  if (!avatarFile.value) return
+
+  loading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('avatar', avatarFile.value)
+
+    await api.post('/users/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    q.notify({
+      type: 'positive',
+      message: t('pages.profile.avatarSuccess'),
+    })
+
+    // Update user data after successful upload
+    await authStore.fetchUser()
+  } catch (error) {
+    q.notify({
+      type: 'negative',
+      message: t('pages.profile.avatarError'),
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
 const onSubmit = async () => {
   if (password.value !== confirmPassword.value) {
     q.notify({
@@ -110,7 +156,6 @@ const onSubmit = async () => {
       first_name: firstName.value,
       last_name: lastName.value,
       password: password.value,
-      avatar: avatarFile.value, // передаємо avatarFile
     })
 
     q.notify({
@@ -131,6 +176,14 @@ const onSubmit = async () => {
   width: 100%;
   max-width: 400px;
 }
+
+.avatar-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .q-avatar {
   margin: auto;
 }
