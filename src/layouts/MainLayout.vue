@@ -34,16 +34,19 @@
                 <q-item-section avatar>
                   <q-avatar>
                     <img
-                      src="https://cdn.quasar.dev/img/avatar.png"
-                      v-if="!authStore.currentUser?.avatar"
+                      :src="
+                        authStore.currentUser?.avatar_url || 'https://cdn.quasar.dev/img/avatar.png'
+                      "
+                      alt="Avatar"
                     />
-                    <img :src="authStore.currentUser?.avatar" v-else />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label class="text-weight-bold">{{
-                    authStore.currentUser?.full_name
-                  }}</q-item-label>
+                  <q-item-label class="text-weight-bold">
+                    {{
+                      `${authStore.currentUser?.first_name || ''} ${authStore.currentUser?.last_name || ''}`.trim()
+                    }}
+                  </q-item-label>
                   <q-item-label caption>{{ authStore.currentUser?.email }}</q-item-label>
                 </q-item-section>
               </q-item>
