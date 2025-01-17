@@ -11,7 +11,7 @@
           <div class="row justify-center items-center q-mb-md">
             <q-avatar size="100px">
               <img
-                :src="avatarPreview || authStore.currentUser?.avatar || defaultAvatar"
+                :src="avatarPreview || authStore.currentUser?.avatar_url || defaultAvatar"
                 alt="avatar"
               />
             </q-avatar>
@@ -25,7 +25,8 @@
           </div>
 
           <!-- Зміна імені -->
-          <q-input v-model="fullName" :label="$t('pages.profile.fullName')" outlined dense />
+          <q-input v-model="firstName" :label="$t('pages.profile.firstName')" outlined dense />
+          <q-input v-model="lastName" :label="$t('pages.profile.lastName')" outlined dense />
 
           <!-- Зміна пароля -->
           <q-input
@@ -66,13 +67,16 @@ const authStore = useAuthStore()
 const q = useQuasar()
 const { t } = useI18n()
 
-const fullName = ref(authStore.currentUser?.full_name || '')
+// Оновлені поля
+const firstName = ref(authStore.currentUser?.first_name || '')
+const lastName = ref(authStore.currentUser?.last_name || '')
 const password = ref('')
 const confirmPassword = ref('')
 const avatar = ref(null)
 const avatarPreview = ref(null)
 const defaultAvatar = 'https://cdn.quasar.dev/img/avatar.png'
 
+// Завантаження аватара
 const onAvatarAdded = (files) => {
   const file = files[0]
   if (file) {
@@ -84,6 +88,7 @@ const onAvatarAdded = (files) => {
   }
 }
 
+// Збереження профілю
 const onSubmit = async () => {
   if (password.value !== confirmPassword.value) {
     q.notify({
@@ -95,7 +100,8 @@ const onSubmit = async () => {
 
   try {
     await authStore.updateProfile({
-      full_name: fullName.value,
+      first_name: firstName.value,
+      last_name: lastName.value,
       password: password.value,
       avatar: avatar.value,
     })
