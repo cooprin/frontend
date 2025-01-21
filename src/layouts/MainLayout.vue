@@ -111,12 +111,13 @@ const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(false)
 
-// Computed для URL аватарки
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
-  return `${process.env.API_URL}/${authStore.user.avatar_url}`
+  // Замінюємо 'avatars' на 'uploads' в URL
+  const avatarPath = authStore.user.avatar_url.replace('avatars', 'uploads')
+  return `${process.env.VUE_APP_API_URL}/${avatarPath}`
 })
 
 const toggleLeftDrawer = () => {
