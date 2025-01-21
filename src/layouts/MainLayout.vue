@@ -32,12 +32,13 @@
               <!-- Аватар і основна інформація -->
               <q-item>
                 <q-item-section avatar>
-                  <q-avatar>
-                    <img
+                  <q-avatar size="40px">
+                    <q-img
                       :src="authStore.user?.avatar_url || 'https://cdn.quasar.dev/img/avatar.png'"
-                      alt="Avatar"
-                      @error="handleImageError"
-                      class="q-avatar__image"
+                      :ratio="1"
+                      fit="cover"
+                      spinner-color="primary"
+                      style="width: 100%; height: 100%"
                     />
                   </q-avatar>
                 </q-item-section>
@@ -123,10 +124,7 @@ const toggleDarkMode = () => {
   $q.dark.toggle()
   localStorage.setItem('darkMode', $q.dark.isActive.toString())
 }
-const handleImageError = (e) => {
-  // Fallback to default avatar if the image fails to load
-  e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
-}
+
 const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('userLanguage', lang)
