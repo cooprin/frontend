@@ -26,19 +26,16 @@
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
+
+        <!-- User menu -->
         <q-btn flat round dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
               <!-- Аватар і основна інформація -->
               <q-item>
                 <q-item-section avatar>
-                  <q-avatar>
-                    <img
-                      :src="authStore.user?.avatar_url || 'https://cdn.quasar.dev/img/avatar.png'"
-                      alt="Avatar"
-                      @error="handleImageError"
-                      class="avatar-image"
-                    />
+                  <q-avatar size="40px">
+                    <img :src="getAvatarUrl" alt="Avatar" @error="handleImageError" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
@@ -92,7 +89,6 @@
           </q-item-section>
           <q-item-section> Головна </q-item-section>
         </q-item>
-        <!-- Додайте інші пункти меню -->
       </q-list>
     </q-drawer>
 
@@ -103,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
@@ -111,22 +107,32 @@ import { useAuthStore } from 'stores/auth'
 
 const $q = useQuasar()
 const { locale } = useI18n()
-
 const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(false)
 
+// Computed для URL аватарки
+const getAvatarUrl = computed(() => {
+  if (!authStore.user?.avatar_url) {
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
+  return `${process.env.API_URL}/${authStore.user.avatar_url}`
+})
+
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
 const toggleDarkMode = () => {
   $q.dark.toggle()
   localStorage.setItem('darkMode', $q.dark.isActive.toString())
 }
+
 const handleImageError = (e) => {
   console.log('Image load error:', e)
   e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
 }
+
 const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('userLanguage', lang)
@@ -139,12 +145,9 @@ const logout = async () => {
 </script>
 
 <style scoped>
-.avatar-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: 32px; /* або інший бажаний розмір */
-  height: 32px; /* або інший бажаний розмір */
+.q-avatar img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 50%;
 }
 </style>
