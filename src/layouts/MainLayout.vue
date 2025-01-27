@@ -116,7 +116,7 @@ const getAvatarUrl = computed(() => {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
   // Замінюємо 'avatars' на 'uploads' в URL
-  const avatarPath = authStore.user.avatar_url.replace('avatars', 'uploads')
+  const avatarPath = authStore.user.avatar_url.replace('avatars', 'uploads/avatars')
   return `${process.env.VUE_APP_API_URL}/${avatarPath}`
 })
 
