@@ -11,21 +11,11 @@
           <!-- Current Avatar -->
           <q-img
             v-if="user?.avatar_url && !avatarPreview"
-            :src="`${process.env.API_URL}/uploads/${user.avatar_url}`"
+            :src="getAvatarUrl"
             class="avatar-preview q-mb-md"
             style="border: 2px solid #ddd"
             alt="Current Avatar"
           />
-
-          <!-- Default Avatar -->
-          <q-img
-            v-else-if="!user?.avatar_url && !avatarPreview"
-            src="https://cdn.quasar.dev/img/avatar.png"
-            class="avatar-preview q-mb-md"
-            style="border: 2px solid #ddd"
-            alt="Default Avatar"
-          />
-
           <!-- New Avatar Preview -->
           <q-img
             v-if="avatarPreview"
@@ -150,6 +140,20 @@ const avatarPreview = ref(null)
 const avatarLoading = ref(false)
 const profileLoading = ref(false)
 const passwordLoading = ref(false)
+
+const getAvatarUrl = computed(() => {
+  if (!authStore.user?.avatar_url) {
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
+
+  try {
+    // Просто беремо повний шлях з avatar_url як є
+    const avatarPath = authStore.user.avatar_url
+    return `${process.env.API_URL}/uploads/${avatarPath}`
+  } catch {
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
+})
 
 // Profile data
 const profileData = ref({
