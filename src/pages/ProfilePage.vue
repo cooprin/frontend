@@ -17,6 +17,15 @@
             alt="Current Avatar"
           />
 
+          <!-- Default Avatar -->
+          <q-img
+            v-else-if="!user?.avatar_url && !avatarPreview"
+            src="https://cdn.quasar.dev/img/avatar.png"
+            class="avatar-preview q-mb-md"
+            style="border: 2px solid #ddd"
+            alt="Default Avatar"
+          />
+
           <!-- New Avatar Preview -->
           <q-img
             v-if="avatarPreview"
@@ -68,14 +77,15 @@
             dense
           />
 
-          <q-btn
-            :label="$t('pages.profile.saveChanges')"
-            type="submit"
-            color="primary"
-            :loading="profileLoading"
-            :disable="!hasProfileChanges"
-            class="q-ml-md"
-          />
+          <div class="row justify-center">
+            <q-btn
+              :label="$t('pages.profile.saveChanges')"
+              type="submit"
+              color="primary"
+              :loading="profileLoading"
+              :disable="!hasProfileChanges"
+            />
+          </div>
         </q-form>
       </q-card-section>
 
@@ -106,14 +116,15 @@
             dense
           />
 
-          <q-btn
-            :label="$t('pages.profile.changePassword')"
-            type="submit"
-            color="secondary"
-            :loading="passwordLoading"
-            :disable="!canChangePassword"
-            class="q-ml-md"
-          />
+          <div class="row justify-center">
+            <q-btn
+              :label="$t('pages.profile.changePassword')"
+              type="submit"
+              color="secondary"
+              :loading="passwordLoading"
+              :disable="!canChangePassword"
+            />
+          </div>
         </q-form>
       </q-card-section>
     </q-card>
@@ -134,6 +145,7 @@ const { t } = useI18n()
 // State management
 const user = computed(() => authStore.user)
 const avatarFile = ref(null)
+avatarFile.value?.name && console.log(`Selected avatar: ${avatarFile.value.name}`)
 const avatarPreview = ref(null)
 const avatarLoading = ref(false)
 const profileLoading = ref(false)
@@ -175,6 +187,10 @@ const onAvatarAdded = (files) => {
     avatarPreview.value = null
     return
   }
+
+  console.log(
+    `Old avatar: ${user.value?.avatar_url ? `${process.env.API_URL}/uploads/${user.value.avatar_url}` : 'Default avatar used'}`,
+  )
 
   const reader = new FileReader()
   reader.onload = (e) => {
