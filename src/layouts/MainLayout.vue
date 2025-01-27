@@ -115,9 +115,31 @@ const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
-  // Формуємо повний URL для аватара
-  return `${process.env.VUE_APP_API_URL}/uploads/avatars/${authStore.user.id}/${authStore.user.avatar_url.split('/').pop()}`
+
+  try {
+    // Просто беремо повний шлях з avatar_url як є
+    const avatarPath = authStore.user.avatar_url
+    const fullUrl = `${process.env.VUE_APP_API_URL}/${avatarPath}`
+    console.log('Avatar URL:', fullUrl) // Для дебагу
+    return fullUrl
+  } catch (error) {
+    console.error('Error generating avatar URL:', error)
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
 })
+
+const handleImageError = (e) => {
+  const originalSrc = e.target.src
+  console.error('Image load error. Original src:', originalSrc)
+
+  // Перевіряємо, чи це не fallback зображення
+  if (!originalSrc.includes('cdn.quasar.dev')) {
+    e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
+
+    // Показуємо повідомлення про помилку тільки якщо це не fallback
+    console.warn('Failed to load avatar, using fallback image')
+  }
+}
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value
@@ -126,11 +148,6 @@ const toggleLeftDrawer = () => {
 const toggleDarkMode = () => {
   $q.dark.toggle()
   localStorage.setItem('darkMode', $q.dark.isActive.toString())
-}
-
-const handleImageError = (e) => {
-  console.log('Image load error:', e)
-  e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
 }
 
 const changeLanguage = (lang) => {
