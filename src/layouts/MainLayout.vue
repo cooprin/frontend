@@ -119,7 +119,7 @@ const getAvatarUrl = computed(() => {
   try {
     // Просто беремо повний шлях з avatar_url як є
     const avatarPath = authStore.user.avatar_url
-    const fullUrl = `${process.env.API_URL}/${avatarPath}`
+    const fullUrl = `${process.env.API_URL}/uploads/${avatarPath}`
     console.log('Avatar URL:', fullUrl) // Для дебагу
     return fullUrl
   } catch (error) {
