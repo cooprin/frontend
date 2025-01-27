@@ -8,13 +8,13 @@
       <!-- Avatar Section -->
       <q-card-section>
         <div class="column justify-center items-center q-mb-md">
-          <!-- Old Avatar -->
+          <!-- Current Avatar -->
           <q-img
             v-if="user?.avatar_url && !avatarPreview"
             :src="`${process.env.API_URL}/uploads/${user.avatar_url}`"
             class="avatar-preview q-mb-md"
             style="border: 2px solid #ddd"
-            alt="Old Avatar"
+            alt="Current Avatar"
           />
 
           <!-- New Avatar Preview -->
