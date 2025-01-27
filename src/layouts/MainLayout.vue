@@ -119,11 +119,8 @@ const getAvatarUrl = computed(() => {
   try {
     // Просто беремо повний шлях з avatar_url як є
     const avatarPath = authStore.user.avatar_url
-    const fullUrl = `${process.env.API_URL}/uploads/${avatarPath}`
-    console.log('Avatar URL:', fullUrl) // Для дебагу
-    return fullUrl
-  } catch (error) {
-    console.error('Error generating avatar URL:', error)
+    return `${process.env.API_URL}/uploads/${avatarPath}`
+  } catch {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
 })

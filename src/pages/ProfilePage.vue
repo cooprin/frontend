@@ -7,15 +7,26 @@
 
       <!-- Avatar Section -->
       <q-card-section>
-        <div class="row justify-center items-center q-mb-md column">
+        <div class="column justify-center items-center q-mb-md">
+          <!-- Old Avatar -->
           <q-img
-            v-if="avatarPreview || user?.avatar"
-            :src="avatarPreview || `${api.defaults.baseURL}${user.avatar}`"
+            v-if="user?.avatar && !avatarPreview"
+            :src="`${api.defaults.baseURL}${user.avatar}`"
             class="avatar-preview q-mb-md"
-            style="width: 150px; height: 150px; border-radius: 50%"
+            style="border: 2px solid #ddd"
+            alt="Old Avatar"
           />
 
-          <div class="row items-center q-gutter-md">
+          <!-- New Avatar Preview -->
+          <q-img
+            v-if="avatarPreview"
+            :src="avatarPreview"
+            class="avatar-preview q-mb-md"
+            style="border: 2px dashed #666"
+            alt="New Avatar Preview"
+          />
+
+          <div class="row justify-center items-center q-gutter-md">
             <q-file
               v-model="avatarFile"
               :label="$t('pages.profile.selectAvatar')"
@@ -33,6 +44,7 @@
               :loading="avatarLoading"
               @click="uploadAvatar"
               :disable="!avatarFile"
+              class="q-ml-md"
             >
               {{ $t('pages.profile.uploadAvatar') }}
             </q-btn>
@@ -276,5 +288,9 @@ const onSubmitPassword = async () => {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.full-width {
+  width: 100%;
 }
 </style>
