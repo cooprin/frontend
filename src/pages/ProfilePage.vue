@@ -10,8 +10,8 @@
         <div class="column justify-center items-center q-mb-md">
           <!-- Old Avatar -->
           <q-img
-            v-if="user?.avatar && !avatarPreview"
-            :src="`${api.defaults.baseURL}${user.avatar}`"
+            v-if="user?.avatar_url && !avatarPreview"
+            :src="`${process.env.API_URL}/uploads/${user.avatar_url}`"
             class="avatar-preview q-mb-md"
             style="border: 2px solid #ddd"
             alt="Old Avatar"
@@ -74,7 +74,7 @@
             color="primary"
             :loading="profileLoading"
             :disable="!hasProfileChanges"
-            class="full-width"
+            class="q-ml-md"
           />
         </q-form>
       </q-card-section>
@@ -112,7 +112,7 @@
             color="secondary"
             :loading="passwordLoading"
             :disable="!canChangePassword"
-            class="full-width"
+            class="q-ml-md"
           />
         </q-form>
       </q-card-section>
