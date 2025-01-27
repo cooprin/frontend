@@ -115,9 +115,8 @@ const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
-  // Замінюємо 'avatars' на 'uploads' в URL
-  const avatarPath = authStore.user.avatar_url.replace('avatars', 'uploads/avatars')
-  return `${process.env.VUE_APP_API_URL}/${avatarPath}`
+  // Формуємо повний URL для аватара
+  return `${process.env.VUE_APP_API_URL}/uploads/avatars/${authStore.user.id}/${authStore.user.avatar_url.split('/').pop()}`
 })
 
 const toggleLeftDrawer = () => {
