@@ -8,13 +8,13 @@
       <!-- Avatar Section -->
       <q-card-section>
         <div class="column justify-center items-center q-mb-md">
-          <!-- Old Avatar -->
+          <!-- Current Avatar -->
           <q-img
             v-if="user?.avatar_url && !avatarPreview"
             :src="`${process.env.API_URL}/uploads/${user.avatar_url}`"
             class="avatar-preview q-mb-md"
             style="border: 2px solid #ddd"
-            alt="Old Avatar"
+            alt="Current Avatar"
           />
 
           <!-- New Avatar Preview -->
@@ -26,6 +26,7 @@
             alt="New Avatar Preview"
           />
 
+          <!-- File Input and Upload Button -->
           <div class="row justify-center items-center q-gutter-md">
             <q-file
               v-model="avatarFile"
@@ -74,7 +75,7 @@
             color="primary"
             :loading="profileLoading"
             :disable="!hasProfileChanges"
-            class="q-ml-md"
+            class="full-width"
           />
         </q-form>
       </q-card-section>
@@ -112,7 +113,7 @@
             color="secondary"
             :loading="passwordLoading"
             :disable="!canChangePassword"
-            class="q-ml-md"
+            class="full-width"
           />
         </q-form>
       </q-card-section>
@@ -212,67 +213,6 @@ const uploadAvatar = async () => {
     })
   } finally {
     avatarLoading.value = false
-  }
-}
-
-// Profile update handling
-const onSubmitProfile = async () => {
-  if (!hasProfileChanges.value) return
-
-  profileLoading.value = true
-  try {
-    const response = await api.put('/user/update-profile', {
-      first_name: profileData.value.firstName,
-      last_name: profileData.value.lastName,
-    })
-
-    if (response.data.success) {
-      await authStore.fetchUser()
-      q.notify({
-        type: 'positive',
-        message: t('pages.profile.profileSuccess'),
-      })
-    }
-  } catch {
-    q.notify({
-      type: 'negative',
-      message: t('pages.profile.profileError'),
-    })
-  } finally {
-    profileLoading.value = false
-  }
-}
-
-// Password change handling
-const onSubmitPassword = async () => {
-  if (!canChangePassword.value) return
-
-  passwordLoading.value = true
-  try {
-    const response = await api.put('/user/change-password', {
-      current_password: passwordData.value.currentPassword,
-      new_password: passwordData.value.newPassword,
-    })
-
-    if (response.data.success) {
-      passwordData.value = {
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      }
-
-      q.notify({
-        type: 'positive',
-        message: t('pages.profile.passwordSuccess'),
-      })
-    }
-  } catch {
-    q.notify({
-      type: 'negative',
-      message: t('pages.profile.passwordError'),
-    })
-  } finally {
-    passwordLoading.value = false
   }
 }
 </script>
