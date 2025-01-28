@@ -5,5 +5,8 @@ export default {
     profile: 'Профіль',
     settings: 'Налаштування',
     exit: 'Вийти',
+    dashboard: 'Головна',
+    users: 'Користувачі',
+    userGroups: 'Групи користувачів',
   },
 }

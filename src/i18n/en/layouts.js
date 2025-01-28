@@ -5,5 +5,8 @@ export default {
     profile: 'Profile',
     settings: 'Settings',
     exit: 'Sign Out',
+    dashboard: 'Dashboard',
+    users: 'Users',
+    userGroups: 'User Groups',
   },
 }

@@ -58,14 +58,6 @@
                 <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
               </q-item>
 
-              <!-- Settings -->
-              <q-item clickable v-close-popup to="/settings">
-                <q-item-section avatar>
-                  <q-icon name="settings" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
-              </q-item>
-
               <q-separator />
 
               <!-- Logout -->
@@ -81,31 +73,47 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      show-if-above
+      bordered
+      :mini="miniState"
+      @mouseover="miniState = false"
+      @mouseout="miniState = true"
+      mini-to-overlay
+      :width="240"
+      :breakpoint="500"
+    >
       <q-list>
         <!-- Dashboard -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="dashboard" />
           </q-item-section>
-          <q-item-section>Головна</q-item-section>
+          <q-item-section>
+            {{ $t('layouts.mainLayout.dashboard') }}
+          </q-item-section>
         </q-item>
 
         <!-- Settings with sub-items -->
-        <q-expansion-item icon="settings" label="Налаштування">
+        <q-expansion-item icon="settings" :label="$t('layouts.mainLayout.settings')">
           <q-list class="q-pl-lg">
             <q-item clickable v-ripple :to="{ name: 'users' }">
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
-              <q-item-section>Користувачі</q-item-section>
+              <q-item-section>
+                {{ $t('layouts.mainLayout.users') }}
+              </q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'user-groups' }">
               <q-item-section avatar>
                 <q-icon name="groups" />
               </q-item-section>
-              <q-item-section>Групи користувачів</q-item-section>
+              <q-item-section>
+                {{ $t('layouts.mainLayout.userGroups') }}
+              </q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
@@ -130,6 +138,7 @@ const { locale } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(false)
+const miniState = ref(true)
 
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
