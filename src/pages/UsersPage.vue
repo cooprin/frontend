@@ -331,7 +331,7 @@ const columns = [
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const response = await api.get('/users', {
+    const response = await api.get('/user', {
       params: {
         page: pagination.value.page,
         perPage: pagination.value.rowsPerPage,
@@ -383,7 +383,7 @@ const openPasswordDialog = (user) => {
 // Toggle user status
 const toggleUserStatus = async (user) => {
   try {
-    await api.put(`/users/${user.id}/status`, {
+    await api.put(`/user/${user.id}/status`, {
       is_active: !user.is_active,
     })
     await fetchUsers()
@@ -404,9 +404,9 @@ const saveUser = async () => {
   saving.value = true
   try {
     if (editedUser.value.id) {
-      await api.put(`/users/${editedUser.value.id}`, editedUser.value)
+      await api.put(`/user/${editedUser.value.id}`, editedUser.value)
     } else {
-      await api.post('/users', editedUser.value)
+      await api.post('/user', editedUser.value)
     }
     await fetchUsers()
     userDialog.value = false
@@ -427,7 +427,7 @@ const saveUser = async () => {
 const savePassword = async () => {
   savingPassword.value = true
   try {
-    await api.put(`/users/${passwordData.value.userId}/password`, {
+    await api.put(`/user/${passwordData.value.userId}/password`, {
       password: passwordData.value.password,
     })
     passwordDialog.value = false
@@ -453,7 +453,7 @@ const confirmDelete = (user) => {
     persistent: true,
   }).onOk(async () => {
     try {
-      await api.delete(`/users/${user.id}`)
+      await api.delete(`/user/${user.id}`)
       await fetchUsers()
       $q.notify({
         type: 'positive',
