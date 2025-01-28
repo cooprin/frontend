@@ -3,7 +3,7 @@ export default {
     hello: 'Привіт',
     description: 'Привіт',
   },
-  about: {
+  users: {
     title: 'Про нас',
     description: 'Опис сторінки про нас',
   },

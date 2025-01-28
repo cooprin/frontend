@@ -20,6 +20,12 @@ const routes = [
         component: () => import('pages/ProfilePage.vue'),
         meta: { title: 'Profile' },
       },
+      {
+        path: '/users',
+        name: 'users',
+        component: () => import('src/pages/UsersPage.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 

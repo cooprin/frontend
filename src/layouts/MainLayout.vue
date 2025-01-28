@@ -81,11 +81,11 @@
       :width="240"
       :breakpoint="500"
     >
-      <q-list>
-        <!-- Dashboard -->
+      <q-list padding>
+        <!-- Dashboard with updated style -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
-            <q-icon name="dashboard" />
+            <q-icon name="home" color="primary" />
           </q-item-section>
           <q-item-section>
             {{ $t('layouts.mainLayout.dashboard') }}
@@ -97,11 +97,12 @@
           icon="settings"
           :label="$t('layouts.mainLayout.settings')"
           :header-class="miniState ? 'text-center' : ''"
+          expand-icon="keyboard_arrow_down"
         >
           <q-list class="q-pl-lg">
-            <q-item clickable v-ripple :to="{ name: 'users' }">
+            <q-item clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
-                <q-icon name="people" />
+                <q-icon name="people" color="primary" />
               </q-item-section>
               <q-item-section>
                 {{ $t('layouts.mainLayout.users') }}
@@ -110,7 +111,7 @@
 
             <q-item clickable v-ripple :to="{ name: 'user-groups' }">
               <q-item-section avatar>
-                <q-icon name="groups" />
+                <q-icon name="groups" color="primary" />
               </q-item-section>
               <q-item-section>
                 {{ $t('layouts.mainLayout.userGroups') }}

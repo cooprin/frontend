@@ -3,7 +3,7 @@ export default {
     hello: 'Hello',
     description: 'Hello',
   },
-  about: {
+  users: {
     title: 'About Us',
     description: 'About page description',
   },
