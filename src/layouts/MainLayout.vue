@@ -85,10 +85,10 @@
         <!-- Dashboard with updated style -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
-            <q-icon name="home" />
+            <q-icon name="home" color="primary" />
           </q-item-section>
           <q-item-section>
-            {{ $t('layouts.mainLayout.dashboard') }}
+            <span class="text-primary">{{ $t('layouts.mainLayout.dashboard') }}</span>
           </q-item-section>
         </q-item>
 
@@ -105,7 +105,7 @@
                 <q-icon name="people" color="primary" />
               </q-item-section>
               <q-item-section>
-                {{ $t('layouts.mainLayout.users') }}
+                <span class="text-primary">{{ $t('layouts.mainLayout.users') }}</span>
               </q-item-section>
             </q-item>
 
@@ -114,7 +114,7 @@
                 <q-icon name="groups" color="primary" />
               </q-item-section>
               <q-item-section>
-                {{ $t('layouts.mainLayout.userGroups') }}
+                <span class="text-primary">{{ $t('layouts.mainLayout.userGroups') }}</span>
               </q-item-section>
             </q-item>
           </q-list>
