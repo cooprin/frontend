@@ -27,11 +27,10 @@
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
 
-        <!-- User menu -->
+        <!-- User info button -->
         <q-btn flat round dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
-              <!-- Аватар і основна інформація -->
               <q-item>
                 <q-item-section avatar>
                   <q-avatar size="40px">
@@ -50,24 +49,7 @@
 
               <q-separator />
 
-              <!-- Додаткові опції -->
-              <q-item clickable v-close-popup to="/profile">
-                <q-item-section avatar>
-                  <q-icon name="person" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-close-popup to="/settings">
-                <q-item-section avatar>
-                  <q-icon name="settings" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
-              </q-item>
-
-              <q-separator />
-
-              <!-- Кнопка виходу -->
+              <!-- Logout button -->
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
@@ -81,14 +63,59 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <!-- Тут буде меню навігації -->
       <q-list>
+        <!-- Dashboard -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="dashboard" />
           </q-item-section>
-          <q-item-section> Головна </q-item-section>
+          <q-item-section>Головна</q-item-section>
         </q-item>
+
+        <!-- Profile -->
+        <q-item clickable v-ripple :to="{ name: 'profile' }">
+          <q-item-section avatar>
+            <q-icon name="person" />
+          </q-item-section>
+          <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
+        </q-item>
+
+        <!-- Users -->
+        <q-item clickable v-ripple :to="{ name: 'users' }">
+          <q-item-section avatar>
+            <q-icon name="people" />
+          </q-item-section>
+          <q-item-section>Користувачі</q-item-section>
+        </q-item>
+
+        <!-- User Groups -->
+        <q-item clickable v-ripple :to="{ name: 'user-groups' }">
+          <q-item-section avatar>
+            <q-icon name="groups" />
+          </q-item-section>
+          <q-item-section>Групи користувачів</q-item-section>
+        </q-item>
+
+        <q-separator />
+
+        <!-- Settings -->
+        <q-expansion-item icon="settings" label="Налаштування" caption="Система та обліковий запис">
+          <q-list class="q-pl-lg">
+            <q-item clickable v-ripple :to="{ name: 'settings' }">
+              <q-item-section avatar>
+                <q-icon name="tune" />
+              </q-item-section>
+              <q-item-section>Системні налаштування</q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple :to="{ name: 'account-settings' }">
+              <q-item-section avatar>
+                <q-icon name="manage_accounts" />
+              </q-item-section>
+              <q-item-section>Налаштування облікового запису</q-item-section>
+            </q-item>
+          </q-list>
+        </q-expansion-item>
       </q-list>
     </q-drawer>
 
@@ -117,7 +144,6 @@ const getAvatarUrl = computed(() => {
   }
 
   try {
-    // Просто беремо повний шлях з avatar_url як є
     const avatarPath = authStore.user.avatar_url
     return `${process.env.API_URL}/uploads/${avatarPath}`
   } catch {
@@ -129,11 +155,8 @@ const handleImageError = (e) => {
   const originalSrc = e.target.src
   console.error('Image load error. Original src:', originalSrc)
 
-  // Перевіряємо, чи це не fallback зображення
   if (!originalSrc.includes('cdn.quasar.dev')) {
     e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
-
-    // Показуємо повідомлення про помилку тільки якщо це не fallback
     console.warn('Failed to load avatar, using fallback image')
   }
 }
