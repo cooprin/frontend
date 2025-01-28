@@ -85,7 +85,7 @@
         <!-- Dashboard with updated style -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
-            <q-icon name="home" color="primary" />
+            <q-icon name="home" />
           </q-item-section>
           <q-item-section>
             {{ $t('layouts.mainLayout.dashboard') }}
