@@ -82,7 +82,6 @@
       :breakpoint="500"
     >
       <q-list padding>
-        <!-- Dashboard with updated style -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="home" color="primary" />
@@ -92,7 +91,6 @@
           </q-item-section>
         </q-item>
 
-        <!-- Settings with sub-items -->
         <q-expansion-item
           icon="settings"
           :label="$t('layouts.mainLayout.settings')"
@@ -119,6 +117,12 @@
             </q-item>
           </q-list>
         </q-expansion-item>
+
+        <style scoped>
+          .q-item {
+            color: var(--q-primary); /* Use the same color as the Settings item */
+          }
+        </style>
       </q-list>
     </q-drawer>
 
