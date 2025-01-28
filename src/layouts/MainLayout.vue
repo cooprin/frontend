@@ -27,10 +27,11 @@
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
 
-        <!-- User info button -->
+        <!-- User menu -->
         <q-btn flat round dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
+              <!-- Avatar and main info -->
               <q-item>
                 <q-item-section avatar>
                   <q-avatar size="40px">
@@ -49,7 +50,25 @@
 
               <q-separator />
 
-              <!-- Logout button -->
+              <!-- Profile -->
+              <q-item clickable v-close-popup to="/profile">
+                <q-item-section avatar>
+                  <q-icon name="person" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
+              </q-item>
+
+              <!-- Settings -->
+              <q-item clickable v-close-popup to="/settings">
+                <q-item-section avatar>
+                  <q-icon name="settings" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <!-- Logout -->
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
@@ -72,47 +91,21 @@
           <q-item-section>Головна</q-item-section>
         </q-item>
 
-        <!-- Profile -->
-        <q-item clickable v-ripple :to="{ name: 'profile' }">
-          <q-item-section avatar>
-            <q-icon name="person" />
-          </q-item-section>
-          <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
-        </q-item>
-
-        <!-- Users -->
-        <q-item clickable v-ripple :to="{ name: 'users' }">
-          <q-item-section avatar>
-            <q-icon name="people" />
-          </q-item-section>
-          <q-item-section>Користувачі</q-item-section>
-        </q-item>
-
-        <!-- User Groups -->
-        <q-item clickable v-ripple :to="{ name: 'user-groups' }">
-          <q-item-section avatar>
-            <q-icon name="groups" />
-          </q-item-section>
-          <q-item-section>Групи користувачів</q-item-section>
-        </q-item>
-
-        <q-separator />
-
-        <!-- Settings -->
-        <q-expansion-item icon="settings" label="Налаштування" caption="Система та обліковий запис">
+        <!-- Settings with sub-items -->
+        <q-expansion-item icon="settings" label="Налаштування">
           <q-list class="q-pl-lg">
-            <q-item clickable v-ripple :to="{ name: 'settings' }">
+            <q-item clickable v-ripple :to="{ name: 'users' }">
               <q-item-section avatar>
-                <q-icon name="tune" />
+                <q-icon name="people" />
               </q-item-section>
-              <q-item-section>Системні налаштування</q-item-section>
+              <q-item-section>Користувачі</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'account-settings' }">
+            <q-item clickable v-ripple :to="{ name: 'user-groups' }">
               <q-item-section avatar>
-                <q-icon name="manage_accounts" />
+                <q-icon name="groups" />
               </q-item-section>
-              <q-item-section>Налаштування облікового запису</q-item-section>
+              <q-item-section>Групи користувачів</q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
