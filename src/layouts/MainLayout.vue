@@ -2,7 +2,7 @@
   <q-layout view="hHh LpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <q-btn dense flat round icon="menu" @click="toggleMiniState" />
         <q-toolbar-title>
           {{ $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
@@ -78,9 +78,6 @@
       show-if-above
       bordered
       :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      mini-to-overlay
       :width="240"
       :breakpoint="500"
     >
@@ -96,7 +93,11 @@
         </q-item>
 
         <!-- Settings with sub-items -->
-        <q-expansion-item icon="settings" :label="$t('layouts.mainLayout.settings')">
+        <q-expansion-item
+          icon="settings"
+          :label="$t('layouts.mainLayout.settings')"
+          :header-class="miniState ? 'text-center' : ''"
+        >
           <q-list class="q-pl-lg">
             <q-item clickable v-ripple :to="{ name: 'users' }">
               <q-item-section avatar>
@@ -137,8 +138,8 @@ const $q = useQuasar()
 const { locale } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
-const leftDrawerOpen = ref(false)
-const miniState = ref(true)
+const leftDrawerOpen = ref(true)
+const miniState = ref(false)
 
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
@@ -163,8 +164,8 @@ const handleImageError = (e) => {
   }
 }
 
-const toggleLeftDrawer = () => {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+const toggleMiniState = () => {
+  miniState.value = !miniState.value
 }
 
 const toggleDarkMode = () => {
