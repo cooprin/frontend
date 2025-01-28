@@ -14,7 +14,6 @@
           :pagination="pagination"
           @request="onRequest"
         >
-          <!-- Top section with search and add button -->
           <template v-slot:top-right>
             <q-input
               v-model="search"
@@ -36,7 +35,18 @@
             />
           </template>
 
-          <!-- Actions column -->
+          <template v-slot:body-cell-is_active="props">
+            <q-td :props="props">
+              <q-chip
+                :color="props.row.is_active ? 'positive' : 'negative'"
+                text-color="white"
+                dense
+              >
+                {{ props.row.is_active ? $t('common.active') : $t('common.inactive') }}
+              </q-chip>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="q-gutter-sm">
               <q-btn
@@ -63,6 +73,20 @@
                 flat
                 round
                 dense
+                :color="props.row.is_active ? 'negative' : 'positive'"
+                :icon="props.row.is_active ? 'block' : 'check_circle'"
+                @click="toggleUserStatus(props.row)"
+              >
+                <q-tooltip>
+                  {{
+                    props.row.is_active ? $t('pages.users.deactivate') : $t('pages.users.activate')
+                  }}
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                dense
                 color="negative"
                 icon="delete"
                 @click="confirmDelete(props.row)"
@@ -77,7 +101,7 @@
 
     <!-- User Edit Dialog -->
     <q-dialog v-model="userDialog" persistent>
-      <q-card style="min-width: 350px">
+      <q-card style="min-width: 400px">
         <q-card-section>
           <div class="text-h6">
             {{ editedUser.id ? $t('pages.users.editUser') : $t('pages.users.addUser') }}
@@ -86,20 +110,6 @@
 
         <q-card-section>
           <q-form @submit="saveUser" class="q-gutter-md">
-            <q-input
-              v-model="editedUser.first_name"
-              :label="$t('pages.users.firstName')"
-              outlined
-              dense
-              :rules="[(val) => !!val || $t('pages.users.required')]"
-            />
-            <q-input
-              v-model="editedUser.last_name"
-              :label="$t('pages.users.lastName')"
-              outlined
-              dense
-              :rules="[(val) => !!val || $t('pages.users.required')]"
-            />
             <q-input
               v-model="editedUser.email"
               :label="$t('pages.users.email')"
@@ -111,6 +121,50 @@
                 (val) => /^[^@]+@[^@]+\.[^@]+$/.test(val) || $t('pages.users.invalidEmail'),
               ]"
             />
+
+            <q-select
+              v-model="editedUser.role_id"
+              :options="roleOptions"
+              :label="$t('pages.users.role')"
+              outlined
+              dense
+              emit-value
+              map-options
+              :rules="[(val) => !!val || $t('pages.users.required')]"
+            />
+
+            <q-input
+              v-model="editedUser.first_name"
+              :label="$t('pages.users.firstName')"
+              outlined
+              dense
+              :rules="[(val) => !!val || $t('pages.users.required')]"
+            />
+
+            <q-input
+              v-model="editedUser.last_name"
+              :label="$t('pages.users.lastName')"
+              outlined
+              dense
+              :rules="[(val) => !!val || $t('pages.users.required')]"
+            />
+
+            <q-input
+              v-model="editedUser.phone"
+              :label="$t('pages.users.phone')"
+              outlined
+              dense
+              mask="(###) ###-####"
+            />
+
+            <q-input
+              v-model="editedUser.avatar_url"
+              :label="$t('pages.users.avatarUrl')"
+              outlined
+              dense
+            />
+
+            <q-toggle v-model="editedUser.is_active" :label="$t('pages.users.isActive')" />
 
             <div class="row justify-end q-gutter-sm">
               <q-btn flat :label="$t('common.cancel')" v-close-popup />
@@ -183,7 +237,7 @@ const loading = ref(false)
 const users = ref([])
 const search = ref('')
 const pagination = ref({
-  sortBy: 'name',
+  sortBy: 'last_name',
   descending: false,
   page: 1,
   rowsPerPage: 10,
@@ -195,9 +249,13 @@ const userDialog = ref(false)
 const passwordDialog = ref(false)
 const editedUser = ref({
   id: null,
+  role_id: null,
+  email: '',
   first_name: '',
   last_name: '',
-  email: '',
+  phone: '',
+  avatar_url: '',
+  is_active: true,
 })
 const passwordData = ref({
   userId: null,
@@ -206,6 +264,13 @@ const passwordData = ref({
 })
 const saving = ref(false)
 const savingPassword = ref(false)
+
+// Role options (you'll need to populate this from your API)
+const roleOptions = ref([
+  { label: 'Admin', value: 1 },
+  { label: 'User', value: 2 },
+  // Add more roles as needed
+])
 
 const columns = [
   {
@@ -233,6 +298,28 @@ const columns = [
     sortable: true,
   },
   {
+    name: 'phone',
+    label: t('pages.users.phone'),
+    align: 'left',
+    field: 'phone',
+    sortable: true,
+  },
+  {
+    name: 'is_active',
+    label: t('pages.users.status'),
+    align: 'center',
+    field: 'is_active',
+    sortable: true,
+  },
+  {
+    name: 'last_login',
+    label: t('pages.users.lastLogin'),
+    align: 'left',
+    field: 'last_login',
+    sortable: true,
+    format: (val) => (val ? new Date(val).toLocaleString() : '-'),
+  },
+  {
     name: 'actions',
     label: t('pages.users.actions'),
     align: 'center',
@@ -248,6 +335,8 @@ const fetchUsers = async () => {
       params: {
         page: pagination.value.page,
         perPage: pagination.value.rowsPerPage,
+        sortBy: pagination.value.sortBy,
+        descending: pagination.value.descending,
         search: search.value,
       },
     })
@@ -270,9 +359,13 @@ const openUserDialog = (user = null) => {
   } else {
     editedUser.value = {
       id: null,
+      role_id: null,
+      email: '',
       first_name: '',
       last_name: '',
-      email: '',
+      phone: '',
+      avatar_url: '',
+      is_active: true,
     }
   }
   userDialog.value = true
@@ -285,6 +378,25 @@ const openPasswordDialog = (user) => {
     confirmPassword: '',
   }
   passwordDialog.value = true
+}
+
+// Toggle user status
+const toggleUserStatus = async (user) => {
+  try {
+    await api.put(`/users/${user.id}/status`, {
+      is_active: !user.is_active,
+    })
+    await fetchUsers()
+    $q.notify({
+      type: 'positive',
+      message: t('pages.users.statusUpdateSuccess'),
+    })
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.users.statusUpdateError'),
+    })
+  }
 }
 
 // Save handlers
