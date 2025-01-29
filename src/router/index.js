@@ -27,8 +27,8 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: '/user-groups',
-        name: 'user-groups',
+        path: '/roles',
+        name: 'roles',
         component: () => import('pages/RolesPage.vue'),
         meta: { requiresAuth: true },
       },
