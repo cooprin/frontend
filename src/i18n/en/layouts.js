@@ -7,6 +7,6 @@ export default {
     exit: 'Sign Out',
     dashboard: 'Dashboard',
     users: 'Users',
-    userGroups: 'User Groups',
+    userGroups: 'User Roles',
   },
 }

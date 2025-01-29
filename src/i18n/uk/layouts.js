@@ -7,6 +7,6 @@ export default {
     exit: 'Вийти',
     dashboard: 'Головна',
     users: 'Користувачі',
-    userGroups: 'Групи користувачів',
+    userGroups: 'Ролі користувачів',
   },
 }
