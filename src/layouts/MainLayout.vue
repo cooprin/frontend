@@ -181,25 +181,39 @@ const logout = async () => {
 <style>
 /* Загальні стилі для меню */
 .drawer-menu .q-item {
-  color: black !important;
+  color: var(--q-primary) !important;
 }
 
 .drawer-menu .q-icon {
-  color: black !important;
+  color: var(--q-primary) !important;
 }
 
 .drawer-menu .q-expansion-item__content .q-item {
-  color: black !important;
+  color: var(--q-primary) !important;
 }
 
 /* Активний пункт меню */
 .drawer-menu .q-item.q-router-link-active {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(var(--q-primary), 0.1);
 }
 
 .q-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Темна тема */
+.body--dark .drawer-menu .q-item,
+.body--dark .drawer-menu .q-icon,
+.body--dark .drawer-menu .q-expansion-item__content .q-item {
+  color: #fff !important;
+}
+
+/* Світла тема */
+.body--light .drawer-menu .q-item,
+.body--light .drawer-menu .q-icon,
+.body--light .drawer-menu .q-expansion-item__content .q-item {
+  color: rgba(0, 0, 0, 0.87) !important;
 }
 </style>
