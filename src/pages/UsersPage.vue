@@ -35,6 +35,12 @@
             />
           </template>
 
+          <template v-slot:body-cell-role="props">
+            <q-td :props="props">
+              {{ props.row.role_name }}
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-is_active="props">
             <q-td :props="props">
               <q-chip
@@ -157,13 +163,6 @@
               mask="(###) ###-####"
             />
 
-            <q-input
-              v-model="editedUser.avatar_url"
-              :label="$t('pages.users.avatarUrl')"
-              outlined
-              dense
-            />
-
             <q-toggle v-model="editedUser.is_active" :label="$t('pages.users.isActive')" />
 
             <div class="row justify-end q-gutter-sm">
@@ -175,7 +174,7 @@
       </q-card>
     </q-dialog>
 
-    <!-- Password Change Dialog -->
+    <!-- Password Dialog -->
     <q-dialog v-model="passwordDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
@@ -254,7 +253,6 @@ const editedUser = ref({
   first_name: '',
   last_name: '',
   phone: '',
-  avatar_url: '',
   is_active: true,
 })
 const passwordData = ref({
@@ -264,13 +262,7 @@ const passwordData = ref({
 })
 const saving = ref(false)
 const savingPassword = ref(false)
-
-// Role options (you'll need to populate this from your API)
-const roleOptions = ref([
-  { label: 'Admin', value: 1 },
-  { label: 'User', value: 2 },
-  // Add more roles as needed
-])
+const roleOptions = ref([])
 
 const columns = [
   {
@@ -295,6 +287,14 @@ const columns = [
     label: t('pages.users.email'),
     align: 'left',
     field: 'email',
+    sortable: true,
+  },
+  {
+    name: 'role',
+    required: true,
+    label: t('pages.users.role'),
+    align: 'left',
+    field: 'role_name',
     sortable: true,
   },
   {
@@ -326,6 +326,22 @@ const columns = [
     field: 'actions',
   },
 ]
+
+// Fetch roles
+const fetchRoles = async () => {
+  try {
+    const response = await api.get('/user/roles')
+    roleOptions.value = response.data.roles.map((role) => ({
+      label: role.name,
+      value: role.id,
+    }))
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.users.rolesError'),
+    })
+  }
+}
 
 // Fetch users
 const fetchUsers = async () => {
@@ -364,7 +380,6 @@ const openUserDialog = (user = null) => {
       first_name: '',
       last_name: '',
       phone: '',
-      avatar_url: '',
       is_active: true,
     }
   }
@@ -378,25 +393,6 @@ const openPasswordDialog = (user) => {
     confirmPassword: '',
   }
   passwordDialog.value = true
-}
-
-// Toggle user status
-const toggleUserStatus = async (user) => {
-  try {
-    await api.put(`/user/${user.id}/status`, {
-      is_active: !user.is_active,
-    })
-    await fetchUsers()
-    $q.notify({
-      type: 'positive',
-      message: t('pages.users.statusUpdateSuccess'),
-    })
-  } catch {
-    $q.notify({
-      type: 'negative',
-      message: t('pages.users.statusUpdateError'),
-    })
-  }
 }
 
 // Save handlers
@@ -445,6 +441,24 @@ const savePassword = async () => {
   }
 }
 
+const toggleUserStatus = async (user) => {
+  try {
+    await api.put(`/user/${user.id}/status`, {
+      is_active: !user.is_active,
+    })
+    await fetchUsers()
+    $q.notify({
+      type: 'positive',
+      message: t('pages.users.statusUpdateSuccess'),
+    })
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.users.statusUpdateError'),
+    })
+  }
+}
+
 const confirmDelete = (user) => {
   $q.dialog({
     title: t('pages.users.confirmDelete'),
@@ -474,5 +488,8 @@ const onRequest = async (props) => {
   await fetchUsers()
 }
 
-onMounted(fetchUsers)
+onMounted(() => {
+  fetchRoles()
+  fetchUsers()
+})
 </script>
