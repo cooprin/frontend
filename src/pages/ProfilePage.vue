@@ -53,7 +53,7 @@
 
       <!-- Profile Information Form -->
       <q-card-section>
-        <q-form @submit.prevent="onSubmitProfile" class="q-gutter-md">
+        <q-form @submit="onSubmitProfile" class="q-gutter-md">
           <!-- Email (readonly) -->
           <q-input v-model="user.email" label="Email" outlined dense readonly disable />
 
@@ -114,7 +114,7 @@
 
       <!-- Password Change Form -->
       <q-card-section>
-        <q-form @submit.prevent="onSubmitPassword" class="q-gutter-md">
+        <q-form @submit="onSubmitPassword" class="q-gutter-md">
           <div class="text-subtitle2 q-mb-md">{{ $t('pages.profile.changePassword') }}</div>
 
           <q-input
@@ -144,7 +144,7 @@
             dense
             :rules="[
               (val) => !!val || $t('pages.profile.required'),
-              (val) => val === passwordData.value.newPassword || $t('pages.profile.passwordMatch'),
+              (val) => val === passwordData.newPassword || $t('pages.profile.passwordMatch'),
             ]"
           />
 
@@ -264,10 +264,10 @@ const uploadAvatar = async () => {
         message: t('pages.profile.avatarSuccess'),
       })
     }
-  } catch {
+  } catch (error) {
     q.notify({
       type: 'negative',
-      message: t('pages.profile.avatarError'),
+      message: error.response?.data?.message || t('pages.profile.avatarError'),
     })
   } finally {
     avatarLoading.value = false
@@ -293,10 +293,10 @@ const onSubmitProfile = async () => {
         message: t('pages.profile.profileSuccess'),
       })
     }
-  } catch {
+  } catch (error) {
     q.notify({
       type: 'negative',
-      message: t('pages.profile.profileError'),
+      message: error.response?.data?.message || t('pages.profile.profileError'),
     })
   } finally {
     profileLoading.value = false
@@ -326,10 +326,10 @@ const onSubmitPassword = async () => {
         message: t('pages.profile.passwordSuccess'),
       })
     }
-  } catch {
+  } catch (error) {
     q.notify({
       type: 'negative',
-      message: t('pages.profile.passwordError'),
+      message: error.response?.data?.message || t('pages.profile.passwordError'),
     })
   } finally {
     passwordLoading.value = false
