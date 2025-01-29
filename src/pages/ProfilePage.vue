@@ -53,7 +53,7 @@
 
       <!-- Profile Information Form -->
       <q-card-section>
-        <q-form @submit="onSubmitProfile" class="q-gutter-md">
+        <q-form ref="profileFormRef" @submit="onSubmitProfile" class="q-gutter-md">
           <!-- Email (readonly) -->
           <q-input v-model="user.email" label="Email" outlined dense readonly disable />
 
@@ -73,6 +73,7 @@
 
           <!-- Editable fields -->
           <q-input
+            ref="firstNameRef"
             v-model="profileData.firstName"
             :label="$t('pages.profile.firstName')"
             outlined
@@ -81,6 +82,7 @@
           />
 
           <q-input
+            ref="lastNameRef"
             v-model="profileData.lastName"
             :label="$t('pages.profile.lastName')"
             outlined
@@ -89,6 +91,7 @@
           />
 
           <q-input
+            ref="phoneRef"
             v-model="profileData.phone"
             :label="$t('pages.profile.phone')"
             outlined
@@ -114,10 +117,11 @@
 
       <!-- Password Change Form -->
       <q-card-section>
-        <q-form @submit="onSubmitPassword" class="q-gutter-md">
+        <q-form ref="passwordFormRef" @submit="onSubmitPassword" class="q-gutter-md">
           <div class="text-subtitle2 q-mb-md">{{ $t('pages.profile.changePassword') }}</div>
 
           <q-input
+            ref="currentPasswordRef"
             v-model="passwordData.currentPassword"
             :label="$t('pages.profile.currentPassword')"
             type="password"
@@ -126,6 +130,7 @@
             :rules="[(val) => !!val || $t('pages.profile.required')]"
           />
           <q-input
+            ref="newPasswordRef"
             v-model="passwordData.newPassword"
             :label="$t('pages.profile.newPassword')"
             type="password"
@@ -137,6 +142,7 @@
             ]"
           />
           <q-input
+            ref="confirmPasswordRef"
             v-model="passwordData.confirmPassword"
             :label="$t('pages.profile.confirmPassword')"
             type="password"
@@ -173,6 +179,16 @@ import { api } from 'boot/axios'
 const authStore = useAuthStore()
 const q = useQuasar()
 const { t } = useI18n()
+
+// Form refs
+const profileFormRef = ref(null)
+const firstNameRef = ref(null)
+const lastNameRef = ref(null)
+const phoneRef = ref(null)
+const passwordFormRef = ref(null)
+const currentPasswordRef = ref(null)
+const newPasswordRef = ref(null)
+const confirmPasswordRef = ref(null)
 
 // State management
 const user = computed(() => authStore.user)
@@ -288,6 +304,8 @@ const onSubmitProfile = async () => {
 
     if (response.data.success) {
       await authStore.fetchUser()
+      await profileFormRef.value?.resetValidation()
+
       q.notify({
         type: 'positive',
         message: t('pages.profile.profileSuccess'),
@@ -315,11 +333,18 @@ const onSubmitPassword = async () => {
     })
 
     if (response.data.success) {
+      // Reset form data
       passwordData.value = {
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       }
+
+      // Reset validation states
+      await passwordFormRef.value?.resetValidation()
+      currentPasswordRef.value?.resetValidation()
+      newPasswordRef.value?.resetValidation()
+      confirmPasswordRef.value?.resetValidation()
 
       q.notify({
         type: 'positive',
