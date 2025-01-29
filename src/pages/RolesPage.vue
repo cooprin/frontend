@@ -45,7 +45,7 @@
                 icon="edit"
                 @click="openRoleDialog(props.row)"
               >
-                <q-tooltip>{{ $t('pages.roles.edit') }}</q-tooltip>
+                <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -55,7 +55,7 @@
                 icon="delete"
                 @click="confirmDelete(props.row)"
               >
-                <q-tooltip>{{ $t('pages.roles.delete') }}</q-tooltip>
+                <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
               </q-btn>
             </q-td>
           </template>

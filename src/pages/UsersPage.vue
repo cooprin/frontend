@@ -63,7 +63,7 @@
                 icon="edit"
                 @click="openUserDialog(props.row)"
               >
-                <q-tooltip>{{ $t('pages.users.edit') }}</q-tooltip>
+                <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -97,7 +97,7 @@
                 icon="delete"
                 @click="confirmDelete(props.row)"
               >
-                <q-tooltip>{{ $t('pages.users.delete') }}</q-tooltip>
+                <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
               </q-btn>
             </q-td>
           </template>
