@@ -142,7 +142,7 @@ const getAvatarUrl = computed(() => {
 
   try {
     const avatarPath = authStore.user.avatar_url
-    return `${process.env.API_URL}/${avatarPath}`
+    return `${process.env.API_URL}${avatarPath}`
   } catch {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
