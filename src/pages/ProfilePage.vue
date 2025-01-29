@@ -54,18 +54,51 @@
       <!-- Profile Information Form -->
       <q-card-section>
         <q-form @submit.prevent="onSubmitProfile" class="q-gutter-md">
+          <!-- Email (readonly) -->
+          <q-input v-model="user.email" label="Email" outlined dense readonly disable />
+
+          <!-- Role (readonly) -->
+          <q-input
+            v-model="user.role_name"
+            :label="$t('pages.profile.role')"
+            outlined
+            dense
+            readonly
+            disable
+          >
+            <template v-slot:prepend>
+              <q-icon name="badge" />
+            </template>
+          </q-input>
+
+          <!-- Editable fields -->
           <q-input
             v-model="profileData.firstName"
             :label="$t('pages.profile.firstName')"
             outlined
             dense
+            :rules="[(val) => !!val || $t('pages.profile.required')]"
           />
+
           <q-input
             v-model="profileData.lastName"
             :label="$t('pages.profile.lastName')"
             outlined
             dense
+            :rules="[(val) => !!val || $t('pages.profile.required')]"
           />
+
+          <q-input
+            v-model="profileData.phone"
+            :label="$t('pages.profile.phone')"
+            outlined
+            dense
+            mask="(###) ###-####"
+          >
+            <template v-slot:prepend>
+              <q-icon name="phone" />
+            </template>
+          </q-input>
 
           <div class="row justify-center">
             <q-btn
@@ -90,6 +123,7 @@
             type="password"
             outlined
             dense
+            :rules="[(val) => !!val || $t('pages.profile.required')]"
           />
           <q-input
             v-model="passwordData.newPassword"
@@ -97,6 +131,10 @@
             type="password"
             outlined
             dense
+            :rules="[
+              (val) => !!val || $t('pages.profile.required'),
+              (val) => val.length >= 8 || $t('pages.profile.passwordLength'),
+            ]"
           />
           <q-input
             v-model="passwordData.confirmPassword"
@@ -104,6 +142,10 @@
             type="password"
             outlined
             dense
+            :rules="[
+              (val) => !!val || $t('pages.profile.required'),
+              (val) => val === passwordData.value.newPassword || $t('pages.profile.passwordMatch'),
+            ]"
           />
 
           <div class="row justify-center">
@@ -135,7 +177,6 @@ const { t } = useI18n()
 // State management
 const user = computed(() => authStore.user)
 const avatarFile = ref(null)
-avatarFile.value?.name && console.log(`Selected avatar: ${avatarFile.value.name}`)
 const avatarPreview = ref(null)
 const avatarLoading = ref(false)
 const profileLoading = ref(false)
@@ -147,7 +188,6 @@ const getAvatarUrl = computed(() => {
   }
 
   try {
-    // Просто беремо повний шлях з avatar_url як є
     const avatarPath = authStore.user.avatar_url
     return `${process.env.API_URL}/uploads/${avatarPath}`
   } catch {
@@ -159,6 +199,7 @@ const getAvatarUrl = computed(() => {
 const profileData = ref({
   firstName: user.value?.first_name || '',
   lastName: user.value?.last_name || '',
+  phone: user.value?.phone || '',
 })
 
 // Password data
@@ -172,7 +213,8 @@ const passwordData = ref({
 const hasProfileChanges = computed(() => {
   return (
     profileData.value.firstName !== user.value?.first_name ||
-    profileData.value.lastName !== user.value?.last_name
+    profileData.value.lastName !== user.value?.last_name ||
+    profileData.value.phone !== user.value?.phone
   )
 })
 
@@ -181,7 +223,8 @@ const canChangePassword = computed(() => {
     passwordData.value.currentPassword &&
     passwordData.value.newPassword &&
     passwordData.value.confirmPassword &&
-    passwordData.value.newPassword === passwordData.value.confirmPassword
+    passwordData.value.newPassword === passwordData.value.confirmPassword &&
+    passwordData.value.newPassword.length >= 8
   )
 })
 
@@ -191,10 +234,6 @@ const onAvatarAdded = (files) => {
     avatarPreview.value = null
     return
   }
-
-  console.log(
-    `Old avatar: ${user.value?.avatar_url ? `${process.env.API_URL}/uploads/${user.value.avatar_url}` : 'Default avatar used'}`,
-  )
 
   const reader = new FileReader()
   reader.onload = (e) => {
@@ -244,6 +283,7 @@ const onSubmitProfile = async () => {
     const response = await api.put('/user/update-profile', {
       first_name: profileData.value.firstName,
       last_name: profileData.value.lastName,
+      phone: profileData.value.phone,
     })
 
     if (response.data.success) {

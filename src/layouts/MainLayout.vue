@@ -104,9 +104,9 @@
               <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'user-groups' }">
+            <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
               <q-item-section avatar>
-                <q-icon name="groups" />
+                <q-icon name="manage_accounts" />
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
