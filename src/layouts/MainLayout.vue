@@ -80,15 +80,14 @@
       :mini="miniState"
       :width="240"
       :breakpoint="500"
+      class="drawer-menu"
     >
       <q-list padding>
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
-            <q-icon name="home" color="primary" />
+            <q-icon name="home" />
           </q-item-section>
-          <q-item-section>
-            <span class="text-primary">{{ $t('layouts.mainLayout.dashboard') }}</span>
-          </q-item-section>
+          <q-item-section>{{ $t('layouts.mainLayout.dashboard') }}</q-item-section>
         </q-item>
 
         <q-expansion-item
@@ -100,29 +99,19 @@
           <q-list class="q-pl-lg">
             <q-item clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
-                <q-icon name="people" color="primary" />
+                <q-icon name="people" />
               </q-item-section>
-              <q-item-section>
-                <span class="text-primary">{{ $t('layouts.mainLayout.users') }}</span>
-              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'user-groups' }">
               <q-item-section avatar>
-                <q-icon name="groups" color="primary" />
+                <q-icon name="groups" />
               </q-item-section>
-              <q-item-section>
-                <span class="text-primary">{{ $t('layouts.mainLayout.userGroups') }}</span>
-              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
-
-        <style scoped>
-          .q-item {
-            color: var(--q-primary); /* Use the same color as the Settings item */
-          }
-        </style>
       </q-list>
     </q-drawer>
 
@@ -189,7 +178,25 @@ const logout = async () => {
 }
 </script>
 
-<style scoped>
+<style>
+/* Загальні стилі для меню */
+.drawer-menu .q-item {
+  color: black !important;
+}
+
+.drawer-menu .q-icon {
+  color: black !important;
+}
+
+.drawer-menu .q-expansion-item__content .q-item {
+  color: black !important;
+}
+
+/* Активний пункт меню */
+.drawer-menu .q-item.q-router-link-active {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .q-avatar img {
   width: 100%;
   height: 100%;
