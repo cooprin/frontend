@@ -223,7 +223,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
@@ -264,7 +264,7 @@ const saving = ref(false)
 const savingPassword = ref(false)
 const roleOptions = ref([])
 
-const columns = [
+const columns = computed(() => [
   {
     name: 'first_name',
     required: true,
@@ -325,7 +325,7 @@ const columns = [
     align: 'center',
     field: 'actions',
   },
-]
+])
 
 // Fetch roles
 const fetchRoles = async () => {

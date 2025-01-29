@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
@@ -131,7 +131,7 @@ const editedRole = ref({
 })
 const saving = ref(false)
 
-const columns = [
+const columns = computed(() => [
   {
     name: 'name',
     required: true,
@@ -169,7 +169,7 @@ const columns = [
     align: 'center',
     field: 'actions',
   },
-]
+])
 
 // Fetch roles
 const fetchRoles = async () => {
