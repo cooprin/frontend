@@ -139,7 +139,7 @@
             <!-- Інформація про дію -->
             <div class="col-12">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.actionInfo') }}</div>
-              <q-list bordered>
+              <q-list bordered class="rounded-borders">
                 <q-item>
                   <q-item-section>
                     <q-item-label caption>{{ $t('pages.auditLogs.date') }}</q-item-label>
@@ -164,21 +164,13 @@
             <!-- Старі значення -->
             <div class="col-12 col-md-6" v-if="selectedLog?.old_values">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.oldValues') }}</div>
-              <q-card bordered flat>
-                <q-card-section>
-                  <pre class="changes-pre">{{ formatValues(selectedLog.old_values) }}</pre>
-                </q-card-section>
-              </q-card>
+              <pre class="changes-pre">{{ formatValues(selectedLog.old_values) }}</pre>
             </div>
 
             <!-- Нові значення -->
             <div class="col-12 col-md-6" v-if="selectedLog?.new_values">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.newValues') }}</div>
-              <q-card bordered flat>
-                <q-card-section>
-                  <pre class="changes-pre">{{ formatValues(selectedLog.new_values) }}</pre>
-                </q-card-section>
-              </q-card>
+              <pre class="changes-pre">{{ formatValues(selectedLog.new_values) }}</pre>
             </div>
           </div>
         </q-card-section>
@@ -273,9 +265,28 @@ const getActionColor = (actionType) => {
   return colors[actionType] || 'grey'
 }
 
+// Видаліть стару версію formatValues і замініть її на цю:
 const formatValues = (values) => {
   if (!values) return ''
-  return JSON.stringify(values, null, 2)
+
+  try {
+    let formattedValues = values
+
+    // Якщо values - це строка, спробуємо її розпарсити
+    if (typeof values === 'string') {
+      try {
+        formattedValues = JSON.parse(values)
+      } catch {
+        return values // Повертаємо оригінальну строку, якщо не можемо розпарсити
+      }
+    }
+
+    // Форматуємо об'єкт з відступами
+    return JSON.stringify(formattedValues, null, 2)
+  } catch (error) {
+    console.error('Error formatting values:', error)
+    return String(values) // Повертаємо строкове представлення в разі помилки
+  }
 }
 
 // Columns
@@ -330,17 +341,32 @@ const columns = computed(() => [
 const fetchLogs = async () => {
   loading.value = true
   try {
-    const response = await api.get('/audit-logs', {
-      params: {
-        page: pagination.value.page,
-        perPage: pagination.value.rowsPerPage,
-        sortBy: pagination.value.sortBy,
-        descending: pagination.value.descending,
-        ...filters.value,
-      },
-    })
-    logs.value = response.data.logs
-    pagination.value.rowsNumber = response.data.total
+    const params = {
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      search: filters.value.search,
+      actionType: filters.value.actionType,
+      entityType: filters.value.entityType,
+    }
+
+    // Додаємо дати тільки якщо вони вказані
+    if (filters.value.dateFrom) {
+      params.dateFrom = filters.value.dateFrom
+    }
+    if (filters.value.dateTo) {
+      params.dateTo = filters.value.dateTo
+    }
+
+    const response = await api.get('/audit-logs', { params })
+
+    if (response.data.success) {
+      logs.value = response.data.logs
+      pagination.value.rowsNumber = response.data.total
+    } else {
+      throw new Error(response.data.message)
+    }
   } catch (error) {
     console.error('Error fetching logs:', error)
     $q.notify({
@@ -352,11 +378,17 @@ const fetchLogs = async () => {
   }
 }
 
-const showChanges = (log) => {
-  selectedLog.value = log
-  changesDialog.value = true
-}
+// Оновіть watch для фільтрів
+watch(
+  filters,
+  () => {
+    pagination.value.page = 1 // Скидаємо сторінку при зміні фільтрів
+    fetchLogs()
+  },
+  { deep: true },
+)
 
+// Функція очищення фільтрів
 const clearFilters = () => {
   filters.value = {
     search: '',
@@ -387,14 +419,46 @@ watch(
 onMounted(fetchLogs)
 </script>
 
-<style scoped>
+<style>
+/* Стилі для pre в світлій та темній темі */
 .changes-pre {
-  background-color: #f5f5f5;
   padding: 10px;
   border-radius: 4px;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Світла тема */
+.body--light .changes-pre {
+  background-color: #f5f5f5;
+  color: #000;
+}
+
+/* Темна тема */
+.body--dark .changes-pre {
+  background-color: #1d1d1d;
+  color: #fff;
+}
+
+/* Стилі для діалогу в темній темі */
+.body--dark .q-card {
+  background: #1d1d1d;
+  color: #fff;
+}
+
+.body--dark .q-item {
+  color: #fff;
+}
+
+.body--dark .q-item__label--caption {
+  color: #9e9e9e;
+}
+
+/* Збільшимо контраст для важливої інформації */
+.body--dark .text-subtitle1 {
+  color: #fff;
+  opacity: 0.9;
 }
 </style>
