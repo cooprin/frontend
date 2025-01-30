@@ -8,5 +8,6 @@ export default {
     dashboard: 'Головна',
     users: 'Користувачі',
     userGroups: 'Ролі користувачів',
+    auditLogs: 'Журнал операцій',
   },
 }

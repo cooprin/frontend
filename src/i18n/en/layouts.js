@@ -8,5 +8,6 @@ export default {
     dashboard: 'Dashboard',
     users: 'Users',
     userGroups: 'User Roles',
+    auditLogs: 'Audit Log',
   },
 }

@@ -110,6 +110,12 @@
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
+            <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+              <q-item-section avatar>
+                <q-icon name="history" color="primary" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+            </q-item>
           </q-list>
         </q-expansion-item>
       </q-list>
