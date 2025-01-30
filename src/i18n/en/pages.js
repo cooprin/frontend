@@ -100,23 +100,33 @@ export default {
     clearFilters: 'Clear Filters',
     actionInfo: 'Action Information',
     actions: {
-      login: 'Login',
-      login_failed: 'Login Failed',
-      logout: 'Logout',
+      // User actions
       user_create: 'User Creation',
       user_update: 'User Update',
       user_delete: 'User Deletion',
+      user_register: 'User Registration',
+      // Auth actions
+      login: 'Login',
+      login_failed: 'Login Failed',
+      logout: 'Logout',
+      // Profile actions
+      profile_update: 'Profile Update',
+      avatar_update: 'Avatar Update',
+      password_change: 'Password Change',
+      password_change_failed: 'Password Change Failed',
+      // Role actions
       role_create: 'Role Creation',
       role_update: 'Role Update',
       role_delete: 'Role Deletion',
-      profile_update: 'Profile Update',
+      // System actions
+      error: 'Error',
       status_change: 'Status Change',
-      password_change: 'Password Change',
-      avatar_update: 'Avatar Update',
     },
     entities: {
       user: 'User',
       role: 'Role',
+      profile: 'Profile',
+      system: 'System',
     },
   },
 }

@@ -100,23 +100,33 @@ export default {
     clearFilters: 'Очистити фільтри',
     actionInfo: 'Інформація про дію',
     actions: {
-      login: 'Вхід',
-      login_failed: 'Невдалий вхід',
-      logout: 'Вихід',
+      // Дії з користувачами
       user_create: 'Створення користувача',
       user_update: 'Оновлення користувача',
       user_delete: 'Видалення користувача',
+      user_register: 'Реєстрація користувача',
+      // Дії з авторизацією
+      login: 'Вхід в систему',
+      login_failed: 'Невдала спроба входу',
+      logout: 'Вихід з системи',
+      // Дії з профілем
+      profile_update: 'Оновлення профілю',
+      avatar_update: 'Зміна аватара',
+      password_change: 'Зміна пароля',
+      password_change_failed: 'Невдала зміна пароля',
+      // Дії з ролями
       role_create: 'Створення ролі',
       role_update: 'Оновлення ролі',
       role_delete: 'Видалення ролі',
-      profile_update: 'Оновлення профілю',
+      // Системні дії
+      error: 'Помилка',
       status_change: 'Зміна статусу',
-      password_change: 'Зміна пароля',
-      avatar_update: 'Оновлення аватара',
     },
     entities: {
       user: 'Користувач',
       role: 'Роль',
+      profile: 'Профіль',
+      system: 'Система',
     },
   },
 }

@@ -220,18 +220,37 @@ const filters = ref({
 const changesDialog = ref(false)
 const selectedLog = ref(null)
 
-// Опції для фільтрів
-const actionTypeOptions = [
-  { label: t('pages.auditLogs.actions.login'), value: 'LOGIN' },
-  { label: t('pages.auditLogs.actions.create'), value: 'CREATE' },
-  { label: t('pages.auditLogs.actions.update'), value: 'UPDATE' },
-  { label: t('pages.auditLogs.actions.delete'), value: 'DELETE' },
-]
+const actionTypeOptions = ref([])
+const entityTypeOptions = ref([])
 
-const entityTypeOptions = [
-  { label: t('pages.auditLogs.entities.user'), value: 'USER' },
-  { label: t('pages.auditLogs.entities.role'), value: 'ROLE' },
-]
+// Функція для отримання типів логів
+const fetchLogTypes = async () => {
+  try {
+    const response = await api.get('/audit-logs/types')
+    if (response.data.success) {
+      actionTypeOptions.value = response.data.actionTypes.map((type) => ({
+        label: t(`pages.auditLogs.actions.${type.toLowerCase()}`),
+        value: type,
+      }))
+      entityTypeOptions.value = response.data.entityTypes.map((type) => ({
+        label: t(`pages.auditLogs.entities.${type.toLowerCase()}`),
+        value: type,
+      }))
+    }
+  } catch (error) {
+    console.error('Error fetching log types:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('pages.auditLogs.fetchTypesError'),
+    })
+  }
+}
+
+// Викликаємо функцію при монтуванні компонента
+onMounted(async () => {
+  await fetchLogTypes()
+  await fetchLogs()
+})
 
 // Helper functions
 const formatDate = (dateStr) => {
