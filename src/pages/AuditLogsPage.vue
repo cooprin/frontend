@@ -87,12 +87,13 @@
           :columns="columns"
           row-key="id"
           :loading="loading"
-          :pagination="pagination"
+          v-model:pagination="pagination"
           @request="onRequest"
           :rows-per-page-options="pagination.rowsPerPageOptions"
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
+          @update:pagination="onRequest"
         >
           <!-- Форматування дати -->
           <template v-slot:body-cell-created_at="props">

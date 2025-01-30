@@ -11,12 +11,13 @@
           :columns="columns"
           row-key="id"
           :loading="loading"
-          :pagination="pagination"
+          v-model:pagination="pagination"
           @request="onRequest"
           :rows-per-page-options="pagination.rowsPerPageOptions"
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
+          @update:pagination="onRequest"
         >
           <template v-slot:top-right>
             <q-input
