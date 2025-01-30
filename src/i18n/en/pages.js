@@ -103,7 +103,7 @@ export default {
       // System actions
       list_view: 'List View',
       error: 'Error',
-      ROLES_LIST_VIEW: 'Roles List View',
+      roles_list_view: 'Roles List View',
       // Auth
       login: 'Login',
       login_success: 'Login Success',

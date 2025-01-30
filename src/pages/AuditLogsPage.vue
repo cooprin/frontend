@@ -56,6 +56,7 @@
             <q-input
               v-model="filters.dateFrom"
               :label="$t('pages.auditLogs.dateFrom')"
+              :placeholder="dateFormat"
               outlined
               dense
               type="date"
@@ -65,6 +66,7 @@
             <q-input
               v-model="filters.dateTo"
               :label="$t('pages.auditLogs.dateTo')"
+              :placeholder="dateFormat"
               outlined
               dense
               type="date"
@@ -192,7 +194,7 @@ import { api } from 'boot/axios'
 import { date } from 'quasar'
 
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // State
 const loading = ref(false)
@@ -204,6 +206,10 @@ const pagination = ref({
   rowsPerPage: 10,
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+})
+
+const dateFormat = computed(() => {
+  return locale.value === 'uk' ? 'ДД.ММ.РРРР' : 'DD.MM.YYYY'
 })
 
 const filters = ref({
@@ -225,6 +231,34 @@ const entityTypeOptions = ref([])
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
+
+// Оновлення опцій при зміні мови
+const updateActionTypeOptions = () => {
+  if (actionTypeOptions.value.length) {
+    actionTypeOptions.value = actionTypeOptions.value.map((option) => ({
+      label: t(`pages.auditLogs.actions.${option.value.toLowerCase()}`),
+      value: option.value,
+    }))
+  }
+}
+
+const updateEntityTypeOptions = () => {
+  if (entityTypeOptions.value.length) {
+    entityTypeOptions.value = entityTypeOptions.value.map((option) => ({
+      label: t(`pages.auditLogs.entities.${option.value.toLowerCase()}`),
+      value: option.value,
+    }))
+  }
+}
+
+// Watch за зміною мови
+watch(
+  () => locale.value,
+  () => {
+    updateActionTypeOptions()
+    updateEntityTypeOptions()
+  },
+)
 
 // Функція для отримання типів логів
 const fetchLogTypes = async () => {
@@ -249,16 +283,13 @@ const fetchLogTypes = async () => {
   }
 }
 
-// Викликаємо функцію при монтуванні компонента
-onMounted(async () => {
-  await fetchLogTypes()
-  await fetchLogs()
-})
-
 // Helper functions
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
-  return date.formatDate(dateStr, 'DD.MM.YYYY HH:mm:ss')
+  return date.formatDate(
+    dateStr,
+    locale.value === 'uk' ? 'DD.MM.YYYY HH:mm:ss' : 'MM/DD/YYYY HH:mm:ss',
+  )
 }
 
 const formatActionType = (actionType) => {
@@ -415,6 +446,12 @@ watch(
   },
   { deep: true },
 )
+
+// Initial fetch
+onMounted(async () => {
+  await fetchLogTypes()
+  await fetchLogs()
+})
 </script>
 
 <style>
