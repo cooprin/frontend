@@ -128,6 +128,32 @@
               ]"
             />
 
+            <template v-if="!editedUser.id">
+              <q-input
+                v-model="editedUser.password"
+                :label="$t('pages.users.password')"
+                outlined
+                dense
+                type="password"
+                :rules="[
+                  (val) => !!val || $t('pages.users.required'),
+                  (val) => val.length >= 8 || $t('pages.users.passwordLength'),
+                ]"
+              />
+
+              <q-input
+                v-model="editedUser.confirmPassword"
+                :label="$t('pages.users.confirmPassword')"
+                outlined
+                dense
+                type="password"
+                :rules="[
+                  (val) => !!val || $t('pages.users.required'),
+                  (val) => val === editedUser.password || $t('pages.users.passwordMatch'),
+                ]"
+              />
+            </template>
+
             <q-select
               v-model="editedUser.role_id"
               :options="roleOptions"
@@ -250,6 +276,8 @@ const editedUser = ref({
   id: null,
   role_id: null,
   email: '',
+  password: '',
+  confirmPassword: '',
   first_name: '',
   last_name: '',
   phone: '',
@@ -371,12 +399,14 @@ const fetchUsers = async () => {
 // Dialog handlers
 const openUserDialog = (user = null) => {
   if (user) {
-    editedUser.value = { ...user }
+    editedUser.value = { ...user, password: '', confirmPassword: '' }
   } else {
     editedUser.value = {
       id: null,
       role_id: null,
       email: '',
+      password: '',
+      confirmPassword: '',
       first_name: '',
       last_name: '',
       phone: '',

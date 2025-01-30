@@ -37,6 +37,7 @@ export default {
     isActive: 'Active',
     activate: 'Activate',
     deactivate: 'Deactivate',
+    password: 'Password"]',
   },
   profile: {
     title: 'Profile',
