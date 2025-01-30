@@ -83,6 +83,7 @@ export default {
   },
   auditLogs: {
     title: 'Audit Log',
+    search: 'Search',
     actionType: 'Action Type',
     entityType: 'Entity Type',
     dateFrom: 'Date From',
@@ -96,6 +97,8 @@ export default {
     newValues: 'New Values',
     fetchError: 'Error loading audit log',
     noChanges: 'No changes recorded',
+    clearFilters: 'Clear Filters',
+    actionInfo: 'Action Information',
     actions: {
       login: 'Login',
       create: 'Create',

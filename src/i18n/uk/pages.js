@@ -83,6 +83,7 @@ export default {
   },
   auditLogs: {
     title: 'Журнал операцій',
+    search: 'Пошук',
     actionType: 'Тип дії',
     entityType: "Тип об'єкту",
     dateFrom: 'Дата від',
@@ -96,6 +97,8 @@ export default {
     newValues: 'Нові значення',
     fetchError: 'Помилка завантаження журналу',
     noChanges: 'Змін не зафіксовано',
+    clearFilters: 'Очистити фільтри',
+    actionInfo: 'Інформація про дію',
     actions: {
       login: 'Вхід',
       create: 'Створення',

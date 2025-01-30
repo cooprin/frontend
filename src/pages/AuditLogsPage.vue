@@ -8,6 +8,21 @@
       <q-card-section>
         <!-- Фільтри -->
         <div class="row q-col-gutter-sm q-mb-md">
+          <!-- Пошук -->
+          <div class="col-12 col-sm-3">
+            <q-input
+              v-model="filters.search"
+              :label="$t('pages.auditLogs.search')"
+              outlined
+              dense
+              clearable
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </div>
+
           <!-- Тип дії -->
           <div class="col-12 col-sm-3">
             <q-select
@@ -55,6 +70,15 @@
               type="date"
             />
           </div>
+
+          <!-- Кнопка очистки фільтрів -->
+          <div class="col-12 col-sm-3 q-gutter-x-sm">
+            <q-btn
+              color="primary"
+              :label="$t('pages.auditLogs.clearFilters')"
+              @click="clearFilters"
+            />
+          </div>
         </div>
 
         <!-- Таблиця -->
@@ -66,8 +90,25 @@
           :pagination="pagination"
           @request="onRequest"
         >
-          <template v-slot:body-cell-changes="props">
+          <!-- Форматування дати -->
+          <template v-slot:body-cell-created_at="props">
             <q-td :props="props">
+              {{ formatDate(props.value) }}
+            </q-td>
+          </template>
+
+          <!-- Форматування типу дії -->
+          <template v-slot:body-cell-action_type="props">
+            <q-td :props="props">
+              <q-chip :color="getActionColor(props.value)" text-color="white" dense>
+                {{ formatActionType(props.value) }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Кнопка перегляду змін -->
+          <template v-slot:body-cell-changes="props">
+            <q-td :props="props" class="text-center">
               <q-btn
                 flat
                 round
@@ -85,28 +126,62 @@
     </q-card>
 
     <!-- Діалог для перегляду змін -->
-    <q-dialog v-model="changesDialog">
-      <q-card style="min-width: 500px">
-        <q-card-section>
+    <q-dialog v-model="changesDialog" maximized>
+      <q-card>
+        <q-card-section class="row items-center">
           <div class="text-h6">{{ $t('pages.auditLogs.changes') }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
 
-        <q-card-section>
-          <div class="row q-gutter-y-md">
-            <div class="col-12" v-if="selectedLog?.oldValues">
-              <div class="text-subtitle2">{{ $t('pages.auditLogs.oldValues') }}</div>
-              <pre>{{ JSON.stringify(selectedLog.oldValues, null, 2) }}</pre>
+        <q-card-section class="q-pa-md">
+          <div class="row q-gutter-md">
+            <!-- Інформація про дію -->
+            <div class="col-12">
+              <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.actionInfo') }}</div>
+              <q-list bordered>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>{{ $t('pages.auditLogs.date') }}</q-item-label>
+                    <q-item-label>{{ formatDate(selectedLog?.created_at) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>{{ $t('pages.auditLogs.user') }}</q-item-label>
+                    <q-item-label>{{ selectedLog?.user_email }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>{{ $t('pages.auditLogs.action') }}</q-item-label>
+                    <q-item-label>{{ formatActionType(selectedLog?.action_type) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
             </div>
-            <div class="col-12" v-if="selectedLog?.newValues">
-              <div class="text-subtitle2">{{ $t('pages.auditLogs.newValues') }}</div>
-              <pre>{{ JSON.stringify(selectedLog.newValues, null, 2) }}</pre>
+
+            <!-- Старі значення -->
+            <div class="col-12 col-md-6" v-if="selectedLog?.old_values">
+              <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.oldValues') }}</div>
+              <q-card bordered flat>
+                <q-card-section>
+                  <pre class="changes-pre">{{ formatValues(selectedLog.old_values) }}</pre>
+                </q-card-section>
+              </q-card>
+            </div>
+
+            <!-- Нові значення -->
+            <div class="col-12 col-md-6" v-if="selectedLog?.new_values">
+              <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.newValues') }}</div>
+              <q-card bordered flat>
+                <q-card-section>
+                  <pre class="changes-pre">{{ formatValues(selectedLog.new_values) }}</pre>
+                </q-card-section>
+              </q-card>
             </div>
           </div>
         </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat :label="$t('common.close')" v-close-popup />
-        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
@@ -117,6 +192,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
+import { date } from 'quasar'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -133,11 +209,16 @@ const pagination = ref({
 })
 
 const filters = ref({
+  search: '',
   actionType: null,
   entityType: null,
   dateFrom: null,
   dateTo: null,
 })
+
+// Діалог змін
+const changesDialog = ref(false)
+const selectedLog = ref(null)
 
 // Опції для фільтрів
 const actionTypeOptions = [
@@ -152,18 +233,40 @@ const entityTypeOptions = [
   { label: t('pages.auditLogs.entities.role'), value: 'ROLE' },
 ]
 
-// Діалог змін
-const changesDialog = ref(false)
-const selectedLog = ref(null)
+// Helper functions
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-'
+  return date.formatDate(dateStr, 'DD.MM.YYYY HH:mm:ss')
+}
 
-// Колонки таблиці
+const formatActionType = (actionType) => {
+  if (!actionType) return '-'
+  return t(`pages.auditLogs.actions.${actionType.toLowerCase()}`)
+}
+
+const getActionColor = (actionType) => {
+  const colors = {
+    LOGIN: 'info',
+    CREATE: 'positive',
+    UPDATE: 'warning',
+    DELETE: 'negative',
+  }
+  return colors[actionType] || 'grey'
+}
+
+const formatValues = (values) => {
+  if (!values) return ''
+  return JSON.stringify(values, null, 2)
+}
+
+// Columns
 const columns = computed(() => [
   {
     name: 'created_at',
     required: true,
     label: t('pages.auditLogs.date'),
     align: 'left',
-    field: (row) => new Date(row.created_at).toLocaleString(),
+    field: 'created_at',
     sortable: true,
   },
   {
@@ -200,10 +303,11 @@ const columns = computed(() => [
     name: 'changes',
     label: t('pages.auditLogs.changes'),
     align: 'center',
+    field: 'changes',
   },
 ])
 
-// Методи
+// Methods
 const fetchLogs = async () => {
   loading.value = true
   try {
@@ -218,7 +322,8 @@ const fetchLogs = async () => {
     })
     logs.value = response.data.logs
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error fetching logs:', error)
     $q.notify({
       type: 'negative',
       message: t('pages.auditLogs.fetchError'),
@@ -231,6 +336,16 @@ const fetchLogs = async () => {
 const showChanges = (log) => {
   selectedLog.value = log
   changesDialog.value = true
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    actionType: null,
+    entityType: null,
+    dateFrom: null,
+    dateTo: null,
+  }
 }
 
 const onRequest = async (props) => {
@@ -254,11 +369,13 @@ onMounted(fetchLogs)
 </script>
 
 <style scoped>
-pre {
+.changes-pre {
   background-color: #f5f5f5;
   padding: 10px;
   border-radius: 4px;
   white-space: pre-wrap;
   word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
 }
 </style>

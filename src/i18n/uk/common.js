@@ -6,4 +6,5 @@ export default {
   edit: 'Редагувати',
   delete: 'Видалити',
   error: 'Помилка',
+  close: 'Закрити',
 }

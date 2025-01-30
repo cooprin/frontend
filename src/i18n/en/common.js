@@ -6,4 +6,5 @@ export default {
   edit: 'Edit',
   delete: 'Delete',
   error: 'Error',
+  close: 'Close',
 }
