@@ -13,6 +13,10 @@
           :loading="loading"
           :pagination="pagination"
           @request="onRequest"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :selected-rows-label="$t('common.selectedRows')"
+          :pagination-label="paginationLabel"
         >
           <template v-slot:top-right>
             <q-input
@@ -102,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
@@ -120,7 +124,13 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
+
+// Функція форматування лейблу пагінації
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
 
 // Dialog state
 const roleDialog = ref(false)
@@ -178,7 +188,7 @@ const fetchRoles = async () => {
     const response = await api.get('/roles', {
       params: {
         page: pagination.value.page,
-        perPage: pagination.value.rowsPerPage,
+        perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
         sortBy: pagination.value.sortBy,
         descending: pagination.value.descending,
         search: search.value,
@@ -263,6 +273,12 @@ const onRequest = async (props) => {
   pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
   await fetchRoles()
 }
+
+// Watch для пошуку
+watch(search, () => {
+  pagination.value.page = 1
+  fetchRoles()
+})
 
 onMounted(fetchRoles)
 </script>

@@ -7,4 +7,8 @@ export default {
   delete: 'Видалити',
   error: 'Помилка',
   close: 'Закрити',
+  rowsPerPage: 'Записів на сторінці',
+  selectedRows: 'Вибрано рядків',
+  of: 'з',
+  all: 'Всі',
 }

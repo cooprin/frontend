@@ -89,6 +89,10 @@
           :loading="loading"
           :pagination="pagination"
           @request="onRequest"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :selected-rows-label="$t('common.selectedRows')"
+          :pagination-label="paginationLabel"
         >
           <!-- Форматування дати -->
           <template v-slot:body-cell-created_at="props">
@@ -198,6 +202,7 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
 const filters = ref({
@@ -214,6 +219,11 @@ const selectedLog = ref(null)
 
 const actionTypeOptions = ref([])
 const entityTypeOptions = ref([])
+
+// Функція форматування лейблу пагінації
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
 
 // Функція для отримання типів логів
 const fetchLogTypes = async () => {
@@ -265,27 +275,24 @@ const getActionColor = (actionType) => {
   return colors[actionType] || 'grey'
 }
 
-// Видаліть стару версію formatValues і замініть її на цю:
 const formatValues = (values) => {
   if (!values) return ''
 
   try {
     let formattedValues = values
 
-    // Якщо values - це строка, спробуємо її розпарсити
     if (typeof values === 'string') {
       try {
         formattedValues = JSON.parse(values)
       } catch {
-        return values // Повертаємо оригінальну строку, якщо не можемо розпарсити
+        return values
       }
     }
 
-    // Форматуємо об'єкт з відступами
     return JSON.stringify(formattedValues, null, 2)
   } catch (error) {
     console.error('Error formatting values:', error)
-    return String(values) // Повертаємо строкове представлення в разі помилки
+    return String(values)
   }
 }
 
@@ -343,7 +350,7 @@ const fetchLogs = async () => {
   try {
     const params = {
       page: pagination.value.page,
-      perPage: pagination.value.rowsPerPage,
+      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
       sortBy: pagination.value.sortBy,
       descending: pagination.value.descending,
       search: filters.value.search,
@@ -351,7 +358,6 @@ const fetchLogs = async () => {
       entityType: filters.value.entityType,
     }
 
-    // Додаємо дати тільки якщо вони вказані
     if (filters.value.dateFrom) {
       params.dateFrom = filters.value.dateFrom
     }
@@ -383,7 +389,6 @@ const showChanges = (log) => {
   changesDialog.value = true
 }
 
-// Функція очищення фільтрів
 const clearFilters = () => {
   filters.value = {
     search: '',
@@ -409,13 +414,9 @@ watch(
   },
   { deep: true },
 )
-
-// Initial fetch
-onMounted(fetchLogs)
 </script>
 
 <style>
-/* Стилі для pre в світлій та темній темі */
 .changes-pre {
   padding: 10px;
   border-radius: 4px;
@@ -425,19 +426,16 @@ onMounted(fetchLogs)
   overflow-y: auto;
 }
 
-/* Світла тема */
 .body--light .changes-pre {
   background-color: #f5f5f5;
   color: #000;
 }
 
-/* Темна тема */
 .body--dark .changes-pre {
   background-color: #1d1d1d;
   color: #fff;
 }
 
-/* Стилі для діалогу в темній темі */
 .body--dark .q-card {
   background: #1d1d1d;
   color: #fff;
@@ -451,7 +449,6 @@ onMounted(fetchLogs)
   color: #9e9e9e;
 }
 
-/* Збільшимо контраст для важливої інформації */
 .body--dark .text-subtitle1 {
   color: #fff;
   opacity: 0.9;

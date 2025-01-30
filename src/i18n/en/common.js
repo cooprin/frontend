@@ -7,4 +7,8 @@ export default {
   delete: 'Delete',
   error: 'Error',
   close: 'Close',
+  rowsPerPage: 'Rows per page',
+  selectedRows: 'Selected rows',
+  of: 'of',
+  all: 'All',
 }
