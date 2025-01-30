@@ -116,6 +116,7 @@ export default {
       user_update: 'Оновлення користувача',
       user_delete: 'Видалення користувача',
       user_register: 'Реєстрація користувача',
+      admin_password_change: 'Зміна пароля адміністратором',
 
       // Профіль
       profile_update: 'Оновлення профілю',

@@ -115,6 +115,7 @@ export default {
       user_update: 'User Update',
       user_delete: 'User Deletion',
       user_register: 'User Registration',
+      admin_password_change: 'Password change by admin',
 
       // Profile
       profile_update: 'Profile Update',
