@@ -59,7 +59,7 @@ export default {
     phone: 'Телефон',
     required: "Це поле обов'язкове",
     passwordLength: 'Пароль повинен містити мінімум 8 символів',
-    password: 'Пароль"]',
+    password: 'Пароль',
   },
   roles: {
     title: 'Ролі користувачів',
