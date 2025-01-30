@@ -378,15 +378,10 @@ const fetchLogs = async () => {
   }
 }
 
-// Оновіть watch для фільтрів
-watch(
-  filters,
-  () => {
-    pagination.value.page = 1 // Скидаємо сторінку при зміні фільтрів
-    fetchLogs()
-  },
-  { deep: true },
-)
+const showChanges = (log) => {
+  selectedLog.value = log
+  changesDialog.value = true
+}
 
 // Функція очищення фільтрів
 const clearFilters = () => {
