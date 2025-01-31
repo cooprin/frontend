@@ -41,7 +41,7 @@
                 <q-item-section>
                   <q-item-label class="text-weight-bold">
                     {{
-                      `${authStore.user?.first_name || ''} ${authStore.user?.last_name || ''}`.trim()
+                      `${authStore.user?.firstName || ''} ${authStore.user?.lastName || ''}`.trim()
                     }}
                   </q-item-label>
                   <q-item-label caption>{{ authStore.user?.email }}</q-item-label>
@@ -83,6 +83,7 @@
       class="drawer-menu"
     >
       <q-list padding>
+        <!-- Dashboard доступний всім -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="home" />
@@ -90,27 +91,50 @@
           <q-item-section>{{ $t('layouts.mainLayout.dashboard') }}</q-item-section>
         </q-item>
 
+        <!-- Settings Menu -->
         <q-expansion-item
+          v-if="hasSettingsAccess"
           icon="settings"
           :label="$t('layouts.mainLayout.settings')"
           :header-class="miniState ? 'text-center' : ''"
           expand-icon="keyboard_arrow_down"
         >
           <q-list class="q-pl-lg">
-            <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+            <!-- Users -->
+            <q-item
+              v-if="authStore.can('users.read')"
+              clickable
+              v-ripple
+              :to="{ name: 'users' }"
+              exact
+            >
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
+            <!-- Roles -->
+            <q-item
+              v-if="authStore.can('roles.read')"
+              clickable
+              v-ripple
+              :to="{ name: 'roles' }"
+              exact
+            >
               <q-item-section avatar>
                 <q-icon name="manage_accounts" />
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
-            <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+
+            <!-- Audit Logs -->
+            <q-item
+              v-if="authStore.can('audit.read')"
+              clickable
+              v-ripple
+              :to="{ name: 'audit-logs' }"
+            >
               <q-item-section avatar>
                 <q-icon name="history" color="primary" />
               </q-item-section>
@@ -140,6 +164,11 @@ const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(true)
 const miniState = ref(false)
+
+// Перевірка доступу до розділу налаштувань
+const hasSettingsAccess = computed(() => {
+  return authStore.hasAnyPermission(['users.read', 'roles.read', 'audit.read'])
+})
 
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {

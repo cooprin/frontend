@@ -8,6 +8,9 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isAuthenticated: (state) => !!state.token && !!state.user,
+    // Додаємо геттери для прав
+    userPermissions: (state) => state.permissions,
+    hasPermission: (state) => (permissionCode) => state.permissions.includes(permissionCode),
   },
   actions: useAuthActions(),
 })

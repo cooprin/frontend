@@ -28,9 +28,19 @@ export const useAuthActions = () => ({
     try {
       this.loading = true
       const { data } = await api.post('/auth/login', credentials)
+
+      // Зберігаємо токен
       this.token = data.token
       localStorage.setItem('token', data.token)
-      await this.fetchUser()
+
+      // Зберігаємо права
+      this.permissions = data.user.permissions
+      localStorage.setItem('permissions', JSON.stringify(data.user.permissions))
+
+      // Зберігаємо користувача
+      this.user = data.user
+      localStorage.setItem('user', JSON.stringify(data.user))
+
       Notify.create({
         type: 'positive',
         message: 'Ласкаво просимо!',
@@ -52,7 +62,9 @@ export const useAuthActions = () => ({
     try {
       const { data } = await api.get('/auth/me')
       this.user = data
-      localStorage.setItem('user', JSON.stringify(data)) // Збереження user
+      this.permissions = data.permissions
+      localStorage.setItem('user', JSON.stringify(data))
+      localStorage.setItem('permissions', JSON.stringify(data.permissions))
     } catch {
       this.logout()
     }
@@ -62,12 +74,29 @@ export const useAuthActions = () => ({
   logout() {
     this.token = null
     this.user = null
+    this.permissions = []
     localStorage.removeItem('token')
-    localStorage.removeItem('user') // Видалення user
+    localStorage.removeItem('user')
+    localStorage.removeItem('permissions')
     Notify.create({
       type: 'info',
       message: 'Ви вийшли з системи',
     })
+  },
+
+  // Перевірка наявності права
+  can(permissionCode) {
+    return this.permissions.includes(permissionCode)
+  },
+
+  // Перевірка наявності хоча б одного з прав
+  hasAnyPermission(permissionCodes) {
+    return permissionCodes.some((code) => this.permissions.includes(code))
+  },
+
+  // Перевірка наявності всіх прав
+  hasAllPermissions(permissionCodes) {
+    return permissionCodes.every((code) => this.permissions.includes(code))
   },
 
   // Метод оновлення профілю
