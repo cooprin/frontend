@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -290,6 +290,19 @@ const uploadAvatar = async () => {
   }
 }
 
+watch(
+  () => authStore.user,
+  (newUser) => {
+    if (newUser) {
+      profileData.value = {
+        firstName: newUser.firstName || '',
+        lastName: newUser.lastName || '',
+        phone: newUser.phone || '',
+      }
+    }
+  },
+  { immediate: true },
+)
 // Profile update handling
 const onSubmitProfile = async () => {
   if (!hasProfileChanges.value) return
