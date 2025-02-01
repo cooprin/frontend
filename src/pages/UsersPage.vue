@@ -309,7 +309,7 @@ const columns = computed(() => [
     required: true,
     label: t('pages.users.firstName'),
     align: 'left',
-    field: 'firstName',
+    field: 'first_name',
     sortable: true,
   },
   {
@@ -317,7 +317,7 @@ const columns = computed(() => [
     required: true,
     label: t('pages.users.lastName'),
     align: 'left',
-    field: 'lastName',
+    field: 'last_name',
     sortable: true,
   },
   {
