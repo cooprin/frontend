@@ -93,7 +93,7 @@
 
         <!-- Settings Menu -->
         <q-expansion-item
-          v-if="hasSettingsAccess"
+          v-if="isAdmin"
           icon="settings"
           :label="$t('layouts.mainLayout.settings')"
           :header-class="miniState ? 'text-center' : ''"
@@ -101,13 +101,7 @@
         >
           <q-list class="q-pl-lg">
             <!-- Users -->
-            <q-item
-              v-if="authStore.can('users.read')"
-              clickable
-              v-ripple
-              :to="{ name: 'users' }"
-              exact
-            >
+            <q-item v-if="isAdmin" clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
@@ -115,13 +109,7 @@
             </q-item>
 
             <!-- Roles -->
-            <q-item
-              v-if="authStore.can('roles.read')"
-              clickable
-              v-ripple
-              :to="{ name: 'roles' }"
-              exact
-            >
+            <q-item v-if="isAdmin" clickable v-ripple :to="{ name: 'roles' }" exact>
               <q-item-section avatar>
                 <q-icon name="manage_accounts" />
               </q-item-section>
@@ -129,12 +117,7 @@
             </q-item>
 
             <!-- Audit Logs -->
-            <q-item
-              v-if="authStore.can('audit.read')"
-              clickable
-              v-ripple
-              :to="{ name: 'audit-logs' }"
-            >
+            <q-item v-if="isAdmin" clickable v-ripple :to="{ name: 'audit-logs' }">
               <q-item-section avatar>
                 <q-icon name="history" color="primary" />
               </q-item-section>
@@ -165,9 +148,8 @@ const authStore = useAuthStore()
 const leftDrawerOpen = ref(true)
 const miniState = ref(false)
 
-// Перевірка доступу до розділу налаштувань
-const hasSettingsAccess = computed(() => {
-  return authStore.hasAnyPermission(['users.read', 'roles.read', 'audit.read'])
+const isAdmin = computed(() => {
+  return authStore.user?.roles.includes('admin')
 })
 
 const getAvatarUrl = computed(() => {
