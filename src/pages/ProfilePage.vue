@@ -59,7 +59,7 @@
 
           <!-- Role (readonly) -->
           <q-input
-            v-model="user.role_name"
+            v-model="userRole"
             :label="$t('pages.profile.role')"
             outlined
             dense
@@ -192,6 +192,7 @@ const confirmPasswordRef = ref(null)
 
 // State management
 const user = computed(() => authStore.user)
+const userRole = computed(() => authStore.user?.roles?.[0] || '')
 const avatarFile = ref(null)
 const avatarPreview = ref(null)
 const avatarLoading = ref(false)
@@ -204,8 +205,7 @@ const getAvatarUrl = computed(() => {
   }
 
   try {
-    const avatarPath = authStore.user.avatar_url
-    return `${process.env.API_URL}${avatarPath}`
+    return `${process.env.API_URL}/uploads/${authStore.user.avatar_url}`
   } catch {
     return 'https://cdn.quasar.dev/img/avatar.png'
   }
@@ -213,9 +213,9 @@ const getAvatarUrl = computed(() => {
 
 // Profile data
 const profileData = ref({
-  firstName: user.value?.first_name || '',
-  lastName: user.value?.last_name || '',
-  phone: user.value?.phone || '',
+  firstName: '',
+  lastName: '',
+  phone: '',
 })
 
 // Password data
@@ -228,9 +228,9 @@ const passwordData = ref({
 // Computed properties for validation
 const hasProfileChanges = computed(() => {
   return (
-    profileData.value.firstName !== user.value?.first_name ||
-    profileData.value.lastName !== user.value?.last_name ||
-    profileData.value.phone !== user.value?.phone
+    profileData.value.firstName !== authStore.user?.firstName ||
+    profileData.value.lastName !== authStore.user?.lastName ||
+    profileData.value.phone !== authStore.user?.phone
   )
 })
 
@@ -290,6 +290,7 @@ const uploadAvatar = async () => {
   }
 }
 
+// Ініціалізація даних профілю
 watch(
   () => authStore.user,
   (newUser) => {
@@ -303,6 +304,7 @@ watch(
   },
   { immediate: true },
 )
+
 // Profile update handling
 const onSubmitProfile = async () => {
   if (!hasProfileChanges.value) return
