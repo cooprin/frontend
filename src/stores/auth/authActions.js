@@ -28,15 +28,10 @@ export const useAuthActions = () => ({
     try {
       this.loading = true
       const { data } = await api.post('/auth/login', credentials)
-
-      // Зберігаємо токен
       this.token = data.token
-      localStorage.setItem('token', data.token)
-
-      // Зберігаємо користувача
       this.user = data.user
+      localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-
       Notify.create({
         type: 'positive',
         message: 'Ласкаво просимо!',
@@ -76,11 +71,6 @@ export const useAuthActions = () => ({
     })
   },
 
-  // Метод перевірки ролі адміністратора
-  isAdmin() {
-    return this.user?.roles?.includes('admin')
-  },
-
   // Метод оновлення профілю
   async updateProfile(profileData) {
     try {
@@ -115,7 +105,7 @@ export const useAuthActions = () => ({
     }
   },
 
-  // Доданий метод ініціалізації
+  // Метод ініціалізації
   initializeStore() {
     if (this.token) {
       this.fetchUser()
