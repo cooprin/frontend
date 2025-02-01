@@ -267,7 +267,7 @@ const loading = ref(false)
 const users = ref([])
 const search = ref('')
 const pagination = ref({
-  sortBy: 'lastName',
+  sortBy: 'last_name',
   descending: false,
   page: 1,
   rowsPerPage: 10,
