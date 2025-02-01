@@ -171,7 +171,7 @@
             />
 
             <q-input
-              v-model="editedUser.first_name"
+              v-model="editedUser.firstName"
               :label="$t('pages.users.firstName')"
               outlined
               dense
@@ -179,7 +179,7 @@
             />
 
             <q-input
-              v-model="editedUser.last_name"
+              v-model="editedUser.lastName"
               :label="$t('pages.users.lastName')"
               outlined
               dense
@@ -267,7 +267,7 @@ const loading = ref(false)
 const users = ref([])
 const search = ref('')
 const pagination = ref({
-  sortBy: 'last_name',
+  sortBy: 'lastName',
   descending: false,
   page: 1,
   rowsPerPage: 10,
@@ -289,8 +289,8 @@ const editedUser = ref({
   email: '',
   password: '',
   confirmPassword: '',
-  first_name: '',
-  last_name: '',
+  firstName: '',
+  lastName: '',
   phone: '',
   is_active: true,
 })
@@ -305,19 +305,19 @@ const roleOptions = ref([])
 
 const columns = computed(() => [
   {
-    name: 'first_name',
+    name: 'firstName',
     required: true,
     label: t('pages.users.firstName'),
     align: 'left',
-    field: 'first_name',
+    field: 'firstName',
     sortable: true,
   },
   {
-    name: 'last_name',
+    name: 'lastName',
     required: true,
     label: t('pages.users.lastName'),
     align: 'left',
-    field: 'last_name',
+    field: 'lastName',
     sortable: true,
   },
   {
@@ -424,8 +424,8 @@ const openUserDialog = (user = null) => {
       email: '',
       password: '',
       confirmPassword: '',
-      first_name: '',
-      last_name: '',
+      firstName: '',
+      lastName: '',
       phone: '',
       is_active: true,
     }
@@ -509,7 +509,7 @@ const toggleUserStatus = async (user) => {
 const confirmDelete = (user) => {
   $q.dialog({
     title: t('pages.users.confirmDelete'),
-    message: t('pages.users.deleteMessage', { name: `${user.first_name} ${user.last_name}` }),
+    message: t('pages.users.deleteMessage', { name: `${user.firstName} ${user.lastName}` }),
     cancel: true,
     persistent: true,
   }).onOk(async () => {
