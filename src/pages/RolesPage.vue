@@ -59,6 +59,7 @@
                 color="negative"
                 icon="delete"
                 @click="confirmDelete(props.row)"
+                :disable="props.row.is_system"
               >
                 <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
               </q-btn>
@@ -70,7 +71,7 @@
 
     <!-- Role Edit Dialog -->
     <q-dialog v-model="roleDialog" persistent>
-      <q-card style="min-width: 400px">
+      <q-card style="min-width: 500px">
         <q-card-section>
           <div class="text-h6">
             {{ editedRole.id ? $t('pages.roles.editRole') : $t('pages.roles.addRole') }}
@@ -94,6 +95,19 @@
               dense
               type="textarea"
             />
+
+            <div class="permissions-section">
+              <div class="text-subtitle2 q-mb-sm">{{ $t('pages.roles.permissions') }}</div>
+              <div v-for="group in permissionGroups" :key="group.name" class="q-mb-md">
+                <div class="text-weight-bold q-mb-xs">{{ group.name }}</div>
+                <q-option-group
+                  v-model="selectedPermissions"
+                  :options="group.permissions"
+                  type="checkbox"
+                  dense
+                />
+              </div>
+            </div>
 
             <div class="row justify-end q-gutter-sm">
               <q-btn flat :label="$t('common.cancel')" v-close-popup />
@@ -128,11 +142,6 @@ const pagination = ref({
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
-// Функція форматування лейблу пагінації
-const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
-  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
-}
-
 // Dialog state
 const roleDialog = ref(false)
 const editedRole = ref({
@@ -142,6 +151,29 @@ const editedRole = ref({
 })
 const saving = ref(false)
 
+// Permissions state
+const permissions = ref([])
+const selectedPermissions = ref([])
+
+// Групуємо права за категоріями
+const permissionGroups = computed(() => {
+  const groups = {}
+  permissions.value.forEach((permission) => {
+    if (!groups[permission.group]) {
+      groups[permission.group] = {
+        name: permission.group,
+        permissions: [],
+      }
+    }
+    groups[permission.group].permissions.push({
+      label: permission.name,
+      value: permission.id,
+    })
+  })
+  return Object.values(groups)
+})
+
+// Table columns
 const columns = computed(() => [
   {
     name: 'name',
@@ -182,6 +214,11 @@ const columns = computed(() => [
   },
 ])
 
+// Функція форматування лейблу пагінації
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 // Fetch roles
 const fetchRoles = async () => {
   loading.value = true
@@ -207,16 +244,39 @@ const fetchRoles = async () => {
   }
 }
 
+// Fetch permissions
+const fetchPermissions = async () => {
+  try {
+    const response = await api.get('/roles/permissions')
+    permissions.value = response.data.permissions
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.roles.permissionsError'),
+    })
+  }
+}
+
 // Dialog handlers
-const openRoleDialog = (role = null) => {
+const openRoleDialog = async (role = null) => {
   if (role) {
     editedRole.value = { ...role }
+    try {
+      const response = await api.get(`/roles/${role.id}/permissions`)
+      selectedPermissions.value = response.data.permissions.map((p) => p.id)
+    } catch {
+      $q.notify({
+        type: 'negative',
+        message: t('pages.roles.fetchPermissionsError'),
+      })
+    }
   } else {
     editedRole.value = {
       id: null,
       name: '',
       description: '',
     }
+    selectedPermissions.value = []
   }
   roleDialog.value = true
 }
@@ -225,10 +285,15 @@ const openRoleDialog = (role = null) => {
 const saveRole = async () => {
   saving.value = true
   try {
+    const roleData = {
+      ...editedRole.value,
+      permissions: selectedPermissions.value,
+    }
+
     if (editedRole.value.id) {
-      await api.put(`/roles/${editedRole.value.id}`, editedRole.value)
+      await api.put(`/roles/${editedRole.value.id}`, roleData)
     } else {
-      await api.post('/roles', editedRole.value)
+      await api.post('/roles', roleData)
     }
     await fetchRoles()
     roleDialog.value = false
@@ -247,6 +312,15 @@ const saveRole = async () => {
 }
 
 const confirmDelete = (role) => {
+  // Перевіряємо чи це не системна роль
+  if (role.is_system) {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.roles.cantDeleteSystem'),
+    })
+    return
+  }
+
   $q.dialog({
     title: t('pages.roles.confirmDelete'),
     message: t('pages.roles.deleteMessage', { name: role.name }),
@@ -281,5 +355,17 @@ watch(search, () => {
   fetchRoles()
 })
 
-onMounted(fetchRoles)
+// Initial fetch
+onMounted(() => {
+  fetchRoles()
+  fetchPermissions()
+})
 </script>
+
+<style scoped>
+.permissions-section {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
+}
+</style>

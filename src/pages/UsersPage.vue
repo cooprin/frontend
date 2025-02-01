@@ -410,7 +410,13 @@ const fetchUsers = async () => {
 // Dialog handlers
 const openUserDialog = (user = null) => {
   if (user) {
-    editedUser.value = { ...user, password: '', confirmPassword: '' }
+    editedUser.value = {
+      ...user,
+      // Отримуємо роль зі списку ролей по імені
+      role_id: roleOptions.value.find((role) => role.label === user.role_name)?.value,
+      password: '',
+      confirmPassword: '',
+    }
   } else {
     editedUser.value = {
       id: null,
