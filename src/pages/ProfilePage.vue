@@ -7,48 +7,51 @@
 
       <!-- Avatar Section -->
       <q-card-section>
-        <div class="column justify-center items-center q-mb-md">
-          <!-- Current Avatar -->
-          <q-img
-            v-if="user?.avatar_url && !avatarPreview"
-            :src="getAvatarUrl"
-            class="avatar-preview q-mb-md"
-            style="border: 2px solid #ddd"
-            alt="Current Avatar"
-          />
-          <!-- New Avatar Preview -->
-          <q-img
-            v-if="avatarPreview"
-            :src="avatarPreview"
-            class="avatar-preview q-mb-md"
-            style="border: 2px dashed #666"
-            alt="New Avatar Preview"
-          />
+        <q-form class="q-gutter-md">
+          <!-- Окрема форма для аватара -->
+          <div class="column justify-center items-center q-mb-md">
+            <!-- Current Avatar -->
+            <q-img
+              v-if="user?.avatar_url && !avatarPreview"
+              :src="getAvatarUrl"
+              class="avatar-preview q-mb-md"
+              style="border: 2px solid #ddd"
+              alt="Current Avatar"
+            />
+            <!-- New Avatar Preview -->
+            <q-img
+              v-if="avatarPreview"
+              :src="avatarPreview"
+              class="avatar-preview q-mb-md"
+              style="border: 2px dashed #666"
+              alt="New Avatar Preview"
+            />
 
-          <div class="row justify-center items-center q-gutter-md">
-            <q-file
-              v-model="avatarFile"
-              :label="$t('pages.profile.selectAvatar')"
-              accept="image/*"
-              @update:model-value="onAvatarAdded"
-              style="max-width: 200px"
-            >
-              <template v-slot:prepend>
-                <q-icon name="attach_file" />
-              </template>
-            </q-file>
+            <div class="row justify-center items-center q-gutter-md">
+              <q-file
+                v-model="avatarFile"
+                :label="$t('pages.profile.selectAvatar')"
+                accept="image/*"
+                @update:model-value="onAvatarAdded"
+                style="max-width: 200px"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+              </q-file>
 
-            <q-btn
-              color="primary"
-              :loading="avatarLoading"
-              @click="uploadAvatar"
-              :disable="!avatarFile"
-              class="q-ml-md"
-            >
-              {{ $t('pages.profile.uploadAvatar') }}
-            </q-btn>
+              <q-btn
+                color="primary"
+                :loading="avatarLoading"
+                @click="uploadAvatar"
+                :disable="!avatarFile"
+                class="q-ml-md"
+              >
+                {{ $t('pages.profile.uploadAvatar') }}
+              </q-btn>
+            </div>
           </div>
-        </div>
+        </q-form>
       </q-card-section>
 
       <!-- Profile Information Form -->
