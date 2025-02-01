@@ -9,5 +9,6 @@ export default {
     users: 'Користувачі',
     userGroups: 'Ролі користувачів',
     auditLogs: 'Журнал операцій',
+    permissions: 'Управління правами',
   },
 }

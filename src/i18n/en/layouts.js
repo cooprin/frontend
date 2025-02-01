@@ -9,5 +9,6 @@ export default {
     users: 'Users',
     userGroups: 'User Roles',
     auditLogs: 'Audit Log',
+    permissions: 'Permissions Management',
   },
 }
