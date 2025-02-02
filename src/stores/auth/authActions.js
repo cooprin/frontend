@@ -28,10 +28,16 @@ export const useAuthActions = () => ({
     try {
       this.loading = true
       const { data } = await api.post('/auth/login', credentials)
+      console.log('Received data from server:', data.user) // Перевіримо які дані приходять
+
       this.token = data.token
       this.user = data.user
+
+      console.log('User data in store:', this.user) // Перевіримо дані в сторі
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
+      console.log('Saved user data:', JSON.parse(localStorage.getItem('user'))) // Перевіримо що зберігається
+
       Notify.create({
         type: 'positive',
         message: 'Ласкаво просимо!',
@@ -69,40 +75,6 @@ export const useAuthActions = () => ({
       type: 'info',
       message: 'Ви вийшли з системи',
     })
-  },
-
-  // Метод оновлення профілю
-  async updateProfile(profileData) {
-    try {
-      this.loading = true
-      const formData = new FormData()
-      if (profileData.firstName) formData.append('firstName', profileData.firstName)
-      if (profileData.lastName) formData.append('lastName', profileData.lastName)
-      if (profileData.password) formData.append('password', profileData.password)
-      if (profileData.avatar) formData.append('avatar', profileData.avatar)
-
-      const { data } = await api.put('/user/update-profile', formData, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      })
-
-      this.user = data.user
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      Notify.create({
-        type: 'positive',
-        message: 'Профіль успішно оновлено!',
-      })
-    } catch (error) {
-      Notify.create({
-        type: 'negative',
-        message: error.response?.data?.message || 'Не вдалося оновити профіль',
-      })
-      throw error
-    } finally {
-      this.loading = false
-    }
   },
 
   // Метод ініціалізації
