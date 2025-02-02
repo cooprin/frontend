@@ -171,16 +171,16 @@
             />
 
             <q-input
-              v-model="editedUser.firstName"
-              :label="$t('pages.users.firstName')"
+              v-model="editedUser.first_name"
+              :label="$t('pages.users.first_name')"
               outlined
               dense
               :rules="[(val) => !!val || $t('pages.users.required')]"
             />
 
             <q-input
-              v-model="editedUser.lastName"
-              :label="$t('pages.users.lastName')"
+              v-model="editedUser.last_name"
+              :label="$t('pages.users.last_name')"
               outlined
               dense
               :rules="[(val) => !!val || $t('pages.users.required')]"
@@ -289,8 +289,8 @@ const editedUser = ref({
   email: '',
   password: '',
   confirmPassword: '',
-  firstName: '',
-  lastName: '',
+  first_name: '',
+  last_name: '',
   phone: '',
   is_active: true,
 })
@@ -305,17 +305,17 @@ const roleOptions = ref([])
 
 const columns = computed(() => [
   {
-    name: 'firstName',
+    name: 'first_name',
     required: true,
-    label: t('pages.users.firstName'),
+    label: t('pages.users.first_name'),
     align: 'left',
     field: 'first_name',
     sortable: true,
   },
   {
-    name: 'lastName',
+    name: 'last_name',
     required: true,
-    label: t('pages.users.lastName'),
+    label: t('pages.users.last_name'),
     align: 'left',
     field: 'last_name',
     sortable: true,
@@ -424,8 +424,8 @@ const openUserDialog = (user = null) => {
       email: '',
       password: '',
       confirmPassword: '',
-      firstName: '',
-      lastName: '',
+      first_name: '',
+      last_name: '',
       phone: '',
       is_active: true,
     }
@@ -509,7 +509,7 @@ const toggleUserStatus = async (user) => {
 const confirmDelete = (user) => {
   $q.dialog({
     title: t('pages.users.confirmDelete'),
-    message: t('pages.users.deleteMessage', { name: `${user.firstName} ${user.lastName}` }),
+    message: t('pages.users.deleteMessage', { name: `${user.first_name} ${user.last_name}` }),
     cancel: true,
     persistent: true,
   }).onOk(async () => {

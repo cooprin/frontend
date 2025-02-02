@@ -41,7 +41,7 @@
                 <q-item-section>
                   <q-item-label class="text-weight-bold">
                     {{
-                      `${authStore.user?.firstName || ''} ${authStore.user?.lastName || ''}`.trim()
+                      `${authStore.user?.first_name || ''} ${authStore.user?.last_name || ''}`.trim()
                     }}
                   </q-item-label>
                   <q-item-label caption>{{ authStore.user?.email }}</q-item-label>

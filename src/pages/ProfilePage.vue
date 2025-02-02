@@ -75,8 +75,8 @@
           <!-- Editable fields -->
           <q-input
             ref="firstNameRef"
-            v-model="profileData.firstName"
-            :label="$t('pages.profile.firstName')"
+            v-model="profileData.first_name"
+            :label="$t('pages.profile.first_name')"
             outlined
             dense
             :rules="[(val) => !!val || $t('pages.profile.required')]"
@@ -84,8 +84,8 @@
 
           <q-input
             ref="lastNameRef"
-            v-model="profileData.lastName"
-            :label="$t('pages.profile.lastName')"
+            v-model="profileData.last_name"
+            :label="$t('pages.profile.last_mame')"
             outlined
             dense
             :rules="[(val) => !!val || $t('pages.profile.required')]"
@@ -214,8 +214,8 @@ const getAvatarUrl = computed(() => {
 
 // Profile data
 const profileData = ref({
-  firstName: '',
-  lastName: '',
+  first_name: '',
+  last_name: '',
   phone: '',
 })
 
@@ -229,8 +229,8 @@ const passwordData = ref({
 // Computed properties for validation
 const hasProfileChanges = computed(() => {
   return (
-    profileData.value.firstName !== authStore.user?.firstName ||
-    profileData.value.lastName !== authStore.user?.lastName ||
+    profileData.value.first_name !== authStore.user?.first_name ||
+    profileData.value.last_name !== authStore.user?.last_name ||
     profileData.value.phone !== authStore.user?.phone
   )
 })
@@ -297,8 +297,8 @@ watch(
   (newUser) => {
     if (newUser) {
       profileData.value = {
-        firstName: newUser.firstName || '',
-        lastName: newUser.lastName || '',
+        first_name: newUser.first_name || '',
+        last_name: newUser.last_name || '',
         phone: newUser.phone || '',
       }
     }
@@ -313,8 +313,8 @@ const onSubmitProfile = async () => {
   profileLoading.value = true
   try {
     const response = await api.put('/profile/update-profile', {
-      first_name: profileData.value.firstName,
-      last_name: profileData.value.lastName,
+      first_name: profileData.value.first_name,
+      last_name: profileData.value.last_name,
       phone: profileData.value.phone,
     })
 
