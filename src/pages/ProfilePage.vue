@@ -269,7 +269,7 @@ const uploadAvatar = async () => {
     const formData = new FormData()
     formData.append('avatar', avatarFile.value)
 
-    const response = await api.post('/user/avatar', formData, {
+    const response = await api.post('/profile/avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
@@ -314,7 +314,7 @@ const onSubmitProfile = async () => {
 
   profileLoading.value = true
   try {
-    const response = await api.put('/user/update-profile', {
+    const response = await api.put('/profile/update-profile', {
       first_name: profileData.value.firstName,
       last_name: profileData.value.lastName,
       phone: profileData.value.phone,
@@ -345,7 +345,7 @@ const onSubmitPassword = async () => {
 
   passwordLoading.value = true
   try {
-    const response = await api.put('/user/change-password', {
+    const response = await api.put('/profile/change-password', {
       current_password: passwordData.value.currentPassword,
       new_password: passwordData.value.newPassword,
     })
