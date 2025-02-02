@@ -33,6 +33,12 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: '/permission',
+        name: 'permission',
+        component: () => import('pages/PermissionPage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
         path: '/audit-logs',
         name: 'audit-logs',
         component: () => import('pages/AuditLogsPage.vue'),
