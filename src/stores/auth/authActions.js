@@ -28,15 +28,11 @@ export const useAuthActions = () => ({
     try {
       this.loading = true
       const { data } = await api.post('/auth/login', credentials)
-      console.log('Received data from server:', data.user) // Перевіримо які дані приходять
-
       this.token = data.token
       this.user = data.user
 
-      console.log('User data in store:', this.user) // Перевіримо дані в сторі
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      console.log('Saved user data:', JSON.parse(localStorage.getItem('user'))) // Перевіримо що зберігається
 
       Notify.create({
         type: 'positive',
