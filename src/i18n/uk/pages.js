@@ -37,6 +37,11 @@ export default {
     isActive: 'Активний',
     activate: 'Активувати',
     deactivate: 'Деактивувати',
+    confirmDeleteWithAudit: 'Видалити користувача з записами аудиту',
+    deleteWithAuditMessage:
+      "Користувач {name} має {count} записів в журналі аудиту. Видалення цього користувача також видалить всі пов'язані записи аудиту. Ви впевнені, що хочете продовжити?",
+    confirmDeleteWithRecords: 'Видалити з записами аудиту',
+    deleteWithAuditSuccess: 'Користувача та записи аудиту успішно видалено',
   },
   profile: {
     title: 'Профіль',

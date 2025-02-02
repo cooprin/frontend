@@ -506,29 +506,65 @@ const toggleUserStatus = async (user) => {
   }
 }
 
-const confirmDelete = (user) => {
-  $q.dialog({
-    title: t('pages.users.confirmDelete'),
-    message: t('pages.users.deleteMessage', { name: `${user.first_name} ${user.last_name}` }),
-    cancel: true,
-    persistent: true,
-  }).onOk(async () => {
+const confirmDelete = async (user) => {
+  const deleteUser = async (force = false) => {
     try {
-      await api.delete(`/user/${user.id}`)
+      await api.delete(`/user/${user.id}${force ? '?force=true' : ''}`)
       await fetchUsers()
       $q.notify({
         type: 'positive',
-        message: t('pages.users.deleteSuccess'),
+        message: force ? t('pages.users.deleteWithAuditSuccess') : t('pages.users.deleteSuccess'),
       })
-    } catch {
-      $q.notify({
-        type: 'negative',
-        message: t('pages.users.deleteError'),
-      })
+    } catch (error) {
+      if (error.response?.status === 409 && error.response.data.hasAuditRecords) {
+        // Show confirmation for deleting user with audit records
+        $q.dialog({
+          title: t('pages.users.confirmDeleteWithAudit'),
+          message: t('pages.users.deleteWithAuditMessage', {
+            name: `${user.first_name} ${user.last_name}`,
+            count: error.response.data.recordsCount,
+          }),
+          persistent: true,
+          ok: {
+            color: 'negative',
+            label: t('pages.users.confirmDeleteWithRecords'),
+            flat: true,
+          },
+          cancel: {
+            label: t('common.cancel'),
+            flat: true,
+          },
+        }).onOk(async () => {
+          await deleteUser(true)
+        })
+      } else {
+        $q.notify({
+          type: 'negative',
+          message: t('pages.users.deleteError'),
+        })
+      }
     }
+  }
+
+  $q.dialog({
+    title: t('pages.users.confirmDelete'),
+    message: t('pages.users.deleteMessage', {
+      name: `${user.first_name} ${user.last_name}`,
+    }),
+    persistent: true,
+    ok: {
+      color: 'negative',
+      label: t('common.delete'),
+      flat: true,
+    },
+    cancel: {
+      label: t('common.cancel'),
+      flat: true,
+    },
+  }).onOk(async () => {
+    await deleteUser()
   })
 }
-
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
   pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
