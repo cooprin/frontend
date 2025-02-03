@@ -127,20 +127,6 @@
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
-
-            <!-- Audit Logs -->
-            <q-item
-              v-if="authStore.hasRole('admin')"
-              clickable
-              v-ripple
-              :to="{ name: 'audit-logs' }"
-            >
-              <q-item-section avatar>
-                <q-icon name="history" color="primary" />
-              </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
-            </q-item>
-
             <!-- Permissions -->
             <q-item
               v-if="authStore.hasRole('admin')"
@@ -153,6 +139,19 @@
                 <q-icon name="security" />
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+            </q-item>
+
+            <!-- Audit Logs -->
+            <q-item
+              v-if="authStore.hasRole('admin')"
+              clickable
+              v-ripple
+              :to="{ name: 'audit-logs' }"
+            >
+              <q-item-section avatar>
+                <q-icon name="history" color="primary" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
             </q-item>
           </q-list>
         </q-expansion-item>
