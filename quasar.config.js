@@ -84,7 +84,12 @@ export default defineConfig((/* ctx */) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
     framework: {
-      config: { storage: 'local' },
+      config: {
+        storage: 'local',
+        brand: {
+          primary: '#00333',
+        },
+      },
 
       // iconSet: 'material-icons', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
