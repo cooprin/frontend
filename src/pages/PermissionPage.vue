@@ -576,4 +576,28 @@ onMounted(() => {
   max-height: 400px;
   overflow-y: auto;
 }
+
+.groups-table {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Стилі для заголовків таблиці */
+:deep(.q-table thead tr) {
+  background: var(--q-primary);
+}
+
+:deep(.q-table thead tr th) {
+  color: white !important;
+  font-weight: 600;
+}
+
+/* Для темної теми */
+.body--dark :deep(.q-table thead tr) {
+  background: var(--q-dark);
+}
+
+.body--dark :deep(.q-table thead tr th) {
+  color: white !important;
+}
 </style>
