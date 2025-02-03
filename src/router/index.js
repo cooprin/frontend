@@ -34,7 +34,7 @@ const routes = [
       },
       {
         path: '/permissions',
-        name: 'permission',
+        name: 'permissions',
         component: () => import('pages/PermissionPage.vue'),
         meta: { requiresAuth: true },
       },
