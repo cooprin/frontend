@@ -160,6 +160,7 @@ const pagination = ref({
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
+// Функція форматування лейблу пагінації
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
