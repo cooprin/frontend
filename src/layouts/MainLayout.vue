@@ -127,6 +127,7 @@
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
+
             <!-- Permissions -->
             <q-item
               v-if="authStore.hasRole('admin')"
@@ -139,6 +140,20 @@
                 <q-icon name="security" />
               </q-item-section>
               <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+            </q-item>
+
+            <!-- Resources -->
+            <q-item
+              v-if="authStore.hasRole('admin')"
+              clickable
+              v-ripple
+              :to="{ name: 'resources' }"
+              exact
+            >
+              <q-item-section avatar>
+                <q-icon name="extension" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
             </q-item>
 
             <!-- Audit Logs -->

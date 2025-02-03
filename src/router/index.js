@@ -39,6 +39,12 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: '/resources',
+        name: 'resources',
+        component: () => import('pages/ResourcesPage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
         path: '/audit-logs',
         name: 'audit-logs',
         component: () => import('pages/AuditLogsPage.vue'),

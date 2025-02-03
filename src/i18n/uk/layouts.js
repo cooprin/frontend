@@ -10,5 +10,6 @@ export default {
     userGroups: 'Ролі користувачів',
     auditLogs: 'Журнал операцій',
     permissions: 'Управління правами',
+    resources: 'Ресурси системи',
   },
 }
