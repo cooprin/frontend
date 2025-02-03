@@ -11,4 +11,6 @@ export default {
   selectedRows: 'Selected rows',
   of: 'of',
   all: 'All',
+  yes: 'Yes',
+  no: 'No',
 }

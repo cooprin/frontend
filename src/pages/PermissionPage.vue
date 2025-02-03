@@ -17,27 +17,33 @@
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
-          @update:pagination="onRequest"
         >
           <template v-slot:top-right>
-            <q-input
-              v-model="search"
-              dense
-              outlined
-              debounce="300"
-              :placeholder="$t('pages.permissions.search')"
-            >
-              <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
+            <div class="row items-center q-gutter-md">
+              <q-input
+                v-model="search"
+                dense
+                outlined
+                debounce="300"
+                :placeholder="$t('pages.permissions.search')"
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
 
-            <q-btn
-              color="primary"
-              :label="$t('pages.permissions.addPermission')"
-              class="q-ml-md"
-              @click="openPermissionDialog()"
-            />
+              <q-btn
+                color="secondary"
+                :label="$t('pages.permissions.manageGroups')"
+                @click="openGroupsDialog"
+              />
+
+              <q-btn
+                color="primary"
+                :label="$t('pages.permissions.addPermission')"
+                @click="openPermissionDialog()"
+              />
+            </div>
           </template>
 
           <template v-slot:body-cell-is_system="props">
@@ -135,6 +141,100 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- Groups Dialog -->
+    <q-dialog v-model="groupDialog" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">
+            {{
+              editedGroup.id ? $t('pages.permissions.editGroup') : $t('pages.permissions.addGroup')
+            }}
+          </div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="saveGroup" class="q-gutter-md">
+            <q-input
+              v-model="editedGroup.name"
+              :label="$t('pages.permissions.groupName')"
+              outlined
+              dense
+              :rules="[(val) => !!val || $t('pages.permissions.required')]"
+            />
+
+            <q-input
+              v-model="editedGroup.description"
+              :label="$t('pages.permissions.groupDescription')"
+              outlined
+              dense
+              type="textarea"
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn flat :label="$t('common.cancel')" v-close-popup />
+              <q-btn
+                color="primary"
+                type="submit"
+                :label="$t('common.save')"
+                :loading="savingGroup"
+              />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Groups List Dialog -->
+    <q-dialog v-model="groupsListDialog">
+      <q-card style="min-width: 700px">
+        <q-card-section>
+          <div class="row items-center justify-between">
+            <div class="text-h6">{{ $t('pages.permissions.groups') }}</div>
+            <q-btn
+              color="primary"
+              :label="$t('pages.permissions.addGroup')"
+              @click="openGroupDialog()"
+            />
+          </div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-table
+            :rows="groups"
+            :columns="groupColumns"
+            row-key="id"
+            :loading="loadingGroups"
+            :pagination-label="paginationLabel"
+          >
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props" class="q-gutter-sm">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="primary"
+                  icon="edit"
+                  @click="openGroupDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="negative"
+                  icon="delete"
+                  @click="confirmDeleteGroup(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
+                </q-btn>
+              </q-td>
+            </template>
+          </q-table>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -149,7 +249,9 @@ const { t } = useI18n()
 
 // Table state
 const loading = ref(false)
+const loadingGroups = ref(false)
 const permissions = ref([])
+const groups = ref([])
 const search = ref('')
 const pagination = ref({
   sortBy: 'name',
@@ -160,22 +262,34 @@ const pagination = ref({
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
-// Функція форматування лейблу пагінації
-const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
-  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
-}
-
-// Dialog state
+// Dialog states
 const permissionDialog = ref(false)
+const groupDialog = ref(false)
+const groupsListDialog = ref(false)
+const saving = ref(false)
+const savingGroup = ref(false)
+
+// Edited items
 const editedPermission = ref({
   id: null,
   name: '',
   code: '',
   group_id: null,
 })
-const saving = ref(false)
+
+const editedGroup = ref({
+  id: null,
+  name: '',
+  description: '',
+})
+
 const groupOptions = ref([])
 
+// Функція форматування лейблу пагінації
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+// Columns definitions
 const columns = computed(() => [
   {
     name: 'name',
@@ -215,10 +329,36 @@ const columns = computed(() => [
   },
 ])
 
-// Fetch groups
+const groupColumns = computed(() => [
+  {
+    name: 'name',
+    required: true,
+    label: t('pages.permissions.groupName'),
+    align: 'left',
+    field: 'name',
+    sortable: true,
+  },
+  {
+    name: 'description',
+    label: t('pages.permissions.groupDescription'),
+    align: 'left',
+    field: 'description',
+    sortable: true,
+  },
+  {
+    name: 'actions',
+    label: t('pages.permissions.actions'),
+    align: 'center',
+    field: 'actions',
+  },
+])
+
+// Fetch functions
 const fetchGroups = async () => {
+  loadingGroups.value = true
   try {
     const response = await api.get('/permissions/groups')
+    groups.value = response.data.groups
     groupOptions.value = response.data.groups.map((group) => ({
       label: group.name,
       value: group.id,
@@ -228,10 +368,11 @@ const fetchGroups = async () => {
       type: 'negative',
       message: t('pages.permissions.groupsError'),
     })
+  } finally {
+    loadingGroups.value = false
   }
 }
 
-// Fetch permissions
 const fetchPermissions = async () => {
   loading.value = true
   try {
@@ -274,6 +415,24 @@ const openPermissionDialog = (permission = null) => {
   permissionDialog.value = true
 }
 
+const openGroupDialog = (group = null) => {
+  if (group) {
+    editedGroup.value = { ...group }
+  } else {
+    editedGroup.value = {
+      id: null,
+      name: '',
+      description: '',
+    }
+  }
+  groupDialog.value = true
+}
+
+const openGroupsDialog = () => {
+  groupsListDialog.value = true
+  fetchGroups()
+}
+
 // Save handlers
 const savePermission = async () => {
   saving.value = true
@@ -299,6 +458,31 @@ const savePermission = async () => {
   }
 }
 
+const saveGroup = async () => {
+  savingGroup.value = true
+  try {
+    if (editedGroup.value.id) {
+      await api.put(`/permissions/groups/${editedGroup.value.id}`, editedGroup.value)
+    } else {
+      await api.post('/permissions/groups', editedGroup.value)
+    }
+    await fetchGroups()
+    groupDialog.value = false
+    $q.notify({
+      type: 'positive',
+      message: t('pages.permissions.groupSaveSuccess'),
+    })
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('pages.permissions.groupSaveError'),
+    })
+  } finally {
+    savingGroup.value = false
+  }
+}
+
+// Delete handlers
 const confirmDelete = (permission) => {
   if (permission.is_system) {
     return $q.notify({
@@ -337,6 +521,37 @@ const confirmDelete = (permission) => {
   })
 }
 
+const confirmDeleteGroup = (group) => {
+  $q.dialog({
+    title: t('pages.permissions.confirmDeleteGroup'),
+    message: t('pages.permissions.deleteGroupMessage', { name: group.name }),
+    persistent: true,
+    ok: {
+      color: 'negative',
+      label: t('common.delete'),
+      flat: true,
+    },
+    cancel: {
+      label: t('common.cancel'),
+      flat: true,
+    },
+  }).onOk(async () => {
+    try {
+      await api.delete(`/permissions/groups/${group.id}`)
+      await fetchGroups()
+      $q.notify({
+        type: 'positive',
+        message: t('pages.permissions.groupDeleteSuccess'),
+      })
+    } catch {
+      $q.notify({
+        type: 'negative',
+        message: t('pages.permissions.groupDeleteError'),
+      })
+    }
+  })
+}
+
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
   pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
@@ -355,3 +570,10 @@ onMounted(() => {
   fetchPermissions()
 })
 </script>
+
+<style scoped>
+.groups-table {
+  max-height: 400px;
+  overflow-y: auto;
+}
+</style>

@@ -11,4 +11,6 @@ export default {
   selectedRows: 'Вибрано рядків',
   of: 'з',
   all: 'Всі',
+  yes: 'Так',
+  no: 'Ні',
 }
