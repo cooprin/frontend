@@ -437,32 +437,107 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.metadata-field {
-  font-family: monospace;
+<style>
+.changes-pre {
+  padding: 10px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
+.body--light .changes-pre {
+  background-color: #f5f5f5;
+  color: #000;
+}
+
+.body--dark .changes-pre {
+  background-color: #1d1d1d;
+  color: #fff;
+}
+
+.body--dark .q-card {
+  background: #1d1d1d;
+  color: #fff;
+}
+
+.body--dark .q-item {
+  color: #fff;
+}
+
+.body--dark .q-item__label--caption {
+  color: #9e9e9e;
+}
+
+.body--dark .text-subtitle1 {
+  color: #fff;
+  opacity: 0.9;
+}
+</style>
+
+<style scoped>
 .groups-table {
   max-height: 400px;
   overflow-y: auto;
 }
 
-/* Стилі для заголовків таблиці */
-:deep(.q-table thead tr) {
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
   background: var(--q-primary);
 }
 
-:deep(.q-table thead tr th) {
+:deep(.q-table) thead tr th {
   color: white !important;
-  font-weight: 600;
+  font-weight: 600 !important;
+  padding: 8px 16px;
 }
 
-/* Для темної теми */
-.body--dark :deep(.q-table thead tr) {
+/* Стилі для темної теми */
+.body--dark :deep(.q-table) thead tr {
   background: var(--q-dark);
 }
 
-.body--dark :deep(.q-table thead tr th) {
+.body--dark :deep(.q-table) thead tr th {
   color: white !important;
+}
+
+/* Стилі для ховера рядків */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+/* Стилі для парних рядків */
+:deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark :deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Стилі для клітинок таблиці */
+:deep(.q-table) td {
+  padding: 8px 16px;
+}
+
+/* Стилі для границь таблиці */
+:deep(.q-table) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Стилі для розділових ліній */
+:deep(.q-table) th,
+:deep(.q-table) td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) th,
+.body--dark :deep(.q-table) td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 </style>

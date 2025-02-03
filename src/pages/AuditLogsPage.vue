@@ -491,27 +491,70 @@ onMounted(async () => {
   color: #fff;
   opacity: 0.9;
 }
+</style>
+
+<style scoped>
 .groups-table {
   max-height: 400px;
   overflow-y: auto;
 }
 
-/* Стилі для заголовків таблиці */
-:deep(.q-table thead tr) {
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
   background: var(--q-primary);
 }
 
-:deep(.q-table thead tr th) {
+:deep(.q-table) thead tr th {
   color: white !important;
-  font-weight: 600;
+  font-weight: 600 !important;
+  padding: 8px 16px;
 }
 
-/* Для темної теми */
-.body--dark :deep(.q-table thead tr) {
+/* Стилі для темної теми */
+.body--dark :deep(.q-table) thead tr {
   background: var(--q-dark);
 }
 
-.body--dark :deep(.q-table thead tr th) {
+.body--dark :deep(.q-table) thead tr th {
   color: white !important;
+}
+
+/* Стилі для ховера рядків */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+/* Стилі для парних рядків */
+:deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark :deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Стилі для клітинок таблиці */
+:deep(.q-table) td {
+  padding: 8px 16px;
+}
+
+/* Стилі для границь таблиці */
+:deep(.q-table) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Стилі для розділових ліній */
+:deep(.q-table) th,
+:deep(.q-table) td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) th,
+.body--dark :deep(.q-table) td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 </style>
