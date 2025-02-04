@@ -92,12 +92,15 @@
         </q-item>
 
         <!-- Settings Menu -->
-        <q-item
+        <q-expansion-item
           v-if="authStore.hasRole('admin')"
-          clickable
+          icon="settings"
+          :label="$t('layouts.mainLayout.settings')"
+          :header-class="miniState ? 'text-center' : ''"
+          expand-icon="keyboard_arrow_down"
+          class="settings-menu"
           @mouseover="miniState ? (isSettingsMenuOpen = true) : null"
           @mouseleave="miniState ? (isSettingsMenuOpen = false) : null"
-          class="settings-menu"
         >
           <q-item-section avatar>
             <q-icon name="settings" />
@@ -145,7 +148,7 @@
           </q-expansion-item>
 
           <!-- Mini mode menu -->
-          <q-menu v-if="miniState" v-model="isSettingsMenuOpen" anchor="top right" self="top left">
+          <q-menu v-if="miniState" v-model="isSettingsMenuOpen">
             <q-list>
               <q-item clickable v-ripple :to="{ name: 'users' }" exact>
                 <q-item-section avatar>
@@ -183,7 +186,7 @@
               </q-item>
             </q-list>
           </q-menu>
-        </q-item>
+        </q-expansion-item>
       </q-list>
     </q-drawer>
 
