@@ -150,7 +150,7 @@
               <q-item dense>
                 <q-item-section avatar>
                   <q-icon name="settings">
-                    <q-menu anchor="center right" self="center left" :offset="[10, 0]" auto-close>
+                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
                       <q-list style="min-width: 200px">
                         <q-item clickable v-ripple :to="{ name: 'users' }">
                           <q-item-section avatar>
