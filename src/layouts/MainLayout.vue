@@ -81,6 +81,8 @@
       :width="240"
       :breakpoint="500"
       class="drawer-menu"
+      @mouseenter="onDrawerMouseEnter"
+      @mouseleave="onDrawerMouseLeave"
     >
       <q-list padding>
         <!-- Dashboard -->
@@ -99,93 +101,53 @@
           :header-class="miniState ? 'text-center' : ''"
           expand-icon="keyboard_arrow_down"
           class="settings-menu"
-          @mouseover="miniState ? (isSettingsMenuOpen = true) : null"
-          @mouseleave="miniState ? (isSettingsMenuOpen = false) : null"
         >
-          <q-item-section avatar>
-            <q-icon name="settings" />
-          </q-item-section>
-          <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
+          <template v-slot:header="{ expanded }">
+            <q-item-section avatar>
+              <q-icon name="settings" />
+            </q-item-section>
+            <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
+            <q-item-section side>
+              <q-icon :name="expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'" />
+            </q-item-section>
+          </template>
 
-          <!-- Regular submenu -->
-          <q-expansion-item v-if="!miniState" group="somegroup" :content-inset-level="1">
-            <q-list class="q-pl-lg">
-              <q-item clickable v-ripple :to="{ name: 'users' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="people" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
-              </q-item>
+          <q-list class="q-pl-lg">
+            <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+              <q-item-section avatar>
+                <q-icon name="people" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
+            </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="manage_accounts" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
-              </q-item>
+            <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
+              <q-item-section avatar>
+                <q-icon name="manage_accounts" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
+            </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="security" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
-              </q-item>
+            <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
+              <q-item-section avatar>
+                <q-icon name="security" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+            </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="extension" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
-              </q-item>
+            <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
+              <q-item-section avatar>
+                <q-icon name="extension" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
+            </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-                <q-item-section avatar>
-                  <q-icon name="history" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-expansion-item>
-
-          <!-- Mini mode menu -->
-          <q-menu v-if="miniState" v-model="isSettingsMenuOpen">
-            <q-list>
-              <q-item clickable v-ripple :to="{ name: 'users' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="people" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="manage_accounts" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="security" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="extension" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-                <q-item-section avatar>
-                  <q-icon name="history" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
+            <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+              <q-item-section avatar>
+                <q-icon name="history" />
+              </q-item-section>
+              <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+            </q-item>
+          </q-list>
         </q-expansion-item>
       </q-list>
     </q-drawer>
@@ -209,7 +171,6 @@ const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(true)
 const miniState = ref(false)
-const isSettingsMenuOpen = ref(false)
 
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
@@ -231,6 +192,18 @@ const handleImageError = (e) => {
   if (!originalSrc.includes('cdn.quasar.dev')) {
     e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
     console.warn('Failed to load avatar, using fallback image')
+  }
+}
+
+const onDrawerMouseEnter = () => {
+  if (miniState.value) {
+    miniState.value = false
+  }
+}
+
+const onDrawerMouseLeave = () => {
+  if (!miniState.value) {
+    miniState.value = true
   }
 }
 
