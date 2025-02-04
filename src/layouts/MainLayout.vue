@@ -86,58 +86,88 @@
           </q-item-section>
         </q-item>
 
-        <q-expansion-item
-          v-if="authStore.hasRole('admin')"
-          icon="settings"
-          class="settings-menu"
-          :header-class="miniState ? 'text-center' : ''"
-        >
-          <template v-slot:header>
-            <q-item-section avatar>
-              <q-icon name="settings" />
-            </q-item-section>
-            <q-item-section v-if="!miniState">
-              {{ $t('layouts.mainLayout.settings') }}
-            </q-item-section>
-          </template>
+        <template v-if="authStore.hasRole('admin')">
+          <q-expansion-item v-if="!miniState" icon="settings" class="settings-menu">
+            <template v-slot:header>
+              <q-item-section avatar>
+                <q-icon name="settings" />
+              </q-item-section>
+              <q-item-section>
+                {{ $t('layouts.mainLayout.settings') }}
+              </q-item-section>
+            </template>
 
-          <q-list v-if="!miniState" class="q-pl-lg">
+            <q-list class="q-pl-lg">
+              <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="people" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="manage_accounts" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="security" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="extension" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+                <q-item-section avatar>
+                  <q-icon name="history" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <!-- Mini state menu items -->
+          <template v-else>
             <q-item clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
               <q-item-section avatar>
                 <q-icon name="manage_accounts" />
               </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
               <q-item-section avatar>
                 <q-icon name="security" />
               </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
               <q-item-section avatar>
                 <q-icon name="extension" />
               </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
               <q-item-section avatar>
                 <q-icon name="history" />
               </q-item-section>
-              <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
             </q-item>
-          </q-list>
-        </q-expansion-item>
+          </template>
+        </template>
       </q-list>
     </q-drawer>
 
