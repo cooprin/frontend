@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh LpR fFf">
+    <!-- Header залишається без змін -->
     <q-header elevated class="bg-primary text-white">
-      <!-- Header content remains the same -->
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
         <q-toolbar-title>
@@ -88,70 +88,116 @@
           </q-item-section>
         </q-item>
 
-        <!-- Settings menu with hover functionality -->
-        <div
-          class="settings-menu"
-          v-if="authStore.hasRole('admin')"
-          @mouseenter="showSubmenu = true"
-          @mouseleave="showSubmenu = false"
-        >
-          <q-item class="settings-header">
-            <q-item-section avatar>
-              <q-icon name="settings" />
-            </q-item-section>
-            <q-item-section v-if="!miniState">
-              {{ $t('layouts.mainLayout.settings') }}
-            </q-item-section>
-          </q-item>
-
-          <!-- Submenu items -->
-          <div v-show="showSubmenu || !miniState" class="submenu-items">
-            <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+        <!-- Settings menu - різна поведінка для mini та повного режиму -->
+        <template v-if="authStore.hasRole('admin')">
+          <!-- Повний режим з q-expansion-item -->
+          <q-expansion-item v-if="!miniState" :content-inset-level="0.5" popup>
+            <template v-slot:header>
               <q-item-section avatar>
-                <q-icon name="people" />
+                <q-icon name="settings" />
               </q-item-section>
-              <q-item-section v-if="!miniState">
-                {{ $t('layouts.mainLayout.users') }}
+              <q-item-section>
+                {{ $t('layouts.mainLayout.settings') }}
+              </q-item-section>
+            </template>
+
+            <q-list class="submenu-items">
+              <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="people" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="manage_accounts" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="security" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
+                <q-item-section avatar>
+                  <q-icon name="extension" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+                <q-item-section avatar>
+                  <q-icon name="history" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-expansion-item>
+
+          <!-- Mini режим з hover ефектом -->
+          <div
+            v-else
+            class="settings-menu"
+            @mouseenter="showSubmenu = true"
+            @mouseleave="showSubmenu = false"
+          >
+            <q-item class="settings-header">
+              <q-item-section avatar>
+                <q-icon name="settings" />
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
-              <q-item-section avatar>
-                <q-icon name="manage_accounts" />
-              </q-item-section>
-              <q-item-section v-if="!miniState">
-                {{ $t('layouts.mainLayout.userGroups') }}
-              </q-item-section>
-            </q-item>
+            <q-menu
+              v-if="miniState"
+              :value="showSubmenu"
+              anchor="top right"
+              self="top left"
+              class="submenu-popup"
+            >
+              <q-list class="submenu-items">
+                <q-item clickable v-ripple :to="{ name: 'users' }" exact>
+                  <q-item-section avatar>
+                    <q-icon name="people" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
+                </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
-              <q-item-section avatar>
-                <q-icon name="security" />
-              </q-item-section>
-              <q-item-section v-if="!miniState">
-                {{ $t('layouts.mainLayout.permissions') }}
-              </q-item-section>
-            </q-item>
+                <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
+                  <q-item-section avatar>
+                    <q-icon name="manage_accounts" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
+                </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
-              <q-item-section avatar>
-                <q-icon name="extension" />
-              </q-item-section>
-              <q-item-section v-if="!miniState">
-                {{ $t('layouts.mainLayout.resources') }}
-              </q-item-section>
-            </q-item>
+                <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
+                  <q-item-section avatar>
+                    <q-icon name="security" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+                </q-item>
 
-            <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-              <q-item-section avatar>
-                <q-icon name="history" />
-              </q-item-section>
-              <q-item-section v-if="!miniState">
-                {{ $t('layouts.mainLayout.auditLogs') }}
-              </q-item-section>
-            </q-item>
+                <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
+                  <q-item-section avatar>
+                    <q-icon name="extension" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
+                </q-item>
+
+                <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+                  <q-item-section avatar>
+                    <q-icon name="history" />
+                  </q-item-section>
+                  <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </div>
-        </div>
+        </template>
       </q-list>
     </q-drawer>
 
@@ -239,11 +285,23 @@ const logout = async () => {
 }
 
 .menu-list .submenu-items {
-  padding-left: 12px;
+  min-width: 200px;
 }
 
 .menu-list .submenu-items .q-item {
   min-height: 40px;
+}
+
+.q-expansion-item__content {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark .q-expansion-item__content {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.submenu-popup {
+  min-width: 200px;
 }
 
 .body--dark .drawer-menu .q-item,
@@ -266,10 +324,5 @@ const logout = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-/* Hover menu styles */
-.settings-menu:hover .submenu-items {
-  display: block;
 }
 </style>
