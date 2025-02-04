@@ -7,7 +7,6 @@
           {{ $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
-        <!-- Language switcher -->
         <q-btn flat>
           <q-icon name="language" />
           <q-menu>
@@ -22,16 +21,13 @@
           </q-menu>
         </q-btn>
 
-        <!-- Theme switcher -->
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
 
-        <!-- User menu -->
         <q-btn flat round dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
-              <!-- Avatar and main info -->
               <q-item>
                 <q-item-section avatar>
                   <q-avatar size="40px">
@@ -50,7 +46,6 @@
 
               <q-separator />
 
-              <!-- Profile -->
               <q-item clickable v-close-popup to="/profile">
                 <q-item-section avatar>
                   <q-icon name="person" />
@@ -60,7 +55,6 @@
 
               <q-separator />
 
-              <!-- Logout -->
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
@@ -83,7 +77,6 @@
       class="drawer-menu"
     >
       <q-list padding>
-        <!-- Dashboard -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="home" />
@@ -93,14 +86,13 @@
           </q-item-section>
         </q-item>
 
-        <!-- Settings Menu -->
         <q-expansion-item
           v-if="authStore.hasRole('admin')"
           icon="settings"
           class="settings-menu"
           :header-class="miniState ? 'text-center' : ''"
         >
-          <template v-slot:header="{ expanded }">
+          <template v-slot:header>
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
