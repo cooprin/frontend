@@ -50,6 +50,10 @@ const routes = [
         component: () => import('pages/AuditLogsPage.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: '/:catchAll(.*)*',
+        component: () => import('pages/ErrorNotFound.vue'),
+      },
     ],
   },
 
@@ -69,14 +73,6 @@ const routes = [
         component: () => import('pages/RegisterPage.vue'),
       },
     ],
-  },
-  {
-    path: '/404',
-    component: () => import('pages/ErrorNotFound.vue'),
-  },
-  {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
   },
 ]
 
@@ -108,19 +104,11 @@ export default route(function () {
       isAuthenticated: authStore.isAuthenticated,
     })
 
-    if (to.matched.length === 0) {
-      next({ name: '404' })
-      return
-    }
-
     if (requiresAuth && !authStore.isAuthenticated) {
-      console.log('Redirecting to login')
       next('/auth/login')
     } else if (to.path === '/auth/login' && authStore.isAuthenticated) {
-      console.log('Already authenticated, redirecting to home')
       next('/')
     } else {
-      console.log('Proceeding to route')
       next()
     }
   })
