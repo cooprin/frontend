@@ -207,4 +207,8 @@ export default {
     typeModule: 'Module',
     typeFunction: 'Function',
   },
+  error: {
+    notFound: 'Page not found',
+    returnHome: 'Return to Home',
+  },
 }

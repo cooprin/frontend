@@ -213,4 +213,8 @@ export default {
     typeModule: 'Модуль',
     typeFunction: 'Функція',
   },
+  error: {
+    notFound: 'Сторінку не знайдено',
+    returnHome: 'Повернутися на головну',
+  },
 }

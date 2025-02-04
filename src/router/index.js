@@ -68,7 +68,15 @@ const routes = [
         name: 'register',
         component: () => import('pages/RegisterPage.vue'),
       },
+      {
+        path: '/404',
+        component: () => import('pages/ErrorNotFound.vue'),
+      },
     ],
+  },
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
   },
 ]
 
@@ -82,7 +90,14 @@ export default route(function () {
   Router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
 
-    // Перевіряємо метадані маршруту
+    // Перевіряємо чи маршрут існує
+    if (to.matched.length === 0) {
+      console.log('Route not found, redirecting to 404')
+      next('/404')
+      return
+    }
+
+    // Перевіряємо метадані маршруту для автентифікації
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
     console.log('Route check:', {
@@ -97,7 +112,6 @@ export default route(function () {
       console.log('Redirecting to login')
       next('/auth/login')
     } else if (to.path === '/auth/login' && authStore.isAuthenticated) {
-      // Додаємо редірект з логіну якщо користувач вже автентифікований
       console.log('Already authenticated, redirecting to home')
       next('/')
     } else {

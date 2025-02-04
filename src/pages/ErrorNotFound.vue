@@ -1,27 +1,11 @@
 <template>
-  <div class="fullscreen bg-blue text-white text-center q-pa-md flex flex-center">
-    <div>
-      <div style="font-size: 30vh">
-        404
-      </div>
-
-      <div class="text-h2" style="opacity:.4">
-        Oops. Nothing here...
-      </div>
-
-      <q-btn
-        class="q-mt-xl"
-        color="white"
-        text-color="blue"
-        unelevated
-        to="/"
-        label="Go Home"
-        no-caps
-      />
-    </div>
-  </div>
+  <q-page padding class="flex flex-center column">
+    <div class="text-h2 text-weight-bold q-mb-md">404</div>
+    <div class="text-h5 text-grey q-mb-xl">{{ $t('pages.error.notFound') }}</div>
+    <q-btn color="primary" :label="$t('pages.error.returnHome')" to="/" icon="home" />
+  </q-page>
 </template>
 
 <script setup>
-//
+// компонент не потребує логіки
 </script>
