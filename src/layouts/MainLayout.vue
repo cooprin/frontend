@@ -1,9 +1,71 @@
 <template>
-  <!-- Layout structure remains same -->
   <q-layout view="hHh LpR fFf">
-    <!-- Header remains same -->
+    <!-- Header content unchanged -->
     <q-header elevated class="bg-primary text-white">
-      <!-- Previous header content... -->
+      <q-toolbar>
+        <q-btn dense flat round icon="menu" @click="toggleMiniState" />
+        <q-toolbar-title>
+          {{ $t('layouts.mainLayout.hello') }}
+        </q-toolbar-title>
+
+        <q-btn flat>
+          <q-icon name="language" />
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <q-item clickable v-close-popup @click="changeLanguage('uk')">
+                <q-item-section>Українська</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="changeLanguage('en')">
+                <q-item-section>English</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+
+        <q-btn flat @click="toggleDarkMode">
+          <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
+        </q-btn>
+
+        <q-btn flat round dense icon="account_circle">
+          <q-menu>
+            <q-list style="min-width: 200px">
+              <q-item>
+                <q-item-section avatar>
+                  <q-avatar size="40px">
+                    <img :src="getAvatarUrl" alt="Avatar" @error="handleImageError" />
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label class="text-weight-bold">
+                    {{
+                      `${authStore.user?.first_name || ''} ${authStore.user?.last_name || ''}`.trim()
+                    }}
+                  </q-item-label>
+                  <q-item-label caption>{{ authStore.user?.email }}</q-item-label>
+                </q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <q-item clickable v-close-popup to="/profile">
+                <q-item-section avatar>
+                  <q-icon name="person" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.profile') }}</q-item-section>
+              </q-item>
+
+              <q-separator />
+
+              <q-item clickable v-close-popup @click="logout">
+                <q-item-section avatar>
+                  <q-icon name="logout" />
+                </q-item-section>
+                <q-item-section>{{ $t('layouts.mainLayout.exit') }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
+      </q-toolbar>
     </q-header>
 
     <q-drawer
@@ -15,127 +77,134 @@
       :breakpoint="500"
       class="drawer-menu"
     >
-      <q-list padding class="menu-list">
-        <!-- Dashboard item -->
-        <q-item clickable v-ripple :to="{ name: 'dashboard' }" class="menu-item">
-          <q-item-section avatar>
-            <q-icon name="home" />
-          </q-item-section>
-          <q-item-section v-if="!miniState">
-            {{ $t('layouts.mainLayout.dashboard') }}
-          </q-item-section>
-        </q-item>
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <!-- Dashboard -->
+          <q-item clickable v-ripple :to="{ name: 'dashboard' }">
+            <q-item-section avatar>
+              <q-icon name="home" />
+            </q-item-section>
+            <q-item-section v-if="!miniState">
+              {{ $t('layouts.mainLayout.dashboard') }}
+            </q-item-section>
+          </q-item>
 
-        <!-- Settings menu -->
-        <template v-if="authStore.hasRole('admin')">
-          <!-- Expanded state -->
-          <q-expansion-item
-            v-if="!miniState"
-            icon="settings"
-            :label="$t('layouts.mainLayout.settings')"
-            class="menu-item settings-expansion"
-            expand-separator
-            dense
-          >
-            <q-list class="submenu-list">
-              <q-item clickable v-ripple :to="{ name: 'users' }" exact dense>
-                <q-item-section avatar>
-                  <q-icon name="people" size="sm" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'roles' }" exact dense>
-                <q-item-section avatar>
-                  <q-icon name="manage_accounts" size="sm" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact dense>
-                <q-item-section avatar>
-                  <q-icon name="security" size="sm" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'resources' }" exact dense>
-                <q-item-section avatar>
-                  <q-icon name="extension" size="sm" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'audit-logs' }" dense>
-                <q-item-section avatar>
-                  <q-icon name="history" size="sm" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-expansion-item>
-
-          <!-- Mini state -->
-          <div
-            v-else
-            class="settings-menu"
-            @mouseenter="showSubmenu = true"
-            @mouseleave="showSubmenu = false"
-          >
-            <q-item class="menu-item">
-              <q-item-section avatar>
-                <q-icon name="settings" />
-              </q-item-section>
-            </q-item>
-
-            <q-menu
-              v-model="showSubmenu"
-              anchor="top right"
-              self="top left"
-              class="submenu-popup"
-              transition-show="jump-right"
-              transition-hide="jump-left"
-            >
-              <q-list class="submenu-list">
-                <q-item clickable v-ripple :to="{ name: 'users' }" exact dense>
+          <!-- Admin Menu -->
+          <template v-if="authStore.hasRole('admin')">
+            <!-- Full mode -->
+            <template v-if="!miniState">
+              <q-expansion-item
+                icon="settings"
+                :label="$t('layouts.mainLayout.settings')"
+                expand-separator
+              >
+                <q-item clickable v-ripple :to="{ name: 'users' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="people" size="sm" />
+                    <q-icon name="people" />
                   </q-item-section>
-                  <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
+                  <q-item-section>
+                    {{ $t('layouts.mainLayout.users') }}
+                  </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple :to="{ name: 'roles' }" exact dense>
+                <q-item clickable v-ripple :to="{ name: 'roles' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="manage_accounts" size="sm" />
+                    <q-icon name="manage_accounts" />
                   </q-item-section>
-                  <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
+                  <q-item-section>
+                    {{ $t('layouts.mainLayout.userGroups') }}
+                  </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple :to="{ name: 'permissions' }" exact dense>
+                <q-item clickable v-ripple :to="{ name: 'permissions' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="security" size="sm" />
+                    <q-icon name="security" />
                   </q-item-section>
-                  <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
+                  <q-item-section>
+                    {{ $t('layouts.mainLayout.permissions') }}
+                  </q-item-section>
                 </q-item>
 
-                <q-item clickable v-ripple :to="{ name: 'resources' }" exact dense>
+                <q-item clickable v-ripple :to="{ name: 'resources' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="extension" size="sm" />
+                    <q-icon name="extension" />
                   </q-item-section>
-                  <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
+                  <q-item-section>
+                    {{ $t('layouts.mainLayout.resources') }}
+                  </q-item-section>
                 </q-item>
 
                 <q-item clickable v-ripple :to="{ name: 'audit-logs' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="history" size="sm" />
+                    <q-icon name="history" />
                   </q-item-section>
-                  <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
+                  <q-item-section>
+                    {{ $t('layouts.mainLayout.auditLogs') }}
+                  </q-item-section>
                 </q-item>
-              </q-list>
-            </q-menu>
-          </div>
-        </template>
-      </q-list>
+              </q-expansion-item>
+            </template>
+
+            <!-- Mini mode -->
+            <template v-else>
+              <q-item dense>
+                <q-item-section avatar>
+                  <q-icon name="settings">
+                    <q-menu anchor="center right" self="center left" :offset="[10, 0]" auto-close>
+                      <q-list style="min-width: 200px">
+                        <q-item clickable v-ripple :to="{ name: 'users' }">
+                          <q-item-section avatar>
+                            <q-icon name="people" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.users') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'roles' }">
+                          <q-item-section avatar>
+                            <q-icon name="manage_accounts" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.userGroups') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'permissions' }">
+                          <q-item-section avatar>
+                            <q-icon name="security" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.permissions') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'resources' }">
+                          <q-item-section avatar>
+                            <q-icon name="extension" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.resources') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+                          <q-item-section avatar>
+                            <q-icon name="history" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.auditLogs') }}
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-icon>
+                </q-item-section>
+              </q-item>
+            </template>
+          </template>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
@@ -145,93 +214,100 @@
 </template>
 
 <script setup>
-// Script section remains the same...
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from 'stores/auth'
+
+const $q = useQuasar()
+const { locale } = useI18n()
+const router = useRouter()
+const authStore = useAuthStore()
+const leftDrawerOpen = ref(true)
+const miniState = ref(false)
+
+const getAvatarUrl = computed(() => {
+  if (!authStore.user?.avatar_url) {
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
+
+  try {
+    const avatarPath = authStore.user.avatar_url
+    return `${process.env.API_URL}/uploads/${avatarPath}`
+  } catch {
+    return 'https://cdn.quasar.dev/img/avatar.png'
+  }
+})
+
+const handleImageError = (e) => {
+  const originalSrc = e.target.src
+  console.error('Image load error. Original src:', originalSrc)
+
+  if (!originalSrc.includes('cdn.quasar.dev')) {
+    e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
+    console.warn('Failed to load avatar, using fallback image')
+  }
+}
+
+const toggleMiniState = () => {
+  miniState.value = !miniState.value
+}
+
+const toggleDarkMode = () => {
+  $q.dark.toggle()
+  localStorage.setItem('darkMode', $q.dark.isActive.toString())
+}
+
+const changeLanguage = (lang) => {
+  locale.value = lang
+  localStorage.setItem('userLanguage', lang)
+}
+
+const logout = async () => {
+  authStore.logout()
+  router.push({ name: 'login' })
+}
 </script>
 
 <style>
-.drawer-menu {
-  background: #f5f5f5;
+.drawer-menu .q-item {
+  color: var(--q-primary) !important;
+  cursor: pointer;
 }
 
-.body--dark .drawer-menu {
-  background: #1a1a1a;
-}
-
-.menu-list {
-  padding: 8px;
-}
-
-.menu-item {
-  border-radius: 8px;
-  margin: 4px 0;
-  transition: all 0.3s;
-}
-
-.menu-item:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-.settings-expansion.q-expansion-item--expanded {
-  background: rgba(var(--q-primary), 0.05);
-  border-radius: 8px;
-}
-
-.settings-expansion .q-expansion-item__content {
-  padding: 0;
-  background: transparent;
-}
-
-.submenu-list {
-  padding: 4px 8px;
-}
-
-.submenu-list .q-item {
-  border-radius: 8px;
-  padding: 8px 8px;
-  min-height: 36px;
-  font-size: 0.95em;
-}
-
-.submenu-list .q-item:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-.submenu-list .q-icon {
-  font-size: 1.2em;
+.drawer-menu .q-icon {
+  color: var(--q-primary) !important;
 }
 
 .drawer-menu .q-item.q-router-link-active {
-  background: rgba(var(--q-primary), 0.15);
-  font-weight: 500;
+  background: rgba(var(--q-primary), 0.1);
 }
 
-.submenu-popup {
-  background: #f5f5f5;
-  border-radius: 8px;
-  min-width: 200px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.body--dark .submenu-popup {
-  background: #1a1a1a;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-.body--dark .drawer-menu {
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+.q-expansion-item__content .q-item {
+  padding-left: 48px;
+  min-height: 40px;
 }
 
 .body--dark .drawer-menu .q-item,
-.body--dark .drawer-menu .q-icon {
-  color: rgba(255, 255, 255, 0.8) !important;
+.body--dark .drawer-menu .q-icon,
+.body--dark .q-menu {
+  color: #fff !important;
+  background: #424242;
 }
 
 .body--light .drawer-menu .q-item,
 .body--light .drawer-menu .q-icon {
-  color: rgba(0, 0, 0, 0.8) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
 }
 
-.q-expansion-item__content {
-  margin: 4px 0;
+.body--light .q-menu {
+  background: white;
+}
+
+.q-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
