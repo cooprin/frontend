@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
@@ -216,6 +216,11 @@ const pagination = ref({
   rowsPerPage: 10,
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+})
+
+watch(search, async () => {
+  pagination.value.page = 1 // скидаємо сторінку на першу при пошуку
+  await fetchResources()
 })
 
 // Dialog states
@@ -290,7 +295,7 @@ const fetchResources = async () => {
         perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
         sortBy: pagination.value.sortBy,
         descending: pagination.value.descending,
-        search: search.value,
+        search: search.value.trim(),
       },
     })
     resources.value = response.data.resources
