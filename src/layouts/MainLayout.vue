@@ -81,8 +81,6 @@
       :width="240"
       :breakpoint="500"
       class="drawer-menu"
-      @mouseenter="onDrawerMouseEnter"
-      @mouseleave="onDrawerMouseLeave"
     >
       <q-list padding>
         <!-- Dashboard -->
@@ -90,29 +88,28 @@
           <q-item-section avatar>
             <q-icon name="home" />
           </q-item-section>
-          <q-item-section>{{ $t('layouts.mainLayout.dashboard') }}</q-item-section>
+          <q-item-section v-if="!miniState">
+            {{ $t('layouts.mainLayout.dashboard') }}
+          </q-item-section>
         </q-item>
 
         <!-- Settings Menu -->
         <q-expansion-item
           v-if="authStore.hasRole('admin')"
           icon="settings"
-          :label="$t('layouts.mainLayout.settings')"
-          :header-class="miniState ? 'text-center' : ''"
-          expand-icon="keyboard_arrow_down"
           class="settings-menu"
+          :header-class="miniState ? 'text-center' : ''"
         >
           <template v-slot:header="{ expanded }">
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
-            <q-item-section>{{ $t('layouts.mainLayout.settings') }}</q-item-section>
-            <q-item-section side>
-              <q-icon :name="expanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'" />
+            <q-item-section v-if="!miniState">
+              {{ $t('layouts.mainLayout.settings') }}
             </q-item-section>
           </template>
 
-          <q-list class="q-pl-lg">
+          <q-list v-if="!miniState" class="q-pl-lg">
             <q-item clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
                 <q-icon name="people" />
@@ -192,18 +189,6 @@ const handleImageError = (e) => {
   if (!originalSrc.includes('cdn.quasar.dev')) {
     e.target.src = 'https://cdn.quasar.dev/img/avatar.png'
     console.warn('Failed to load avatar, using fallback image')
-  }
-}
-
-const onDrawerMouseEnter = () => {
-  if (miniState.value) {
-    miniState.value = false
-  }
-}
-
-const onDrawerMouseLeave = () => {
-  if (!miniState.value) {
-    miniState.value = true
   }
 }
 
