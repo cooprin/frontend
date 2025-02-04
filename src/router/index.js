@@ -68,11 +68,11 @@ const routes = [
         name: 'register',
         component: () => import('pages/RegisterPage.vue'),
       },
-      {
-        path: '/404',
-        component: () => import('pages/ErrorNotFound.vue'),
-      },
     ],
+  },
+  {
+    path: '/404',
+    component: () => import('pages/ErrorNotFound.vue'),
   },
   {
     path: '/:catchAll(.*)*',
@@ -107,6 +107,11 @@ export default route(function () {
       user: !!authStore.user,
       isAuthenticated: authStore.isAuthenticated,
     })
+
+    if (to.matched.length === 0) {
+      next({ name: '404' })
+      return
+    }
 
     if (requiresAuth && !authStore.isAuthenticated) {
       console.log('Redirecting to login')
