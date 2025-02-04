@@ -270,6 +270,7 @@ const logout = async () => {
 }
 </script>
 
+/* В MainLayout.vue оновіть css */
 <style>
 .drawer-menu .q-item {
   color: var(--q-primary) !important;
@@ -289,11 +290,30 @@ const logout = async () => {
   min-height: 40px;
 }
 
-.body--dark .drawer-menu .q-item,
-.body--dark .drawer-menu .q-icon,
+/* Оновлені стилі для темної теми */
+.body--dark .drawer-menu {
+  background: #1d1d1d;
+}
+
+.body--dark .drawer-menu .q-item {
+  color: white !important;
+}
+
+.body--dark .drawer-menu .q-icon {
+  color: white !important;
+}
+
+.body--dark .drawer-menu .q-expansion-item__content {
+  background: #1d1d1d;
+}
+
 .body--dark .q-menu {
-  color: #fff !important;
-  background: #424242;
+  background: #1d1d1d;
+}
+
+/* Активний елемент в темній темі */
+.body--dark .drawer-menu .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .body--light .drawer-menu .q-item,
