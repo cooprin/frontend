@@ -1,6 +1,7 @@
 <template>
   <q-layout view="hHh LpR fFf">
     <q-header elevated class="bg-primary text-white">
+      <!-- Header content remains the same -->
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
         <q-toolbar-title>
@@ -76,7 +77,8 @@
       :breakpoint="500"
       class="drawer-menu"
     >
-      <q-list padding>
+      <q-list padding class="menu-list">
+        <!-- Dashboard item -->
         <q-item clickable v-ripple :to="{ name: 'dashboard' }">
           <q-item-section avatar>
             <q-icon name="home" />
@@ -86,60 +88,30 @@
           </q-item-section>
         </q-item>
 
-        <template v-if="authStore.hasRole('admin')">
-          <q-expansion-item v-if="!miniState" icon="settings" class="settings-menu">
-            <template v-slot:header>
-              <q-item-section avatar>
-                <q-icon name="settings" />
-              </q-item-section>
-              <q-item-section>
-                {{ $t('layouts.mainLayout.settings') }}
-              </q-item-section>
-            </template>
+        <!-- Settings menu with hover functionality -->
+        <div
+          class="settings-menu"
+          v-if="authStore.hasRole('admin')"
+          @mouseenter="showSubmenu = true"
+          @mouseleave="showSubmenu = false"
+        >
+          <q-item class="settings-header">
+            <q-item-section avatar>
+              <q-icon name="settings" />
+            </q-item-section>
+            <q-item-section v-if="!miniState">
+              {{ $t('layouts.mainLayout.settings') }}
+            </q-item-section>
+          </q-item>
 
-            <q-list class="q-pl-lg">
-              <q-item clickable v-ripple :to="{ name: 'users' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="people" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.users') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'roles' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="manage_accounts" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.userGroups') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="security" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.permissions') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'resources' }" exact>
-                <q-item-section avatar>
-                  <q-icon name="extension" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.resources') }}</q-item-section>
-              </q-item>
-
-              <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-                <q-item-section avatar>
-                  <q-icon name="history" />
-                </q-item-section>
-                <q-item-section>{{ $t('layouts.mainLayout.auditLogs') }}</q-item-section>
-              </q-item>
-            </q-list>
-          </q-expansion-item>
-
-          <!-- Mini state menu items -->
-          <template v-else>
+          <!-- Submenu items -->
+          <div v-show="showSubmenu || !miniState" class="submenu-items">
             <q-item clickable v-ripple :to="{ name: 'users' }" exact>
               <q-item-section avatar>
                 <q-icon name="people" />
+              </q-item-section>
+              <q-item-section v-if="!miniState">
+                {{ $t('layouts.mainLayout.users') }}
               </q-item-section>
             </q-item>
 
@@ -147,11 +119,17 @@
               <q-item-section avatar>
                 <q-icon name="manage_accounts" />
               </q-item-section>
+              <q-item-section v-if="!miniState">
+                {{ $t('layouts.mainLayout.userGroups') }}
+              </q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'permissions' }" exact>
               <q-item-section avatar>
                 <q-icon name="security" />
+              </q-item-section>
+              <q-item-section v-if="!miniState">
+                {{ $t('layouts.mainLayout.permissions') }}
               </q-item-section>
             </q-item>
 
@@ -159,15 +137,21 @@
               <q-item-section avatar>
                 <q-icon name="extension" />
               </q-item-section>
+              <q-item-section v-if="!miniState">
+                {{ $t('layouts.mainLayout.resources') }}
+              </q-item-section>
             </q-item>
 
             <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
               <q-item-section avatar>
                 <q-icon name="history" />
               </q-item-section>
+              <q-item-section v-if="!miniState">
+                {{ $t('layouts.mainLayout.auditLogs') }}
+              </q-item-section>
             </q-item>
-          </template>
-        </template>
+          </div>
+        </div>
       </q-list>
     </q-drawer>
 
@@ -190,6 +174,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const leftDrawerOpen = ref(true)
 const miniState = ref(false)
+const showSubmenu = ref(false)
 
 const getAvatarUrl = computed(() => {
   if (!authStore.user?.avatar_url) {
@@ -216,6 +201,7 @@ const handleImageError = (e) => {
 
 const toggleMiniState = () => {
   miniState.value = !miniState.value
+  showSubmenu.value = false
 }
 
 const toggleDarkMode = () => {
@@ -248,10 +234,16 @@ const logout = async () => {
   background: rgba(var(--q-primary), 0.1);
 }
 
-.q-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.menu-list .settings-menu {
+  position: relative;
+}
+
+.menu-list .submenu-items {
+  padding-left: 12px;
+}
+
+.menu-list .submenu-items .q-item {
+  min-height: 40px;
 }
 
 .body--dark .drawer-menu .q-item,
@@ -268,5 +260,16 @@ const logout = async () => {
 
 .body--light .q-menu {
   background: white;
+}
+
+.q-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hover menu styles */
+.settings-menu:hover .submenu-items {
+  display: block;
 }
 </style>
