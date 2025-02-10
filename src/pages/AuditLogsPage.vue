@@ -50,6 +50,23 @@
               map-options
             />
           </div>
+          <!-- Тип аудиту -->
+          <div class="col-12 col-sm-3">
+            <q-select
+              v-model="filters.auditType"
+              :options="[
+                { label: $t('pages.auditLogs.auditTypes.all'), value: null },
+                { label: $t('pages.auditLogs.auditTypes.system'), value: 'SYSTEM' },
+                { label: $t('pages.auditLogs.auditTypes.business'), value: 'BUSINESS' },
+              ]"
+              :label="$t('pages.auditLogs.auditType')"
+              outlined
+              dense
+              clearable
+              emit-value
+              map-options
+            />
+          </div>
 
           <!-- Діапазон дат -->
           <div class="col-12 col-sm-3">
@@ -218,6 +235,7 @@ const filters = ref({
   entityType: null,
   dateFrom: null,
   dateTo: null,
+  auditType: null,
 })
 
 // Діалог змін
@@ -428,6 +446,7 @@ const clearFilters = () => {
     entityType: null,
     dateFrom: null,
     dateTo: null,
+    auditType: null,
   }
 }
 

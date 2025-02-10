@@ -99,6 +99,13 @@ export default {
     noChanges: 'No changes recorded',
     clearFilters: 'Clear Filters',
     actionInfo: 'Action Information',
+    auditType: 'Audit Type',
+    auditTypes: {
+      all: 'All Types',
+      system: 'System',
+      business: 'Business',
+    },
+
     actions: {
       // System actions
       list_view: 'List View',

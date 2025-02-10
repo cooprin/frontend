@@ -104,6 +104,12 @@ export default {
     noChanges: 'Змін не зафіксовано',
     clearFilters: 'Очистити фільтри',
     actionInfo: 'Інформація про дію',
+    auditType: 'Тип аудиту',
+    auditTypes: {
+      all: 'Всі типи',
+      system: 'Системний',
+      business: 'Бізнес',
+    },
     actions: {
       // Системні дії
       list_view: 'Перегляд списку',
