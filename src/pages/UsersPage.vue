@@ -186,13 +186,30 @@
               :rules="[(val) => !!val || $t('pages.users.required')]"
             />
 
-            <q-input
-              v-model="editedUser.phone"
-              :label="$t('pages.users.phone')"
-              outlined
-              dense
-              mask="(###) ###-####"
-            />
+            <div class="row q-col-gutter-sm">
+              <div class="col-4">
+                <q-select
+                  v-model="selectedCountryCode"
+                  :options="countryCodes"
+                  option-label="country"
+                  option-value="code"
+                  :label="$t('pages.users.countryCode')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                />
+              </div>
+              <div class="col-8">
+                <q-input
+                  v-model="phoneNumber"
+                  :label="$t('pages.users.phone')"
+                  outlined
+                  dense
+                  :mask="selectedCountryMask"
+                />
+              </div>
+            </div>
 
             <q-toggle v-model="editedUser.is_active" :label="$t('pages.users.isActive')" />
 
@@ -258,6 +275,15 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
+import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
+
+const selectedCountryCode = ref('+380')
+const phoneNumber = ref('')
+
+const selectedCountryMask = computed(() => {
+  const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
+  return country ? country.mask : ''
+})
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -410,6 +436,10 @@ const fetchUsers = async () => {
 // Dialog handlers
 const openUserDialog = (user = null) => {
   if (user) {
+    const phone = user.phone || ''
+    const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+    selectedCountryCode.value = countryCode?.code || '+380'
+    phoneNumber.value = getPhoneWithoutCode(phone)
     editedUser.value = {
       ...user,
       // Отримуємо роль зі списку ролей по імені
@@ -418,6 +448,8 @@ const openUserDialog = (user = null) => {
       confirmPassword: '',
     }
   } else {
+    selectedCountryCode.value = '+380'
+    phoneNumber.value = ''
     editedUser.value = {
       id: null,
       role_id: null,
@@ -426,7 +458,6 @@ const openUserDialog = (user = null) => {
       confirmPassword: '',
       first_name: '',
       last_name: '',
-      phone: '',
       is_active: true,
     }
   }
@@ -446,10 +477,14 @@ const openPasswordDialog = (user) => {
 const saveUser = async () => {
   saving.value = true
   try {
+    const userData = {
+      ...editedUser.value,
+      phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
+    }
     if (editedUser.value.id) {
-      await api.put(`/user/${editedUser.value.id}`, editedUser.value)
+      await api.put(`/user/${editedUser.value.id}`, userData)
     } else {
-      await api.post('/user', editedUser.value)
+      await api.post('/user', userData)
     }
     await fetchUsers()
     userDialog.value = false

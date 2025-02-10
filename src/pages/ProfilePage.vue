@@ -91,18 +91,35 @@
             :rules="[(val) => !!val || $t('pages.profile.required')]"
           />
 
-          <q-input
-            ref="phoneRef"
-            v-model="profileData.phone"
-            :label="$t('pages.profile.phone')"
-            outlined
-            dense
-            mask="(###) ###-####"
-          >
-            <template v-slot:prepend>
-              <q-icon name="phone" />
-            </template>
-          </q-input>
+          <div class="row q-col-gutter-sm">
+            <div class="col-4">
+              <q-select
+                v-model="selectedCountryCode"
+                :options="countryCodes"
+                option-label="country"
+                option-value="code"
+                :label="$t('pages.profile.countryCode')"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
+            </div>
+            <div class="col-8">
+              <q-input
+                ref="phoneRef"
+                v-model="phoneNumber"
+                :label="$t('pages.profile.phone')"
+                outlined
+                dense
+                :mask="selectedCountryMask"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="phone" />
+                </template>
+              </q-input>
+            </div>
+          </div>
 
           <div class="row justify-center">
             <q-btn
@@ -176,6 +193,15 @@ import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { api } from 'boot/axios'
+import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
+
+const selectedCountryCode = ref('+380') // За замовчуванням Україна
+const phoneNumber = ref('')
+
+const selectedCountryMask = computed(() => {
+  const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
+  return country ? country.mask : ''
+})
 
 const authStore = useAuthStore()
 const q = useQuasar()
@@ -296,10 +322,14 @@ watch(
   () => authStore.user,
   (newUser) => {
     if (newUser) {
+      const phone = newUser.phone || ''
+      const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+      selectedCountryCode.value = countryCode?.code || '+380'
+      phoneNumber.value = getPhoneWithoutCode(phone)
       profileData.value = {
         first_name: newUser.first_name || '',
         last_name: newUser.last_name || '',
-        phone: newUser.phone || '',
+        phone: phone || '',
       }
     }
   },
@@ -315,7 +345,7 @@ const onSubmitProfile = async () => {
     const response = await api.put('/profile/update-profile', {
       first_name: profileData.value.first_name,
       last_name: profileData.value.last_name,
-      phone: profileData.value.phone,
+      phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
     })
 
     if (response.data.success) {

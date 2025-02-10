@@ -38,6 +38,7 @@ export default {
     activate: 'Activate',
     deactivate: 'Deactivate',
     password: 'Password',
+    countryCode: 'Country code',
   },
   profile: {
     title: 'Profile',
@@ -60,6 +61,7 @@ export default {
     phone: 'Phone',
     required: 'This field is required',
     passwordLength: 'Password must be at least 8 characters long',
+    countryCode: 'Country code',
   },
   roles: {
     title: 'User Roles',
