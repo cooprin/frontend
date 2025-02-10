@@ -6,9 +6,7 @@
       </q-card-section>
 
       <q-card-section>
-        <!-- Фільтри -->
         <div class="row q-col-gutter-sm q-mb-md">
-          <!-- Пошук -->
           <div class="col-12 col-sm-3">
             <q-input
               v-model="filters.search"
@@ -23,7 +21,6 @@
             </q-input>
           </div>
 
-          <!-- Тип дії -->
           <div class="col-12 col-sm-3">
             <q-select
               v-model="filters.actionType"
@@ -37,7 +34,6 @@
             />
           </div>
 
-          <!-- Тип сутності -->
           <div class="col-12 col-sm-3">
             <q-select
               v-model="filters.entityType"
@@ -50,7 +46,7 @@
               map-options
             />
           </div>
-          <!-- Тип аудиту -->
+
           <div class="col-12 col-sm-3">
             <q-select
               v-model="filters.auditType"
@@ -68,7 +64,6 @@
             />
           </div>
 
-          <!-- Діапазон дат -->
           <div class="col-12 col-sm-3">
             <q-input
               v-model="filters.dateFrom"
@@ -79,6 +74,7 @@
               type="date"
             />
           </div>
+
           <div class="col-12 col-sm-3">
             <q-input
               v-model="filters.dateTo"
@@ -90,7 +86,6 @@
             />
           </div>
 
-          <!-- Кнопка очистки фільтрів -->
           <div class="col-12 col-sm-3 q-gutter-x-sm">
             <q-btn
               color="primary"
@@ -100,7 +95,6 @@
           </div>
         </div>
 
-        <!-- Таблиця -->
         <q-table
           :rows="logs"
           :columns="columns"
@@ -114,14 +108,12 @@
           :pagination-label="paginationLabel"
           @update:pagination="onRequest"
         >
-          <!-- Форматування дати -->
           <template v-slot:body-cell-created_at="props">
             <q-td :props="props">
               {{ formatDate(props.value) }}
             </q-td>
           </template>
 
-          <!-- Форматування типу дії -->
           <template v-slot:body-cell-action_type="props">
             <q-td :props="props">
               <q-chip :color="getActionColor(props.value)" text-color="white" dense>
@@ -130,7 +122,14 @@
             </q-td>
           </template>
 
-          <!-- Кнопка перегляду змін -->
+          <template v-slot:body-cell-audit_type="props">
+            <q-td :props="props">
+              <q-chip :color="getAuditTypeColor(props.value)" text-color="white" dense>
+                {{ formatAuditType(props.value) }}
+              </q-chip>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-changes="props">
             <q-td :props="props" class="text-center">
               <q-btn
@@ -149,7 +148,6 @@
       </q-card-section>
     </q-card>
 
-    <!-- Діалог для перегляду змін -->
     <q-dialog v-model="changesDialog" maximized>
       <q-card>
         <q-card-section class="row items-center">
@@ -160,7 +158,6 @@
 
         <q-card-section class="q-pa-md">
           <div class="row q-gutter-md">
-            <!-- Інформація про дію -->
             <div class="col-12">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.actionInfo') }}</div>
               <q-list bordered class="rounded-borders">
@@ -182,16 +179,20 @@
                     <q-item-label>{{ formatActionType(selectedLog?.action_type) }}</q-item-label>
                   </q-item-section>
                 </q-item>
+                <q-item>
+                  <q-item-section>
+                    <q-item-label caption>{{ $t('pages.auditLogs.auditType') }}</q-item-label>
+                    <q-item-label>{{ formatAuditType(selectedLog?.audit_type) }}</q-item-label>
+                  </q-item-section>
+                </q-item>
               </q-list>
             </div>
 
-            <!-- Старі значення -->
             <div class="col-12 col-md-6" v-if="selectedLog?.old_values">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.oldValues') }}</div>
               <pre class="changes-pre">{{ formatValues(selectedLog.old_values) }}</pre>
             </div>
 
-            <!-- Нові значення -->
             <div class="col-12 col-md-6" v-if="selectedLog?.new_values">
               <div class="text-subtitle1 q-mb-sm">{{ $t('pages.auditLogs.newValues') }}</div>
               <pre class="changes-pre">{{ formatValues(selectedLog.new_values) }}</pre>
@@ -213,7 +214,6 @@ import { date } from 'quasar'
 const $q = useQuasar()
 const { t, locale } = useI18n()
 
-// State
 const loading = ref(false)
 const logs = ref([])
 const pagination = ref({
@@ -238,19 +238,16 @@ const filters = ref({
   auditType: null,
 })
 
-// Діалог змін
 const changesDialog = ref(false)
 const selectedLog = ref(null)
 
 const actionTypeOptions = ref([])
 const entityTypeOptions = ref([])
 
-// Функція форматування лейблу пагінації
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
 
-// Оновлення опцій при зміні мови
 const updateActionTypeOptions = () => {
   if (actionTypeOptions.value.length) {
     actionTypeOptions.value = actionTypeOptions.value.map((option) => ({
@@ -269,7 +266,6 @@ const updateEntityTypeOptions = () => {
   }
 }
 
-// Watch за зміною мови
 watch(
   () => locale.value,
   () => {
@@ -278,7 +274,6 @@ watch(
   },
 )
 
-// Функція для отримання типів логів
 const fetchLogTypes = async () => {
   try {
     const response = await api.get('/audit-logs/types')
@@ -301,7 +296,6 @@ const fetchLogTypes = async () => {
   }
 }
 
-// Helper functions
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   return date.formatDate(
@@ -315,6 +309,11 @@ const formatActionType = (actionType) => {
   return t(`pages.auditLogs.actions.${actionType.toLowerCase()}`)
 }
 
+const formatAuditType = (type) => {
+  if (!type) return '-'
+  return t(`pages.auditLogs.auditTypes.${type.toLowerCase()}`)
+}
+
 const getActionColor = (actionType) => {
   const colors = {
     LOGIN: 'info',
@@ -323,6 +322,14 @@ const getActionColor = (actionType) => {
     DELETE: 'negative',
   }
   return colors[actionType] || 'grey'
+}
+
+const getAuditTypeColor = (type) => {
+  const colors = {
+    SYSTEM: 'purple',
+    BUSINESS: 'teal',
+  }
+  return colors[type] || 'grey'
 }
 
 const formatValues = (values) => {
@@ -346,7 +353,6 @@ const formatValues = (values) => {
   }
 }
 
-// Columns
 const columns = computed(() => [
   {
     name: 'created_at',
@@ -380,6 +386,13 @@ const columns = computed(() => [
     sortable: true,
   },
   {
+    name: 'audit_type',
+    label: t('pages.auditLogs.auditType'),
+    align: 'left',
+    field: 'audit_type',
+    sortable: true,
+  },
+  {
     name: 'ip_address',
     label: 'IP',
     align: 'left',
@@ -394,7 +407,6 @@ const columns = computed(() => [
   },
 ])
 
-// Methods
 const fetchLogs = async () => {
   loading.value = true
   try {
@@ -406,22 +418,15 @@ const fetchLogs = async () => {
       search: filters.value.search,
       actionType: filters.value.actionType,
       entityType: filters.value.entityType,
-    }
-
-    if (filters.value.dateFrom) {
-      params.dateFrom = filters.value.dateFrom
-    }
-    if (filters.value.dateTo) {
-      params.dateTo = filters.value.dateTo
+      auditType: filters.value.auditType,
+      dateFrom: filters.value.dateFrom || null,
+      dateTo: filters.value.dateTo || null,
     }
 
     const response = await api.get('/audit-logs', { params })
-
     if (response.data.success) {
       logs.value = response.data.logs
       pagination.value.rowsNumber = response.data.total
-    } else {
-      throw new Error(response.data.message)
     }
   } catch (error) {
     console.error('Error fetching logs:', error)
@@ -456,7 +461,6 @@ const onRequest = async (props) => {
   await fetchLogs()
 }
 
-// Watch filters
 watch(
   filters,
   () => {
@@ -466,7 +470,6 @@ watch(
   { deep: true },
 )
 
-// Initial fetch
 onMounted(async () => {
   await fetchLogTypes()
   await fetchLogs()
@@ -518,7 +521,6 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
-/* Стилі для світлої теми */
 :deep(.q-table) thead tr {
   background: var(--q-primary);
 }
@@ -529,7 +531,6 @@ onMounted(async () => {
   padding: 8px 16px;
 }
 
-/* Стилі для темної теми */
 .body--dark :deep(.q-table) thead tr {
   background: var(--q-dark);
 }
@@ -538,12 +539,10 @@ onMounted(async () => {
   color: white !important;
 }
 
-/* Стилі для ховера рядків */
 :deep(.q-table) tbody tr:hover {
   background: rgba(var(--q-primary), 0.1);
 }
 
-/* Стилі для парних рядків */
 :deep(.q-table) tbody tr:nth-child(even) {
   background: rgba(0, 0, 0, 0.03);
 }
@@ -552,12 +551,10 @@ onMounted(async () => {
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* Стилі для клітинок таблиці */
 :deep(.q-table) td {
   padding: 8px 16px;
 }
 
-/* Стилі для границь таблиці */
 :deep(.q-table) {
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
@@ -566,7 +563,6 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Стилі для розділових ліній */
 :deep(.q-table) th,
 :deep(.q-table) td {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
