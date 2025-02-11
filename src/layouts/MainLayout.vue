@@ -210,13 +210,13 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+    <!-- Scroll to top button -->
+    <q-page-sticky position="bottom-right" :offset="[20, 20]">
+      <q-btn v-show="scrolled" round color="primary" icon="keyboard_arrow_up" @click="scrollToTop">
+        <q-tooltip>{{ $t('common.scrollToTop') }}</q-tooltip>
+      </q-btn>
+    </q-page-sticky>
   </q-layout>
-  <!-- Scroll to top button -->
-  <q-page-sticky position="bottom-right" :offset="[20, 20]">
-    <q-btn v-show="scrolled" round color="primary" icon="keyboard_arrow_up" @click="scrollToTop">
-      <q-tooltip>{{ $t('common.scrollToTop') }}</q-tooltip>
-    </q-btn>
-  </q-page-sticky>
 </template>
 
 <script setup>
@@ -229,7 +229,7 @@ import { useAuthStore } from 'stores/auth'
 const scrolled = ref(false)
 
 const checkScroll = () => {
-  scrolled.value = window.pageYOffset > 100
+  scrolled.value = document.documentElement.scrollTop > 100
 }
 
 const scrollToTop = () => {
@@ -359,9 +359,7 @@ const logout = async () => {
 }
 /* Анімація для кнопки прокрутки */
 .q-page-sticky .q-btn {
-  transition:
-    opacity 0.3s,
-    transform 0.3s;
+  transition: all 0.3s ease-in-out;
 }
 
 [v-show='false'].q-page-sticky .q-btn {
