@@ -13,4 +13,5 @@ export default {
   all: 'Всі',
   yes: 'Так',
   no: 'Ні',
+  scrollToTop: 'Нагору',
 }
