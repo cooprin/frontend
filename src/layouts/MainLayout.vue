@@ -211,14 +211,41 @@
       <router-view />
     </q-page-container>
   </q-layout>
+  <!-- Scroll to top button -->
+  <q-page-sticky position="bottom-right" :offset="[20, 20]">
+    <q-btn v-show="scrolled" round color="primary" icon="keyboard_arrow_up" @click="scrollToTop">
+      <q-tooltip>{{ $t('common.scrollToTop') }}</q-tooltip>
+    </q-btn>
+  </q-page-sticky>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
+
+const scrolled = ref(false)
+
+const checkScroll = () => {
+  scrolled.value = window.pageYOffset > 100
+}
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', checkScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', checkScroll)
+})
 
 const $q = useQuasar()
 const { locale } = useI18n()
@@ -329,5 +356,17 @@ const logout = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* Анімація для кнопки прокрутки */
+.q-page-sticky .q-btn {
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+[v-show='false'].q-page-sticky .q-btn {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
 }
 </style>
