@@ -103,7 +103,23 @@
                 dense
                 emit-value
                 map-options
-              />
+                class="country-select"
+              >
+                <template v-slot:option="{ opt }">
+                  <q-item>
+                    <q-item-section>
+                      <q-item-label>{{ opt.country }}</q-item-label>
+                      <q-item-label caption>{{ opt.code }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+
+                <template v-slot:selected>
+                  <div class="row no-wrap">
+                    <div class="text-subtitle2">{{ selectedCountryCode }}</div>
+                  </div>
+                </template>
+              </q-select>
             </div>
             <div class="col-8">
               <q-input
@@ -113,6 +129,8 @@
                 outlined
                 dense
                 :mask="selectedCountryMask"
+                unmasked-value
+                :rules="[(val) => !val || val.length >= 5 || $t('pages.profile.invalidPhone')]"
               >
                 <template v-slot:prepend>
                   <q-icon name="phone" />
@@ -423,5 +441,20 @@ const onSubmitPassword = async () => {
 
 .full-width {
   width: 100%;
+}
+.country-select {
+  min-width: 120px;
+}
+
+:deep(.q-field__native > span) {
+  opacity: 1 !important;
+}
+
+:deep(.q-select__dropdown-icon) {
+  margin-left: 4px;
+}
+
+:deep(.q-field__prefix) {
+  padding-right: 6px;
 }
 </style>
