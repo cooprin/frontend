@@ -114,6 +114,9 @@ export default {
       view: 'View',
       export: 'Export',
       import: 'Import',
+      audit_export: 'Audit Export',
+      audit_export_success: 'Audit Export Success',
+      audit_export_error: 'Audit Export Error',
       // System actions
       list_view: 'List View',
       error: 'Error',

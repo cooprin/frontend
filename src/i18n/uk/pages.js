@@ -118,6 +118,9 @@ export default {
       view: 'Перегляд',
       export: 'Експорт',
       import: 'Імпорт',
+      audit_export: 'Експорт аудиту',
+      audit_export_success: 'Успішний експорт аудиту',
+      audit_export_error: 'Помилка експорту аудиту',
       // Системні дії
       list_view: 'Перегляд списку',
       error: 'Помилка',
