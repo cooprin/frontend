@@ -229,60 +229,6 @@
             <template v-else>
               <q-item dense>
                 <q-item-section avatar>
-                  <q-icon name="settings">
-                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
-                      <q-list style="min-width: 200px">
-                        <q-item clickable v-ripple :to="{ name: 'users' }">
-                          <q-item-section avatar>
-                            <q-icon name="people" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.users') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'roles' }">
-                          <q-item-section avatar>
-                            <q-icon name="manage_accounts" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.userGroups') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'permissions' }">
-                          <q-item-section avatar>
-                            <q-icon name="security" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.permissions') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'resources' }">
-                          <q-item-section avatar>
-                            <q-icon name="extension" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.resources') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-                          <q-item-section avatar>
-                            <q-icon name="history" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.auditLogs') }}
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-icon>
-                </q-item-section>
-              </q-item>
-              <q-item dense>
-                <q-item-section avatar>
                   <q-icon name="inventory_2">
                     <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
                       <q-list style="min-width: 200px">
@@ -356,6 +302,60 @@
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.stockMovements') }}
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-icon>
+                </q-item-section>
+              </q-item>
+              <q-item dense>
+                <q-item-section avatar>
+                  <q-icon name="settings">
+                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                      <q-list style="min-width: 200px">
+                        <q-item clickable v-ripple :to="{ name: 'users' }">
+                          <q-item-section avatar>
+                            <q-icon name="people" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.users') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'roles' }">
+                          <q-item-section avatar>
+                            <q-icon name="manage_accounts" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.userGroups') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'permissions' }">
+                          <q-item-section avatar>
+                            <q-icon name="security" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.permissions') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'resources' }">
+                          <q-item-section avatar>
+                            <q-icon name="extension" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.resources') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
+                          <q-item-section avatar>
+                            <q-icon name="history" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.auditLogs') }}
                           </q-item-section>
                         </q-item>
                       </q-list>

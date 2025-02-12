@@ -14,4 +14,15 @@ export default {
   yes: 'Yes',
   no: 'No',
   scrollToTop: 'Scroll to top',
+  validation: {
+    required: 'This field is required',
+    invalidSKU: 'Invalid SKU format',
+  },
+
+  errors: {
+    loading: 'Error loading data',
+    creating: 'Error creating record',
+    updating: 'Error updating record',
+    deleting: 'Error deleting record',
+  },
 }
