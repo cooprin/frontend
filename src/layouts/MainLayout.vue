@@ -88,6 +88,86 @@
               {{ $t('layouts.mainLayout.dashboard') }}
             </q-item-section>
           </q-item>
+          <!-- Products Menu -->
+          <template v-if="!miniState">
+            <q-expansion-item
+              icon="inventory_2"
+              :label="$t('layouts.mainLayout.products')"
+              expand-separator
+            >
+              <q-item clickable v-ripple :to="{ name: 'products' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="inventory" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.productsList') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'manufacturers' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="factory" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.manufacturers') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'suppliers' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="local_shipping" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.suppliers') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'models' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="category" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.models') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
+          <!-- Warehouses Menu -->
+          <template v-if="!miniState">
+            <q-expansion-item
+              icon="warehouse"
+              :label="$t('layouts.mainLayout.warehouses')"
+              expand-separator
+            >
+              <q-item clickable v-ripple :to="{ name: 'warehouses' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="store" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.warehousesList') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'stock' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="inventory" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.stock') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'stock-movements' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="swap_horiz" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.stockMovements') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
 
           <!-- Admin Menu -->
           <template v-if="authStore.hasRole('admin')">
@@ -194,6 +274,88 @@
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.auditLogs') }}
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-icon>
+                </q-item-section>
+              </q-item>
+              <q-item dense>
+                <q-item-section avatar>
+                  <q-icon name="inventory_2">
+                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                      <q-list style="min-width: 200px">
+                        <q-item clickable v-ripple :to="{ name: 'products' }">
+                          <q-item-section avatar>
+                            <q-icon name="inventory" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.productsList') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'manufacturers' }">
+                          <q-item-section avatar>
+                            <q-icon name="factory" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.manufacturers') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'suppliers' }">
+                          <q-item-section avatar>
+                            <q-icon name="local_shipping" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.suppliers') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'models' }">
+                          <q-item-section avatar>
+                            <q-icon name="category" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.models') }}
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-menu>
+                  </q-icon>
+                </q-item-section>
+              </q-item>
+
+              <q-item dense>
+                <q-item-section avatar>
+                  <q-icon name="warehouse">
+                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                      <q-list style="min-width: 200px">
+                        <q-item clickable v-ripple :to="{ name: 'warehouses' }">
+                          <q-item-section avatar>
+                            <q-icon name="store" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.warehousesList') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'stock' }">
+                          <q-item-section avatar>
+                            <q-icon name="inventory" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.stock') }}
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item clickable v-ripple :to="{ name: 'stock-movements' }">
+                          <q-item-section avatar>
+                            <q-icon name="swap_horiz" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.stockMovements') }}
                           </q-item-section>
                         </q-item>
                       </q-list>
