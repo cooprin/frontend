@@ -63,25 +63,25 @@ const routes = [
       {
         path: 'products/:id',
         name: 'product-details',
-        //component: () => import('pages/ProductDetailsPage.vue'),
+        component: () => import('pages/ProductDetailsPage.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'manufacturers',
         name: 'manufacturers',
-        //component: () => import('pages/ManufacturersPage.vue'),
+        component: () => import('pages/ManufacturersPage.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'suppliers',
         name: 'suppliers',
-        //component: () => import('pages/SuppliersPage.vue'),
+        component: () => import('pages/SuppliersPage.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'models',
         name: 'models',
-        //component: () => import('pages/ModelsPage.vue'),
+        component: () => import('pages/ModelsPage.vue'),
         meta: { requiresAuth: true },
       },
       {

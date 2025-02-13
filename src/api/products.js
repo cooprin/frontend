@@ -61,4 +61,19 @@ export const ProductsApi = {
       },
     })
   },
+
+  // Отримання історії руху продукту
+  getProductMovements: (id, params = {}) => {
+    return api.get(`/stock/movements`, {
+      params: {
+        ...params,
+        product_id: id,
+      },
+    })
+  },
+
+  // Отримання поточного розташування продукту
+  getCurrentLocation: (id) => {
+    return api.get(`/stock/current-location/${id}`)
+  },
 }
