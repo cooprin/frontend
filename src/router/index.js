@@ -87,19 +87,19 @@ const routes = [
       {
         path: 'warehouses',
         name: 'warehouses',
-        //component: () => import('pages/WarehousesPage.vue'),
+        component: () => import('pages/WarehousesPage.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'stock',
         name: 'stock',
-        //component: () => import('pages/StockPage.vue'),
+        component: () => import('pages/StockPage.vue'),
         meta: { requiresAuth: true },
       },
       {
         path: 'stock/movements',
         name: 'stock-movements',
-        // component: () => import('pages/StockMovementsPage.vue'),
+        component: () => import('pages/StockMovementsPage.vue'),
         meta: { requiresAuth: true },
       },
     ],
