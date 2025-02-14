@@ -296,7 +296,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { UsersApi } from '@/api/users'
+import { UsersApi } from 'src/api/users'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const selectedCountryCode = ref('+380')

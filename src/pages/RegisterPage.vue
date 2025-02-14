@@ -86,7 +86,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { AuthApi } from '@/api/auth'
+import { AuthApi } from 'src/api/auth'
 
 const router = useRouter()
 const $q = useQuasar()

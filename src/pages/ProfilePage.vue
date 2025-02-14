@@ -204,7 +204,7 @@ import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from 'src/stores/auth'
-import { AuthApi } from '@/api/auth'
+import { AuthApi } from 'src/api/auth'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const selectedCountryCode = ref('+380')

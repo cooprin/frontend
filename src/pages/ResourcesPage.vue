@@ -198,7 +198,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { ResourcesApi } from '@/api/resources'
+import { ResourcesApi } from 'src/api/resources'
 
 const $q = useQuasar()
 const { t } = useI18n()

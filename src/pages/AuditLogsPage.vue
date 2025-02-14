@@ -385,7 +385,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
-import { AuditApi } from '@/api/audit'
+import { AuditApi } from 'src/api/audit'
 
 const $q = useQuasar()
 const { t, locale } = useI18n()

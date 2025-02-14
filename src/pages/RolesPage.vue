@@ -123,7 +123,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { RolesApi } from '@/api/roles'
+import { RolesApi } from 'src/api/roles'
 
 const $q = useQuasar()
 const { t } = useI18n()
