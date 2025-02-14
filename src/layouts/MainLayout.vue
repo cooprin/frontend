@@ -83,7 +83,7 @@
           <!-- Dashboard -->
           <q-item clickable v-ripple :to="{ name: 'dashboard' }">
             <q-item-section avatar>
-              <q-icon name="home" />
+              <q-icon name="dashboard" />
             </q-item-section>
             <q-item-section v-if="!miniState">
               {{ $t('layouts.mainLayout.dashboard') }}
@@ -93,13 +93,13 @@
           <!-- Products Menu -->
           <template v-if="!miniState">
             <q-expansion-item
-              icon="inventory_2"
+              icon="inventory"
               :label="$t('layouts.mainLayout.products')"
               expand-separator
             >
               <q-item clickable v-ripple :to="{ name: 'products' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="boxes" />
+                  <q-icon name="inventory_2" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.productsList') }}
@@ -108,7 +108,7 @@
 
               <q-item clickable v-ripple :to="{ name: 'manufacturers' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="factory" />
+                  <q-icon name="precision_manufacturing" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.manufacturers') }}
@@ -162,7 +162,7 @@
 
               <q-item clickable v-ripple :to="{ name: 'stock' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="shelves" />
+                  <q-icon name="inventory" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.stock') }}
@@ -200,7 +200,7 @@
 
                 <q-item clickable v-ripple :to="{ name: 'roles' }" dense>
                   <q-item-section avatar>
-                    <q-icon name="manage_accounts" />
+                    <q-icon name="admin_panel_settings" />
                   </q-item-section>
                   <q-item-section>
                     {{ $t('layouts.mainLayout.userGroups') }}
@@ -240,12 +240,12 @@
             <template v-else>
               <q-item dense>
                 <q-item-section avatar>
-                  <q-icon name="inventory_2">
+                  <q-icon name="inventory">
                     <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
                       <q-list style="min-width: 200px">
                         <q-item clickable v-ripple :to="{ name: 'products' }">
                           <q-item-section avatar>
-                            <q-icon name="boxes" />
+                            <q-icon name="inventory_2" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.productsList') }}
@@ -254,7 +254,7 @@
 
                         <q-item clickable v-ripple :to="{ name: 'manufacturers' }">
                           <q-item-section avatar>
-                            <q-icon name="factory" />
+                            <q-icon name="precision_manufacturing" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.manufacturers') }}
@@ -309,7 +309,7 @@
 
                         <q-item clickable v-ripple :to="{ name: 'stock' }">
                           <q-item-section avatar>
-                            <q-icon name="shelves" />
+                            <q-icon name="inventory" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.stock') }}
@@ -346,7 +346,7 @@
 
                         <q-item clickable v-ripple :to="{ name: 'roles' }">
                           <q-item-section avatar>
-                            <q-icon name="manage_accounts" />
+                            <q-icon name="admin_panel_settings" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.userGroups') }}
@@ -480,7 +480,6 @@ const logout = async () => {
 }
 </script>
 
-/* В MainLayout.vue оновіть css */
 <style>
 .drawer-menu .q-item {
   color: var(--q-primary) !important;
@@ -540,6 +539,7 @@ const logout = async () => {
   height: 100%;
   object-fit: cover;
 }
+
 /* Анімація для кнопки прокрутки */
 .q-page-sticky .q-btn {
   transition: all 0.3s ease-in-out;
