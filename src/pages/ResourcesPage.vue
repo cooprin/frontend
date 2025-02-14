@@ -194,12 +194,11 @@
     </q-dialog>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { api } from 'boot/axios'
+import { ResourcesApi } from '@/api/resources'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -216,11 +215,6 @@ const pagination = ref({
   rowsPerPage: 10,
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
-})
-
-watch(search, async () => {
-  pagination.value.page = 1 // скидаємо сторінку на першу при пошуку
-  await fetchResources()
 })
 
 // Dialog states
@@ -289,14 +283,12 @@ const getTypeColor = (type) => {
 const fetchResources = async () => {
   loading.value = true
   try {
-    const response = await api.get('/resources', {
-      params: {
-        page: pagination.value.page,
-        perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
-        sortBy: pagination.value.sortBy,
-        descending: pagination.value.descending,
-        search: search.value.trim(),
-      },
+    const response = await ResourcesApi.getResources({
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      search: search.value.trim(),
     })
     resources.value = response.data.resources
     pagination.value.rowsNumber = response.data.total
@@ -313,7 +305,7 @@ const fetchResources = async () => {
 // Fetch resource actions
 const fetchResourceActions = async (resource) => {
   try {
-    const response = await api.get(`/resources/${resource.id}/actions`)
+    const response = await ResourcesApi.getResourceActions(resource.id)
     actions.value = response.data.actions
   } catch {
     $q.notify({
@@ -358,9 +350,9 @@ const saveResource = async () => {
     }
 
     if (editedResource.value.id) {
-      await api.put(`/resources/${editedResource.value.id}`, data)
+      await ResourcesApi.updateResource(editedResource.value.id, data)
     } else {
-      await api.post('/resources', data)
+      await ResourcesApi.createResource(data)
     }
     await fetchResources()
     resourceDialog.value = false
@@ -381,7 +373,7 @@ const saveResource = async () => {
 const saveActions = async () => {
   saving.value = true
   try {
-    await api.put(`/resources/${selectedResource.value.id}/actions`, {
+    await ResourcesApi.updateResourceActions(selectedResource.value.id, {
       actions: actions.value,
     })
     actionsDialog.value = false
@@ -415,7 +407,7 @@ const confirmDelete = (resource) => {
     },
   }).onOk(async () => {
     try {
-      await api.delete(`/resources/${resource.id}`)
+      await ResourcesApi.deleteResource(resource.id)
       await fetchResources()
       $q.notify({
         type: 'positive',
@@ -436,12 +428,17 @@ const onRequest = async (props) => {
   await fetchResources()
 }
 
+// Watch для пошуку
+watch(search, () => {
+  pagination.value.page = 1
+  fetchResources()
+})
+
 // Initial fetch
 onMounted(() => {
   fetchResources()
 })
 </script>
-
 <style>
 .changes-pre {
   padding: 10px;

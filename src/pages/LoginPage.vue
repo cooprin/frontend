@@ -30,7 +30,7 @@
           </q-input>
 
           <div class="flex justify-between">
-            <q-btn label="Увійти" type="submit" color="primary" :loading="authStore.loading" />
+            <q-btn label="Увійти" type="submit" color="primary" :loading="loading" />
             <q-btn label="Реєстрація" flat color="primary" :to="{ name: 'register' }" />
           </div>
         </q-form>
@@ -42,23 +42,35 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from 'stores/auth'
+import { useQuasar } from 'quasar'
+import { AuthApi } from '@/api/auth'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const $q = useQuasar()
 
 const email = ref('')
 const password = ref('')
 const isPwd = ref(true)
+const loading = ref(false)
 
 const onSubmit = async () => {
-  const success = await authStore.login({
-    email: email.value,
-    password: password.value,
-  })
+  loading.value = true
+  try {
+    const response = await AuthApi.login({
+      email: email.value,
+      password: password.value,
+    })
 
-  if (success) {
-    router.push({ name: 'dashboard' })
+    if (response.data.success) {
+      router.push({ name: 'dashboard' })
+    }
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: error.response?.data?.message || 'Помилка входу',
+    })
+  } finally {
+    loading.value = false
   }
 }
 </script>

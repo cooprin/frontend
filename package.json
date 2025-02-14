@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.0.1",
   "description": "Cooprins CRM",
-  "productName": "Quasar App",
+  "productName": "Cooprins CRM",
   "author": "cooprin",
   "type": "module",
   "private": true,

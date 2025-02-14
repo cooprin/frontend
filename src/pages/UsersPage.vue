@@ -296,7 +296,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { api } from 'boot/axios'
+import { UsersApi } from '@/api/users'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const selectedCountryCode = ref('+380')
@@ -322,11 +322,6 @@ const pagination = ref({
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
-
-// Функція форматування лейблу пагінації
-const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
-  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
-}
 
 // Dialog state
 const userDialog = ref(false)
@@ -414,10 +409,15 @@ const columns = computed(() => [
   },
 ])
 
+// Функція форматування лейблу пагінації
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 // Fetch roles
 const fetchRoles = async () => {
   try {
-    const response = await api.get('/user/roles')
+    const response = await UsersApi.getRoles()
     roleOptions.value = response.data.roles.map((role) => ({
       label: role.name,
       value: role.id,
@@ -434,14 +434,12 @@ const fetchRoles = async () => {
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const response = await api.get('/user', {
-      params: {
-        page: pagination.value.page,
-        perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
-        sortBy: pagination.value.sortBy,
-        descending: pagination.value.descending,
-        search: search.value,
-      },
+    const response = await UsersApi.getUsers({
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      search: search.value,
     })
     users.value = response.data.users
     pagination.value.rowsNumber = response.data.total
@@ -464,7 +462,6 @@ const openUserDialog = (user = null) => {
     phoneNumber.value = getPhoneWithoutCode(phone)
     editedUser.value = {
       ...user,
-      // Отримуємо роль зі списку ролей по імені
       role_id: roleOptions.value.find((role) => role.label === user.role_name)?.value,
       password: '',
       confirmPassword: '',
@@ -504,9 +501,9 @@ const saveUser = async () => {
       phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
     }
     if (editedUser.value.id) {
-      await api.put(`/user/${editedUser.value.id}`, userData)
+      await UsersApi.updateUser(editedUser.value.id, userData)
     } else {
-      await api.post('/user', userData)
+      await UsersApi.createUser(userData)
     }
     await fetchUsers()
     userDialog.value = false
@@ -527,9 +524,7 @@ const saveUser = async () => {
 const savePassword = async () => {
   savingPassword.value = true
   try {
-    await api.put(`/user/${passwordData.value.userId}/password`, {
-      password: passwordData.value.password,
-    })
+    await UsersApi.changePassword(passwordData.value.userId, passwordData.value.password)
     passwordDialog.value = false
     $q.notify({
       type: 'positive',
@@ -547,9 +542,7 @@ const savePassword = async () => {
 
 const toggleUserStatus = async (user) => {
   try {
-    await api.put(`/user/${user.id}/status`, {
-      is_active: !user.is_active,
-    })
+    await UsersApi.updateStatus(user.id, !user.is_active)
     await fetchUsers()
     $q.notify({
       type: 'positive',
@@ -566,7 +559,7 @@ const toggleUserStatus = async (user) => {
 const confirmDelete = async (user) => {
   const deleteUser = async (force = false) => {
     try {
-      await api.delete(`/user/${user.id}${force ? '?force=true' : ''}`)
+      await UsersApi.deleteUser(user.id, force)
       await fetchUsers()
       $q.notify({
         type: 'positive',
@@ -622,6 +615,7 @@ const confirmDelete = async (user) => {
     await deleteUser()
   })
 }
+
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
   pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
@@ -640,7 +634,6 @@ onMounted(() => {
   fetchUsers()
 })
 </script>
-
 <style>
 .changes-pre {
   padding: 10px;

@@ -7,9 +7,7 @@
 
       <!-- Avatar Section -->
       <q-card-section>
-        <!-- Прибираємо q-form звідси -->
         <div class="column justify-center items-center q-mb-md">
-          <!-- Current Avatar -->
           <q-img
             v-if="user?.avatar_url && !avatarPreview"
             :src="getAvatarUrl"
@@ -17,7 +15,6 @@
             style="border: 2px solid #ddd"
             alt="Current Avatar"
           />
-          <!-- New Avatar Preview -->
           <q-img
             v-if="avatarPreview"
             :src="avatarPreview"
@@ -55,10 +52,8 @@
       <!-- Profile Information Form -->
       <q-card-section>
         <q-form ref="profileFormRef" @submit="onSubmitProfile" class="q-gutter-md">
-          <!-- Email (readonly) -->
           <q-input v-model="user.email" label="Email" outlined dense readonly disable />
 
-          <!-- Role (readonly) -->
           <q-input
             v-model="userRole"
             :label="$t('pages.profile.role')"
@@ -72,7 +67,6 @@
             </template>
           </q-input>
 
-          <!-- Editable fields -->
           <q-input
             ref="firstNameRef"
             v-model="profileData.first_name"
@@ -85,7 +79,7 @@
           <q-input
             ref="lastNameRef"
             v-model="profileData.last_name"
-            :label="$t('pages.profile.last_mame')"
+            :label="$t('pages.profile.last_name')"
             outlined
             dense
             :rules="[(val) => !!val || $t('pages.profile.required')]"
@@ -207,13 +201,13 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useAuthStore } from 'src/stores/auth'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { api } from 'boot/axios'
+import { useAuthStore } from 'src/stores/auth'
+import { AuthApi } from '@/api/auth'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
-const selectedCountryCode = ref('+380') // За замовчуванням Україна
+const selectedCountryCode = ref('+380')
 const phoneNumber = ref('')
 
 const selectedCountryMask = computed(() => {
@@ -311,9 +305,7 @@ const uploadAvatar = async () => {
     const formData = new FormData()
     formData.append('avatar', avatarFile.value)
 
-    const response = await api.post('/profile/avatar', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await AuthApi.uploadAvatar(formData)
 
     if (response.data.success) {
       await authStore.fetchUser()
@@ -354,13 +346,12 @@ watch(
   { immediate: true },
 )
 
-// Profile update handling
 const onSubmitProfile = async () => {
   if (!hasProfileChanges.value) return
 
   profileLoading.value = true
   try {
-    const response = await api.put('/profile/update-profile', {
+    const response = await AuthApi.updateProfile({
       first_name: profileData.value.first_name,
       last_name: profileData.value.last_name,
       phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
@@ -385,26 +376,23 @@ const onSubmitProfile = async () => {
   }
 }
 
-// Password change handling
 const onSubmitPassword = async () => {
   if (!canChangePassword.value) return
 
   passwordLoading.value = true
   try {
-    const response = await api.put('/profile/change-password', {
+    const response = await AuthApi.changePassword({
       current_password: passwordData.value.currentPassword,
       new_password: passwordData.value.newPassword,
     })
 
     if (response.data.success) {
-      // Reset form data
       passwordData.value = {
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       }
 
-      // Reset validation states
       await passwordFormRef.value?.resetValidation()
       currentPasswordRef.value?.resetValidation()
       newPasswordRef.value?.resetValidation()

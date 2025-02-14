@@ -73,12 +73,7 @@
           </q-input>
 
           <div class="flex justify-between">
-            <q-btn
-              label="Зареєструватися"
-              type="submit"
-              color="primary"
-              :loading="authStore.loading"
-            />
+            <q-btn label="Зареєструватися" type="submit" color="primary" :loading="loading" />
             <q-btn label="Вже маєте акаунт?" flat color="primary" :to="{ name: 'login' }" />
           </div>
         </q-form>
@@ -90,10 +85,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from 'stores/auth'
+import { useQuasar } from 'quasar'
+import { AuthApi } from '@/api/auth'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const $q = useQuasar()
 
 const firstName = ref('')
 const lastName = ref('')
@@ -103,22 +99,41 @@ const password = ref('')
 const confirmPassword = ref('')
 const isPwd = ref(true)
 const isConfirmPwd = ref(true)
+const loading = ref(false)
 
 const onSubmit = async () => {
   if (password.value !== confirmPassword.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'Паролі не співпадають',
+    })
     return
   }
 
-  const success = await authStore.register({
-    firstName: firstName.value,
-    lastName: lastName.value,
-    email: email.value,
-    phone: phone.value,
-    password: password.value,
-  })
+  loading.value = true
+  try {
+    const response = await AuthApi.register({
+      firstName: firstName.value,
+      lastName: lastName.value,
+      email: email.value,
+      phone: phone.value,
+      password: password.value,
+    })
 
-  if (success) {
-    router.push({ name: 'login' })
+    if (response.data.success) {
+      $q.notify({
+        type: 'positive',
+        message: 'Реєстрація успішна',
+      })
+      router.push({ name: 'login' })
+    }
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: error.response?.data?.message || 'Помилка реєстрації',
+    })
+  } finally {
+    loading.value = false
   }
 }
 </script>

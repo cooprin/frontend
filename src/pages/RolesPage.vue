@@ -119,12 +119,11 @@
     </q-dialog>
   </q-page>
 </template>
-
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { api } from 'boot/axios'
+import { RolesApi } from '@/api/roles'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -223,14 +222,12 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const fetchRoles = async () => {
   loading.value = true
   try {
-    const response = await api.get('/roles', {
-      params: {
-        page: pagination.value.page,
-        perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
-        sortBy: pagination.value.sortBy,
-        descending: pagination.value.descending,
-        search: search.value,
-      },
+    const response = await RolesApi.getRoles({
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      search: search.value,
     })
     roles.value = response.data.roles
     pagination.value.rowsNumber = response.data.total
@@ -247,7 +244,7 @@ const fetchRoles = async () => {
 // Fetch permissions
 const fetchPermissions = async () => {
   try {
-    const response = await api.get('/roles/permissions')
+    const response = await RolesApi.getPermissions()
     permissions.value = response.data.permissions
   } catch {
     $q.notify({
@@ -262,7 +259,7 @@ const openRoleDialog = async (role = null) => {
   if (role) {
     editedRole.value = { ...role }
     try {
-      const response = await api.get(`/roles/${role.id}/permissions`)
+      const response = await RolesApi.getRolePermissions(role.id)
       selectedPermissions.value = response.data.permissions.map((p) => p.id)
     } catch {
       $q.notify({
@@ -291,9 +288,9 @@ const saveRole = async () => {
     }
 
     if (editedRole.value.id) {
-      await api.put(`/roles/${editedRole.value.id}`, roleData)
+      await RolesApi.updateRole(editedRole.value.id, roleData)
     } else {
-      await api.post('/roles', roleData)
+      await RolesApi.createRole(roleData)
     }
     await fetchRoles()
     roleDialog.value = false
@@ -328,7 +325,7 @@ const confirmDelete = (role) => {
     persistent: true,
   }).onOk(async () => {
     try {
-      await api.delete(`/roles/${role.id}`)
+      await RolesApi.deleteRole(role.id)
       await fetchRoles()
       $q.notify({
         type: 'positive',
@@ -361,7 +358,6 @@ onMounted(() => {
   fetchPermissions()
 })
 </script>
-
 <style>
 .changes-pre {
   padding: 10px;

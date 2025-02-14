@@ -169,6 +169,7 @@
             />
           </div>
         </div>
+
         <!-- Таблиця логів -->
         <q-table
           :rows="logs"
@@ -378,12 +379,13 @@
     </q-dialog>
   </q-page>
 </template>
+
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { api } from 'boot/axios'
 import { date } from 'quasar'
+import { AuditApi } from '@/api/audit'
 
 const $q = useQuasar()
 const { t, locale } = useI18n()
@@ -546,50 +548,10 @@ const formatValues = (values) => {
   }
 }
 
-// Handlers
-const showChanges = (log) => {
-  selectedLog.value = log
-  changesDialog.value = true
-}
-
-const showBrowserInfo = (log) => {
-  selectedLog.value = log
-  browserInfoDialog.value = true
-}
-
-const onSchemaChange = () => {
-  const schema = filters.value.tableSchema
-  filters.value.tableName = null
-  if (schema) {
-    tableOptions.value =
-      schemasData.value[schema]?.tables.map((table) => ({
-        label: table,
-        value: table,
-      })) || []
-  } else {
-    tableOptions.value = []
-  }
-}
-
-const clearFilters = () => {
-  filters.value = {
-    search: '',
-    actionType: null,
-    entityType: null,
-    dateFrom: null,
-    dateTo: null,
-    auditType: null,
-    tableSchema: null,
-    tableName: null,
-    ipAddress: null,
-    hasChanges: null,
-  }
-}
-
 // API calls
 const fetchLogTypes = async () => {
   try {
-    const response = await api.get('/audit-logs/types')
+    const response = await AuditApi.getTypes()
     if (response.data.success) {
       actionTypeOptions.value = response.data.actionTypes.map((type) => ({
         label: t(`pages.auditLogs.actions.${type.toLowerCase()}`),
@@ -630,7 +592,7 @@ const fetchLogs = async () => {
       ...filters.value,
     }
 
-    const response = await api.get('/audit-logs', { params })
+    const response = await AuditApi.getLogs(params)
     if (response.data.success) {
       logs.value = response.data.logs
       pagination.value.rowsNumber = response.data.total
@@ -646,16 +608,52 @@ const fetchLogs = async () => {
   }
 }
 
+// Handlers
+const showChanges = (log) => {
+  selectedLog.value = log
+  changesDialog.value = true
+}
+
+const showBrowserInfo = (log) => {
+  selectedLog.value = log
+  browserInfoDialog.value = true
+}
+
+const onSchemaChange = () => {
+  const schema = filters.value.tableSchema
+  filters.value.tableName = null
+  if (schema) {
+    tableOptions.value =
+      schemasData.value[schema]?.tables.map((table) => ({
+        label: table,
+        value: table,
+      })) || []
+  } else {
+    tableOptions.value = []
+  }
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    actionType: null,
+    entityType: null,
+    dateFrom: null,
+    dateTo: null,
+    auditType: null,
+    tableSchema: null,
+    tableName: null,
+    ipAddress: null,
+    hasChanges: null,
+  }
+}
+
 const exportData = async () => {
   exporting.value = true
   try {
-    const params = {
+    const response = await AuditApi.exportLogs({
       ...filters.value,
       export: true,
-    }
-    const response = await api.get('/audit-logs/export', {
-      params,
-      responseType: 'blob',
     })
 
     const url = window.URL.createObjectURL(new Blob([response.data]))
