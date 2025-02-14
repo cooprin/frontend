@@ -14,4 +14,8 @@ export default {
   yes: 'Так',
   no: 'Ні',
   scrollToTop: 'Нагору',
+  validation: {
+    required: "Поле обов'язкове для заповнення",
+    codeFormat: 'Дозволені тільки літери, цифри, тире та підкреслення',
+  },
 }

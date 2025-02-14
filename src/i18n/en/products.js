@@ -6,6 +6,10 @@ export default {
   create: 'Create Product',
   delete: 'Delete Product',
   view: 'View Product',
+  characteristics: 'Characteristics',
+  noCharacteristics: 'No characteristics defined',
+  type: 'Product Type',
+  mainInfo: 'Main Information',
 
   // Поля продукту
   sku: 'SKU',

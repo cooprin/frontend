@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh LpR fFf">
-    <!-- Header content unchanged -->
+    <!-- Header -->
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
@@ -68,6 +68,7 @@
       </q-toolbar>
     </q-header>
 
+    <!-- Drawer -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
@@ -88,6 +89,7 @@
               {{ $t('layouts.mainLayout.dashboard') }}
             </q-item-section>
           </q-item>
+
           <!-- Products Menu -->
           <template v-if="!miniState">
             <q-expansion-item
@@ -97,7 +99,7 @@
             >
               <q-item clickable v-ripple :to="{ name: 'products' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="inventory" />
+                  <q-icon name="package_2" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.productsList') }}
@@ -130,6 +132,15 @@
                   {{ $t('layouts.mainLayout.models') }}
                 </q-item-section>
               </q-item>
+
+              <q-item clickable v-ripple :to="{ name: 'product-types' }" dense>
+                <q-item-section avatar>
+                  <q-icon name="style" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.productTypes') }}
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </template>
 
@@ -151,7 +162,7 @@
 
               <q-item clickable v-ripple :to="{ name: 'stock' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="inventory" />
+                  <q-icon name="shelves" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.stock') }}
@@ -234,7 +245,7 @@
                       <q-list style="min-width: 200px">
                         <q-item clickable v-ripple :to="{ name: 'products' }">
                           <q-item-section avatar>
-                            <q-icon name="inventory" />
+                            <q-icon name="package_2" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.productsList') }}
@@ -267,9 +278,10 @@
                             {{ $t('layouts.mainLayout.models') }}
                           </q-item-section>
                         </q-item>
-                        <q-item clickable v-ripple :to="{ name: 'product-types' }" dense>
+
+                        <q-item clickable v-ripple :to="{ name: 'product-types' }">
                           <q-item-section avatar>
-                            <q-icon name="category" />
+                            <q-icon name="style" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.productTypes') }}
@@ -297,7 +309,7 @@
 
                         <q-item clickable v-ripple :to="{ name: 'stock' }">
                           <q-item-section avatar>
-                            <q-icon name="inventory" />
+                            <q-icon name="shelves" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.stock') }}
@@ -317,6 +329,7 @@
                   </q-icon>
                 </q-item-section>
               </q-item>
+
               <q-item dense>
                 <q-item-section avatar>
                   <q-icon name="settings">

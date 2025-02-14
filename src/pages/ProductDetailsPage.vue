@@ -129,6 +129,40 @@
           </q-card-section>
         </q-card>
 
+        <!-- Характеристики - новий блок -->
+        <q-card flat bordered class="q-mt-md">
+          <q-card-section>
+            <div class="text-h6">{{ $t('products.characteristics') }}</div>
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-section>
+            <div v-if="!hasCharacteristics" class="text-grey text-center q-pa-md">
+              {{ $t('products.noCharacteristics') }}
+            </div>
+
+            <div v-else class="row q-col-gutter-md">
+              <template v-for="char in productCharacteristics" :key="char.code">
+                <div class="col-12 col-sm-6">
+                  <div class="text-grey">{{ char.name }}</div>
+                  <div class="row items-center q-gutter-x-sm">
+                    <div>{{ formatCharacteristicValue(char) }}</div>
+                    <q-chip
+                      :color="getCharacteristicColor(char.type)"
+                      text-color="white"
+                      square
+                      dense
+                    >
+                      {{ $t(`productTypes.characteristicTypes.${char.type}`) }}
+                    </q-chip>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </q-card-section>
+        </q-card>
+
         <!-- Поточне розташування -->
         <q-card flat bordered class="q-mt-md">
           <q-card-section>
@@ -247,6 +281,53 @@ import ProductDialog from 'components/products/ProductDialog.vue'
 const route = useRoute()
 const $q = useQuasar()
 const { t } = useI18n()
+const hasCharacteristics = computed(() => {
+  return (
+    product.value?.characteristics &&
+    Object.keys(product.value.characteristics).length > 0 &&
+    Object.keys(product.value.characteristics)[0] !== 'none'
+  )
+})
+const productCharacteristics = computed(() => {
+  if (!hasCharacteristics.value) return []
+
+  return Object.entries(product.value.characteristics)
+    .map(([code, data]) => ({
+      code,
+      ...data,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
+
+// Додаємо нові методи
+const getCharacteristicColor = (type) => {
+  const colors = {
+    string: 'blue',
+    number: 'green',
+    date: 'purple',
+    boolean: 'orange',
+    select: 'red',
+  }
+  return colors[type] || 'grey'
+}
+
+const formatCharacteristicValue = (char) => {
+  if (!char.value) return '-'
+
+  switch (char.type) {
+    case 'boolean':
+      return char.value === 'true' || char.value === true ? t('common.yes') : t('common.no')
+
+    case 'date':
+      return formatDate(char.value)
+
+    case 'number':
+      return Number(char.value).toLocaleString()
+
+    default:
+      return char.value
+  }
+}
 
 // State
 const product = ref(null)

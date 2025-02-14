@@ -17,6 +17,7 @@ export default {
   validation: {
     required: 'This field is required',
     invalidSKU: 'Invalid SKU format',
+    codeFormat: 'Only letters, numbers, dashes and underscores are allowed',
   },
 
   errors: {

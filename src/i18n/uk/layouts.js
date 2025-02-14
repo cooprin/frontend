@@ -20,5 +20,6 @@ export default {
     warehousesList: 'Список складів',
     stock: 'Склад',
     stockMovements: 'Рух товарів',
+    productTypes: 'Типи продуктів',
   },
 }

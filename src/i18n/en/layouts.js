@@ -20,5 +20,6 @@ export default {
     warehousesList: 'Warehouses List',
     stock: 'Stock',
     stockMovements: 'Stock Movements',
+    productTypes: 'Product Types',
   },
 }
