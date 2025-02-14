@@ -111,7 +111,7 @@ const routes = [
       {
         path: 'product-types/:id',
         name: 'product-type-edit',
-        component: () => import('pages/ProductTypeEditPage.vue'),
+        //component: () => import('pages/ProductTypeEditPage.vue'),
         meta: { requiresAuth: true },
       },
     ],
