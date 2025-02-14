@@ -102,6 +102,18 @@ const routes = [
         component: () => import('pages/StockMovementsPage.vue'),
         meta: { requiresAuth: true },
       },
+      {
+        path: 'product-types',
+        name: 'product-types',
+        component: () => import('pages/ProductTypesPage.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: 'product-types/:id',
+        name: 'product-type-edit',
+        component: () => import('pages/ProductTypeEditPage.vue'),
+        meta: { requiresAuth: true },
+      },
     ],
   },
 

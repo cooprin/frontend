@@ -267,6 +267,14 @@
                             {{ $t('layouts.mainLayout.models') }}
                           </q-item-section>
                         </q-item>
+                        <q-item clickable v-ripple :to="{ name: 'product-types' }" dense>
+                          <q-item-section avatar>
+                            <q-icon name="category" />
+                          </q-item-section>
+                          <q-item-section>
+                            {{ $t('layouts.mainLayout.productTypes') }}
+                          </q-item-section>
+                        </q-item>
                       </q-list>
                     </q-menu>
                   </q-icon>
