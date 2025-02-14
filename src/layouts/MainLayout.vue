@@ -99,7 +99,7 @@
             >
               <q-item clickable v-ripple :to="{ name: 'products' }" dense>
                 <q-item-section avatar>
-                  <q-icon name="inventory" />
+                  <q-icon name="boxes" />
                 </q-item-section>
                 <q-item-section>
                   {{ $t('layouts.mainLayout.productsList') }}
@@ -245,7 +245,7 @@
                       <q-list style="min-width: 200px">
                         <q-item clickable v-ripple :to="{ name: 'products' }">
                           <q-item-section avatar>
-                            <q-icon name="inventory" />
+                            <q-icon name="boxes" />
                           </q-item-section>
                           <q-item-section>
                             {{ $t('layouts.mainLayout.productsList') }}
