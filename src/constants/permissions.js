@@ -89,10 +89,14 @@ export const MENU_PERMISSIONS = {
 }
 
 // Групи прав для відображення секцій меню
+const getListPermissions = (section) => {
+  return Object.values(section)
+    .map((subsection) => subsection.LIST)
+    .filter(Boolean)
+}
+
 export const MENU_SECTIONS_PERMISSIONS = {
-  PRODUCTS: Object.values(MENU_PERMISSIONS.PRODUCTS).flatMap((section) => Object.values(section)),
-  WAREHOUSES: Object.values(MENU_PERMISSIONS.WAREHOUSES).flatMap((section) =>
-    Object.values(section),
-  ),
-  SETTINGS: Object.values(MENU_PERMISSIONS.SETTINGS).flatMap((section) => Object.values(section)),
+  PRODUCTS: getListPermissions(MENU_PERMISSIONS.PRODUCTS),
+  WAREHOUSES: getListPermissions(MENU_PERMISSIONS.WAREHOUSES),
+  SETTINGS: getListPermissions(MENU_PERMISSIONS.SETTINGS),
 }
