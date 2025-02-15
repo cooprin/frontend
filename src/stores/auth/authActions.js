@@ -1,12 +1,12 @@
 import { Notify } from 'quasar'
-import { api } from 'boot/axios'
+import { AuthApi } from 'src/api/auth' // Змінюємо імпорт
 
 export const useAuthActions = () => ({
   // Метод реєстрації
   async register(credentials) {
     try {
       this.loading = true
-      await api.post('/auth/register', credentials)
+      await AuthApi.register(credentials) // Використовуємо AuthApi
       Notify.create({
         type: 'positive',
         message: 'Реєстрація успішна! Тепер ви можете увійти.',
@@ -27,7 +27,7 @@ export const useAuthActions = () => ({
   async login(credentials) {
     try {
       this.loading = true
-      const { data } = await api.post('/auth/login', credentials)
+      const { data } = await AuthApi.login(credentials) // Використовуємо AuthApi
       this.token = data.token
       this.user = data.user
 
@@ -53,7 +53,7 @@ export const useAuthActions = () => ({
   // Метод отримання даних користувача
   async fetchUser() {
     try {
-      const { data } = await api.get('/auth/me')
+      const { data } = await AuthApi.fetchUser() // Використовуємо AuthApi
       this.user = data
       localStorage.setItem('user', JSON.stringify(data))
     } catch {
@@ -62,15 +62,21 @@ export const useAuthActions = () => ({
   },
 
   // Метод для виходу
-  logout() {
-    this.token = null
-    this.user = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    Notify.create({
-      type: 'info',
-      message: 'Ви вийшли з системи',
-    })
+  async logout() {
+    try {
+      await AuthApi.logout() // Використовуємо AuthApi
+    } catch (error) {
+      console.error('Помилка при виході:', error)
+    } finally {
+      this.token = null
+      this.user = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      Notify.create({
+        type: 'info',
+        message: 'Ви вийшли з системи',
+      })
+    }
   },
 
   // Метод ініціалізації

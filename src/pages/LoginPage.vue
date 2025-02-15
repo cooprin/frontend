@@ -30,7 +30,7 @@
           </q-input>
 
           <div class="flex justify-between">
-            <q-btn label="Увійти" type="submit" color="primary" :loading="loading" />
+            <q-btn label="Увійти" type="submit" color="primary" :loading="authStore.loading" />
             <q-btn label="Реєстрація" flat color="primary" :to="{ name: 'register' }" />
           </div>
         </q-form>
@@ -42,51 +42,23 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/stores/auth' // Додайте цей імпорт
-import { AuthApi } from 'src/api/auth'
+import { useAuthStore } from 'src/stores/auth'
 
 const router = useRouter()
-const $q = useQuasar()
-const authStore = useAuthStore() // Ініціалізуйте auth store
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 const isPwd = ref(true)
-const loading = ref(false)
 
 const onSubmit = async () => {
-  loading.value = true
-  try {
-    const response = await AuthApi.login({
-      email: email.value,
-      password: password.value,
-    })
+  const success = await authStore.login({
+    email: email.value,
+    password: password.value,
+  })
 
-    if (response.data.success) {
-      // Зберігаємо токен та дані користувача
-      const { token, user } = response.data
-      authStore.setToken(token)
-      authStore.setUser(user)
-
-      // Встановлюємо токен для API
-      AuthApi.setAuthToken(token)
-
-      // Перенаправляємо на головну сторінку
-      router.push({ name: 'dashboard' })
-
-      $q.notify({
-        type: 'positive',
-        message: 'Успішний вхід в систему',
-      })
-    }
-  } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: error.response?.data?.message || 'Помилка входу',
-    })
-  } finally {
-    loading.value = false
+  if (success) {
+    router.push({ name: 'dashboard' })
   }
 }
 </script>
