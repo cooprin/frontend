@@ -15,7 +15,14 @@
     <div class="row q-col-gutter-sm q-mb-md">
       <!-- Пошук -->
       <div class="col-12 col-sm-4">
-        <q-input v-model="filters.search" :label="$t('common.search')" dense outlined clearable>
+        <q-input
+          v-model="filters.search"
+          :label="$t('common.search')"
+          dense
+          outlined
+          clearable
+          :loading="loading"
+        >
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -158,6 +165,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ManufacturersApi } from 'src/api/manufacturers'
+import { debounce } from 'lodash'
 
 const $q = useQuasar()
 const { t, locale } = useI18n()
@@ -192,10 +200,10 @@ const filters = ref({
 
 watch(
   filters,
-  () => {
+  debounce(() => {
     pagination.value.page = 1
     loadManufacturers()
-  },
+  }, 300),
   { deep: true },
 )
 // Пагінація

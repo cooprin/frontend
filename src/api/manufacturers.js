@@ -2,14 +2,22 @@ import { api } from 'boot/axios'
 
 export const ManufacturersApi = {
   // Отримання списку виробників з фільтрами і пагінацією
-  getManufacturers: (params) => {
-    return api.get('/manufacturers', {
-      params,
-      // Додаємо обробку помилок
-      validateStatus: function (status) {
-        return status >= 200 && status < 300
-      },
-    })
+  getManufacturers: async (params) => {
+    try {
+      const cleanParams = Object.entries(params)
+        .filter(([, value]) => value != null && value !== '')
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+
+      const response = await api.get('/manufacturers', {
+        params: cleanParams,
+        validateStatus: (status) => status >= 200 && status < 300,
+      })
+
+      return response
+    } catch (error) {
+      console.error('Failed to fetch manufacturers:', error)
+      throw error
+    }
   },
 
   // Створення виробника
