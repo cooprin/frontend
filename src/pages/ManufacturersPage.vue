@@ -15,14 +15,7 @@
     <div class="row q-col-gutter-sm q-mb-md">
       <!-- Пошук -->
       <div class="col-12 col-sm-4">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
-        >
+        <q-input v-model="filters.search" :label="$t('common.search')" dense outlined clearable>
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -40,7 +33,6 @@
           clearable
           emit-value
           map-options
-          @update:model-value="onFiltersChange"
         />
       </div>
     </div>
@@ -175,10 +167,6 @@ watch(locale, () => {
   loadManufacturers()
 })
 
-const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
-  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
-}
-
 // State
 const loading = ref(false)
 const saving = ref(false)
@@ -202,6 +190,14 @@ const filters = ref({
   isActive: null,
 })
 
+watch(
+  filters,
+  () => {
+    pagination.value.page = 1
+    loadManufacturers()
+  },
+  { deep: true },
+)
 // Пагінація
 const pagination = ref({
   page: 1,
@@ -257,6 +253,10 @@ const columns = computed(() => [
 ])
 
 // Methods
+
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
 const loadManufacturers = async () => {
   loading.value = true
   try {
@@ -295,20 +295,6 @@ const onRequest = async (props) => {
   pagination.value.sortBy = sortBy
   pagination.value.descending = descending
   await loadManufacturers()
-}
-
-const onFiltersChange = () => {
-  try {
-    pagination.value.page = 1
-    loadManufacturers()
-  } catch (error) {
-    console.error('Filter error:', error)
-    $q.notify({
-      color: 'negative',
-      message: 'Помилка при фільтрації',
-      icon: 'error',
-    })
-  }
 }
 
 const openCreateDialog = () => {
