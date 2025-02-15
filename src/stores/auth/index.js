@@ -8,7 +8,18 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isAuthenticated: (state) => !!state.token && !!state.user,
-    hasRole: (state) => (role) => state.user?.roles?.includes(role),
+
+    // Перевірка наявності хоча б одного права з масиву
+    hasAnyPermission: (state) => (permissions) => {
+      if (!state.user?.permissions) return false
+      return permissions.some((permission) => state.user.permissions.includes(permission))
+    },
+
+    // Перевірка наявності всіх прав з масиву
+    hasAllPermissions: (state) => (permissions) => {
+      if (!state.user?.permissions) return false
+      return permissions.every((permission) => state.user.permissions.includes(permission))
+    },
   },
   actions: useAuthActions(),
 })

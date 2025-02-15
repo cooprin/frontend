@@ -68,7 +68,7 @@
       </q-toolbar>
     </q-header>
 
-    <!-- Drawer -->
+    <!-- Drawer Menu -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
@@ -90,14 +90,22 @@
             </q-item-section>
           </q-item>
 
-          <!-- Products Menu -->
-          <template v-if="!miniState">
+          <!-- Products Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.PRODUCTS)"
+          >
             <q-expansion-item
               icon="shopping_bag"
               :label="$t('layouts.mainLayout.products')"
               expand-separator
             >
-              <q-item clickable v-ripple :to="{ name: 'products' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.VIEW.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'products' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="inventory_2" />
                 </q-item-section>
@@ -106,7 +114,13 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'manufacturers' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.MANUFACTURERS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'manufacturers' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="factory" />
                 </q-item-section>
@@ -115,7 +129,13 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'suppliers' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.SUPPLIERS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'suppliers' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="local_shipping" />
                 </q-item-section>
@@ -124,7 +144,13 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'models' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.MODELS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'models' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="devices" />
                 </q-item-section>
@@ -133,7 +159,13 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'product-types' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.PRODUCT_TYPES.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'product-types' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="category" />
                 </q-item-section>
@@ -144,14 +176,22 @@
             </q-expansion-item>
           </template>
 
-          <!-- Warehouses Menu -->
-          <template v-if="!miniState">
+          <!-- Warehouses Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WAREHOUSES)"
+          >
             <q-expansion-item
               icon="warehouse"
               :label="$t('layouts.mainLayout.warehouses')"
               expand-separator
             >
-              <q-item clickable v-ripple :to="{ name: 'warehouses' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WAREHOUSES.VIEW.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'warehouses' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="store" />
                 </q-item-section>
@@ -160,7 +200,13 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'stock' }" dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WAREHOUSES.STOCK.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'stock' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="analytics" />
                 </q-item-section>
@@ -169,7 +215,15 @@
                 </q-item-section>
               </q-item>
 
-              <q-item clickable v-ripple :to="{ name: 'stock-movements' }" dense>
+              <q-item
+                v-if="
+                  authStore.hasAnyPermission([MENU_PERMISSIONS.WAREHOUSES.STOCK_MOVEMENTS.LIST])
+                "
+                clickable
+                v-ripple
+                :to="{ name: 'stock-movements' }"
+                dense
+              >
                 <q-item-section avatar>
                   <q-icon name="sync_alt" />
                 </q-item-section>
@@ -180,211 +234,324 @@
             </q-expansion-item>
           </template>
 
-          <!-- Admin Menu -->
-          <template v-if="authStore.hasRole('admin')">
-            <!-- Full mode -->
-            <template v-if="!miniState">
-              <q-expansion-item
-                icon="settings"
-                :label="$t('layouts.mainLayout.settings')"
-                expand-separator
+          <!-- Settings Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)"
+          >
+            <q-expansion-item
+              icon="settings"
+              :label="$t('layouts.mainLayout.settings')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.USERS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'users' }"
+                dense
               >
-                <q-item clickable v-ripple :to="{ name: 'users' }" dense>
-                  <q-item-section avatar>
-                    <q-icon name="group" />
-                  </q-item-section>
-                  <q-item-section>
-                    {{ $t('layouts.mainLayout.users') }}
-                  </q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple :to="{ name: 'roles' }" dense>
-                  <q-item-section avatar>
-                    <q-icon name="shield" />
-                  </q-item-section>
-                  <q-item-section>
-                    {{ $t('layouts.mainLayout.userGroups') }}
-                  </q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple :to="{ name: 'permissions' }" dense>
-                  <q-item-section avatar>
-                    <q-icon name="verified_user" />
-                  </q-item-section>
-                  <q-item-section>
-                    {{ $t('layouts.mainLayout.permissions') }}
-                  </q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple :to="{ name: 'resources' }" dense>
-                  <q-item-section avatar>
-                    <q-icon name="view_module" />
-                  </q-item-section>
-                  <q-item-section>
-                    {{ $t('layouts.mainLayout.resources') }}
-                  </q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple :to="{ name: 'audit-logs' }" dense>
-                  <q-item-section avatar>
-                    <q-icon name="receipt_long" />
-                  </q-item-section>
-                  <q-item-section>
-                    {{ $t('layouts.mainLayout.auditLogs') }}
-                  </q-item-section>
-                </q-item>
-              </q-expansion-item>
-            </template>
-
-            <!-- Mini mode -->
-            <template v-else>
-              <q-item dense>
                 <q-item-section avatar>
-                  <q-icon name="shopping_bag">
-                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
-                      <q-list style="min-width: 200px">
-                        <q-item clickable v-ripple :to="{ name: 'products' }">
-                          <q-item-section avatar>
-                            <q-icon name="inventory_2" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.productsList') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'manufacturers' }">
-                          <q-item-section avatar>
-                            <q-icon name="factory" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.manufacturers') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'suppliers' }">
-                          <q-item-section avatar>
-                            <q-icon name="local_shipping" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.suppliers') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'models' }">
-                          <q-item-section avatar>
-                            <q-icon name="devices" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.models') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'product-types' }">
-                          <q-item-section avatar>
-                            <q-icon name="category" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.productTypes') }}
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-icon>
+                  <q-icon name="group" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.users') }}
                 </q-item-section>
               </q-item>
 
-              <q-item dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.ROLES.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'roles' }"
+                dense
+              >
                 <q-item-section avatar>
-                  <q-icon name="warehouse">
-                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
-                      <q-list style="min-width: 200px">
-                        <q-item clickable v-ripple :to="{ name: 'warehouses' }">
-                          <q-item-section avatar>
-                            <q-icon name="store" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.warehousesList') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'stock' }">
-                          <q-item-section avatar>
-                            <q-icon name="shopping_bag" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.stock') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'stock-movements' }">
-                          <q-item-section avatar>
-                            <q-icon name="sync_alt" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.stockMovements') }}
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-icon>
+                  <q-icon name="shield" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.userGroups') }}
                 </q-item-section>
               </q-item>
 
-              <q-item dense>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.PERMISSIONS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'permissions' }"
+                dense
+              >
                 <q-item-section avatar>
-                  <q-icon name="settings">
-                    <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
-                      <q-list style="min-width: 200px">
-                        <q-item clickable v-ripple :to="{ name: 'users' }">
-                          <q-item-section avatar>
-                            <q-icon name="group" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.users') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'roles' }">
-                          <q-item-section avatar>
-                            <q-icon name="shield" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.userGroups') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'permissions' }">
-                          <q-item-section avatar>
-                            <q-icon name="verified_user" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.permissions') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'resources' }">
-                          <q-item-section avatar>
-                            <q-icon name="view_module" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.resources') }}
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-ripple :to="{ name: 'audit-logs' }">
-                          <q-item-section avatar>
-                            <q-icon name="receipt_long" />
-                          </q-item-section>
-                          <q-item-section>
-                            {{ $t('layouts.mainLayout.auditLogs') }}
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-icon>
+                  <q-icon name="verified_user" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.permissions') }}
                 </q-item-section>
               </q-item>
-            </template>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.RESOURCES.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'resources' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="view_module" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.resources') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.AUDIT_LOGS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'audit-logs' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="receipt_long" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.auditLogs') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
+          <!-- Mini Mode Menus -->
+          <template v-else>
+            <!-- Products Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.PRODUCTS)" dense>
+              <q-item-section avatar>
+                <q-icon name="shopping_bag">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.VIEW.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'products' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="inventory_2" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.productsList') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.MANUFACTURERS.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'manufacturers' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="factory" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.manufacturers') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.SUPPLIERS.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'suppliers' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="local_shipping" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.suppliers') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.MODELS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'models' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="devices" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.models') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.PRODUCTS.PRODUCT_TYPES.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'product-types' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="category" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.productTypes') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Warehouses Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WAREHOUSES)" dense>
+              <q-item-section avatar>
+                <q-icon name="warehouse">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WAREHOUSES.VIEW.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'warehouses' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="store" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.warehousesList') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WAREHOUSES.STOCK.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'stock' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="analytics" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.stock') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([
+                            MENU_PERMISSIONS.WAREHOUSES.STOCK_MOVEMENTS.LIST,
+                          ])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'stock-movements' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="sync_alt" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.stockMovements') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Settings Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)" dense>
+              <q-item-section avatar>
+                <q-icon name="settings">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.USERS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'users' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="group" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.users') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.ROLES.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'roles' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="shield" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.userGroups') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.PERMISSIONS.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'permissions' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="verified_user" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.permissions') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.RESOURCES.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'resources' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="view_module" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.resources') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="
+                          authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.AUDIT_LOGS.LIST])
+                        "
+                        clickable
+                        v-ripple
+                        :to="{ name: 'audit-logs' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="receipt_long" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.auditLogs') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
           </template>
         </q-list>
       </q-scroll-area>
@@ -475,7 +642,7 @@ const changeLanguage = (lang) => {
 }
 
 const logout = async () => {
-  authStore.logout()
+  await authStore.logout()
   router.push({ name: 'login' })
 }
 </script>
@@ -485,61 +652,54 @@ const logout = async () => {
   cursor: pointer;
 }
 
-/* Світла тема - основний стиль */
+/* Стилі для світлої теми */
+.body--light .drawer-menu .q-item,
 .body--light .drawer-menu .q-icon {
-  color: transparent !important;
-  background: linear-gradient(120deg, #6b48ff 0%, #0080ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 0.1));
+  color: #000000de !important; /* Material Design recommended black with opacity */
   transition: all 0.3s ease;
 }
 
-/* Світла тема - при наведенні */
+.body--light .drawer-menu .q-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .body--light .drawer-menu .q-item:hover .q-icon {
-  background: linear-gradient(120deg, #0080ff 0%, #6b48ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
   transform: scale(1.1);
 }
 
-/* Світла тема - активний елемент */
+.body--light .drawer-menu .q-item.q-router-link-active {
+  background: rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
 .body--light .drawer-menu .q-item.q-router-link-active .q-icon {
-  background: linear-gradient(120deg, #5f3fff 0%, #0066cc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
   transform: scale(1.1);
+  color: var(--q-primary) !important;
 }
 
-/* Темна тема - основний стиль */
+/* Стилі для темної теми */
+.body--dark .drawer-menu .q-item,
 .body--dark .drawer-menu .q-icon {
-  color: transparent !important;
-  background: linear-gradient(120deg, #bb86fc 0%, #3700b3 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0px 0px 2px rgba(187, 134, 252, 0.3));
+  color: #ffffffde !important; /* Material Design recommended white with opacity */
   transition: all 0.3s ease;
 }
 
-/* Темна тема - при наведенні */
+.body--dark .drawer-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .body--dark .drawer-menu .q-item:hover .q-icon {
-  background: linear-gradient(120deg, #3700b3 0%, #bb86fc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
   transform: scale(1.1);
 }
 
-/* Темна тема - активний елемент */
+.body--dark .drawer-menu .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 500;
+}
+
 .body--dark .drawer-menu .q-item.q-router-link-active .q-icon {
-  background: linear-gradient(120deg, #cf6679 0%, #03dac6 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
   transform: scale(1.1);
-}
-
-/* Загальні стилі для активних елементів меню */
-.drawer-menu .q-item.q-router-link-active {
-  background: rgba(var(--q-primary), 0.1);
+  color: var(--q-primary) !important;
 }
 
 /* Стилі для вкладених елементів */
