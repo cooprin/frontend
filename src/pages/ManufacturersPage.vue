@@ -257,7 +257,6 @@ const columns = computed(() => [
 ])
 
 // Methods
-// Methods
 const loadManufacturers = async () => {
   loading.value = true
   try {
@@ -270,12 +269,20 @@ const loadManufacturers = async () => {
     })
     manufacturers.value = response.data.manufacturers
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    })
+
     $q.notify({
       color: 'negative',
-      message: t('common.errors.loading'),
+      message: error.response?.data?.message || 'Помилка завантаження даних',
       icon: 'error',
     })
+    manufacturers.value = []
+    pagination.value.rowsNumber = 0
   } finally {
     loading.value = false
   }
@@ -291,8 +298,17 @@ const onRequest = async (props) => {
 }
 
 const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadManufacturers()
+  try {
+    pagination.value.page = 1
+    loadManufacturers()
+  } catch (error) {
+    console.error('Filter error:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка при фільтрації',
+      icon: 'error',
+    })
+  }
 }
 
 const openCreateDialog = () => {
