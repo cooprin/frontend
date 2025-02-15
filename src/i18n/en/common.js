@@ -13,12 +13,17 @@ export default {
   all: 'All',
   yes: 'Yes',
   no: 'No',
+  status: 'Status',
+  actions: 'Actions',
+  search: 'Search',
   scrollToTop: 'Scroll to top',
   validation: {
     required: 'This field is required',
     invalidSKU: 'Invalid SKU format',
     codeFormat: 'Only letters, numbers, dashes and underscores are allowed',
   },
+  showFilters: 'Show filters',
+  hideFilters: 'Hide filters',
 
   errors: {
     loading: 'Error loading data',

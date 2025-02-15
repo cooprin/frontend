@@ -13,9 +13,14 @@ export default {
   all: 'Всі',
   yes: 'Так',
   no: 'Ні',
+  search: 'Пошук',
+  status: 'Статус',
+  actions: 'Дії',
   scrollToTop: 'Нагору',
   validation: {
     required: "Поле обов'язкове для заповнення",
     codeFormat: 'Дозволені тільки літери, цифри, тире та підкреслення',
   },
+  showFilters: 'Показати фільтри',
+  hideFilters: 'Сховати фільтри',
 }
