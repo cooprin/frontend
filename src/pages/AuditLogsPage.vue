@@ -2,173 +2,189 @@
   <q-page padding>
     <q-card flat bordered>
       <q-card-section>
-        <div class="text-h6">{{ $t('pages.auditLogs.title') }}</div>
+        <div class="row items-center q-mb-md">
+          <div class="text-h6">{{ $t('pages.auditLogs.title') }}</div>
+          <q-space />
+          <q-btn
+            :icon="showFilters ? 'expand_less' : 'expand_more'"
+            :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
+            flat
+            color="primary"
+            @click="showFilters = !showFilters"
+          />
+        </div>
       </q-card-section>
 
       <q-card-section>
-        <div class="row q-col-gutter-sm q-mb-md">
-          <!-- Пошук -->
-          <div class="col-12 col-sm-4">
-            <q-input
-              v-model="filters.search"
-              :label="$t('pages.auditLogs.search')"
-              outlined
-              dense
-              clearable
-            >
-              <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
-          </div>
+        <q-slide-transition>
+          <div v-show="showFilters">
+            <div class="row q-col-gutter-sm q-mb-md">
+              <!-- Пошук -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  v-model="filters.search"
+                  :label="$t('pages.auditLogs.search')"
+                  outlined
+                  dense
+                  clearable
+                >
+                  <template v-slot:append>
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
 
-          <!-- Тип дії -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.actionType"
-              :options="actionTypeOptions"
-              :label="$t('pages.auditLogs.actionType')"
-              outlined
-              dense
-              clearable
-              emit-value
-              map-options
-            />
-          </div>
+              <!-- Тип дії -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.actionType"
+                  :options="actionTypeOptions"
+                  :label="$t('pages.auditLogs.actionType')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-          <!-- Тип сутності -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.entityType"
-              :options="entityTypeOptions"
-              :label="$t('pages.auditLogs.entityType')"
-              outlined
-              dense
-              clearable
-              emit-value
-              map-options
-            />
-          </div>
+              <!-- Тип сутності -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.entityType"
+                  :options="entityTypeOptions"
+                  :label="$t('pages.auditLogs.entityType')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-          <!-- Схема -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.tableSchema"
-              :options="schemaOptions"
-              :label="$t('pages.auditLogs.schema')"
-              outlined
-              dense
-              clearable
-              emit-value
-              map-options
-              @update:model-value="onSchemaChange"
-            />
-          </div>
+              <!-- Схема -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.tableSchema"
+                  :options="schemaOptions"
+                  :label="$t('pages.auditLogs.schema')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                  @update:model-value="onSchemaChange"
+                />
+              </div>
 
-          <!-- Таблиця -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.tableName"
-              :options="tableOptions"
-              :label="$t('pages.auditLogs.table')"
-              outlined
-              dense
-              clearable
-              emit-value
-              map-options
-              :disable="!filters.tableSchema"
-            />
-          </div>
+              <!-- Таблиця -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.tableName"
+                  :options="tableOptions"
+                  :label="$t('pages.auditLogs.table')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                  :disable="!filters.tableSchema"
+                />
+              </div>
 
-          <!-- Тип аудиту -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.auditType"
-              :options="[
-                { label: $t('pages.auditLogs.auditTypes.all'), value: null },
-                { label: $t('pages.auditLogs.auditTypes.system'), value: 'SYSTEM' },
-                { label: $t('pages.auditLogs.auditTypes.business'), value: 'BUSINESS' },
-              ]"
-              :label="$t('pages.auditLogs.auditType')"
-              outlined
-              dense
-              clearable
-              emit-value
-              map-options
-            />
-          </div>
+              <!-- Тип аудиту -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.auditType"
+                  :options="[
+                    { label: $t('pages.auditLogs.auditTypes.all'), value: null },
+                    { label: $t('pages.auditLogs.auditTypes.system'), value: 'SYSTEM' },
+                    { label: $t('pages.auditLogs.auditTypes.business'), value: 'BUSINESS' },
+                  ]"
+                  :label="$t('pages.auditLogs.auditType')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-          <!-- Дата від -->
-          <div class="col-12 col-sm-4">
-            <q-input
-              v-model="filters.dateFrom"
-              :label="$t('pages.auditLogs.dateFrom')"
-              :placeholder="dateFormat"
-              outlined
-              dense
-              type="date"
-            />
-          </div>
+              <!-- Дата від -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  v-model="filters.dateFrom"
+                  :label="$t('pages.auditLogs.dateFrom')"
+                  :placeholder="dateFormat"
+                  outlined
+                  dense
+                  type="date"
+                />
+              </div>
 
-          <!-- Дата до -->
-          <div class="col-12 col-sm-4">
-            <q-input
-              v-model="filters.dateTo"
-              :label="$t('pages.auditLogs.dateTo')"
-              :placeholder="dateFormat"
-              outlined
-              dense
-              type="date"
-            />
-          </div>
+              <!-- Дата до -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  v-model="filters.dateTo"
+                  :label="$t('pages.auditLogs.dateTo')"
+                  :placeholder="dateFormat"
+                  outlined
+                  dense
+                  type="date"
+                />
+              </div>
 
-          <!-- IP адреса -->
-          <div class="col-12 col-sm-4">
-            <q-input
-              v-model="filters.ipAddress"
-              :label="$t('pages.auditLogs.ipAddress')"
-              outlined
-              dense
-              clearable
-            >
-              <template v-slot:append>
-                <q-icon name="lan" />
-              </template>
-            </q-input>
-          </div>
+              <!-- IP адреса -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  v-model="filters.ipAddress"
+                  :label="$t('pages.auditLogs.ipAddress')"
+                  outlined
+                  dense
+                  clearable
+                >
+                  <template v-slot:append>
+                    <q-icon name="lan" />
+                  </template>
+                </q-input>
+              </div>
 
-          <!-- Фільтр змін -->
-          <div class="col-12 col-sm-4">
-            <q-select
-              v-model="filters.hasChanges"
-              :options="[
-                { label: $t('pages.auditLogs.changes.all'), value: null },
-                { label: $t('pages.auditLogs.changes.withChanges'), value: true },
-                { label: $t('pages.auditLogs.changes.withoutChanges'), value: false },
-              ]"
-              :label="$t('pages.auditLogs.changes.filter')"
-              outlined
-              dense
-              emit-value
-              map-options
-            />
-          </div>
+              <!-- Фільтр змін -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.hasChanges"
+                  :options="[
+                    { label: $t('pages.auditLogs.changes.all'), value: null },
+                    { label: $t('pages.auditLogs.changes.withChanges'), value: true },
+                    { label: $t('pages.auditLogs.changes.withoutChanges'), value: false },
+                  ]"
+                  :label="$t('pages.auditLogs.changes.filter')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                />
+              </div>
 
-          <!-- Кнопки -->
-          <div class="col-12 q-gutter-x-sm">
-            <q-btn
-              color="primary"
-              :label="$t('pages.auditLogs.clearFilters')"
-              @click="clearFilters"
-            />
-            <q-btn
-              color="secondary"
-              :label="$t('pages.auditLogs.export')"
-              @click="exportData"
-              :loading="exporting"
-            />
+              <!-- Кнопки -->
+              <div class="col-12 q-gutter-x-sm">
+                <q-btn
+                  color="primary"
+                  :label="$t('pages.auditLogs.clearFilters')"
+                  @click="clearFilters"
+                />
+                <q-btn
+                  color="secondary"
+                  :label="$t('pages.auditLogs.export')"
+                  @click="exportData"
+                  :loading="exporting"
+                />
+              </div>
+            </div>
+            <!-- Закриття row -->
           </div>
-        </div>
+          <!-- Закриття v-show -->
+        </q-slide-transition>
 
         <!-- Таблиця логів -->
         <q-table
@@ -386,6 +402,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { AuditApi } from 'src/api/audit'
+
+const showFilters = ref(false)
 
 const $q = useQuasar()
 const { t, locale } = useI18n()
@@ -899,5 +917,22 @@ onMounted(async () => {
   :deep(.q-table) th {
     padding: 6px 8px;
   }
+}
+
+/* Стилі для анімації фільтрів */
+.q-slide-transition-enter-active,
+.q-slide-transition-leave-active {
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.q-slide-transition-enter-from,
+.q-slide-transition-leave-to {
+  max-height: 0;
+}
+
+.q-slide-transition-enter-to,
+.q-slide-transition-leave-from {
+  max-height: 1000px; /* Достатньо велике значення для вашого контенту */
 }
 </style>
