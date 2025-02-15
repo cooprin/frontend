@@ -43,10 +43,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { useAuthStore } from 'src/stores/auth' // Додайте цей імпорт
 import { AuthApi } from 'src/api/auth'
 
 const router = useRouter()
 const $q = useQuasar()
+const authStore = useAuthStore() // Ініціалізуйте auth store
 
 const email = ref('')
 const password = ref('')
@@ -62,7 +64,21 @@ const onSubmit = async () => {
     })
 
     if (response.data.success) {
+      // Зберігаємо токен та дані користувача
+      const { token, user } = response.data
+      authStore.setToken(token)
+      authStore.setUser(user)
+
+      // Встановлюємо токен для API
+      AuthApi.setAuthToken(token)
+
+      // Перенаправляємо на головну сторінку
       router.push({ name: 'dashboard' })
+
+      $q.notify({
+        type: 'positive',
+        message: 'Успішний вхід в систему',
+      })
     }
   } catch (error) {
     $q.notify({
