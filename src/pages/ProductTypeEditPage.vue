@@ -37,12 +37,21 @@
                 v-model="form.code"
                 :options="productTypeCodes"
                 :label="$t('productTypes.code')"
-                :rules="[(val) => !!val || $t('common.validation.required')]"
+                :rules="[
+                  (val) => !!val || $t('common.validation.required'),
+                  (val) => /^[A-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
+                ]"
                 option-label="label"
                 option-value="value"
                 emit-value
                 map-options
                 outlined
+                use-input
+                hide-selected
+                fill-input
+                input-debounce="0"
+                @filter="filterFn"
+                @input-value="updateCode"
               >
                 <template v-slot:option="{ opt, selected }">
                   <q-item v-bind="opt.props" :active="selected">
@@ -180,6 +189,28 @@ const selectedCharacteristic = ref(null)
 
 // Computed
 const isEdit = computed(() => !!route.params.id)
+
+const filterFn = (val, update) => {
+  update(() => {
+    if (val === '') {
+      productTypeCodes.value = PRODUCT_TYPE_CODES
+    } else {
+      const needle = val.toLowerCase()
+      productTypeCodes.value = PRODUCT_TYPE_CODES.filter(
+        (v) =>
+          v.label.toLowerCase().indexOf(needle) > -1 ||
+          v.value.toLowerCase().indexOf(needle) > -1 ||
+          v.description.toLowerCase().indexOf(needle) > -1,
+      )
+    }
+  })
+}
+
+const updateCode = (val) => {
+  // Перетворюємо введений текст у верхній регістр і прибираємо недопустимі символи
+  const formattedVal = val.toUpperCase().replace(/[^A-Z0-9_-]/g, '')
+  form.value.code = formattedVal
+}
 
 const productTypeCodes = computed(() => PRODUCT_TYPE_CODES.filter((code) => !code.disabled))
 
