@@ -48,4 +48,8 @@ export const ProductTypesApi = {
   updateCharacteristicsOrder: (productTypeId, data) => {
     return api.put(`/product-types/${productTypeId}/characteristics/order`, data)
   },
+
+  getProductTypeCodes: () => {
+    return api.get('/product-types/codes')
+  },
 }

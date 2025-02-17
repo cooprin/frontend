@@ -187,7 +187,21 @@ const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
 
-const productTypeCodes = computed(() => PRODUCT_TYPE_CODES.filter((code) => !code.disabled))
+const productTypeCodes = ref([])
+
+const loadProductTypeCodes = async () => {
+  try {
+    const response = await ProductTypesApi.getProductTypeCodes()
+    productTypeCodes.value = response.data.codes
+  } catch (error) {
+    console.error('Error loading product type codes:', error)
+  }
+}
+
+onMounted(() => {
+  loadProductTypeCodes()
+  loadProductType()
+})
 
 // State
 const loading = ref(false)
