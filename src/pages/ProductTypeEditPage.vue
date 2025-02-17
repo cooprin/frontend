@@ -112,7 +112,7 @@
               {{ $t('productTypes.noCharacteristics') }}
             </div>
 
-            <characteristics-list
+            <CharacteristicsList
               v-else
               :characteristics="sortedCharacteristics"
               @update="updateCharacteristicsOrder"
@@ -161,8 +161,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
 import { PRODUCT_TYPE_CODES, COMMON_CHARACTERISTICS } from 'src/constants/productTypes'
-import CharacteristicsList from '../../components/ProductTypes/CharacteristicsList.vue'
-import CharacteristicDialog from '../../components/ProductTypes/CharacteristicDialog.vue'
+import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList.vue'
+import CharacteristicDialog from 'src/components/ProductTypes/CharacteristicDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
