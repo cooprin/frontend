@@ -7,6 +7,7 @@
     </div>
 
     <!-- Фільтри -->
+    <!-- Фільтри -->
     <div class="row q-col-gutter-sm q-mb-md">
       <!-- Пошук -->
       <div class="col-12 col-sm-4">
@@ -16,7 +17,7 @@
           dense
           outlined
           clearable
-          @update:model-value="onFiltersChange"
+          :loading="loading"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -35,7 +36,6 @@
           clearable
           emit-value
           map-options
-          @update:model-value="onFiltersChange"
         />
       </div>
     </div>
@@ -51,6 +51,10 @@
       flat
       bordered
       @request="onRequest"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :selected-rows-label="$t('common.selectedRows')"
+      :pagination-label="paginationLabel"
+      @update:pagination="onRequest"
     >
       <!-- Слот для статусу -->
       <template v-slot:body-cell-is_active="props">
@@ -182,13 +186,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { SuppliersApi } from 'src/api/suppliers'
+import { debounce } from 'lodash'
 
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+watch(locale, () => {
+  loadSuppliers()
+})
+
+watch(
+  filters,
+  debounce(() => {
+    pagination.value.page = 1
+    loadSuppliers()
+  }, 300),
+  { deep: true },
+)
 
 // State
 const loading = ref(false)
@@ -224,14 +242,18 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'name',
   descending: false,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
 // Опції для селектів
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: t('common.active'), value: true },
   { label: t('common.inactive'), value: false },
-]
+])
 
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
 // Колонки таблиці
 const columns = [
   {
@@ -290,12 +312,20 @@ const loadSuppliers = async () => {
     })
     suppliers.value = response.data.suppliers
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    })
+
     $q.notify({
       color: 'negative',
-      message: t('common.errors.loading'),
+      message: error.response?.data?.message || 'Помилка завантаження даних',
       icon: 'error',
     })
+    suppliers.value = []
+    pagination.value.rowsNumber = 0
   } finally {
     loading.value = false
   }
@@ -308,11 +338,6 @@ const onRequest = async (props) => {
   pagination.value.sortBy = sortBy
   pagination.value.descending = descending
   await loadSuppliers()
-}
-
-const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadSuppliers()
 }
 
 const openCreateDialog = () => {
@@ -385,3 +410,63 @@ onMounted(() => {
   loadSuppliers()
 })
 </script>
+<style scoped>
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
+  background: var(--q-primary);
+}
+
+:deep(.q-table) thead tr th {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 8px 16px;
+}
+
+/* Стилі для темної теми */
+.body--dark :deep(.q-table) thead tr {
+  background: var(--q-dark);
+}
+
+.body--dark :deep(.q-table) thead tr th {
+  color: white !important;
+}
+
+/* Стилі для ховера рядків */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+/* Стилі для парних рядків */
+:deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark :deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Стилі для клітинок таблиці */
+:deep(.q-table) td {
+  padding: 8px 16px;
+}
+
+/* Стилі для границь таблиці */
+:deep(.q-table) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Стилі для розділових ліній */
+:deep(.q-table) th,
+:deep(.q-table) td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) th,
+.body--dark :deep(.q-table) td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+</style>
