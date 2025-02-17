@@ -103,16 +103,31 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: 'product-types',
+        path: '/product-types',
         name: 'product-types',
         component: () => import('pages/ProductTypesPage.vue'),
-        meta: { requiresAuth: true },
+        meta: {
+          requiresAuth: true,
+          permission: 'products.read',
+        },
       },
       {
-        path: 'product-types/:id',
+        path: '/product-types/create',
+        name: 'product-type-create',
+        component: () => import('pages/ProductTypeEditPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'products.create',
+        },
+      },
+      {
+        path: '/product-types/:id',
         name: 'product-type-edit',
-        //component: () => import('pages/ProductTypeEditPage.vue'),
-        meta: { requiresAuth: true },
+        component: () => import('pages/ProductTypeEditPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'products.update',
+        },
       },
     ],
   },

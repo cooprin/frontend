@@ -4,7 +4,9 @@
     <div class="row items-center justify-between q-mb-md">
       <div class="row items-center q-gutter-sm">
         <q-btn flat round icon="arrow_back" :to="{ name: 'product-types' }" />
-        <h5 class="q-mt-none q-mb-none">{{ productType?.name }}</h5>
+        <h5 class="q-mt-none q-mb-none">
+          {{ isEdit ? productType?.name : t('productTypes.create') }}
+        </h5>
       </div>
     </div>
 
@@ -25,20 +27,38 @@
                 v-model="form.name"
                 :label="$t('productTypes.name')"
                 :rules="[(val) => !!val || $t('common.validation.required')]"
+                :loading="loading"
                 outlined
               />
 
               <!-- Код -->
-              <q-input
+              <q-select
+                v-if="!isEdit"
                 v-model="form.code"
+                :options="productTypeCodes"
                 :label="$t('productTypes.code')"
-                :rules="[
-                  (val) => !!val || $t('common.validation.required'),
-                  (val) => /^[a-zA-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
-                ]"
+                :rules="[(val) => !!val || $t('common.validation.required')]"
+                option-label="label"
+                option-value="value"
+                emit-value
+                map-options
                 outlined
-                :disable="isEdit"
-              />
+              >
+                <template v-slot:option="{ opt, selected }">
+                  <q-item v-bind="opt.props" :active="selected">
+                    <q-item-section>
+                      <q-item-label>{{ opt.label }}</q-item-label>
+                      <q-item-label caption>{{ opt.description }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+              <div v-else class="row items-center q-gutter-sm">
+                <q-chip square color="primary" text-color="white">
+                  {{ form.code }}
+                </q-chip>
+                <span class="text-caption">{{ getCodeDescription(form.code) }}</span>
+              </div>
 
               <!-- Опис -->
               <q-input
@@ -46,12 +66,15 @@
                 :label="$t('productTypes.description')"
                 type="textarea"
                 outlined
+                autogrow
               />
 
               <!-- Статус -->
-              <q-toggle v-model="form.is_active" :label="$t('productTypes.isActive')" />
+              <div v-if="isEdit" class="q-mt-md">
+                <q-toggle v-model="form.is_active" :label="$t('productTypes.isActive')" />
+              </div>
 
-              <div class="row justify-end">
+              <div class="row justify-end q-mt-md">
                 <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
               </div>
             </q-form>
@@ -60,207 +83,55 @@
       </div>
 
       <!-- Характеристики -->
-      <div class="col-12 col-md-8">
+
+      <div class="col-12 col-md-8" v-if="isEdit">
         <q-card flat bordered>
           <q-card-section class="row items-center justify-between">
             <div class="text-h6">{{ $t('productTypes.characteristics') }}</div>
-            <q-btn
-              color="primary"
-              :label="$t('productTypes.addCharacteristic')"
-              icon="add"
-              @click="openCharacteristicDialog"
-            />
+            <div class="row q-gutter-sm">
+              <q-btn
+                v-if="form.code && COMMON_CHARACTERISTICS[form.code]"
+                :label="$t('productTypes.addDefaultCharacteristics')"
+                color="secondary"
+                flat
+                @click="addDefaultCharacteristics"
+              />
+              <q-btn
+                color="primary"
+                :label="$t('productTypes.addCharacteristic')"
+                icon="add"
+                @click="openCharacteristicDialog"
+              />
+            </div>
           </q-card-section>
 
           <q-separator />
 
           <q-card-section>
-            <div v-if="!productType?.characteristics?.length" class="text-center q-pa-md text-grey">
+            <div v-if="!sortedCharacteristics.length" class="text-center q-pa-md text-grey">
               {{ $t('productTypes.noCharacteristics') }}
             </div>
 
-            <div v-else class="q-gutter-md">
-              <q-card v-for="char in sortedCharacteristics" :key="char.id" flat bordered>
-                <q-card-section>
-                  <div class="row items-center justify-between">
-                    <div>
-                      <div class="text-h6">{{ char.name }}</div>
-                      <div class="text-caption">{{ char.code }}</div>
-                    </div>
-                    <div class="row q-gutter-sm">
-                      <q-btn
-                        color="warning"
-                        icon="edit"
-                        flat
-                        round
-                        dense
-                        @click="openCharacteristicDialog(char)"
-                      >
-                        <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
-                      </q-btn>
-                      <q-btn
-                        v-if="!char.usage_count"
-                        color="negative"
-                        icon="delete"
-                        flat
-                        round
-                        dense
-                        @click="confirmDeleteCharacteristic(char)"
-                      >
-                        <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
-                      </q-btn>
-                    </div>
-                  </div>
-
-                  <q-chip
-                    :color="getCharacteristicColor(char.type)"
-                    text-color="white"
-                    class="q-mt-sm"
-                  >
-                    {{ $t(`productTypes.characteristicTypes.${char.type}`) }}
-                  </q-chip>
-
-                  <div class="row q-col-gutter-sm q-mt-sm">
-                    <div class="col-12 col-sm-6" v-if="char.is_required">
-                      <q-badge color="negative">
-                        {{ $t('productTypes.required') }}
-                      </q-badge>
-                    </div>
-
-                    <div class="col-12 col-sm-6" v-if="char.default_value">
-                      <div class="text-caption">{{ $t('productTypes.defaultValue') }}</div>
-                      <div>{{ char.default_value }}</div>
-                    </div>
-
-                    <div class="col-12" v-if="char.type === 'select' && char.options?.length">
-                      <div class="text-caption">{{ $t('productTypes.options') }}</div>
-                      <div class="row q-gutter-x-sm">
-                        <q-chip
-                          v-for="option in char.options"
-                          :key="option"
-                          color="grey-3"
-                          text-color="black"
-                          dense
-                        >
-                          {{ option }}
-                        </q-chip>
-                      </div>
-                    </div>
-                  </div>
-                </q-card-section>
-              </q-card>
-            </div>
+            <characteristics-list
+              v-else
+              :characteristics="sortedCharacteristics"
+              @update="updateCharacteristicsOrder"
+              @edit="openCharacteristicDialog"
+              @delete="confirmDeleteCharacteristic"
+            />
           </q-card-section>
         </q-card>
       </div>
     </div>
 
-    <!-- Діалог характеристики -->
-    <q-dialog v-model="showCharacteristicDialog" persistent>
-      <q-card style="min-width: 500px">
-        <q-card-section>
-          <div class="text-h6">
-            {{
-              isEditCharacteristic
-                ? $t('productTypes.editCharacteristic')
-                : $t('productTypes.addCharacteristic')
-            }}
-          </div>
-        </q-card-section>
+    <!-- Діалоги -->
+    <characteristicDialog
+      v-model="showCharacteristicDialog"
+      :product-type-id="route.params.id"
+      :characteristic="selectedCharacteristic"
+      @saved="onCharacteristicSaved"
+    />
 
-        <q-card-section>
-          <q-form @submit="onCharacteristicSubmit" class="q-gutter-md">
-            <!-- Назва -->
-            <q-input
-              v-model="characteristicForm.name"
-              :label="$t('productTypes.characteristicName')"
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-              outlined
-            />
-
-            <!-- Код -->
-            <q-input
-              v-model="characteristicForm.code"
-              :label="$t('productTypes.characteristicCode')"
-              :rules="[
-                (val) => !!val || $t('common.validation.required'),
-                (val) => /^[a-zA-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
-              ]"
-              outlined
-              :disable="isEditCharacteristic"
-            />
-
-            <!-- Тип -->
-            <q-select
-              v-model="characteristicForm.type"
-              :options="characteristicTypes"
-              :label="$t('productTypes.characteristicType')"
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-              outlined
-              emit-value
-              map-options
-            />
-
-            <!-- Обов'язкове -->
-            <q-toggle
-              v-model="characteristicForm.is_required"
-              :label="$t('productTypes.characteristicRequired')"
-            />
-
-            <!-- Значення за замовчуванням -->
-            <q-input
-              v-model="characteristicForm.default_value"
-              :label="$t('productTypes.characteristicDefaultValue')"
-              outlined
-            />
-
-            <!-- Опції для типу select -->
-            <template v-if="characteristicForm.type === 'select'">
-              <div class="text-caption q-mb-sm">{{ $t('productTypes.characteristicOptions') }}</div>
-              <div
-                v-for="(option, index) in characteristicForm.options"
-                :key="index"
-                class="row q-gutter-sm q-mb-sm"
-              >
-                <q-input
-                  v-model="characteristicForm.options[index]"
-                  dense
-                  outlined
-                  class="col"
-                  :rules="[(val) => !!val || $t('common.validation.required')]"
-                />
-                <q-btn
-                  icon="close"
-                  flat
-                  round
-                  dense
-                  color="negative"
-                  @click="removeOption(index)"
-                />
-              </div>
-              <q-btn
-                :label="$t('productTypes.addOption')"
-                color="primary"
-                flat
-                @click="addOption"
-              />
-            </template>
-
-            <div class="row justify-end q-gutter-sm">
-              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
-              <q-btn
-                :label="$t('common.save')"
-                color="primary"
-                type="submit"
-                :loading="savingCharacteristic"
-              />
-            </div>
-          </q-form>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-
-    <!-- Діалог підтвердження видалення характеристики -->
     <q-dialog v-model="deleteCharacteristicDialog" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -284,26 +155,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
+import { PRODUCT_TYPE_CODES, COMMON_CHARACTERISTICS } from 'src/constants/productTypes'
+import characteristicDialog from 'components/ProductTypes/CharacteristicDialog.vue'
+import CharacteristicsList from 'components/ProductTypes/CharacteristicsList.vue'
 
 const route = useRoute()
+const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
 
 // State
 const loading = ref(false)
 const saving = ref(false)
-const savingCharacteristic = ref(false)
 const productType = ref(null)
 const showCharacteristicDialog = ref(false)
 const deleteCharacteristicDialog = ref(false)
 const characteristicToDelete = ref(null)
+const selectedCharacteristic = ref(null)
+
+// Computed
 const isEdit = computed(() => !!route.params.id)
-const isEditCharacteristic = ref(false)
+
+const productTypeCodes = computed(() => PRODUCT_TYPE_CODES.filter((code) => !code.disabled))
+
+const sortedCharacteristics = computed(() => {
+  if (!productType.value?.characteristics) return []
+  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
+})
 
 // Form
 const defaultForm = {
@@ -313,35 +196,30 @@ const defaultForm = {
   is_active: true,
 }
 
-const defaultCharacteristicForm = {
-  name: '',
-  code: '',
-  type: 'string',
-  is_required: false,
-  default_value: '',
-  options: [],
-  ordering: 0,
-}
-
 const form = ref({ ...defaultForm })
-const characteristicForm = ref({ ...defaultCharacteristicForm })
-
-// Options
-const characteristicTypes = [
-  { label: t('productTypes.characteristicTypes.string'), value: 'string' },
-  { label: t('productTypes.characteristicTypes.number'), value: 'number' },
-  { label: t('productTypes.characteristicTypes.date'), value: 'date' },
-  { label: t('productTypes.characteristicTypes.boolean'), value: 'boolean' },
-  { label: t('productTypes.characteristicTypes.select'), value: 'select' },
-]
-
-// Computed
-const sortedCharacteristics = computed(() => {
-  if (!productType.value?.characteristics) return []
-  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
-})
 
 // Methods
+const getCodeDescription = (code) => {
+  const typeCode = PRODUCT_TYPE_CODES.find((t) => t.value === code)
+  return typeCode ? typeCode.description : code
+}
+
+const updateCharacteristicsOrder = async (newCharacteristics) => {
+  try {
+    await ProductTypesApi.updateCharacteristicsOrder(route.params.id, {
+      characteristics: newCharacteristics,
+    })
+    await loadProductType()
+  } catch (error) {
+    console.error('Error updating characteristics order:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.updating'),
+      icon: 'error',
+    })
+  }
+}
+
 const loadProductType = async () => {
   if (!isEdit.value) return
 
@@ -350,7 +228,8 @@ const loadProductType = async () => {
     const response = await ProductTypesApi.getProductType(route.params.id)
     productType.value = response.data.productType
     form.value = { ...response.data.productType }
-  } catch {
+  } catch (error) {
+    console.error('Error loading product type:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -371,16 +250,21 @@ const onSubmit = async () => {
         message: t('productTypes.updateSuccess'),
         icon: 'check',
       })
+      loadProductType()
     } else {
-      await ProductTypesApi.createProductType(form.value)
+      const response = await ProductTypesApi.createProductType(form.value)
       $q.notify({
         color: 'positive',
         message: t('productTypes.createSuccess'),
         icon: 'check',
       })
+      router.push({
+        name: 'product-type-edit',
+        params: { id: response.data.productType.id },
+      })
     }
-    loadProductType()
-  } catch {
+  } catch (error) {
+    console.error('Error saving product type:', error)
     $q.notify({
       color: 'negative',
       message: t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
@@ -391,75 +275,13 @@ const onSubmit = async () => {
   }
 }
 
-const getCharacteristicColor = (type) => {
-  const colors = {
-    string: 'blue',
-    number: 'green',
-    date: 'purple',
-    boolean: 'orange',
-    select: 'red',
-  }
-  return colors[type] || 'grey'
-}
-
 const openCharacteristicDialog = (characteristic = null) => {
-  if (characteristic) {
-    isEditCharacteristic.value = true
-    characteristicForm.value = { ...characteristic }
-  } else {
-    isEditCharacteristic.value = false
-    characteristicForm.value = {
-      ...defaultCharacteristicForm,
-      ordering: productType.value?.characteristics?.length || 0,
-    }
-  }
+  selectedCharacteristic.value = characteristic
   showCharacteristicDialog.value = true
 }
 
-const addOption = () => {
-  if (!characteristicForm.value.options) {
-    characteristicForm.value.options = []
-  }
-  characteristicForm.value.options.push('')
-}
-
-const removeOption = (index) => {
-  characteristicForm.value.options.splice(index, 1)
-}
-
-const onCharacteristicSubmit = async () => {
-  savingCharacteristic.value = true
-  try {
-    if (isEditCharacteristic.value) {
-      await ProductTypesApi.updateCharacteristic(
-        route.params.id,
-        characteristicForm.value.id,
-        characteristicForm.value,
-      )
-      $q.notify({
-        color: 'positive',
-        message: t('productTypes.characteristicUpdateSuccess'),
-        icon: 'check',
-      })
-    } else {
-      await ProductTypesApi.addCharacteristic(route.params.id, characteristicForm.value)
-      $q.notify({
-        color: 'positive',
-        message: t('productTypes.characteristicCreateSuccess'),
-        icon: 'check',
-      })
-    }
-    showCharacteristicDialog.value = false
-    loadProductType()
-  } catch {
-    $q.notify({
-      color: 'negative',
-      message: t(`common.errors.${isEditCharacteristic.value ? 'updating' : 'creating'}`),
-      icon: 'error',
-    })
-  } finally {
-    savingCharacteristic.value = false
-  }
+const onCharacteristicSaved = () => {
+  loadProductType()
 }
 
 const confirmDeleteCharacteristic = (characteristic) => {
@@ -476,10 +298,38 @@ const deleteCharacteristic = async () => {
       icon: 'check',
     })
     loadProductType()
-  } catch {
+  } catch (error) {
+    console.error('Error deleting characteristic:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.deleting'),
+      icon: 'error',
+    })
+  }
+}
+
+const addDefaultCharacteristics = async () => {
+  try {
+    const defaultChars = COMMON_CHARACTERISTICS[form.value.code] || []
+    for (const char of defaultChars) {
+      if (!productType.value.characteristics.find((c) => c.code === char.code)) {
+        await ProductTypesApi.addCharacteristic(route.params.id, {
+          ...char,
+          ordering: productType.value.characteristics.length,
+        })
+      }
+    }
+    loadProductType()
+    $q.notify({
+      color: 'positive',
+      message: t('productTypes.defaultCharacteristicsAdded'),
+      icon: 'check',
+    })
+  } catch (error) {
+    console.error('Error adding default characteristics:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.creating'),
       icon: 'error',
     })
   }
@@ -489,3 +339,27 @@ onMounted(() => {
   loadProductType()
 })
 </script>
+
+<style scoped>
+.characteristic-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.characteristic-card:hover {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Стилі для темної теми */
+.body--dark .characteristic-card:hover {
+  box-shadow: 0 1px 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Додаткові стилі для чіпів */
+:deep(.q-chip) {
+  font-weight: 500;
+}
+
+:deep(.q-chip--outline) {
+  border-width: 1px;
+}
+</style>

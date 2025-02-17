@@ -1,12 +1,13 @@
+// src/api/product-types.js
 import { api } from 'boot/axios'
 
 export const ProductTypesApi = {
-  // Отримання списку типів продуктів з фільтрами і пагінацією
+  // Отримання списку типів продуктів
   getProductTypes: (params) => {
     return api.get('/product-types', { params })
   },
 
-  // Отримання конкретного типу
+  // Отримання одного типу продукту
   getProductType: (id) => {
     return api.get(`/product-types/${id}`)
   },
@@ -26,23 +27,25 @@ export const ProductTypesApi = {
     return api.delete(`/product-types/${id}`)
   },
 
-  // Додавання характеристики до типу
-  addCharacteristic: (typeId, data) => {
-    return api.post(`/product-types/${typeId}/characteristics`, data)
+  // Характеристики
+  getCharacteristics: (productTypeId) => {
+    return api.get(`/product-types/${productTypeId}/characteristics`)
   },
 
-  // Оновлення характеристики
-  updateCharacteristic: (typeId, charId, data) => {
-    return api.put(`/product-types/${typeId}/characteristics/${charId}`, data)
+  addCharacteristic: (productTypeId, data) => {
+    return api.post(`/product-types/${productTypeId}/characteristics`, data)
   },
 
-  // Видалення характеристики
-  deleteCharacteristic: (typeId, charId) => {
-    return api.delete(`/product-types/${typeId}/characteristics/${charId}`)
+  updateCharacteristic: (productTypeId, characteristicId, data) => {
+    return api.put(`/product-types/${productTypeId}/characteristics/${characteristicId}`, data)
   },
 
-  // Отримання характеристик типу
-  getCharacteristics: (typeId) => {
-    return api.get(`/product-types/${typeId}/characteristics`)
+  deleteCharacteristic: (productTypeId, characteristicId) => {
+    return api.delete(`/product-types/${productTypeId}/characteristics/${characteristicId}`)
+  },
+
+  // Оновлення порядку характеристик
+  updateCharacteristicsOrder: (productTypeId, data) => {
+    return api.put(`/product-types/${productTypeId}/characteristics/order`, data)
   },
 }
