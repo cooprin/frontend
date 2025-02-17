@@ -125,7 +125,7 @@
     </div>
 
     <!-- Діалоги -->
-    <characteristicDialog
+    <CharacteristicDialog
       v-model="showCharacteristicDialog"
       :product-type-id="route.params.id"
       :characteristic="selectedCharacteristic"
@@ -161,8 +161,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
 import { PRODUCT_TYPE_CODES, COMMON_CHARACTERISTICS } from 'src/constants/productTypes'
-import characteristicsList from '../../components/ProductTypes/CharacteristicsList.vue'
-import characteristicDialog from '../../components/ProductTypes/CharacteristicDialog.vue'
+import CharacteristicsList from '../../components/ProductTypes/CharacteristicsList.vue'
+import CharacteristicDialog from '../../components/ProductTypes/CharacteristicDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
