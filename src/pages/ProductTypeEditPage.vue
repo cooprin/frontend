@@ -92,26 +92,16 @@
       </div>
 
       <!-- Характеристики -->
-
       <div class="col-12 col-md-8" v-if="isEdit">
         <q-card flat bordered>
           <q-card-section class="row items-center justify-between">
             <div class="text-h6">{{ $t('productTypes.characteristics') }}</div>
-            <div class="row q-gutter-sm">
-              <q-btn
-                v-if="form.code && COMMON_CHARACTERISTICS[form.code]"
-                :label="$t('productTypes.addDefaultCharacteristics')"
-                color="secondary"
-                flat
-                @click="addDefaultCharacteristics"
-              />
-              <q-btn
-                color="primary"
-                :label="$t('productTypes.addCharacteristic')"
-                icon="add"
-                @click="openCharacteristicDialog"
-              />
-            </div>
+            <q-btn
+              color="primary"
+              :label="$t('productTypes.addCharacteristic')"
+              icon="add"
+              @click="openCharacteristicDialog()"
+            />
           </q-card-section>
 
           <q-separator />
@@ -121,7 +111,7 @@
               {{ $t('productTypes.noCharacteristics') }}
             </div>
 
-            <CharacteristicsList
+            <characteristics-list
               v-else
               :characteristics="sortedCharacteristics"
               @update="updateCharacteristicsOrder"
@@ -133,14 +123,33 @@
       </div>
     </div>
 
-    <!-- Діалоги -->
-    <CharacteristicDialog
-      v-model="showCharacteristicDialog"
-      :product-type-id="route.params.id"
-      :characteristic="selectedCharacteristic"
-      @saved="onCharacteristicSaved"
-    />
+    <!-- Діалог характеристики -->
+    <q-dialog v-model="showCharacteristicDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">
+            {{
+              selectedCharacteristic
+                ? t('productTypes.editCharacteristic')
+                : t('productTypes.addCharacteristic')
+            }}
+          </div>
+        </q-card-section>
 
+        <q-card-section>
+          <characteristic-form
+            v-model="characteristicForm"
+            :product-type-id="route.params.id"
+            :is-edit="!!selectedCharacteristic"
+            :saving="savingCharacteristic"
+            @submit="onCharacteristicSubmit"
+            @cancel="showCharacteristicDialog = false"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог підтвердження видалення характеристики -->
     <q-dialog v-model="deleteCharacteristicDialog" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -169,18 +178,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
-import { PRODUCT_TYPE_CODES, COMMON_CHARACTERISTICS } from 'src/constants/productTypes'
+import { CharacteristicTypesApi } from 'src/api/characteristic-types'
+import { PRODUCT_TYPE_CODES, DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList.vue'
-import CharacteristicDialog from 'src/components/ProductTypes/CharacteristicDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
 
+const productTypeCodes = computed(() => PRODUCT_TYPE_CODES.filter((code) => !code.disabled))
+
 // State
 const loading = ref(false)
 const saving = ref(false)
+const savingCharacteristic = ref(false)
 const productType = ref(null)
 const showCharacteristicDialog = ref(false)
 const deleteCharacteristicDialog = ref(false)
@@ -189,6 +201,11 @@ const selectedCharacteristic = ref(null)
 
 // Computed
 const isEdit = computed(() => !!route.params.id)
+
+const sortedCharacteristics = computed(() => {
+  if (!productType.value?.characteristics) return []
+  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
+})
 
 const filterFn = (val, update) => {
   update(() => {
@@ -212,43 +229,9 @@ const updateCode = (val) => {
   form.value.code = formattedVal
 }
 
-const productTypeCodes = computed(() => PRODUCT_TYPE_CODES.filter((code) => !code.disabled))
-
-const sortedCharacteristics = computed(() => {
-  if (!productType.value?.characteristics) return []
-  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
-})
-
-// Form
-const defaultForm = {
-  name: '',
-  code: '',
-  description: '',
-  is_active: true,
-}
-
-const form = ref({ ...defaultForm })
-
-// Methods
 const getCodeDescription = (code) => {
   const typeCode = PRODUCT_TYPE_CODES.find((t) => t.value === code)
   return typeCode ? typeCode.description : code
-}
-
-const updateCharacteristicsOrder = async (newCharacteristics) => {
-  try {
-    await ProductTypesApi.updateCharacteristicsOrder(route.params.id, {
-      characteristics: newCharacteristics,
-    })
-    await loadProductType()
-  } catch (error) {
-    console.error('Error updating characteristics order:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.updating'),
-      icon: 'error',
-    })
-  }
 }
 
 const loadProductType = async () => {
@@ -270,7 +253,6 @@ const loadProductType = async () => {
     loading.value = false
   }
 }
-
 const onSubmit = async () => {
   saving.value = true
   try {
@@ -306,13 +288,83 @@ const onSubmit = async () => {
   }
 }
 
+onMounted(() => {
+  loadProductType()
+})
+
+// Default forms
+const defaultForm = {
+  name: '',
+  code: '',
+  description: '',
+  is_active: true,
+}
+
+const defaultCharacteristicForm = {
+  name: '',
+  code: '',
+  type: 'string',
+  is_required: false,
+  default_value: null,
+  validation_rules: { ...DEFAULT_CHARACTERISTIC_VALIDATION.string },
+  options: [],
+  ordering: 0,
+}
+
+const form = ref({ ...defaultForm })
+const characteristicForm = ref({ ...defaultCharacteristicForm })
+
+// Methods for characteristics
 const openCharacteristicDialog = (characteristic = null) => {
-  selectedCharacteristic.value = characteristic
+  if (characteristic) {
+    characteristicForm.value = { ...characteristic }
+    selectedCharacteristic.value = characteristic
+  } else {
+    characteristicForm.value = {
+      ...defaultCharacteristicForm,
+      ordering: productType.value?.characteristics?.length || 0,
+    }
+    selectedCharacteristic.value = null
+  }
   showCharacteristicDialog.value = true
 }
 
-const onCharacteristicSaved = () => {
-  loadProductType()
+const onCharacteristicSubmit = async () => {
+  savingCharacteristic.value = true
+  try {
+    if (selectedCharacteristic.value) {
+      // Update
+      await CharacteristicTypesApi.updateCharacteristic(
+        route.params.id,
+        selectedCharacteristic.value.id,
+        characteristicForm.value,
+      )
+      $q.notify({
+        color: 'positive',
+        message: t('productTypes.characteristicUpdateSuccess'),
+        icon: 'check',
+      })
+    } else {
+      // Create
+      await CharacteristicTypesApi.addCharacteristic(route.params.id, characteristicForm.value)
+      $q.notify({
+        color: 'positive',
+        message: t('productTypes.characteristicCreateSuccess'),
+        icon: 'check',
+      })
+    }
+    showCharacteristicDialog.value = false
+    loadProductType()
+  } catch (error) {
+    console.error('Error saving characteristic:', error)
+    $q.notify({
+      color: 'negative',
+      message: t(`common.errors.${selectedCharacteristic.value ? 'updating' : 'creating'}`),
+      icon: 'error',
+    })
+  } finally {
+    savingCharacteristic.value = false
+  }
 }
 
 const confirmDeleteCharacteristic = (characteristic) => {
@@ -322,7 +374,10 @@ const confirmDeleteCharacteristic = (characteristic) => {
 
 const deleteCharacteristic = async () => {
   try {
-    await ProductTypesApi.deleteCharacteristic(route.params.id, characteristicToDelete.value.id)
+    await CharacteristicTypesApi.deleteCharacteristic(
+      route.params.id,
+      characteristicToDelete.value.id,
+    )
     $q.notify({
       color: 'positive',
       message: t('productTypes.characteristicDeleteSuccess'),
@@ -339,58 +394,51 @@ const deleteCharacteristic = async () => {
   }
 }
 
-const addDefaultCharacteristics = async () => {
+const updateCharacteristicsOrder = async (newCharacteristics) => {
   try {
-    const defaultChars = COMMON_CHARACTERISTICS[form.value.code] || []
-    for (const char of defaultChars) {
-      if (!productType.value.characteristics.find((c) => c.code === char.code)) {
-        await ProductTypesApi.addCharacteristic(route.params.id, {
-          ...char,
-          ordering: productType.value.characteristics.length,
-        })
-      }
-    }
+    await CharacteristicTypesApi.updateCharacteristicsOrder(route.params.id, newCharacteristics)
     loadProductType()
-    $q.notify({
-      color: 'positive',
-      message: t('productTypes.defaultCharacteristicsAdded'),
-      icon: 'check',
-    })
   } catch (error) {
-    console.error('Error adding default characteristics:', error)
+    console.error('Error updating characteristics order:', error)
     $q.notify({
       color: 'negative',
-      message: t('common.errors.creating'),
+      message: t('common.errors.updating'),
       icon: 'error',
     })
   }
 }
-
-onMounted(() => {
-  loadProductType()
-})
 </script>
-
 <style scoped>
-.characteristic-card {
-  transition: all 0.2s ease-in-out;
+.characteristics-section {
+  transition: all 0.3s ease;
 }
 
-.characteristic-card:hover {
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
+  background: var(--q-primary);
+}
+
+:deep(.q-table) thead tr th {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 8px 16px;
 }
 
 /* Стилі для темної теми */
-.body--dark .characteristic-card:hover {
-  box-shadow: 0 1px 5px rgba(255, 255, 255, 0.2);
+.body--dark :deep(.q-table) thead tr {
+  background: var(--q-dark);
 }
 
-/* Додаткові стилі для чіпів */
-:deep(.q-chip) {
-  font-weight: 500;
+.body--dark :deep(.q-table) thead tr th {
+  color: white !important;
 }
 
-:deep(.q-chip--outline) {
-  border-width: 1px;
+/* Стилі для границь */
+:deep(.q-card) {
+  transition: all 0.3s ease;
+}
+
+.body--dark :deep(.q-card) {
+  background: var(--q-dark);
 }
 </style>

@@ -83,7 +83,7 @@ const getCharacteristicColor = (type) => {
   return CHARACTERISTIC_COLORS[type] || 'grey'
 }
 
-const onDragChange = async ({ moved }) => {
+const onDragChange = ({ moved }) => {
   if (moved) {
     const newCharacteristics = localCharacteristics.value.map((char, index) => ({
       ...char,
@@ -117,7 +117,6 @@ const onDragChange = async ({ moved }) => {
   opacity: 1;
 }
 
-/* Стилі для темної теми */
 .body--dark .characteristic-item:hover {
   box-shadow: 0 1px 5px rgba(255, 255, 255, 0.2);
 }
