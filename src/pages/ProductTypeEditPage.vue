@@ -41,6 +41,7 @@
                   (val) => !!val || $t('common.validation.required'),
                   (val) => /^[A-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
                 ]"
+                :loading="loadingCodes"
                 option-label="label"
                 option-value="value"
                 emit-value
@@ -53,6 +54,13 @@
                 @filter="filterFn"
                 @input-value="updateCode"
               >
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey">
+                      {{ $t('common.noResults') }}
+                    </q-item-section>
+                  </q-item>
+                </template>
                 <template v-slot:option="{ opt, selected }">
                   <q-item v-bind="opt.props" :active="selected">
                     <q-item-section>
@@ -66,7 +74,7 @@
                 <q-chip square color="primary" text-color="white">
                   {{ form.code }}
                 </q-chip>
-                <span class="text-caption">{{ getCodeDescription(form.code) }}</span>
+                <span class="text-caption">{{ form.code_description }}</span>
               </div>
 
               <!-- Опис -->
@@ -179,7 +187,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
-import { PRODUCT_TYPE_CODES, DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
+import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList.vue'
 
 const route = useRoute()
@@ -187,24 +195,9 @@ const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
 
-const productTypeCodes = ref([])
-
-const loadProductTypeCodes = async () => {
-  try {
-    const response = await ProductTypesApi.getProductTypeCodes()
-    productTypeCodes.value = response.data.codes
-  } catch (error) {
-    console.error('Error loading product type codes:', error)
-  }
-}
-
-onMounted(() => {
-  loadProductTypeCodes()
-  loadProductType()
-})
-
 // State
 const loading = ref(false)
+const loadingCodes = ref(false)
 const saving = ref(false)
 const savingCharacteristic = ref(false)
 const productType = ref(null)
@@ -212,60 +205,16 @@ const showCharacteristicDialog = ref(false)
 const deleteCharacteristicDialog = ref(false)
 const characteristicToDelete = ref(null)
 const selectedCharacteristic = ref(null)
+const productTypeCodes = ref([])
+const originalCodes = ref([])
 
-// Computed
-const isEdit = computed(() => !!route.params.id)
-
-const sortedCharacteristics = computed(() => {
-  if (!productType.value?.characteristics) return []
-  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
-})
-
-const filterFn = (val, update) => {
-  update(() => {
-    if (val === '') {
-      productTypeCodes.value = PRODUCT_TYPE_CODES
-    } else {
-      const needle = val.toLowerCase()
-      productTypeCodes.value = PRODUCT_TYPE_CODES.filter(
-        (v) =>
-          v.label.toLowerCase().indexOf(needle) > -1 ||
-          v.value.toLowerCase().indexOf(needle) > -1 ||
-          v.description.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
-}
-
-const updateCode = (val) => {
-  // Перетворюємо введений текст у верхній регістр і прибираємо недопустимі символи
-  const formattedVal = val.toUpperCase().replace(/[^A-Z0-9_-]/g, '')
-  form.value.code = formattedVal
-}
-
-const getCodeDescription = (code) => {
-  const typeCode = PRODUCT_TYPE_CODES.find((t) => t.value === code)
-  return typeCode ? typeCode.description : code
-}
-
-const loadProductType = async () => {
-  if (!isEdit.value) return
-
-  loading.value = true
-  try {
-    const response = await ProductTypesApi.getProductType(route.params.id)
-    productType.value = response.data.productType
-    form.value = { ...response.data.productType }
-  } catch (error) {
-    console.error('Error loading product type:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loading.value = false
-  }
+// Default forms
+const defaultForm = {
+  name: '',
+  code: '',
+  description: '',
+  is_active: true,
+  code_description: '',
 }
 const onSubmit = async () => {
   saving.value = true
@@ -277,7 +226,7 @@ const onSubmit = async () => {
         message: t('productTypes.updateSuccess'),
         icon: 'check',
       })
-      loadProductType()
+      await loadProductType()
     } else {
       const response = await ProductTypesApi.createProductType(form.value)
       $q.notify({
@@ -302,18 +251,6 @@ const onSubmit = async () => {
   }
 }
 
-onMounted(() => {
-  loadProductType()
-})
-
-// Default forms
-const defaultForm = {
-  name: '',
-  code: '',
-  description: '',
-  is_active: true,
-}
-
 const defaultCharacteristicForm = {
   name: '',
   code: '',
@@ -327,6 +264,79 @@ const defaultCharacteristicForm = {
 
 const form = ref({ ...defaultForm })
 const characteristicForm = ref({ ...defaultCharacteristicForm })
+
+// Computed
+const isEdit = computed(() => !!route.params.id)
+
+const sortedCharacteristics = computed(() => {
+  if (!productType.value?.characteristics) return []
+  return [...productType.value.characteristics].sort((a, b) => a.ordering - b.ordering)
+})
+
+// Methods
+const loadProductTypeCodes = async () => {
+  loadingCodes.value = true
+  try {
+    const response = await ProductTypesApi.getProductTypeCodes()
+    productTypeCodes.value = response.data.codes
+    originalCodes.value = response.data.codes
+  } catch (error) {
+    console.error('Error loading product type codes:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingCodes.value = false
+  }
+}
+
+const loadProductType = async () => {
+  if (!isEdit.value) return
+
+  loading.value = true
+  try {
+    const response = await ProductTypesApi.getProductType(route.params.id)
+    productType.value = response.data.productType
+    Object.assign(form.value, {
+      ...response.data.productType,
+      code_description:
+        response.data.productType.code_description || response.data.productType.code,
+    })
+  } catch (error) {
+    console.error('Error loading product type:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const filterFn = (val, update) => {
+  update(() => {
+    if (val === '') {
+      productTypeCodes.value = [...originalCodes.value]
+    } else {
+      const needle = val.toLowerCase()
+      productTypeCodes.value = originalCodes.value.filter(
+        (v) =>
+          v.label.toLowerCase().indexOf(needle) > -1 ||
+          v.value.toLowerCase().indexOf(needle) > -1 ||
+          v.description.toLowerCase().indexOf(needle) > -1,
+      )
+    }
+  })
+}
+
+const updateCode = (val) => {
+  if (!val) return
+  const formattedVal = val.toUpperCase().replace(/[^A-Z0-9_-]/g, '')
+  form.value.code = formattedVal
+}
 
 // Methods for characteristics
 const openCharacteristicDialog = (characteristic = null) => {
@@ -421,6 +431,10 @@ const updateCharacteristicsOrder = async (newCharacteristics) => {
     })
   }
 }
+onMounted(() => {
+  loadProductTypeCodes()
+  loadProductType()
+})
 </script>
 <style scoped>
 .characteristics-section {
