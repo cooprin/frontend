@@ -199,15 +199,6 @@ watch(locale, () => {
   loadSuppliers()
 })
 
-watch(
-  filters,
-  debounce(() => {
-    pagination.value.page = 1
-    loadSuppliers()
-  }, 300),
-  { deep: true },
-)
-
 // State
 const loading = ref(false)
 const saving = ref(false)
@@ -235,6 +226,15 @@ const filters = ref({
   isActive: null,
 })
 
+watch(
+  filters,
+  debounce(() => {
+    pagination.value.page = 1
+    loadSuppliers()
+  }, 300),
+  { deep: true },
+)
+
 // Пагінація
 const pagination = ref({
   page: 1,
@@ -255,7 +255,8 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
 // Колонки таблиці
-const columns = [
+// Колонки таблиці
+const columns = computed(() => [
   {
     name: 'name',
     field: 'name',
@@ -297,12 +298,20 @@ const columns = [
     align: 'center',
     sortable: false,
   },
-]
+])
 
 // Methods
 const loadSuppliers = async () => {
   loading.value = true
   try {
+    console.log('Loading suppliers with params:', {
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      filters: filters.value,
+    })
+
     const response = await SuppliersApi.getSuppliers({
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
@@ -310,6 +319,9 @@ const loadSuppliers = async () => {
       descending: pagination.value.descending,
       ...filters.value,
     })
+
+    console.log('Suppliers response:', response.data)
+
     suppliers.value = response.data.suppliers
     pagination.value.rowsNumber = response.data.total
   } catch (error) {
@@ -317,6 +329,7 @@ const loadSuppliers = async () => {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
+      stack: error.stack,
     })
 
     $q.notify({
