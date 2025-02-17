@@ -161,8 +161,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
 import { PRODUCT_TYPE_CODES, COMMON_CHARACTERISTICS } from 'src/constants/productTypes'
-import characteristicDialog from 'src/components/ProductTypes/CharacteristicDialog'
-import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList'
+import characteristicsList from '../../components/ProductTypes/CharacteristicsList.vue'
+import characteristicDialog from '../../components/ProductTypes/CharacteristicDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
