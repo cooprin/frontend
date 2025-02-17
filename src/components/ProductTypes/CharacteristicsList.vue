@@ -1,6 +1,6 @@
 <template>
   <div class="characteristics-list">
-    <draggable
+    <vue-draggable
       v-model="localCharacteristics"
       item-key="id"
       handle=".drag-handle"
@@ -56,13 +56,13 @@
           </q-card-section>
         </q-card>
       </template>
-    </draggable>
+    </vue-draggable>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
-import draggable from 'vuedraggable'
+import VueDraggable from 'vuedraggable'
 import { CHARACTERISTIC_COLORS } from 'src/constants/productTypes'
 
 const props = defineProps({
