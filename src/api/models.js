@@ -22,8 +22,8 @@ export const ModelsApi = {
   },
 
   // Завантаження зображення моделі
-  uploadImage: (id, formData) => {
-    return api.post(`/models/${id}/image`, formData, {
+  uploadImage: (modelId, formData) => {
+    return api.post(`/models/${modelId}/image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

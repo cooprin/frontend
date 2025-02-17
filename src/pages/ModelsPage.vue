@@ -10,14 +10,7 @@
     <div class="row q-col-gutter-sm q-mb-md">
       <!-- Пошук -->
       <div class="col-12 col-sm-4">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
-        >
+        <q-input v-model="filters.search" :label="$t('common.search')" dense outlined clearable>
           <template v-slot:append>
             <q-icon name="search" />
           </template>
@@ -35,7 +28,6 @@
           clearable
           emit-value
           map-options
-          @update:model-value="onFiltersChange"
         />
       </div>
 
@@ -50,7 +42,6 @@
           clearable
           emit-value
           map-options
-          @update:model-value="onFiltersChange"
         />
       </div>
     </div>
@@ -66,6 +57,10 @@
       flat
       bordered
       @request="onRequest"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :selected-rows-label="$t('common.selectedRows')"
+      :pagination-label="paginationLabel"
+      @update:pagination="onRequest"
     >
       <!-- Слот для зображення -->
       <template v-slot:body-cell-image="props">
@@ -215,14 +210,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ModelsApi } from 'src/api/models'
 import { ManufacturersApi } from 'src/api/manufacturers'
+import { debounce } from 'lodash'
 
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // State
 const loading = ref(false)
@@ -254,22 +250,42 @@ const filters = ref({
 })
 
 // Пагінація
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+// Пагінація
 const pagination = ref({
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
   sortBy: 'name',
   descending: false,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
-// Опції для селектів
-const statusOptions = [
+// Додамо computed для statusOptions
+const statusOptions = computed(() => [
   { label: t('common.active'), value: true },
   { label: t('common.inactive'), value: false },
-]
+])
+
+// Додамо watch для фільтрів
+watch(
+  filters,
+  debounce(() => {
+    pagination.value.page = 1
+    loadModels()
+  }, 300),
+  { deep: true },
+)
+
+// Додамо watch для locale
+watch(locale, () => {
+  loadModels()
+})
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'image',
     field: 'image_url',
@@ -325,7 +341,7 @@ const columns = [
     align: 'center',
     sortable: false,
   },
-]
+])
 
 // Methods
 const loadModels = async () => {
@@ -340,12 +356,19 @@ const loadModels = async () => {
     })
     models.value = response.data.models
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    })
     $q.notify({
       color: 'negative',
-      message: t('common.errors.loading'),
+      message: error.response?.data?.message || t('common.errors.loading'),
       icon: 'error',
     })
+    models.value = []
+    pagination.value.rowsNumber = 0
   } finally {
     loading.value = false
   }
@@ -375,23 +398,6 @@ const onRequest = async (props) => {
   await loadModels()
 }
 
-const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadModels()
-}
-
-const onImageSelect = (file) => {
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target.result
-    }
-    reader.readAsDataURL(file)
-  } else {
-    imagePreview.value = null
-  }
-}
-
 const openCreateDialog = () => {
   isEdit.value = false
   form.value = { ...defaultForm }
@@ -411,10 +417,50 @@ const openEditDialog = (model) => {
 const uploadImage = async (modelId) => {
   if (!imageFile.value) return
 
-  const formData = new FormData()
-  formData.append('image', imageFile.value)
+  try {
+    const formData = new FormData()
+    formData.append('image', imageFile.value)
 
-  await ModelsApi.uploadImage(modelId, formData)
+    await ModelsApi.uploadImage(modelId, formData)
+  } catch (error) {
+    console.error('Error uploading image:', error)
+    throw error
+  }
+}
+
+const onImageSelect = (file) => {
+  if (file) {
+    // Перевірка розміру файлу (наприклад, до 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      $q.notify({
+        color: 'negative',
+        message: t('common.errors.fileTooLarge'),
+        icon: 'error',
+      })
+      imageFile.value = null
+      return
+    }
+
+    // Перевірка типу файлу
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
+    if (!allowedTypes.includes(file.type)) {
+      $q.notify({
+        color: 'negative',
+        message: t('common.errors.invalidFileType'),
+        icon: 'error',
+      })
+      imageFile.value = null
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  } else {
+    imagePreview.value = null
+  }
 }
 
 const onSubmit = async () => {
@@ -484,3 +530,70 @@ onMounted(() => {
   loadManufacturers()
 })
 </script>
+<style scoped>
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
+  background: var(--q-primary);
+}
+
+:deep(.q-table) thead tr th {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 8px 16px;
+}
+
+/* Стилі для темної теми */
+.body--dark :deep(.q-table) thead tr {
+  background: var(--q-dark);
+}
+
+.body--dark :deep(.q-table) thead tr th {
+  color: white !important;
+}
+
+/* Стилі для ховера рядків */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+/* Стилі для парних рядків */
+:deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark :deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Стилі для клітинок таблиці */
+:deep(.q-table) td {
+  padding: 8px 16px;
+}
+
+/* Стилі для границь таблиці */
+:deep(.q-table) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Стилі для розділових ліній */
+:deep(.q-table) th,
+:deep(.q-table) td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) th,
+.body--dark :deep(.q-table) td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Додаткові стилі для зображень */
+.image-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+</style>
