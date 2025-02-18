@@ -7,6 +7,7 @@ import suppliers from './suppliers'
 import models from './models'
 import warehouses from './warehouses'
 import stock from './stock'
+import productTypes from './productTypes'
 
 export default {
   layouts,
@@ -18,4 +19,5 @@ export default {
   models,
   warehouses,
   stock,
+  productTypes,
 }
