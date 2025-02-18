@@ -45,11 +45,15 @@
             outlined
             emit-value
             map-options
+            option-value="value"
+            option-label="label"
           >
-            <template v-slot:option="{ opt, selected }">
-              <q-item v-bind="opt.props" :active="selected">
+            <template v-slot:option="{ opt }">
+              <q-item v-bind="opt.props">
                 <q-item-section>
-                  <q-item-label>{{ opt.label }}</q-item-label>
+                  <q-item-label>{{
+                    $t(`productTypes.characteristicTypes.${opt.value}`)
+                  }}</q-item-label>
                   <q-item-label caption>{{ opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -233,11 +237,7 @@ const getDefaultForm = () => ({
 const form = ref(getDefaultForm())
 
 // Options
-const characteristicTypes = CHARACTERISTIC_TYPES.map((type) => ({
-  label: t(`productTypes.characteristicTypes.${type.value}`),
-  value: type.value,
-  description: type.description,
-}))
+const characteristicTypes = computed(() => CHARACTERISTIC_TYPES)
 
 // Methods
 const resetValidation = () => {

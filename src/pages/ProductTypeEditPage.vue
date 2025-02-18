@@ -217,6 +217,8 @@ const defaultForm = {
   is_active: true,
   code_description: '',
 }
+// В ProductTypeEditPage.vue змінимо обробку відповіді:
+
 const onSubmit = async () => {
   saving.value = true
   try {
@@ -235,10 +237,17 @@ const onSubmit = async () => {
         message: t('productTypes.createSuccess'),
         icon: 'check',
       })
-      router.push({
-        name: 'product-type-edit',
-        params: { id: response.data.productType.id },
-      })
+      // Перевіряємо наявність id в response
+      const productTypeId = response.data?.productType?.id || response.data?.id
+      if (productTypeId) {
+        router.push({
+          name: 'product-type-edit',
+          params: { id: productTypeId },
+        })
+      } else {
+        // Якщо id немає, просто перенаправляємо на список
+        router.push({ name: 'product-types' })
+      }
     }
   } catch (error) {
     console.error('Error saving product type:', error)
@@ -283,6 +292,8 @@ const loadProductTypeCodes = async () => {
     originalCodes.value = response.data.codes
   } catch (error) {
     console.error('Error loading product type codes:', error)
+    productTypeCodes.value = []
+    originalCodes.value = []
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
