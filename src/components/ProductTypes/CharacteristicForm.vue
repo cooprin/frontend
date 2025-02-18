@@ -76,6 +76,8 @@
           <q-input
             v-model.number="form.validation_rules.min"
             type="number"
+            :min="0"
+            :max="999999"
             :label="$t('productTypes.minValue')"
             outlined
           />
@@ -84,17 +86,13 @@
           <q-input
             v-model.number="form.validation_rules.max"
             type="number"
+            :min="0"
+            :max="999999"
             :label="$t('productTypes.maxValue')"
             outlined
           />
         </div>
       </div>
-      <q-select
-        v-model="form.validation_rules.decimals"
-        :options="[0, 1, 2, 3, 4]"
-        :label="$t('productTypes.decimals')"
-        outlined
-      />
     </template>
 
     <template v-if="form.type === 'date'">
@@ -119,7 +117,10 @@
     </template>
 
     <template v-if="form.type === 'select'">
-      <div class="text-caption q-mb-sm">{{ $t('productTypes.options') }}</div>
+      <div class="text-caption q-mb-sm">
+        {{ $t('productTypes.options') }}
+        <span class="text-grey-6"> ({{ $t('productTypes.maxOptionsLimit', { max: 50 }) }}) </span>
+      </div>
       <div v-for="(option, index) in form.options" :key="index" class="row q-gutter-sm q-mb-sm">
         <q-input
           v-model="form.options[index]"
@@ -130,7 +131,13 @@
         />
         <q-btn icon="close" flat round dense color="negative" @click="removeOption(index)" />
       </div>
-      <q-btn :label="$t('productTypes.addOption')" color="primary" flat @click="addOption" />
+      <q-btn
+        :label="$t('productTypes.addOption')"
+        color="primary"
+        flat
+        @click="addOption"
+        :disable="form.options?.length >= 50"
+      />
     </template>
 
     <!-- Обов'язкове поле -->
@@ -150,6 +157,15 @@ import { computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
+import { CHARACTERISTIC_TYPES } from 'src/constants/productTypes'
+
+const characteristicTypes = computed(() =>
+  CHARACTERISTIC_TYPES.map((type) => ({
+    label: t(`productTypes.characteristicTypes.${type.value}`),
+    value: type.value,
+    description: type.description,
+  })),
+)
 
 const props = defineProps({
   modelValue: {
@@ -230,11 +246,32 @@ watch(
       form.value.default_value = null
     }
   },
+  { deep: true },
 )
 
 // Submit handler
 const onSubmit = async () => {
   try {
+    // Перевірка опцій для типу select
+    if (form.value.type === 'select') {
+      if (!form.value.options?.length) {
+        $q.notify({
+          color: 'negative',
+          message: t('productTypes.selectRequiresOptions'),
+          icon: 'error',
+        })
+        return
+      }
+
+      if (form.value.options.some((opt) => !opt.trim())) {
+        $q.notify({
+          color: 'negative',
+          message: t('productTypes.emptyOptionsNotAllowed'),
+          icon: 'error',
+        })
+        return
+      }
+    }
     // Validate default value if present
     if (form.value.default_value) {
       const validation = await CharacteristicTypesApi.validateCharacteristic({
