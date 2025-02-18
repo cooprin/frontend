@@ -156,7 +156,7 @@
 import { computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { CharacteristicTypesApi } from 'src/api/characteristic-types'
+import { ProductTypesApi } from 'src/api/product-types'
 import { CHARACTERISTIC_TYPES } from 'src/constants/productTypes'
 
 const characteristicTypes = computed(() =>
@@ -274,7 +274,7 @@ const onSubmit = async () => {
     }
     // Validate default value if present
     if (form.value.default_value) {
-      const validation = await CharacteristicTypesApi.validateCharacteristic({
+      const validation = await ProductTypesApi.validateCharacteristic({
         type: form.value.type,
         value: form.value.default_value,
         validation_rules: form.value.validation_rules,
