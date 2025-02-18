@@ -10,6 +10,7 @@ export default {
     email: 'Email',
     first_name: "Ім'я",
     last_name: 'Прізвище',
+    password: 'Пароль',
     phone: 'Телефон',
     role: 'Роль',
     status: 'Статус',
