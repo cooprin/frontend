@@ -145,7 +145,7 @@
         </q-card-section>
 
         <q-card-section>
-          <characteristic-form
+          <CharacteristicForm
             v-model="characteristicForm"
             :product-type-id="route.params.id"
             :is-edit="!!selectedCharacteristic"
@@ -189,6 +189,7 @@ import { ProductTypesApi } from 'src/api/product-types'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
 import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList.vue'
+import CharacteristicForm from 'src/components/ProductTypes/CharacteristicForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -347,6 +348,7 @@ const openCharacteristicDialog = (characteristic = null) => {
     characteristicForm.value = {
       ...defaultCharacteristicForm,
       ordering: productType.value?.characteristics?.length || 0,
+      validation_rules: { ...DEFAULT_CHARACTERISTIC_VALIDATION[defaultCharacteristicForm.type] },
     }
     selectedCharacteristic.value = null
   }
