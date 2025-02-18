@@ -160,7 +160,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductTypesApi } from 'src/api/product-types'
-import { PRODUCT_TYPE_CODES, CHARACTERISTIC_COLORS } from 'src/constants/productTypes'
+import { CHARACTERISTIC_COLORS } from 'src/constants/productTypes'
 import { debounce } from 'lodash'
 
 const $q = useQuasar()
@@ -254,11 +254,6 @@ watch(
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
-}
-
-const getCodeDescription = (code) => {
-  const typeCode = PRODUCT_TYPE_CODES.find((t) => t.value === code)
-  return typeCode ? typeCode.description : code
 }
 
 const getCharacteristicColor = (type) => {
