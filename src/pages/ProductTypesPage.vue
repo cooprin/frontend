@@ -171,6 +171,26 @@ const loading = ref(false)
 const productTypes = ref([])
 const deleteDialog = ref(false)
 const typeToDelete = ref(null)
+const productTypeCodes = ref([])
+
+const getCodeDescription = (code) => {
+  const typeCode = productTypeCodes.value.find((t) => t.value === code)
+  return typeCode ? typeCode.description : code
+}
+
+const loadProductTypeCodes = async () => {
+  try {
+    const response = await ProductTypesApi.getProductTypeCodes()
+    productTypeCodes.value = response.data.codes
+  } catch (error) {
+    console.error('Error loading product type codes:', error)
+  }
+}
+
+onMounted(() => {
+  loadProductTypes()
+  loadProductTypeCodes()
+})
 
 // Фільтри і пагінація
 const filters = ref({
