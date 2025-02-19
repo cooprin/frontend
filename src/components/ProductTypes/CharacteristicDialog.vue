@@ -39,11 +39,28 @@
           <q-select
             v-model="form.type"
             :options="characteristicTypes.value"
-            option-label="label"
-            option-value="value"
             :label="$t('productTypes.characteristicType')"
+            :disable="isEdit"
+            :loading="loading"
+            :option-label="'label'"
+            :option-value="'value'"
+            behavior="menu"
             outlined
-          />
+          >
+            <template v-slot:option="scope">
+              <q-item
+                clickable
+                v-close-popup
+                v-bind="scope.itemProps"
+                @click="() => (form.type = scope.opt.value)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
