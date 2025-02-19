@@ -38,24 +38,12 @@
           <!-- Тип -->
           <q-select
             v-model="form.type"
-            :options="options"
-            :label="$t('productTypes.characteristicType')"
-            :rules="[(val) => !!val || $t('common.validation.required')]"
-            :disable="isEdit"
-            :loading="loading"
-            outlined
-            option-value="value"
+            :options="characteristicTypes.value"
             option-label="label"
-          >
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
-                <q-item-section>
-                  <q-item-label>{{ scope.opt.label }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+            option-value="value"
+            :label="$t('productTypes.characteristicType')"
+            outlined
+          />
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -252,10 +240,10 @@ const form = ref(getDefaultForm())
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('API Response:', response.data)
+    console.log('API Response:', response.data) // Що тут?
     characteristicTypes.value = response.data.types
-    console.log('Characteristic Types:', characteristicTypes.value)
-    console.log('Options:', options.value)
+    console.log('Characteristic Types:', characteristicTypes.value) // Що тут?
+    console.log('Options:', options.value) // І що тут?
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
