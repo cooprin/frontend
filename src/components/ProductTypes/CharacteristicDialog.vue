@@ -240,13 +240,13 @@ const getDefaultForm = () => ({
 const form = ref(getDefaultForm())
 
 // Methods
-const typeOptions = computed(() => {
-  return characteristicTypes.value.map((type) => ({
-    label: type.label,
-    value: type.value,
-    description: type.description,
-  }))
-})
+//const typeOptions = computed(() => {
+//  return characteristicTypes.value.map((type) => ({
+//    label: type.label,
+//    value: type.value,
+//    description: type.description,
+//  }))
+//})
 
 const loadCharacteristicTypes = async () => {
   try {
