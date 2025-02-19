@@ -191,11 +191,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { ProductTypesApi } from 'src/api/product-types'
-import { CHARACTERISTIC_TYPES, DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
+import { CharacteristicTypesApi } from 'src/api/characteristic-types'
+import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -237,7 +237,16 @@ const getDefaultForm = () => ({
 const form = ref(getDefaultForm())
 
 // Options
-const characteristicTypes = computed(() => CHARACTERISTIC_TYPES)
+const characteristicTypes = ref([])
+
+const loadCharacteristicTypes = async () => {
+  try {
+    const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    characteristicTypes.value = response.data.types
+  } catch (error) {
+    console.error('Error loading characteristic types:', error)
+  }
+}
 
 // Methods
 const resetValidation = () => {
@@ -257,11 +266,15 @@ const removeOption = (index) => {
   form.value.options.splice(index, 1)
 }
 
+onMounted(() => {
+  loadCharacteristicTypes()
+})
+
 const onSubmit = async () => {
   saving.value = true
   try {
     if (isEdit.value) {
-      await ProductTypesApi.updateCharacteristic(
+      await CharacteristicTypesApi.updateCharacteristic(
         props.productTypeId,
         props.characteristic.id,
         form.value,
@@ -272,7 +285,7 @@ const onSubmit = async () => {
         icon: 'check',
       })
     } else {
-      await ProductTypesApi.addCharacteristic(props.productTypeId, form.value)
+      await CharacteristicTypesApi.addCharacteristic(props.productTypeId, form.value)
       $q.notify({
         color: 'positive',
         message: t('productTypes.characteristicCreateSuccess'),

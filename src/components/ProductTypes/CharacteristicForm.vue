@@ -153,19 +153,29 @@
   </q-form>
 </template>
 <script setup>
-import { computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { ProductTypesApi } from 'src/api/product-types'
-import { CHARACTERISTIC_TYPES } from 'src/constants/productTypes'
+import { CharacteristicTypesApi } from 'src/api/characteristic-types'
 
-const characteristicTypes = computed(() =>
-  CHARACTERISTIC_TYPES.map((type) => ({
-    label: t(`productTypes.characteristicTypes.${type.value}`),
-    value: type.value,
-    description: type.description,
-  })),
-)
+const characteristicTypes = ref([])
+
+const loadCharacteristicTypes = async () => {
+  try {
+    const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    characteristicTypes.value = response.data.types.map((type) => ({
+      label: t(`productTypes.characteristicTypes.${type.value}`),
+      value: type.value,
+      description: type.description,
+    }))
+  } catch (error) {
+    console.error('Error loading characteristic types:', error)
+  }
+}
+
+onMounted(() => {
+  loadCharacteristicTypes()
+})
 
 const props = defineProps({
   modelValue: {
@@ -274,7 +284,7 @@ const onSubmit = async () => {
     }
     // Validate default value if present
     if (form.value.default_value) {
-      const validation = await ProductTypesApi.validateCharacteristic({
+      const validation = await CharacteristicTypesApi.validateCharacteristic({
         type: form.value.type,
         value: form.value.default_value,
         validation_rules: form.value.validation_rules,
