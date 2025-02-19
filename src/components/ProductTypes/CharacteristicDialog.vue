@@ -43,15 +43,15 @@
             :rules="[(val) => !!val || $t('common.validation.required')]"
             :disable="isEdit"
             outlined
-            field-value="value"
-            option-value="value"
-            option-label="label"
           >
-            <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps">
+            <template v-slot:selected>
+              {{ form.type }}
+            </template>
+            <template v-slot:option="{ opt }">
+              <q-item>
                 <q-item-section>
-                  <q-item-label>{{ scope.opt.label }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                  <q-item-label>{{ opt.label }}</q-item-label>
+                  <q-item-label caption>{{ opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
             </template>
@@ -240,15 +240,8 @@ const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
     console.log('Response:', response.data)
-    characteristicTypes.value = response.data.types.map((type) => ({
-      label: type.label,
-      value: type.value,
-      description: type.description,
-      click: () => {
-        form.value.type = type.value
-      },
-    }))
-    console.log('Mapped types:', characteristicTypes.value)
+    characteristicTypes.value = response.data.types
+    console.log('Types:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
     $q.notify({
@@ -318,22 +311,19 @@ const onSubmit = async () => {
 }
 
 // Watchers
+// Watchers
 watch(
-  () => props.characteristic,
-  (newVal) => {
-    if (newVal) {
-      form.value = { ...newVal }
+  [() => props.characteristic, () => form.value.type],
+  ([characteristic, type]) => {
+    if (characteristic) {
+      form.value = { ...characteristic }
+    } else if (type) {
+      resetValidation()
+      console.log('Type changed:', type)
     } else {
       form.value = getDefaultForm()
     }
   },
   { immediate: true },
-)
-
-watch(
-  () => form.value.type,
-  () => {
-    resetValidation()
-  },
 )
 </script>
