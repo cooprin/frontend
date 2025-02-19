@@ -43,17 +43,12 @@
             :rules="[(val) => !!val || $t('common.validation.required')]"
             :disable="isEdit"
             outlined
-            emit-value
-            :option-value="'value'"
-            :option-label="'label'"
           >
-            <template v-slot:option="{ opt }">
-              <q-item v-bind="opt.props">
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps" @click="scope.opt.click">
                 <q-item-section>
-                  <q-item-label>{{
-                    $t(`productTypes.characteristicTypes.${opt.value}`)
-                  }}</q-item-label>
-                  <q-item-label caption>{{ opt.description }}</q-item-label>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
             </template>
@@ -241,11 +236,16 @@ const characteristicTypes = ref([])
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    console.log('Response:', response.data) // для дебагу
     characteristicTypes.value = response.data.types.map((type) => ({
+      label: type.label,
       value: type.value,
-      label: type.label || type.value, // на випадок якщо label не прийде
       description: type.description,
+      click: () => {
+        form.value.type = type.value
+      },
     }))
+    console.log('Mapped types:', characteristicTypes.value) // для дебагу
   } catch (error) {
     console.error('Error loading characteristic types:', error)
     $q.notify({
