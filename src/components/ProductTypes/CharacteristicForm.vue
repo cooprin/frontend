@@ -22,7 +22,7 @@
     />
 
     <!-- Тип -->
-    <q-select
+    <!--<q-select
       v-model="form.type"
       :options="characteristicTypes"
       :label="$t('productTypes.characteristicType')"
@@ -40,7 +40,7 @@
           </q-item-section>
         </q-item>
       </template>
-    </q-select>
+    </q-select>-->
 
     <!-- Валідація в залежності від типу -->
     <template v-if="form.type === 'string'">
