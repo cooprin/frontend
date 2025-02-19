@@ -32,9 +32,18 @@
       :option-label="'label'"
       :option-value="'value'"
       map-options
+      behavior="menu"
     >
-      <template v-slot:option="{ opt }">
-        <q-item clickable v-close-popup>
+      <template v-slot:option="{ opt, itemProps }">
+        <q-item
+          v-bind="itemProps"
+          clickable
+          @click="
+            () => {
+              form.value.type = opt.value
+            }
+          "
+        >
           <q-item-section>
             <q-item-label>{{ opt.label }}</q-item-label>
             <q-item-label caption>{{ opt.description }}</q-item-label>
