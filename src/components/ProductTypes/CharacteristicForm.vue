@@ -22,25 +22,26 @@
     />
 
     <!-- Тип -->
-    <!--<q-select
+    <q-select
       v-model="form.type"
       :options="characteristicTypes"
       :label="$t('productTypes.characteristicType')"
       :rules="[(val) => !!val || $t('common.validation.required')]"
       :disable="isEdit"
       outlined
-      emit-value
+      :option-label="'label'"
+      :option-value="'value'"
       map-options
     >
-      <template v-slot:option="{ opt, selected }">
-        <q-item v-bind="opt.props" :active="selected">
+      <template v-slot:option="{ opt }">
+        <q-item clickable v-close-popup>
           <q-item-section>
             <q-item-label>{{ opt.label }}</q-item-label>
             <q-item-label caption>{{ opt.description }}</q-item-label>
           </q-item-section>
         </q-item>
       </template>
-    </q-select>-->
+    </q-select>
 
     <!-- Валідація в залежності від типу -->
     <template v-if="form.type === 'string'">
@@ -152,30 +153,12 @@
     </div>
   </q-form>
 </template>
+
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
-
-const characteristicTypes = ref([])
-
-const loadCharacteristicTypes = async () => {
-  try {
-    const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    characteristicTypes.value = response.data.types.map((type) => ({
-      label: t(`productTypes.characteristicTypes.${type.value}`),
-      value: type.value,
-      description: type.description,
-    }))
-  } catch (error) {
-    console.error('Error loading characteristic types:', error)
-  }
-}
-
-onMounted(() => {
-  loadCharacteristicTypes()
-})
 
 const props = defineProps({
   modelValue: {
@@ -200,6 +183,19 @@ const emit = defineEmits(['update:modelValue', 'submit', 'cancel'])
 
 const $q = useQuasar()
 const { t } = useI18n()
+
+// State
+const characteristicTypes = ref([])
+
+const loadCharacteristicTypes = async () => {
+  try {
+    const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    characteristicTypes.value = response.data.types
+    console.log('Loaded types:', characteristicTypes.value)
+  } catch (error) {
+    console.error('Error loading characteristic types:', error)
+  }
+}
 
 // Default validation rules for each type
 const defaultValidationRules = {
@@ -311,6 +307,10 @@ const onSubmit = async () => {
     })
   }
 }
+
+onMounted(() => {
+  loadCharacteristicTypes()
+})
 </script>
 
 <style scoped>
