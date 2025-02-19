@@ -40,22 +40,9 @@
             v-model="form.type"
             :options="characteristicTypes"
             :label="$t('productTypes.characteristicType')"
-            :rules="[(val) => !!val || $t('common.validation.required')]"
-            :disable="isEdit"
             outlined
-          >
-            <template v-slot:selected>
-              {{ form.type }}
-            </template>
-            <template v-slot:option="{ opt }">
-              <q-item>
-                <q-item-section>
-                  <q-item-label>{{ opt.label }}</q-item-label>
-                  <q-item-label caption>{{ opt.description }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+            :disable="isEdit"
+          />
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -239,19 +226,18 @@ const characteristicTypes = ref([])
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('Response:', response.data)
-    characteristicTypes.value = response.data.types
-    console.log('Types:', characteristicTypes.value)
+    console.log('API Response:', response.data.types)
+
+    // Спрощуємо дані для селекта
+    characteristicTypes.value = response.data.types.map((type) => type.value)
+
+    // Зразу після отримання даних виводимо їх
+    console.log('Mapped characteristicTypes:', characteristicTypes.value)
+    console.log('Current form.type:', form.value.type)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
   }
 }
-
 // Methods
 const resetValidation = () => {
   form.value.validation = {
