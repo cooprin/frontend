@@ -43,9 +43,12 @@
             :rules="[(val) => !!val || $t('common.validation.required')]"
             :disable="isEdit"
             outlined
+            field-value="value"
+            option-value="value"
+            option-label="label"
           >
             <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps" @click="scope.opt.click">
+              <q-item v-bind="scope.itemProps">
                 <q-item-section>
                   <q-item-label>{{ scope.opt.label }}</q-item-label>
                   <q-item-label caption>{{ scope.opt.description }}</q-item-label>
@@ -236,7 +239,7 @@ const characteristicTypes = ref([])
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('Response:', response.data) // для дебагу
+    console.log('Response:', response.data)
     characteristicTypes.value = response.data.types.map((type) => ({
       label: type.label,
       value: type.value,
@@ -245,7 +248,7 @@ const loadCharacteristicTypes = async () => {
         form.value.type = type.value
       },
     }))
-    console.log('Mapped types:', characteristicTypes.value) // для дебагу
+    console.log('Mapped types:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
     $q.notify({
