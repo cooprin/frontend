@@ -36,13 +36,24 @@
           />
 
           <!-- Тип -->
-          <q-select
-            v-model="form.type"
-            :options="characteristicTypes"
-            :label="$t('productTypes.characteristicType')"
-            outlined
-            :disable="isEdit"
-          />
+          <div>
+            {{ characteristicTypes }}
+            <!-- Для дебагу -->
+            <q-select
+              v-model="form.type"
+              :options="characteristicTypes"
+              option-value="value"
+              option-label="label"
+              :label="$t('productTypes.characteristicType')"
+              :rules="[(val) => !!val || $t('common.validation.required')]"
+              :disable="isEdit"
+              outlined
+              emit-value
+              map-options
+            />
+            Selected type: {{ form.type }}
+            <!-- Для дебагу -->
+          </div>
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -222,18 +233,27 @@ const form = ref(getDefaultForm())
 
 // Options
 const characteristicTypes = ref([])
+const loading = ref(false)
+
+onMounted(async () => {
+  loading.value = true
+  await loadCharacteristicTypes()
+  loading.value = false
+  console.log('After loading:', characteristicTypes.value)
+})
 
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('API Response:', response.data.types)
+    console.log('Raw API Response:', response.data.types)
 
-    // Спрощуємо дані для селекта
-    characteristicTypes.value = response.data.types.map((type) => type.value)
+    // Форматуємо дані для q-select
+    characteristicTypes.value = response.data.types.map((type) => ({
+      value: type.value,
+      label: type.label,
+    }))
 
-    // Зразу після отримання даних виводимо їх
-    console.log('Mapped characteristicTypes:', characteristicTypes.value)
-    console.log('Current form.type:', form.value.type)
+    console.log('Formatted options:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
