@@ -38,21 +38,10 @@
           <!-- Тип -->
           <q-select
             v-model="form.type"
-            :options="characteristicTypes"
+            :options="options"
             :label="$t('productTypes.characteristicType')"
-            :rules="[(val) => !!val || $t('common.validation.required')]"
-            :disable="isEdit"
-            :loading="loading"
             outlined
-          >
-            <template v-slot:option="{ opt }">
-              <q-item v-bind="opt.itemProps">
-                <q-item-section>
-                  <q-item-label>{{ opt.value }} - {{ opt.label }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          />
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -225,7 +214,7 @@ const isEdit = computed(() => !!props.characteristic)
 const getDefaultForm = () => ({
   name: '',
   code: '',
-  type: 'string',
+  type: null, // змінимо на null
   is_required: false,
   default_value: '',
   options: [],
@@ -246,21 +235,19 @@ onMounted(async () => {
   console.log('After loading:', characteristicTypes.value)
 })
 
+const options = computed(() =>
+  characteristicTypes.value.map((type) => ({
+    label: type.label,
+    value: type.value,
+  })),
+)
+
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('Full response:', response)
-    console.log('Response data:', response.data)
-    console.log('Types from response:', response.data.types)
-
-    // Форматуємо дані для q-select
-    characteristicTypes.value = response.data.types.map((type) => ({
-      value: type.value,
-      label: type.label,
-    }))
-
-    console.log('Formatted characteristicTypes:', characteristicTypes.value)
-    console.log('Current form.type:', form.value.type)
+    characteristicTypes.value = response.data.types
+    console.log('Options after mapping:', options.value)
+    console.log('Current form type:', form.value.type) // змінено з form.type на form.value.type
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
