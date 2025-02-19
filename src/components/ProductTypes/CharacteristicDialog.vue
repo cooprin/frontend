@@ -38,18 +38,19 @@
           <!-- Тип -->
           <q-select
             v-model="form.type"
-            :options="characteristicTypes.value"
+            :options="typeOptions"
             :label="$t('productTypes.characteristicType')"
             :disable="isEdit"
             outlined
-            emit-value
-            map-options
+            behavior="menu"
+            transition-show="scale"
+            transition-hide="scale"
           >
-            <template v-slot:option="scope">
-              <q-item clickable v-ripple v-bind="scope.itemProps">
+            <template v-slot:option="{ itemProps, opt }">
+              <q-item v-bind="itemProps">
                 <q-item-section>
-                  <q-item-label>{{ scope.opt.label }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                  <q-item-label>{{ opt.label }}</q-item-label>
+                  <q-item-label caption>{{ opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
             </template>
@@ -239,14 +240,29 @@ const getDefaultForm = () => ({
 const form = ref(getDefaultForm())
 
 // Methods
+const typeOptions = computed(() => {
+  return characteristicTypes.value.map((type) => ({
+    label: type.label,
+    value: type.value,
+    description: type.description,
+  }))
+})
+
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    // Виводимо в консоль для дебагу
+    console.log('API Response:', response.data)
+
+    // Перетворюємо дані в простішу структуру
     characteristicTypes.value = response.data.types.map((type) => ({
-      label: t(`productTypes.characteristicTypes.${type.value}`), // використовуємо переклад
       value: type.value,
-      description: type.description || '', // забезпечуємо, що description завжди є рядком
+      label: type.label,
+      description: type.description,
     }))
+
+    // Виводимо перетворені дані
+    console.log('Transformed types:', characteristicTypes.value)
   } catch (error) {
     console.error('Помилка завантаження типів характеристик:', error)
   }
@@ -328,3 +344,13 @@ onMounted(async () => {
   loading.value = false
 })
 </script>
+
+<style scoped>
+.q-select :deep(.q-item) {
+  cursor: pointer;
+}
+
+.q-select :deep(.q-menu) {
+  min-width: 100%;
+}
+</style>
