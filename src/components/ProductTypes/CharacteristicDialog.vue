@@ -36,7 +36,7 @@
           />
 
           <!-- Тип -->
-          <q-select
+          <!--<q-select
             v-model="form.type"
             :options="typeOptions"
             :label="$t('productTypes.characteristicType')"
@@ -54,7 +54,7 @@
                 </q-item-section>
               </q-item>
             </template>
-          </q-select>
+          </q-select>-->
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
