@@ -40,23 +40,18 @@
             v-model="form.type"
             :options="characteristicTypes.value"
             :label="$t('productTypes.characteristicType')"
+            option-label="label"
+            option-value="value"
             :disable="isEdit"
-            :loading="loading"
-            :option-label="'label'"
-            :option-value="'value'"
-            behavior="menu"
             outlined
+            emit-value
+            map-options
           >
-            <template v-slot:option="scope">
-              <q-item
-                clickable
-                v-close-popup
-                v-bind="scope.itemProps"
-                @click="() => (form.type = scope.opt.value)"
-              >
+            <template v-slot:option="{ opt, selected }">
+              <q-item v-bind="opt.props" :active="selected">
                 <q-item-section>
-                  <q-item-label>{{ scope.opt.label }}</q-item-label>
-                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                  <q-item-label>{{ opt.label }}</q-item-label>
+                  <q-item-label caption>{{ opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
             </template>
@@ -231,14 +226,6 @@ const show = computed({
 
 const isEdit = computed(() => !!props.characteristic)
 
-const options = computed(() =>
-  characteristicTypes.value.map((type) => ({
-    label: type.label,
-    value: type.value,
-    description: type.description,
-  })),
-)
-
 // Form
 const getDefaultForm = () => ({
   name: '',
@@ -257,12 +244,13 @@ const form = ref(getDefaultForm())
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('API Response:', response.data) // Що тут?
-    characteristicTypes.value = response.data.types
-    console.log('Characteristic Types:', characteristicTypes.value) // Що тут?
-    console.log('Options:', options.value) // І що тут?
+    characteristicTypes.value = response.data.types.map((type) => ({
+      label: type.label,
+      value: type.value,
+      description: type.description,
+    }))
   } catch (error) {
-    console.error('Error loading characteristic types:', error)
+    console.error('Помилка завантаження типів характеристик:', error)
   }
 }
 
@@ -308,7 +296,7 @@ const onSubmit = async () => {
     show.value = false
     emit('saved')
   } catch (error) {
-    console.error('Error saving characteristic:', error)
+    console.error('Помилка збереження характеристики:', error)
     $q.notify({
       color: 'negative',
       message: t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
@@ -327,7 +315,7 @@ watch(
       form.value = { ...characteristic }
     } else if (type) {
       resetValidation()
-      console.log('Type changed:', type)
+      console.log('Тип змінено:', type)
     } else {
       form.value = getDefaultForm()
     }
