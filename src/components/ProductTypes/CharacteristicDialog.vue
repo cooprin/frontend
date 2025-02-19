@@ -36,24 +36,23 @@
           />
 
           <!-- Тип -->
-          <div>
-            {{ characteristicTypes }}
-            <!-- Для дебагу -->
-            <q-select
-              v-model="form.type"
-              :options="characteristicTypes"
-              option-value="value"
-              option-label="label"
-              :label="$t('productTypes.characteristicType')"
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-              :disable="isEdit"
-              outlined
-              emit-value
-              map-options
-            />
-            Selected type: {{ form.type }}
-            <!-- Для дебагу -->
-          </div>
+          <q-select
+            v-model="form.type"
+            :options="characteristicTypes"
+            :label="$t('productTypes.characteristicType')"
+            :rules="[(val) => !!val || $t('common.validation.required')]"
+            :disable="isEdit"
+            :loading="loading"
+            outlined
+          >
+            <template v-slot:option="{ opt }">
+              <q-item v-bind="opt.itemProps">
+                <q-item-section>
+                  <q-item-label>{{ opt.value }} - {{ opt.label }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -192,6 +191,11 @@ import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
 import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 
+onMounted(async () => {
+  loading.value = true
+  await loadCharacteristicTypes()
+  loading.value = false
+})
 const props = defineProps({
   modelValue: Boolean,
   productTypeId: {
@@ -245,7 +249,9 @@ onMounted(async () => {
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    console.log('Raw API Response:', response.data.types)
+    console.log('Full response:', response)
+    console.log('Response data:', response.data)
+    console.log('Types from response:', response.data.types)
 
     // Форматуємо дані для q-select
     characteristicTypes.value = response.data.types.map((type) => ({
@@ -253,7 +259,8 @@ const loadCharacteristicTypes = async () => {
       label: type.label,
     }))
 
-    console.log('Formatted options:', characteristicTypes.value)
+    console.log('Formatted characteristicTypes:', characteristicTypes.value)
+    console.log('Current form.type:', form.value.type)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
