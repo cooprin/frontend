@@ -44,7 +44,6 @@
             :disable="isEdit"
             outlined
             emit-value
-            map-options
             :option-value="'value'"
             :option-label="'label'"
           >
@@ -242,9 +241,18 @@ const characteristicTypes = ref([])
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
-    characteristicTypes.value = response.data.types
+    characteristicTypes.value = response.data.types.map((type) => ({
+      value: type.value,
+      label: type.label || type.value, // на випадок якщо label не прийде
+      description: type.description,
+    }))
   } catch (error) {
     console.error('Error loading characteristic types:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
