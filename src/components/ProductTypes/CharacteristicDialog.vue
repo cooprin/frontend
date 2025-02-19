@@ -45,8 +45,8 @@
             outlined
             emit-value
             map-options
-            option-value="value"
-            option-label="label"
+            :option-value="'value'"
+            :option-label="'label'"
           >
             <template v-slot:option="{ opt }">
               <q-item v-bind="opt.props">
