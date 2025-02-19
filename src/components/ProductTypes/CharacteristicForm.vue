@@ -33,10 +33,10 @@
       option-value="value"
       emit-value
       map-options
-      @update:model-value="updateType"
+      behavior="menu"
     >
       <template v-slot:option="{ opt }">
-        <q-item v-bind="opt.props">
+        <q-item clickable v-close-popup @click="updateType(opt.value)">
           <q-item-section>
             <q-item-label>{{ opt.label }}</q-item-label>
             <q-item-label caption>{{ opt.description }}</q-item-label>
