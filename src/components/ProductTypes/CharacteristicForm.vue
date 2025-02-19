@@ -29,21 +29,14 @@
       :rules="[(val) => !!val || $t('common.validation.required')]"
       :disable="isEdit"
       outlined
-      :option-label="'label'"
-      :option-value="'value'"
+      option-label="label"
+      option-value="value"
+      emit-value
       map-options
-      behavior="menu"
+      @update:model-value="updateType"
     >
-      <template v-slot:option="{ opt, itemProps }">
-        <q-item
-          v-bind="itemProps"
-          clickable
-          @click="
-            () => {
-              form.value.type = opt.value
-            }
-          "
-        >
+      <template v-slot:option="{ opt }">
+        <q-item v-bind="opt.props">
           <q-item-section>
             <q-item-label>{{ opt.label }}</q-item-label>
             <q-item-label caption>{{ opt.description }}</q-item-label>
@@ -52,80 +45,29 @@
       </template>
     </q-select>
 
-    <!-- Валідація в залежності від типу -->
+    <!-- Валідація для текстових характеристик -->
     <template v-if="form.type === 'string'">
-      <div class="row q-col-gutter-sm">
-        <div class="col-6">
-          <q-input
-            v-model.number="form.validation_rules.minLength"
-            type="number"
-            :label="$t('productTypes.minLength')"
-            outlined
-          />
-        </div>
-        <div class="col-6">
-          <q-input
-            v-model.number="form.validation_rules.maxLength"
-            type="number"
-            :label="$t('productTypes.maxLength')"
-            outlined
-          />
-        </div>
-      </div>
       <q-input
-        v-model="form.validation_rules.pattern"
-        :label="$t('productTypes.pattern')"
-        hint="Regular expression pattern"
+        v-model.number="form.validation_rules.maxLength"
+        type="number"
+        :label="$t('productTypes.maxLength')"
         outlined
       />
     </template>
 
+    <!-- Валідація для числових характеристик -->
     <template v-if="form.type === 'number'">
-      <div class="row q-col-gutter-sm">
-        <div class="col-6">
-          <q-input
-            v-model.number="form.validation_rules.min"
-            type="number"
-            :min="0"
-            :max="999999"
-            :label="$t('productTypes.minValue')"
-            outlined
-          />
-        </div>
-        <div class="col-6">
-          <q-input
-            v-model.number="form.validation_rules.max"
-            type="number"
-            :min="0"
-            :max="999999"
-            :label="$t('productTypes.maxValue')"
-            outlined
-          />
-        </div>
-      </div>
+      <q-input
+        v-model.number="form.validation_rules.max"
+        type="number"
+        :min="0"
+        :max="999999"
+        :label="$t('productTypes.maxValue')"
+        outlined
+      />
     </template>
 
-    <template v-if="form.type === 'date'">
-      <div class="row q-col-gutter-sm">
-        <div class="col-6">
-          <q-input
-            v-model="form.validation_rules.min"
-            type="date"
-            :label="$t('productTypes.minDate')"
-            outlined
-          />
-        </div>
-        <div class="col-6">
-          <q-input
-            v-model="form.validation_rules.max"
-            type="date"
-            :label="$t('productTypes.maxDate')"
-            outlined
-          />
-        </div>
-      </div>
-    </template>
-
+    <!-- Опції для типу select -->
     <template v-if="form.type === 'select'">
       <div class="text-caption q-mb-sm">
         {{ $t('productTypes.options') }}
@@ -164,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
@@ -200,36 +142,27 @@ const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
     characteristicTypes.value = response.data.types
-    console.log('Loaded types:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
 // Default validation rules for each type
 const defaultValidationRules = {
   string: {
-    minLength: null,
     maxLength: 255,
-    pattern: null,
   },
   number: {
-    min: null,
-    max: null,
-    decimals: 0,
+    max: 999999,
   },
-  date: {
-    min: null,
-    max: null,
-  },
-  boolean: {
-    default: false,
-  },
-  select: {
-    multiple: false,
-    min: null,
-    max: null,
-  },
+  date: {},
+  boolean: {},
+  select: {},
 }
 
 // Form
@@ -237,6 +170,17 @@ const form = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
+
+// Update type and reset validation
+const updateType = (type) => {
+  emit('update:modelValue', {
+    ...form.value,
+    type,
+    validation_rules: { ...defaultValidationRules[type] },
+    options: type === 'select' ? [''] : null,
+    default_value: null,
+  })
+}
 
 // Add option to select type
 const addOption = () => {
@@ -250,19 +194,6 @@ const addOption = () => {
 const removeOption = (index) => {
   form.value.options.splice(index, 1)
 }
-
-// Watch type changes to reset validation rules
-watch(
-  () => form.value.type,
-  (newType) => {
-    if (newType && !props.isEdit) {
-      form.value.validation_rules = { ...defaultValidationRules[newType] }
-      form.value.options = newType === 'select' ? [''] : null
-      form.value.default_value = null
-    }
-  },
-  { deep: true },
-)
 
 // Submit handler
 const onSubmit = async () => {
@@ -287,24 +218,6 @@ const onSubmit = async () => {
         return
       }
     }
-    // Validate default value if present
-    if (form.value.default_value) {
-      const validation = await CharacteristicTypesApi.validateCharacteristic({
-        type: form.value.type,
-        value: form.value.default_value,
-        validation_rules: form.value.validation_rules,
-      })
-
-      if (!validation.data.isValid) {
-        $q.notify({
-          color: 'negative',
-          message: t('productTypes.defaultValueInvalid'),
-          caption: validation.data.errors.join(', '),
-          icon: 'error',
-        })
-        return
-      }
-    }
 
     emit('submit')
   } catch (error) {
@@ -321,9 +234,3 @@ onMounted(() => {
   loadCharacteristicTypes()
 })
 </script>
-
-<style scoped>
-.option-input {
-  flex: 1;
-}
-</style>
