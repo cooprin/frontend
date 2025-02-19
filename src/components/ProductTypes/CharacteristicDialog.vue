@@ -40,8 +40,22 @@
             v-model="form.type"
             :options="options"
             :label="$t('productTypes.characteristicType')"
+            :rules="[(val) => !!val || $t('common.validation.required')]"
+            :disable="isEdit"
+            :loading="loading"
             outlined
-          />
+            option-value="value"
+            option-label="label"
+          >
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.label }}</q-item-label>
+                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
 
           <!-- Валідація для числових характеристик -->
           <template v-if="form.type === 'number'">
@@ -180,11 +194,7 @@ import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
 import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 
-onMounted(async () => {
-  loading.value = true
-  await loadCharacteristicTypes()
-  loading.value = false
-})
+// Props & Emits
 const props = defineProps({
   modelValue: Boolean,
   productTypeId: {
@@ -198,11 +208,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
+
+// Composables
 const $q = useQuasar()
 const { t } = useI18n()
 
 // State
 const saving = ref(false)
+const loading = ref(false)
+const characteristicTypes = ref([])
+
+// Computed
 const show = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
@@ -210,11 +226,19 @@ const show = computed({
 
 const isEdit = computed(() => !!props.characteristic)
 
+const options = computed(() =>
+  characteristicTypes.value.map((type) => ({
+    label: type.label,
+    value: type.value,
+    description: type.description,
+  })),
+)
+
 // Form
 const getDefaultForm = () => ({
   name: '',
   code: '',
-  type: null, // змінимо на null
+  type: null,
   is_required: false,
   default_value: '',
   options: [],
@@ -224,35 +248,19 @@ const getDefaultForm = () => ({
 
 const form = ref(getDefaultForm())
 
-// Options
-const characteristicTypes = ref([])
-const loading = ref(false)
-
-onMounted(async () => {
-  loading.value = true
-  await loadCharacteristicTypes()
-  loading.value = false
-  console.log('After loading:', characteristicTypes.value)
-})
-
-const options = computed(() =>
-  characteristicTypes.value.map((type) => ({
-    label: type.label,
-    value: type.value,
-  })),
-)
-
+// Methods
 const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
+    console.log('API Response:', response.data)
     characteristicTypes.value = response.data.types
-    console.log('Options after mapping:', options.value)
-    console.log('Current form type:', form.value.type) // змінено з form.type на form.value.type
+    console.log('Characteristic Types:', characteristicTypes.value)
+    console.log('Options:', options.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
 }
-// Methods
+
 const resetValidation = () => {
   form.value.validation = {
     ...DEFAULT_CHARACTERISTIC_VALIDATION[form.value.type],
@@ -269,10 +277,6 @@ const addOption = () => {
 const removeOption = (index) => {
   form.value.options.splice(index, 1)
 }
-
-onMounted(() => {
-  loadCharacteristicTypes()
-})
 
 const onSubmit = async () => {
   saving.value = true
@@ -311,7 +315,6 @@ const onSubmit = async () => {
 }
 
 // Watchers
-// Watchers
 watch(
   [() => props.characteristic, () => form.value.type],
   ([characteristic, type]) => {
@@ -326,4 +329,11 @@ watch(
   },
   { immediate: true },
 )
+
+// Lifecycle hooks
+onMounted(async () => {
+  loading.value = true
+  await loadCharacteristicTypes()
+  loading.value = false
+})
 </script>
