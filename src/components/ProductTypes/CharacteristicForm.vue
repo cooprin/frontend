@@ -142,13 +142,9 @@ const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
     characteristicTypes.value = response.data.types
+    console.log('Loaded types:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
   }
 }
 
@@ -218,6 +214,24 @@ const onSubmit = async () => {
         return
       }
     }
+    // Validate default value if present
+    if (form.value.default_value) {
+      const validation = await CharacteristicTypesApi.validateCharacteristic({
+        type: form.value.type,
+        value: form.value.default_value,
+        validation_rules: form.value.validation_rules,
+      })
+
+      if (!validation.data.isValid) {
+        $q.notify({
+          color: 'negative',
+          message: t('productTypes.defaultValueInvalid'),
+          caption: validation.data.errors.join(', '),
+          icon: 'error',
+        })
+        return
+      }
+    }
 
     emit('submit')
   } catch (error) {
@@ -234,3 +248,9 @@ onMounted(() => {
   loadCharacteristicTypes()
 })
 </script>
+
+<style scoped>
+.option-input {
+  flex: 1;
+}
+</style>
