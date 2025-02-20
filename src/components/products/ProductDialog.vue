@@ -350,8 +350,7 @@ const getCharacteristicRules = (char) => {
 const loadManufacturers = async () => {
   loadingManufacturers.value = true
   try {
-    const response = await ModelsApi.getModels({
-      groupByManufacturer: true,
+    const response = await ProductsApi.getManufacturers({
       isActive: true,
       perPage: 'All',
     })
@@ -378,10 +377,16 @@ const loadSuppliers = async () => {
       isActive: true,
       perPage: 'All',
     })
-    supplierOptions.value = response.data.suppliers.map((s) => ({
-      label: s.name,
-      value: s.id,
-    }))
+
+    // Перевіряємо структуру відповіді
+    if (response.data && Array.isArray(response.data.suppliers)) {
+      supplierOptions.value = response.data.suppliers.map((s) => ({
+        label: s.name,
+        value: s.id,
+      }))
+    } else {
+      console.error('Unexpected response format:', response.data)
+    }
   } catch (error) {
     console.error('Error loading suppliers:', error)
     $q.notify({
@@ -398,19 +403,27 @@ const loadModels = async () => {
   loadingModels.value = true
   try {
     form.value.model_id = null
+    modelOptions.value = []
+
     if (!form.value.manufacturer_id) {
-      modelOptions.value = []
       return
     }
+
     const response = await ModelsApi.getModels({
       manufacturerId: form.value.manufacturer_id,
       isActive: true,
       perPage: 'All',
     })
-    modelOptions.value = response.data.models.map((m) => ({
-      label: m.name,
-      value: m.id,
-    }))
+
+    // Перевіряємо структуру відповіді
+    if (response.data && Array.isArray(response.data.models)) {
+      modelOptions.value = response.data.models.map((m) => ({
+        label: m.name,
+        value: m.id,
+      }))
+    } else {
+      console.error('Unexpected response format:', response.data)
+    }
   } catch (error) {
     console.error('Error loading models:', error)
     $q.notify({
@@ -430,10 +443,16 @@ const loadProductTypes = async () => {
       isActive: true,
       perPage: 'All',
     })
-    productTypeOptions.value = response.data.productTypes.map((t) => ({
-      label: t.name,
-      value: t.id,
-    }))
+
+    // Перевіряємо структуру відповіді
+    if (response.data && Array.isArray(response.data.productTypes)) {
+      productTypeOptions.value = response.data.productTypes.map((t) => ({
+        label: t.name,
+        value: t.id,
+      }))
+    } else {
+      console.error('Unexpected response format:', response.data)
+    }
   } catch (error) {
     console.error('Error loading product types:', error)
     $q.notify({
@@ -454,15 +473,22 @@ const loadCharacteristics = async () => {
       characteristics.value = []
       return
     }
-    const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
-    characteristics.value = response.data.characteristics
 
-    // Set default values
-    characteristics.value.forEach((char) => {
-      if (char.default_value !== undefined) {
-        form.value.characteristics[char.code] = char.default_value
-      }
-    })
+    const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
+
+    // Перевіряємо структуру відповіді
+    if (response.data && Array.isArray(response.data.characteristics)) {
+      characteristics.value = response.data.characteristics
+
+      // Set default values
+      characteristics.value.forEach((char) => {
+        if (char.default_value !== undefined) {
+          form.value.characteristics[char.code] = char.default_value
+        }
+      })
+    } else {
+      console.error('Unexpected response format:', response.data)
+    }
   } catch (error) {
     console.error('Error loading characteristics:', error)
     $q.notify({
@@ -530,8 +556,37 @@ onMounted(() => {
 
   if (props.editData) {
     form.value = { ...props.editData }
-    loadModels()
-    loadCharacteristics()
+    // Завантажуємо моделі та характеристики тільки якщо є необхідні ID
+    if (form.value.manufacturer_id) {
+      loadModels()
+    }
+    if (form.value.product_type_id) {
+      loadCharacteristics()
+    }
   }
 })
+
+// watcher for manufacturer_id changes
+watch(
+  () => form.value.manufacturer_id,
+  (newValue) => {
+    if (newValue) {
+      loadModels()
+    } else {
+      modelOptions.value = []
+    }
+  },
+)
+
+// watcher for product_type_id changes
+watch(
+  () => form.value.product_type_id,
+  (newValue) => {
+    if (newValue) {
+      loadCharacteristics()
+    } else {
+      characteristics.value = []
+    }
+  },
+)
 </script>
