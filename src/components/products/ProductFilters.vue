@@ -1,5 +1,5 @@
 <template>
-  <div class="row q-col-gutter-sm">
+  <div class="row q-col-gutter-sm q-mb-md">
     <!-- Пошук -->
     <div class="col-12 col-sm-3">
       <q-input
@@ -21,7 +21,7 @@
       <q-select
         v-model="filters.manufacturer"
         :options="manufacturerOptions"
-        :label="$t('products.manufacturer')"
+        :label="$t('products.filters.manufacturer')"
         dense
         outlined
         clearable
@@ -36,7 +36,7 @@
       <q-select
         v-model="filters.status"
         :options="statusOptions"
-        :label="$t('products.status')"
+        :label="$t('products.filters.status')"
         dense
         outlined
         clearable
@@ -51,7 +51,7 @@
       <q-select
         v-model="filters.isOwn"
         :options="ownOptions"
-        :label="$t('products.ownership')"
+        :label="$t('products.filters.ownership')"
         dense
         outlined
         clearable
@@ -61,7 +61,7 @@
       />
     </div>
 
-    <!-- Дата покупки від -->
+    <!-- Дата від -->
     <div class="col-12 col-sm-3">
       <q-input
         v-model="filters.dateFrom"
@@ -74,7 +74,7 @@
       />
     </div>
 
-    <!-- Дата покупки до -->
+    <!-- Дата до -->
     <div class="col-12 col-sm-3">
       <q-input
         v-model="filters.dateTo"
@@ -95,24 +95,24 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
 const emit = defineEmits(['update:filters'])
+const { t } = useI18n()
 
 // Опції для селектів
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: t('products.statuses.in_stock'), value: 'in_stock' },
   { label: t('products.statuses.installed'), value: 'installed' },
   { label: t('products.statuses.in_repair'), value: 'in_repair' },
   { label: t('products.statuses.written_off'), value: 'written_off' },
-]
+])
 
-const ownOptions = [
+const ownOptions = computed(() => [
   { label: t('products.own'), value: true },
   { label: t('products.notOwn'), value: false },
-]
+])
 
 // Початкові значення фільтрів
 const defaultFilters = {
@@ -125,20 +125,18 @@ const defaultFilters = {
 }
 
 const filters = ref({ ...defaultFilters })
-const manufacturerOptions = ref([])
 
-// Метод для емітування змін фільтрів
+// Методи
 const emitFilters = () => {
-  emit('update:filters', filters.value)
+  emit('update:filters', { ...filters.value })
 }
 
-// Метод для скидання фільтрів
 const resetFilters = () => {
-  filters.value = { ...defaultFilters }
+  Object.assign(filters.value, defaultFilters)
   emitFilters()
 }
 
-// Експортуємо для використання в батьківському компоненті
+// Expose для батьківського компонента
 defineExpose({
   resetFilters,
 })

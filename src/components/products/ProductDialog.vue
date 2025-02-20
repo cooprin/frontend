@@ -30,9 +30,14 @@
                   <q-input
                     v-model="form.sku"
                     :label="t('products.sku')"
-                    :rules="[(val) => !!val || t('validation.required')]"
+                    :rules="[
+                      (val) => !!val || t('validation.required'),
+                      (val) => /^[A-Z0-9-]+$/.test(val) || t('validation.skuFormat'),
+                    ]"
+                    :hint="t('products.skuHint')"
                     outlined
                     :disable="isEdit"
+                    uppercase
                   />
 
                   <!-- Виробник -->
@@ -41,6 +46,7 @@
                     :options="manufacturerOptions"
                     :label="t('products.manufacturer')"
                     :rules="[(val) => !!val || t('validation.required')]"
+                    :loading="loadingManufacturers"
                     outlined
                     emit-value
                     map-options
@@ -53,6 +59,7 @@
                     :options="modelOptions"
                     :label="t('products.model')"
                     :rules="[(val) => !!val || t('validation.required')]"
+                    :loading="loadingModels"
                     outlined
                     emit-value
                     map-options
@@ -65,6 +72,7 @@
                     :options="supplierOptions"
                     :label="t('products.supplier')"
                     :rules="[(val) => !!val || t('validation.required')]"
+                    :loading="loadingSuppliers"
                     outlined
                     emit-value
                     map-options
@@ -76,6 +84,7 @@
                     :options="productTypeOptions"
                     :label="t('products.type')"
                     :rules="[(val) => !!val || t('validation.required')]"
+                    :loading="loadingProductTypes"
                     outlined
                     emit-value
                     map-options
@@ -85,29 +94,44 @@
                   <!-- Власний/Невласний -->
                   <q-toggle v-model="form.is_own" :label="t('products.isOwn')" />
 
-                  <!-- Дата покупки -->
-                  <q-input
-                    v-model="form.purchase_date"
-                    :label="t('products.purchaseDate')"
-                    outlined
-                    type="date"
-                  />
+                  <!-- Дати -->
+                  <div class="row q-col-gutter-sm">
+                    <!-- Дата покупки -->
+                    <div class="col-12 col-sm-6">
+                      <q-input
+                        v-model="form.purchase_date"
+                        :label="t('products.purchaseDate')"
+                        :rules="[(val) => !!val || t('validation.required'), validatePurchaseDate]"
+                        outlined
+                        type="date"
+                        :max="today"
+                      />
+                    </div>
 
-                  <!-- Дата закінчення гарантії від постачальника -->
-                  <q-input
-                    v-model="form.supplier_warranty_end"
-                    :label="t('products.supplierWarrantyEnd')"
-                    outlined
-                    type="date"
-                  />
+                    <!-- Дата закінчення гарантії від постачальника -->
+                    <div class="col-12 col-sm-6">
+                      <q-input
+                        v-model="form.supplier_warranty_end"
+                        :label="t('products.supplierWarrantyEnd')"
+                        :rules="[validateSupplierWarrantyDate]"
+                        outlined
+                        type="date"
+                        :min="form.purchase_date"
+                      />
+                    </div>
 
-                  <!-- Дата закінчення гарантії -->
-                  <q-input
-                    v-model="form.warranty_end"
-                    :label="t('products.warrantyEnd')"
-                    outlined
-                    type="date"
-                  />
+                    <!-- Дата закінчення гарантії -->
+                    <div class="col-12 col-sm-6">
+                      <q-input
+                        v-model="form.warranty_end"
+                        :label="t('products.warrantyEnd')"
+                        :rules="[validateWarrantyDate]"
+                        outlined
+                        type="date"
+                        :min="form.purchase_date"
+                      />
+                    </div>
+                  </div>
                 </q-card-section>
               </q-card>
             </div>
@@ -131,9 +155,7 @@
                         v-if="char.type === 'string'"
                         v-model="form.characteristics[char.code]"
                         :label="char.name"
-                        :rules="
-                          char.is_required ? [(val) => !!val || t('validation.required')] : []
-                        "
+                        :rules="getCharacteristicRules(char)"
                         outlined
                       />
 
@@ -143,9 +165,9 @@
                         v-model.number="form.characteristics[char.code]"
                         type="number"
                         :label="char.name"
-                        :rules="
-                          char.is_required ? [(val) => !!val || t('validation.required')] : []
-                        "
+                        :rules="getCharacteristicRules(char)"
+                        :min="char.validation_rules?.min"
+                        :max="char.validation_rules?.max"
                         outlined
                       />
 
@@ -155,9 +177,9 @@
                         v-model="form.characteristics[char.code]"
                         type="date"
                         :label="char.name"
-                        :rules="
-                          char.is_required ? [(val) => !!val || t('validation.required')] : []
-                        "
+                        :rules="getCharacteristicRules(char)"
+                        :min="char.validation_rules?.min"
+                        :max="char.validation_rules?.max"
                         outlined
                       />
 
@@ -174,9 +196,7 @@
                         v-model="form.characteristics[char.code]"
                         :options="char.options"
                         :label="char.name"
-                        :rules="
-                          char.is_required ? [(val) => !!val || t('validation.required')] : []
-                        "
+                        :rules="getCharacteristicRules(char)"
                         outlined
                         emit-value
                         map-options
@@ -207,7 +227,7 @@ import { ProductTypesApi } from 'src/api/product-types'
 
 const $q = useQuasar()
 const { t } = useI18n()
-const emit = defineEmits(['close', 'saved'])
+const emit = defineEmits(['update:modelValue', 'saved'])
 
 const props = defineProps({
   modelValue: {
@@ -220,19 +240,32 @@ const props = defineProps({
   },
 })
 
+// Computed
 const show = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 })
 
 const isEdit = computed(() => !!props.editData)
+const today = computed(() => {
+  const date = new Date()
+  return date.toISOString().split('T')[0]
+})
+
+// State
 const loading = ref(false)
+const loadingManufacturers = ref(false)
+const loadingModels = ref(false)
+const loadingSuppliers = ref(false)
+const loadingProductTypes = ref(false)
+const loadingCharacteristics = ref(false)
 const manufacturerOptions = ref([])
 const modelOptions = ref([])
 const supplierOptions = ref([])
 const productTypeOptions = ref([])
 const characteristics = ref([])
 
+// Default form
 const defaultForm = {
   sku: '',
   manufacturer_id: null,
@@ -248,49 +281,147 @@ const defaultForm = {
 
 const form = ref({ ...defaultForm })
 
-// Methods
+// Validation Methods
+const validatePurchaseDate = (val) => {
+  if (!val) return true
+  const date = new Date(val)
+  return date <= new Date() || t('validation.futureDateNotAllowed')
+}
+
+const validateSupplierWarrantyDate = (val) => {
+  if (!val || !form.value.purchase_date) return true
+  const date = new Date(val)
+  const purchaseDate = new Date(form.value.purchase_date)
+  return date >= purchaseDate || t('validation.warrantyBeforePurchase')
+}
+
+const validateWarrantyDate = (val) => {
+  if (!val || !form.value.purchase_date) return true
+  if (!form.value.supplier_warranty_end) return true
+  const date = new Date(val)
+  const purchaseDate = new Date(form.value.purchase_date)
+  const supplierWarrantyDate = new Date(form.value.supplier_warranty_end)
+  if (date < purchaseDate) return t('validation.warrantyBeforePurchase')
+  if (date < supplierWarrantyDate) return t('validation.warrantyBeforeSupplierWarranty')
+  return true
+}
+
+const getCharacteristicRules = (char) => {
+  const rules = []
+
+  if (char.is_required) {
+    rules.push((val) => !!val || t('validation.required'))
+  }
+
+  if (char.type === 'string' && char.validation_rules?.maxLength) {
+    rules.push(
+      (val) =>
+        !val ||
+        val.length <= char.validation_rules.maxLength ||
+        t('validation.maxLength', { max: char.validation_rules.maxLength }),
+    )
+  }
+
+  if (char.type === 'number') {
+    if (char.validation_rules?.min !== undefined) {
+      rules.push(
+        (val) =>
+          !val ||
+          val >= char.validation_rules.min ||
+          t('validation.minValue', { min: char.validation_rules.min }),
+      )
+    }
+    if (char.validation_rules?.max !== undefined) {
+      rules.push(
+        (val) =>
+          !val ||
+          val <= char.validation_rules.max ||
+          t('validation.maxValue', { max: char.validation_rules.max }),
+      )
+    }
+  }
+
+  return rules
+}
+
+// Data Loading Methods
 const loadManufacturers = async () => {
+  loadingManufacturers.value = true
   try {
-    const response = await ProductsApi.getManufacturers()
+    const response = await ProductsApi.getManufacturers({
+      isActive: true,
+      perPage: 'All',
+    })
     manufacturerOptions.value = response.data.manufacturers.map((m) => ({
       label: m.name,
       value: m.id,
     }))
   } catch (error) {
     console.error('Error loading manufacturers:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingManufacturers.value = false
   }
 }
 
 const loadSuppliers = async () => {
+  loadingSuppliers.value = true
   try {
-    const response = await ProductsApi.getSuppliers()
+    const response = await ProductsApi.getSuppliers({
+      isActive: true,
+      perPage: 'All',
+    })
     supplierOptions.value = response.data.suppliers.map((s) => ({
       label: s.name,
       value: s.id,
     }))
   } catch (error) {
     console.error('Error loading suppliers:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingSuppliers.value = false
   }
 }
 
 const loadModels = async () => {
+  loadingModels.value = true
   try {
     form.value.model_id = null
     if (!form.value.manufacturer_id) {
       modelOptions.value = []
       return
     }
-    const response = await ProductsApi.getModels(form.value.manufacturer_id)
+    const response = await ProductsApi.getModels({
+      manufacturerId: form.value.manufacturer_id,
+      isActive: true,
+      perPage: 'All',
+    })
     modelOptions.value = response.data.models.map((m) => ({
       label: m.name,
       value: m.id,
     }))
   } catch (error) {
     console.error('Error loading models:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingModels.value = false
   }
 }
 
 const loadProductTypes = async () => {
+  loadingProductTypes.value = true
   try {
     const response = await ProductTypesApi.getProductTypes({
       isActive: true,
@@ -302,10 +433,18 @@ const loadProductTypes = async () => {
     }))
   } catch (error) {
     console.error('Error loading product types:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingProductTypes.value = false
   }
 }
 
 const loadCharacteristics = async () => {
+  loadingCharacteristics.value = true
   try {
     form.value.characteristics = {}
     if (!form.value.product_type_id) {
@@ -315,7 +454,7 @@ const loadCharacteristics = async () => {
     const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
     characteristics.value = response.data.characteristics
 
-    // Встановлюємо значення за замовчуванням
+    // Set default values
     characteristics.value.forEach((char) => {
       if (char.default_value) {
         form.value.characteristics[char.code] = char.default_value
@@ -323,27 +462,40 @@ const loadCharacteristics = async () => {
     })
   } catch (error) {
     console.error('Error loading characteristics:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingCharacteristics.value = false
   }
 }
 
+// Form Submission
 const onSubmit = async () => {
   loading.value = true
   try {
     if (isEdit.value) {
       await ProductsApi.updateProduct(props.editData.id, form.value)
+      $q.notify({
+        color: 'positive',
+        message: t('products.updateSuccess'),
+        icon: 'check',
+      })
     } else {
       await ProductsApi.createProduct(form.value)
+      $q.notify({
+        color: 'positive',
+        message: t('products.createSuccess'),
+        icon: 'check',
+      })
     }
-
-    $q.notify({
-      color: 'positive',
-      message: t(`products.${isEdit.value ? 'updateSuccess' : 'createSuccess'}`),
-      icon: 'check',
-    })
 
     emit('saved')
     show.value = false
-  } catch {
+  } catch (error) {
+    console.error('Error saving product:', error)
     $q.notify({
       color: 'negative',
       message: t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
@@ -354,19 +506,7 @@ const onSubmit = async () => {
   }
 }
 
-// Життєвий цикл
-onMounted(() => {
-  loadManufacturers()
-  loadSuppliers()
-  loadProductTypes()
-
-  if (props.editData) {
-    form.value = { ...props.editData }
-    loadModels()
-    loadCharacteristics()
-  }
-})
-
+// Watchers
 watch(
   () => props.editData,
   (newValue) => {
@@ -379,4 +519,17 @@ watch(
     }
   },
 )
+
+// Lifecycle
+onMounted(() => {
+  loadManufacturers()
+  loadSuppliers()
+  loadProductTypes()
+
+  if (props.editData) {
+    form.value = { ...props.editData }
+    loadModels()
+    loadCharacteristics()
+  }
+})
 </script>

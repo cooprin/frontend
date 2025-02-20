@@ -2,73 +2,17 @@
   <q-page padding>
     <!-- Заголовок і кнопка додавання -->
     <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-md">{{ $t('products.title') }}</h5>
+      <h5 class="q-mt-none q-mb-none">{{ $t('products.title') }}</h5>
       <q-btn color="primary" :label="$t('products.add')" icon="add" @click="openCreateDialog" />
     </div>
 
     <!-- Фільтри -->
-    <div class="row q-col-gutter-sm q-mb-md">
-      <!-- Пошук -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </div>
-
-      <!-- Фільтр по виробнику -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.manufacturer"
-          :options="manufacturerOptions"
-          :label="$t('products.manufacturer')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-
-      <!-- Фільтр по статусу -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.status"
-          :options="statusOptions"
-          :label="$t('products.status')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-
-      <!-- Фільтр власності -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.isOwn"
-          :options="ownOptions"
-          :label="$t('products.ownership')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-    </div>
+    <ProductFilters
+      v-model:filters="filters"
+      class="q-mb-md"
+      ref="filtersRef"
+      :manufacturer-options="manufacturerOptions"
+    />
 
     <!-- Таблиця -->
     <q-table
@@ -81,12 +25,24 @@
       flat
       bordered
       @request="onRequest"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :selected-rows-label="$t('common.selectedRows')"
+      :pagination-label="paginationLabel"
     >
       <!-- Слот для статусу -->
       <template v-slot:body-cell-current_status="props">
         <q-td :props="props">
           <q-chip :color="getStatusColor(props.row.current_status)" text-color="white" dense>
             {{ $t(`products.statuses.${props.row.current_status}`) }}
+          </q-chip>
+        </q-td>
+      </template>
+
+      <!-- Слот для власності -->
+      <template v-slot:body-cell-is_own="props">
+        <q-td :props="props">
+          <q-chip :color="props.row.is_own ? 'positive' : 'grey'" text-color="white" dense>
+            {{ props.row.is_own ? $t('products.own') : $t('products.notOwn') }}
           </q-chip>
         </q-td>
       </template>
@@ -148,21 +104,26 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Діалог створення/редагування -->
+    <ProductDialog v-model="showDialog" :edit-data="editProduct" @saved="loadProducts" />
   </q-page>
-  <ProductDialog v-model="showDialog" :edit-data="editProduct" @saved="loadProducts" />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
+import { debounce } from 'lodash'
 import ProductDialog from 'components/products/ProductDialog.vue'
+import ProductFilters from 'components/products/ProductFilters.vue'
 
 const $q = useQuasar()
 const router = useRouter()
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const filtersRef = ref(null)
 
 const showDialog = ref(false)
 const editProduct = ref(null)
@@ -172,6 +133,7 @@ const loading = ref(false)
 const products = ref([])
 const deleteDialog = ref(false)
 const productToDelete = ref(null)
+const manufacturerOptions = ref([])
 
 // Фільтри
 const filters = ref({
@@ -179,6 +141,8 @@ const filters = ref({
   manufacturer: null,
   status: null,
   isOwn: null,
+  dateFrom: null,
+  dateTo: null,
 })
 
 // Пагінація
@@ -188,25 +152,11 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'sku',
   descending: false,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
-// Опції для селектів
-const statusOptions = [
-  { label: t('products.statuses.in_stock'), value: 'in_stock' },
-  { label: t('products.statuses.installed'), value: 'installed' },
-  { label: t('products.statuses.in_repair'), value: 'in_repair' },
-  { label: t('products.statuses.written_off'), value: 'written_off' },
-]
-
-const ownOptions = [
-  { label: t('products.own'), value: true },
-  { label: t('products.notOwn'), value: false },
-]
-
-const manufacturerOptions = ref([])
-
-// Колонки таблиці
-const columns = [
+// Computed
+const columns = computed(() => [
   {
     name: 'sku',
     field: 'sku',
@@ -236,6 +186,13 @@ const columns = [
     sortable: true,
   },
   {
+    name: 'is_own',
+    field: 'is_own',
+    label: t('products.ownership'),
+    align: 'left',
+    sortable: true,
+  },
+  {
     name: 'warranty_end',
     field: 'warranty_end',
     label: t('products.warrantyEnd'),
@@ -249,9 +206,13 @@ const columns = [
     align: 'center',
     sortable: false,
   },
-]
+])
 
-// Методи
+// Methods
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 const loadProducts = async () => {
   loading.value = true
   try {
@@ -260,14 +221,12 @@ const loadProducts = async () => {
       perPage: pagination.value.rowsPerPage,
       sortBy: pagination.value.sortBy,
       descending: pagination.value.descending,
-      search: filters.value.search,
-      manufacturer: filters.value.manufacturer,
-      status: filters.value.status,
-      isOwn: filters.value.isOwn,
+      ...filters.value,
     })
     products.value = response.data.products
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error loading products:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -287,6 +246,11 @@ const loadManufacturers = async () => {
     }))
   } catch (error) {
     console.error('Error loading manufacturers:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
@@ -297,11 +261,6 @@ const onRequest = async (props) => {
   pagination.value.sortBy = sortBy
   pagination.value.descending = descending
   await loadProducts()
-}
-
-const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadProducts()
 }
 
 const getStatusColor = (status) => {
@@ -318,7 +277,6 @@ const openDetails = (product) => {
   router.push({ name: 'product-details', params: { id: product.id } })
 }
 
-// Оновлюємо методи
 const openCreateDialog = () => {
   editProduct.value = null
   showDialog.value = true
@@ -343,7 +301,8 @@ const deleteProduct = async () => {
       icon: 'check',
     })
     loadProducts()
-  } catch {
+  } catch (error) {
+    console.error('Error deleting product:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.deleting'),
@@ -352,8 +311,84 @@ const deleteProduct = async () => {
   }
 }
 
+// Watchers
+watch(locale, () => {
+  loadProducts()
+})
+
+watch(
+  filters,
+  debounce(() => {
+    pagination.value.page = 1
+    loadProducts()
+  }, 300),
+  { deep: true },
+)
+
+// Lifecycle
 onMounted(() => {
   loadProducts()
   loadManufacturers()
 })
 </script>
+
+<style scoped>
+/* Стилі для світлої теми */
+:deep(.q-table) thead tr {
+  background: var(--q-primary);
+}
+
+:deep(.q-table) thead tr th {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 8px 16px;
+}
+
+/* Стилі для темної теми */
+.body--dark :deep(.q-table) thead tr {
+  background: var(--q-dark);
+}
+
+.body--dark :deep(.q-table) thead tr th {
+  color: white !important;
+}
+
+/* Стилі для ховера рядків */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+/* Стилі для парних рядків */
+:deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.body--dark :deep(.q-table) tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Стилі для клітинок таблиці */
+:deep(.q-table) td {
+  padding: 8px 16px;
+}
+
+/* Стилі для границь таблиці */
+:deep(.q-table) {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Стилі для розділових ліній */
+:deep(.q-table) th,
+:deep(.q-table) td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark :deep(.q-table) th,
+.body--dark :deep(.q-table) td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+</style>
