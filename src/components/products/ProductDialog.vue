@@ -435,19 +435,22 @@ const loadModels = async () => {
       return
     }
 
+    // Виправляємо параметри запиту
     const response = await ModelsApi.getModels({
-      manufacturer_id: form.value.manufacturer_id, // Змінено з manufacturerId на manufacturer_id
-      is_active: true, // Змінено з isActive на is_active
-      per_page: 'All', // Змінено з perPage на per_page
+      manufacturer: form.value.manufacturer_id,
+      is_active: true,
+      per_page: 'All',
     })
 
+    console.log('Models response:', response) // Для діагностики
+
     if (response.data && Array.isArray(response.data.models)) {
-      modelOptions.value = response.data.models.map((m) => ({
-        label: m.name,
-        value: m.id,
-      }))
-    } else {
-      console.error('Unexpected response format:', response.data)
+      modelOptions.value = response.data.models
+        .filter((model) => model.manufacturer_id === form.value.manufacturer_id)
+        .map((m) => ({
+          label: m.name,
+          value: m.id,
+        }))
     }
   } catch (error) {
     console.error('Error loading models:', error)
@@ -460,6 +463,7 @@ const loadModels = async () => {
     loadingModels.value = false
   }
 }
+
 const loadProductTypes = async () => {
   loadingProductTypes.value = true
   try {
@@ -501,20 +505,18 @@ const loadCharacteristics = async () => {
       return
     }
 
+    console.log('Loading characteristics for type:', form.value.product_type_id)
     const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
+    console.log('Characteristics response:', response)
 
-    // Перевіряємо структуру відповіді
     if (response.data && Array.isArray(response.data.characteristics)) {
       characteristics.value = response.data.characteristics
-
       // Set default values
       characteristics.value.forEach((char) => {
         if (char.default_value !== undefined) {
           form.value.characteristics[char.code] = char.default_value
         }
       })
-    } else {
-      console.error('Unexpected response format:', response.data)
     }
   } catch (error) {
     console.error('Error loading characteristics:', error)
