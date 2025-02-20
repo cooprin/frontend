@@ -283,6 +283,29 @@ const defaultForm = {
 
 const form = ref({ ...defaultForm })
 
+// Lifecycle hooks
+onMounted(async () => {
+  // Спочатку завантажуємо всі довідники
+  await Promise.all([loadManufacturers(), loadSuppliers(), loadProductTypes()])
+
+  // Якщо це редагування, заповнюємо форму даними
+  if (props.editData) {
+    form.value = {
+      ...defaultForm,
+      ...props.editData,
+      characteristics: props.editData.characteristics || {},
+    }
+
+    // Завантажуємо залежні дані
+    if (form.value.manufacturer_id) {
+      await loadModels()
+    }
+    if (form.value.product_type_id) {
+      await loadCharacteristics()
+    }
+  }
+})
+
 // Validation Methods
 const validatePurchaseDate = (val) => {
   if (!val) return true
@@ -374,18 +397,21 @@ const loadSuppliers = async () => {
   loadingSuppliers.value = true
   try {
     const response = await SuppliersApi.getSuppliers({
-      isActive: true,
-      perPage: 'All',
+      is_active: true, // Змінено з isActive на is_active
+      per_page: 'All', // Змінено з perPage на per_page
     })
 
-    // Перевіряємо структуру відповіді
+    // Перевіряємо повну структуру відповіді
+    console.log('Suppliers response:', response)
+
     if (response.data && Array.isArray(response.data.suppliers)) {
       supplierOptions.value = response.data.suppliers.map((s) => ({
         label: s.name,
         value: s.id,
       }))
+      console.log('Supplier options:', supplierOptions.value)
     } else {
-      console.error('Unexpected response format:', response.data)
+      console.error('Unexpected suppliers response format:', response.data)
     }
   } catch (error) {
     console.error('Error loading suppliers:', error)
@@ -410,12 +436,11 @@ const loadModels = async () => {
     }
 
     const response = await ModelsApi.getModels({
-      manufacturerId: form.value.manufacturer_id,
-      isActive: true,
-      perPage: 'All',
+      manufacturer_id: form.value.manufacturer_id, // Змінено з manufacturerId на manufacturer_id
+      is_active: true, // Змінено з isActive на is_active
+      per_page: 'All', // Змінено з perPage на per_page
     })
 
-    // Перевіряємо структуру відповіді
     if (response.data && Array.isArray(response.data.models)) {
       modelOptions.value = response.data.models.map((m) => ({
         label: m.name,
@@ -435,23 +460,25 @@ const loadModels = async () => {
     loadingModels.value = false
   }
 }
-
 const loadProductTypes = async () => {
   loadingProductTypes.value = true
   try {
     const response = await ProductTypesApi.getProductTypes({
-      isActive: true,
-      perPage: 'All',
+      is_active: true, // Змінено з isActive на is_active
+      per_page: 'All', // Змінено з perPage на per_page
     })
 
-    // Перевіряємо структуру відповіді
+    // Перевіряємо повну структуру відповіді
+    console.log('Product types response:', response)
+
     if (response.data && Array.isArray(response.data.productTypes)) {
       productTypeOptions.value = response.data.productTypes.map((t) => ({
         label: t.name,
         value: t.id,
       }))
+      console.log('Product type options:', productTypeOptions.value)
     } else {
-      console.error('Unexpected response format:', response.data)
+      console.error('Unexpected product types response format:', response.data)
     }
   } catch (error) {
     console.error('Error loading product types:', error)
@@ -565,6 +592,27 @@ onMounted(() => {
     }
   }
 })
+
+watch(
+  () => props.editData,
+  (newValue) => {
+    if (newValue) {
+      form.value = {
+        ...defaultForm,
+        ...newValue,
+        characteristics: newValue.characteristics || {},
+      }
+      if (form.value.manufacturer_id) {
+        loadModels()
+      }
+      if (form.value.product_type_id) {
+        loadCharacteristics()
+      }
+    } else {
+      form.value = { ...defaultForm }
+    }
+  },
+)
 
 // watcher for manufacturer_id changes
 watch(
