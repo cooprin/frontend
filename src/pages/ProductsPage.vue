@@ -3,7 +3,9 @@
     <!-- Заголовок і кнопка додавання -->
     <div class="row items-center justify-between q-mb-md">
       <h5 class="q-mt-none q-mb-none">{{ $t('products.title') }}</h5>
-      <q-btn color="primary" :label="$t('products.add')" icon="add" @click="openCreateDialog" />
+      <q-btn color="primary" :label="$t('products.add')" icon="add" @click="openCreateDialog">
+        <q-tooltip> {{ $t('products.add') }} (F7) </q-tooltip>
+      </q-btn>
     </div>
 
     <!-- Фільтри -->
@@ -111,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -127,6 +129,12 @@ const filtersRef = ref(null)
 
 const showDialog = ref(false)
 const editProduct = ref(null)
+
+const handleKeydown = (e) => {
+  if (e.key === 'F7') {
+    openCreateDialog()
+  }
+}
 
 // Стани
 const loading = ref(false)
@@ -186,28 +194,12 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'is_own',
-    field: 'is_own',
-    label: t('products.ownership'),
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'warranty_end',
-    field: 'warranty_end',
-    label: t('products.warrantyEnd'),
-    align: 'left',
-    sortable: true,
-    format: (val) => (val ? new Date(val).toLocaleDateString() : '-'),
-  },
-  {
     name: 'actions',
     label: t('common.actions'),
     align: 'center',
     sortable: false,
   },
 ])
-
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
@@ -329,6 +321,11 @@ watch(
 onMounted(() => {
   loadProducts()
   loadManufacturers()
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 

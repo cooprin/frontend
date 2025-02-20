@@ -38,6 +38,9 @@
                     outlined
                     :disable="isEdit"
                     uppercase
+                    @keydown="handleSkuKeydown"
+                    ref="skuInput"
+                    autofocus
                   />
 
                   <!-- Виробник -->
@@ -90,48 +93,6 @@
                     map-options
                     @update:model-value="loadCharacteristics"
                   />
-
-                  <!-- Власний/Невласний -->
-                  <q-toggle v-model="form.is_own" :label="t('products.isOwn')" />
-
-                  <!-- Дати -->
-                  <div class="row q-col-gutter-sm">
-                    <!-- Дата покупки -->
-                    <div class="col-12 col-sm-6">
-                      <q-input
-                        v-model="form.purchase_date"
-                        :label="t('products.purchaseDate')"
-                        :rules="[(val) => !!val || t('validation.required'), validatePurchaseDate]"
-                        outlined
-                        type="date"
-                        :max="today"
-                      />
-                    </div>
-
-                    <!-- Дата закінчення гарантії від постачальника -->
-                    <div class="col-12 col-sm-6">
-                      <q-input
-                        v-model="form.supplier_warranty_end"
-                        :label="t('products.supplierWarrantyEnd')"
-                        :rules="[validateSupplierWarrantyDate]"
-                        outlined
-                        type="date"
-                        :min="form.purchase_date"
-                      />
-                    </div>
-
-                    <!-- Дата закінчення гарантії -->
-                    <div class="col-12 col-sm-6">
-                      <q-input
-                        v-model="form.warranty_end"
-                        :label="t('products.warrantyEnd')"
-                        :rules="[validateWarrantyDate]"
-                        outlined
-                        type="date"
-                        :min="form.purchase_date"
-                      />
-                    </div>
-                  </div>
                 </q-card-section>
               </q-card>
             </div>
@@ -219,7 +180,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+//ProductDialog.vue
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
@@ -230,6 +192,7 @@ import { ProductTypesApi } from 'src/api/product-types'
 const $q = useQuasar()
 const { t } = useI18n()
 const emit = defineEmits(['update:modelValue', 'saved'])
+const skuInput = ref(null)
 
 const props = defineProps({
   modelValue: {
@@ -242,17 +205,7 @@ const props = defineProps({
   },
 })
 
-// Computed
-const show = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-})
-
-const isEdit = computed(() => !!props.editData)
-const today = computed(() => {
-  const date = new Date()
-  return date.toISOString().split('T')[0]
-})
+const STORAGE_KEY = 'lastProductFormData'
 
 // State
 const loading = ref(false)
@@ -274,61 +227,193 @@ const defaultForm = {
   model_id: null,
   supplier_id: null,
   product_type_id: null,
-  is_own: true,
-  purchase_date: null,
-  supplier_warranty_end: null,
-  warranty_end: null,
   characteristics: {},
 }
 
-const form = ref({ ...defaultForm })
+const saveFormToStorage = (formData) => {
+  const dataToSave = { ...formData }
+  delete dataToSave.sku // Не зберігаємо SKU
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
+}
 
-// Lifecycle hooks
-onMounted(async () => {
-  // Спочатку завантажуємо всі довідники
-  await Promise.all([loadManufacturers(), loadSuppliers(), loadProductTypes()])
-
-  // Якщо це редагування, заповнюємо форму даними
-  if (props.editData) {
-    form.value = {
-      ...defaultForm,
-      ...props.editData,
-      characteristics: props.editData.characteristics || {},
-    }
-
-    // Завантажуємо залежні дані
-    if (form.value.manufacturer_id) {
-      await loadModels()
-    }
-    if (form.value.product_type_id) {
-      await loadCharacteristics()
+const loadFormFromStorage = () => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    try {
+      const parsedData = JSON.parse(saved)
+      return { ...defaultForm, ...parsedData }
+    } catch (e) {
+      console.error('Error parsing saved form data:', e)
+      return { ...defaultForm }
     }
   }
+  return { ...defaultForm }
+}
+
+const form = ref(loadFormFromStorage())
+
+// Computed
+const show = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
 })
 
-// Validation Methods
-const validatePurchaseDate = (val) => {
-  if (!val) return true
-  const date = new Date(val)
-  return date <= new Date() || t('validation.futureDateNotAllowed')
+const isEdit = computed(() => !!props.editData)
+
+// Methods
+const handleSkuKeydown = async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    const requiredFields = ['manufacturer_id', 'model_id', 'supplier_id', 'product_type_id']
+    const allFieldsFilled = requiredFields.every((field) => form.value[field])
+
+    if (allFieldsFilled) {
+      await onSubmit()
+    } else {
+      $q.notify({
+        color: 'warning',
+        message: t('products.fillRequiredFields'),
+        icon: 'warning',
+      })
+    }
+  }
 }
 
-const validateSupplierWarrantyDate = (val) => {
-  if (!val || !form.value.purchase_date) return true
-  const date = new Date(val)
-  const purchaseDate = new Date(form.value.purchase_date)
-  return date >= purchaseDate || t('validation.warrantyBeforePurchase')
+const loadManufacturers = async () => {
+  loadingManufacturers.value = true
+  try {
+    const response = await ModelsApi.getModels({
+      groupByManufacturer: true,
+      is_active: true,
+      per_page: 'All',
+    })
+    manufacturerOptions.value = response.data.manufacturers.map((m) => ({
+      label: m.name,
+      value: m.id,
+    }))
+  } catch (error) {
+    console.error('Error loading manufacturers:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingManufacturers.value = false
+  }
 }
 
-const validateWarrantyDate = (val) => {
-  if (!val || !form.value.purchase_date) return true
-  if (!form.value.supplier_warranty_end) return true
-  const date = new Date(val)
-  const purchaseDate = new Date(form.value.purchase_date)
-  const supplierWarrantyDate = new Date(form.value.supplier_warranty_end)
-  if (date < purchaseDate) return t('validation.warrantyBeforePurchase')
-  if (date < supplierWarrantyDate) return t('validation.warrantyBeforeSupplierWarranty')
-  return true
+const loadModels = async () => {
+  loadingModels.value = true
+  try {
+    form.value.model_id = null
+    modelOptions.value = []
+
+    if (!form.value.manufacturer_id) {
+      return
+    }
+
+    const response = await ModelsApi.getModels({
+      manufacturer: form.value.manufacturer_id,
+      is_active: true,
+      per_page: 'All',
+    })
+
+    if (response.data && Array.isArray(response.data.models)) {
+      modelOptions.value = response.data.models
+        .filter((model) => model.manufacturer_id === form.value.manufacturer_id)
+        .map((m) => ({
+          label: m.name,
+          value: m.id,
+        }))
+    }
+  } catch (error) {
+    console.error('Error loading models:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingModels.value = false
+  }
+}
+
+const loadSuppliers = async () => {
+  loadingSuppliers.value = true
+  try {
+    const response = await SuppliersApi.getSuppliers({
+      is_active: true,
+      per_page: 'All',
+    })
+    supplierOptions.value = response.data.suppliers.map((s) => ({
+      label: s.name,
+      value: s.id,
+    }))
+  } catch (error) {
+    console.error('Error loading suppliers:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingSuppliers.value = false
+  }
+}
+
+const loadProductTypes = async () => {
+  loadingProductTypes.value = true
+  try {
+    const response = await ProductTypesApi.getProductTypes({
+      is_active: true,
+      per_page: 'All',
+    })
+    productTypeOptions.value = response.data.productTypes.map((t) => ({
+      label: t.name,
+      value: t.id,
+    }))
+  } catch (error) {
+    console.error('Error loading product types:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingProductTypes.value = false
+  }
+}
+
+const loadCharacteristics = async () => {
+  loadingCharacteristics.value = true
+  try {
+    form.value.characteristics = {}
+    if (!form.value.product_type_id) {
+      characteristics.value = []
+      return
+    }
+
+    const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
+
+    if (response.data && Array.isArray(response.data.characteristics)) {
+      characteristics.value = response.data.characteristics
+      characteristics.value.forEach((char) => {
+        if (char.default_value !== undefined) {
+          form.value.characteristics[char.code] = char.default_value
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Error loading characteristics:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingCharacteristics.value = false
+  }
 }
 
 const getCharacteristicRules = (char) => {
@@ -369,168 +454,6 @@ const getCharacteristicRules = (char) => {
   return rules
 }
 
-// Data Loading Methods
-const loadManufacturers = async () => {
-  loadingManufacturers.value = true
-  try {
-    const response = await ProductsApi.getManufacturers({
-      isActive: true,
-      perPage: 'All',
-    })
-    manufacturerOptions.value = response.data.manufacturers.map((m) => ({
-      label: m.name,
-      value: m.id,
-    }))
-  } catch (error) {
-    console.error('Error loading manufacturers:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingManufacturers.value = false
-  }
-}
-
-const loadSuppliers = async () => {
-  loadingSuppliers.value = true
-  try {
-    const response = await SuppliersApi.getSuppliers({
-      is_active: true, // Змінено з isActive на is_active
-      per_page: 'All', // Змінено з perPage на per_page
-    })
-
-    // Перевіряємо повну структуру відповіді
-    console.log('Suppliers response:', response)
-
-    if (response.data && Array.isArray(response.data.suppliers)) {
-      supplierOptions.value = response.data.suppliers.map((s) => ({
-        label: s.name,
-        value: s.id,
-      }))
-      console.log('Supplier options:', supplierOptions.value)
-    } else {
-      console.error('Unexpected suppliers response format:', response.data)
-    }
-  } catch (error) {
-    console.error('Error loading suppliers:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingSuppliers.value = false
-  }
-}
-
-const loadModels = async () => {
-  loadingModels.value = true
-  try {
-    form.value.model_id = null
-    modelOptions.value = []
-
-    if (!form.value.manufacturer_id) {
-      return
-    }
-
-    // Виправляємо параметри запиту
-    const response = await ModelsApi.getModels({
-      manufacturer: form.value.manufacturer_id,
-      is_active: true,
-      per_page: 'All',
-    })
-
-    console.log('Models response:', response) // Для діагностики
-
-    if (response.data && Array.isArray(response.data.models)) {
-      modelOptions.value = response.data.models
-        .filter((model) => model.manufacturer_id === form.value.manufacturer_id)
-        .map((m) => ({
-          label: m.name,
-          value: m.id,
-        }))
-    }
-  } catch (error) {
-    console.error('Error loading models:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingModels.value = false
-  }
-}
-
-const loadProductTypes = async () => {
-  loadingProductTypes.value = true
-  try {
-    const response = await ProductTypesApi.getProductTypes({
-      is_active: true, // Змінено з isActive на is_active
-      per_page: 'All', // Змінено з perPage на per_page
-    })
-
-    // Перевіряємо повну структуру відповіді
-    console.log('Product types response:', response)
-
-    if (response.data && Array.isArray(response.data.productTypes)) {
-      productTypeOptions.value = response.data.productTypes.map((t) => ({
-        label: t.name,
-        value: t.id,
-      }))
-      console.log('Product type options:', productTypeOptions.value)
-    } else {
-      console.error('Unexpected product types response format:', response.data)
-    }
-  } catch (error) {
-    console.error('Error loading product types:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingProductTypes.value = false
-  }
-}
-
-const loadCharacteristics = async () => {
-  loadingCharacteristics.value = true
-  try {
-    form.value.characteristics = {}
-    if (!form.value.product_type_id) {
-      characteristics.value = []
-      return
-    }
-
-    console.log('Loading characteristics for type:', form.value.product_type_id)
-    const response = await ProductTypesApi.getCharacteristics(form.value.product_type_id)
-    console.log('Characteristics response:', response)
-
-    if (response.data && Array.isArray(response.data.characteristics)) {
-      characteristics.value = response.data.characteristics
-      // Set default values
-      characteristics.value.forEach((char) => {
-        if (char.default_value !== undefined) {
-          form.value.characteristics[char.code] = char.default_value
-        }
-      })
-    }
-  } catch (error) {
-    console.error('Error loading characteristics:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingCharacteristics.value = false
-  }
-}
-
-// Form Submission
 const onSubmit = async () => {
   loading.value = true
   try {
@@ -543,10 +466,22 @@ const onSubmit = async () => {
       })
     } else {
       await ProductsApi.createProduct(form.value)
+      saveFormToStorage(form.value)
+
       $q.notify({
         color: 'positive',
         message: t('products.createSuccess'),
         icon: 'check',
+      })
+
+      // Очищаємо тільки SKU
+      form.value.sku = ''
+
+      // Фокусуємося на полі SKU для наступного сканування
+      nextTick(() => {
+        if (skuInput.value) {
+          skuInput.value.focus()
+        }
       })
     }
 
@@ -563,47 +498,13 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
 // Watchers
 watch(
   () => props.editData,
   (newValue) => {
     if (newValue) {
       form.value = { ...newValue }
-      loadModels()
-      loadCharacteristics()
-    } else {
-      form.value = { ...defaultForm }
-    }
-  },
-)
-
-// Lifecycle
-onMounted(() => {
-  loadManufacturers()
-  loadSuppliers()
-  loadProductTypes()
-
-  if (props.editData) {
-    form.value = { ...props.editData }
-    // Завантажуємо моделі та характеристики тільки якщо є необхідні ID
-    if (form.value.manufacturer_id) {
-      loadModels()
-    }
-    if (form.value.product_type_id) {
-      loadCharacteristics()
-    }
-  }
-})
-
-watch(
-  () => props.editData,
-  (newValue) => {
-    if (newValue) {
-      form.value = {
-        ...defaultForm,
-        ...newValue,
-        characteristics: newValue.characteristics || {},
-      }
       if (form.value.manufacturer_id) {
         loadModels()
       }
@@ -611,32 +512,41 @@ watch(
         loadCharacteristics()
       }
     } else {
-      form.value = { ...defaultForm }
+      form.value = loadFormFromStorage()
     }
   },
 )
 
-// watcher for manufacturer_id changes
 watch(
-  () => form.value.manufacturer_id,
+  () => show.value,
   (newValue) => {
-    if (newValue) {
+    if (newValue && !isEdit.value) {
+      // При відкритті діалогу фокусуємося на полі SKU
+      nextTick(() => {
+        if (skuInput.value) {
+          skuInput.value.focus()
+        }
+      })
+    }
+  },
+)
+
+// Lifecycle hooks
+onMounted(() => {
+  loadManufacturers()
+  loadSuppliers()
+  loadProductTypes()
+
+  if (props.editData) {
+    form.value = { ...props.editData }
+    if (form.value.manufacturer_id) {
       loadModels()
-    } else {
-      modelOptions.value = []
     }
-  },
-)
-
-// watcher for product_type_id changes
-watch(
-  () => form.value.product_type_id,
-  (newValue) => {
-    if (newValue) {
+    if (form.value.product_type_id) {
       loadCharacteristics()
-    } else {
-      characteristics.value = []
     }
-  },
-)
+  } else {
+    form.value = loadFormFromStorage()
+  }
+})
 </script>
