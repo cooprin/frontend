@@ -1,7 +1,7 @@
 <template>
   <div class="row q-col-gutter-sm q-mb-md">
     <!-- Пошук -->
-    <div class="col-12 col-sm-3">
+    <div class="col-12 col-md-4">
       <q-input
         v-model="filters.search"
         :label="$t('common.search')"
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Фільтр по виробнику -->
-    <div class="col-12 col-sm-3">
+    <div class="col-12 col-md-4">
       <q-select
         v-model="filters.manufacturer"
         :options="manufacturerOptions"
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Фільтр по статусу -->
-    <div class="col-12 col-sm-3">
+    <div class="col-12 col-md-4">
       <q-select
         v-model="filters.status"
         :options="statusOptions"
@@ -46,49 +46,8 @@
       />
     </div>
 
-    <!-- Фільтр власності -->
-    <div class="col-12 col-sm-3">
-      <q-select
-        v-model="filters.isOwn"
-        :options="ownOptions"
-        :label="$t('products.filters.ownership')"
-        dense
-        outlined
-        clearable
-        emit-value
-        map-options
-        @update:model-value="emitFilters"
-      />
-    </div>
-
-    <!-- Дата від -->
-    <div class="col-12 col-sm-3">
-      <q-input
-        v-model="filters.dateFrom"
-        :label="$t('products.filters.dateFrom')"
-        dense
-        outlined
-        type="date"
-        clearable
-        @update:model-value="emitFilters"
-      />
-    </div>
-
-    <!-- Дата до -->
-    <div class="col-12 col-sm-3">
-      <q-input
-        v-model="filters.dateTo"
-        :label="$t('products.filters.dateTo')"
-        dense
-        outlined
-        type="date"
-        clearable
-        @update:model-value="emitFilters"
-      />
-    </div>
-
     <!-- Кнопка скидання -->
-    <div class="col-12 col-sm-3 flex items-center">
+    <div class="col-12 flex justify-end">
       <q-btn :label="$t('common.reset')" color="primary" flat @click="resetFilters" />
     </div>
   </div>
@@ -109,19 +68,11 @@ const statusOptions = computed(() => [
   { label: t('products.statuses.written_off'), value: 'written_off' },
 ])
 
-const ownOptions = computed(() => [
-  { label: t('products.own'), value: true },
-  { label: t('products.notOwn'), value: false },
-])
-
 // Початкові значення фільтрів
 const defaultFilters = {
   search: '',
   manufacturer: null,
   status: null,
-  isOwn: null,
-  dateFrom: null,
-  dateTo: null,
 }
 
 const filters = ref({ ...defaultFilters })

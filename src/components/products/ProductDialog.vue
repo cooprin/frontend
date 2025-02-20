@@ -282,8 +282,8 @@ const handleSkuKeydown = async (e) => {
 const loadManufacturers = async () => {
   loadingManufacturers.value = true
   try {
-    const response = await ModelsApi.getModels({
-      groupByManufacturer: true,
+    const response = await ProductsApi.getManufacturers({
+      // Змінюємо на ProductsApi
       is_active: true,
       per_page: 'All',
     })
