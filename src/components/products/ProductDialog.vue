@@ -223,6 +223,8 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
+import { ModelsApi } from 'src/api/models'
+import { SuppliersApi } from 'src/api/suppliers'
 import { ProductTypesApi } from 'src/api/product-types'
 
 const $q = useQuasar()
@@ -348,7 +350,8 @@ const getCharacteristicRules = (char) => {
 const loadManufacturers = async () => {
   loadingManufacturers.value = true
   try {
-    const response = await ProductsApi.getManufacturers({
+    const response = await ModelsApi.getModels({
+      groupByManufacturer: true,
       isActive: true,
       perPage: 'All',
     })
@@ -371,7 +374,7 @@ const loadManufacturers = async () => {
 const loadSuppliers = async () => {
   loadingSuppliers.value = true
   try {
-    const response = await ProductsApi.getSuppliers({
+    const response = await SuppliersApi.getSuppliers({
       isActive: true,
       perPage: 'All',
     })
@@ -399,7 +402,7 @@ const loadModels = async () => {
       modelOptions.value = []
       return
     }
-    const response = await ProductsApi.getModels({
+    const response = await ModelsApi.getModels({
       manufacturerId: form.value.manufacturer_id,
       isActive: true,
       perPage: 'All',
@@ -456,7 +459,7 @@ const loadCharacteristics = async () => {
 
     // Set default values
     characteristics.value.forEach((char) => {
-      if (char.default_value) {
+      if (char.default_value !== undefined) {
         form.value.characteristics[char.code] = char.default_value
       }
     })
@@ -505,7 +508,6 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
-
 // Watchers
 watch(
   () => props.editData,
