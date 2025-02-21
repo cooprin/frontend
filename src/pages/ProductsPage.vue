@@ -333,6 +333,13 @@ watch(
   }, 300),
   { deep: true },
 )
+watch(
+  pagination,
+  () => {
+    loadProducts()
+  },
+  { deep: true },
+)
 
 // Lifecycle
 onMounted(() => {
