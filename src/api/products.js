@@ -76,4 +76,10 @@ export const ProductsApi = {
   getCurrentLocation: (id) => {
     return api.get(`/stock/current-location/${id}`)
   },
+  exportProducts: (params) => {
+    return api.get('/products/export', {
+      params,
+      responseType: 'blob',
+    })
+  },
 }

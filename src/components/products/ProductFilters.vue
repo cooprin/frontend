@@ -1,101 +1,156 @@
 <template>
-  <div class="row q-col-gutter-sm q-mb-md">
-    <!-- Пошук -->
-    <div class="col-12 col-md-4">
-      <q-input
-        v-model="filters.search"
-        :label="$t('common.search')"
-        dense
-        outlined
-        clearable
-        @update:model-value="emitFilters"
-      >
-        <template v-slot:append>
-          <q-icon name="search" />
-        </template>
-      </q-input>
-    </div>
+  <q-card flat bordered>
+    <q-card-section>
+      <div class="row items-center q-mb-md">
+        <div class="text-h6">{{ $t('products.filters.title') }}</div>
+        <q-space />
+        <q-btn
+          :icon="showFilters ? 'expand_less' : 'expand_more'"
+          :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
+          flat
+          color="primary"
+          @click="showFilters = !showFilters"
+        />
+      </div>
+    </q-card-section>
 
-    <!-- Фільтр по виробнику -->
-    <div class="col-12 col-md-4">
-      <q-select
-        v-model="filters.manufacturer"
-        :options="props.manufacturerOptions"
-        :label="$t('products.filters.manufacturer')"
-        dense
-        outlined
-        clearable
-        emit-value
-        map-options
-        @update:model-value="emitFilters"
-      />
-    </div>
+    <q-card-section>
+      <q-slide-transition>
+        <div v-show="showFilters">
+          <div class="row q-col-gutter-sm q-mb-md">
+            <!-- Пошук -->
+            <div class="col-12 col-sm-4">
+              <q-input
+                v-model="localFilters.search"
+                :label="$t('products.filters.search')"
+                outlined
+                dense
+                clearable
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
+            </div>
 
-    <!-- Фільтр по статусу -->
-    <div class="col-12 col-md-4">
-      <q-select
-        v-model="filters.status"
-        :options="statusOptions"
-        :label="$t('products.filters.status')"
-        dense
-        outlined
-        clearable
-        emit-value
-        map-options
-        @update:model-value="emitFilters"
-      />
-    </div>
+            <!-- Виробник -->
+            <div class="col-12 col-sm-4">
+              <q-select
+                v-model="localFilters.manufacturer"
+                :options="manufacturerOptions"
+                :label="$t('products.manufacturer')"
+                outlined
+                dense
+                clearable
+                emit-value
+                map-options
+              />
+            </div>
 
-    <!-- Кнопка скидання -->
-    <div class="col-12 flex justify-end">
-      <q-btn :label="$t('common.reset')" color="primary" flat @click="resetFilters" />
-    </div>
-  </div>
+            <!-- Статус -->
+            <div class="col-12 col-sm-4">
+              <q-select
+                v-model="localFilters.status"
+                :options="[
+                  { label: $t('products.statuses.in_stock'), value: 'in_stock' },
+                  { label: $t('products.statuses.installed'), value: 'installed' },
+                  { label: $t('products.statuses.in_repair'), value: 'in_repair' },
+                  { label: $t('products.statuses.written_off'), value: 'written_off' },
+                ]"
+                :label="$t('products.status')"
+                outlined
+                dense
+                clearable
+                emit-value
+                map-options
+              />
+            </div>
+
+            <!-- Власність -->
+            <div class="col-12 col-sm-4">
+              <q-select
+                v-model="localFilters.isOwn"
+                :options="[
+                  { label: $t('products.all'), value: null },
+                  { label: $t('products.own'), value: true },
+                  { label: $t('products.notOwn'), value: false },
+                ]"
+                :label="$t('products.ownership')"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
+            </div>
+
+            <!-- Кнопки -->
+            <div class="col-12 q-gutter-x-sm">
+              <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
+              <q-btn
+                color="secondary"
+                :label="$t('common.export')"
+                @click="$emit('export')"
+                :loading="exporting"
+              />
+            </div>
+          </div>
+        </div>
+      </q-slide-transition>
+    </q-card-section>
+  </q-card>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-
-const emit = defineEmits(['update:filters'])
-const { t } = useI18n()
+import { ref, watch } from 'vue'
 
 const props = defineProps({
+  filters: {
+    type: Object,
+    required: true,
+  },
   manufacturerOptions: {
     type: Array,
-    default: () => [],
+    required: true,
+  },
+  exporting: {
+    type: Boolean,
+    default: false,
   },
 })
 
-// Опції для селектів
-const statusOptions = computed(() => [
-  { label: t('products.statuses.in_stock'), value: 'in_stock' },
-  { label: t('products.statuses.installed'), value: 'installed' },
-  { label: t('products.statuses.in_repair'), value: 'in_repair' },
-  { label: t('products.statuses.written_off'), value: 'written_off' },
-])
+const emit = defineEmits(['update:filters', 'export'])
 
-// Початкові значення фільтрів
-const defaultFilters = {
+const showFilters = ref(false)
+const localFilters = ref({
   search: '',
   manufacturer: null,
   status: null,
-}
-
-const filters = ref({ ...defaultFilters })
-
-// Методи
-const emitFilters = () => {
-  emit('update:filters', { ...filters.value })
-}
-
-const resetFilters = () => {
-  Object.assign(filters.value, defaultFilters)
-  emitFilters()
-}
-
-// Expose для батьківського компонента
-defineExpose({
-  resetFilters,
+  isOwn: null,
 })
+
+// Синхронізація локальних фільтрів з батьківським компонентом
+watch(
+  localFilters,
+  (newFilters) => {
+    emit('update:filters', { ...newFilters })
+  },
+  { deep: true },
+)
+
+watch(
+  () => props.filters,
+  (newFilters) => {
+    localFilters.value = { ...newFilters }
+  },
+  { deep: true },
+)
+
+const clearFilters = () => {
+  localFilters.value = {
+    search: '',
+    manufacturer: null,
+    status: null,
+    isOwn: null,
+  }
+}
 </script>

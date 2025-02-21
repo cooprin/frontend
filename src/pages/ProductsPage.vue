@@ -11,9 +11,10 @@
     <!-- Фільтри -->
     <ProductFilters
       v-model:filters="filters"
-      class="q-mb-md"
-      ref="filtersRef"
       :manufacturer-options="manufacturerOptions"
+      :exporting="exporting"
+      @export="exportProducts"
+      class="q-mb-md"
     />
 
     <!-- Таблиця -->
@@ -125,7 +126,6 @@ import ProductFilters from 'components/products/ProductFilters.vue'
 const $q = useQuasar()
 const router = useRouter()
 const { t, locale } = useI18n()
-const filtersRef = ref(null)
 
 const showDialog = ref(false)
 const editProduct = ref(null)
@@ -147,8 +147,9 @@ const manufacturerOptions = ref([])
 const formatFiltersForApi = (filters) => {
   return {
     search: filters.search || undefined,
-    manufacturer_id: filters.manufacturer || undefined, // це правильно, не змінюємо
-    current_status: filters.status || undefined, // це має бути current_status замість status
+    manufacturer_id: filters.manufacturer || undefined,
+    current_status: filters.status || undefined,
+    is_own: filters.isOwn,
   }
 }
 
@@ -156,6 +157,7 @@ const filters = ref({
   search: '',
   manufacturer: null,
   status: null,
+  isOwn: null,
 })
 
 // Пагінація
