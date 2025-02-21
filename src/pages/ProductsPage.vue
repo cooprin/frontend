@@ -145,11 +145,15 @@ const manufacturerOptions = ref([])
 
 // Фільтри
 const formatFiltersForApi = (filters) => {
-  return {
+  const formatted = {
     search: filters.search || undefined,
-    manufacturer_id: filters.manufacturer || undefined, // перейменовуємо параметр
+    manufacturer_id: filters.manufacturer || undefined,
     status: filters.status || undefined,
   }
+  // Видаляємо пусті значення
+  return Object.fromEntries(
+    Object.entries(formatted).filter((entry) => entry[1] !== undefined && entry[1] !== null),
+  )
 }
 
 const filters = ref({
@@ -220,9 +224,6 @@ const loadProducts = async () => {
       sort_desc: pagination.value.descending,
       ...formatFiltersForApi(filters.value),
     }
-
-    // Видаляємо undefined значення
-    Object.keys(params).forEach((key) => params[key] === undefined && delete params[key])
 
     const response = await ProductsApi.getProducts(params)
     products.value = response.data.products

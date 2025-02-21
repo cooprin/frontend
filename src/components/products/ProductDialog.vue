@@ -307,26 +307,7 @@ const isEdit = computed(() => !!props.editData)
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
     e.preventDefault()
-    const requiredFields = [
-      'manufacturer_id',
-      'model_id',
-      'supplier_id',
-      'product_type_id',
-      'warehouse_id',
-    ]
-    const allFieldsFilled = requiredFields.every((field) => form.value[field])
-
-    if (allFieldsFilled) {
-      await onSubmit()
-      // Якщо збереження успішне, закриваємо діалог
-      show.value = false
-    } else {
-      $q.notify({
-        color: 'warning',
-        message: t('products.fillRequiredFields'),
-        icon: 'warning',
-      })
-    }
+    await onSubmit()
   }
 }
 
@@ -515,9 +496,26 @@ const onSubmit = async () => {
         message: t('products.updateSuccess'),
         icon: 'check',
       })
-      // Закриваємо діалог після редагування
-      show.value = false
+      show.value = false // закриваємо при редагуванні
     } else {
+      const requiredFields = [
+        'manufacturer_id',
+        'model_id',
+        'supplier_id',
+        'product_type_id',
+        'warehouse_id',
+      ]
+      const allFieldsFilled = requiredFields.every((field) => form.value[field])
+
+      if (!allFieldsFilled) {
+        $q.notify({
+          color: 'warning',
+          message: t('products.fillRequiredFields'),
+          icon: 'warning',
+        })
+        return
+      }
+
       await ProductsApi.createProduct({
         ...form.value,
         created_by: authStore.user.id,
@@ -528,11 +526,13 @@ const onSubmit = async () => {
         message: t('products.createSuccess'),
         icon: 'check',
       })
-      // Залишаємо діалог відкритим для нового сканування,
-      // але очищуємо тільки SKU
-      form.value.sku = ''
+      form.value.sku = '' // очищаємо тільки SKU
+      nextTick(() => {
+        if (skuInput.value) {
+          skuInput.value.focus()
+        }
+      })
     }
-    // Емітимо подію щоб оновити список
     emit('saved')
   } catch (error) {
     console.error('Error saving product:', error)
@@ -556,6 +556,7 @@ const loadNewProductForm = () => {
 }
 
 // При редагуванні існуючого продукту
+
 const loadEditProductForm = async (editData) => {
   try {
     // Очищаємо попередні дані
@@ -566,27 +567,22 @@ const loadEditProductForm = async (editData) => {
 
     // Завантажуємо базові дані продукту
     form.value = {
-      ...form.value,
-      sku: editData.sku,
+      sku: editData.sku || '',
       manufacturer_id: editData.manufacturer_id,
       model_id: editData.model_id,
       supplier_id: editData.supplier_id,
       product_type_id: editData.product_type_id,
       warehouse_id: editData.warehouse_id,
       is_own: editData.is_own,
+      characteristics: editData.characteristics || {},
     }
 
-    // Завантажуємо пов'язані дані
+    // Завантажуємо пов'язані дані послідовно
     if (form.value.manufacturer_id) {
       await loadModels()
     }
-
     if (form.value.product_type_id) {
       await loadCharacteristics()
-      // Після завантаження характеристик, встановлюємо їх значення
-      if (editData.characteristics) {
-        form.value.characteristics = { ...editData.characteristics }
-      }
     }
   } catch (error) {
     console.error('Error loading edit form data:', error)
