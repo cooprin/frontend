@@ -307,7 +307,25 @@ const isEdit = computed(() => !!props.editData)
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
     e.preventDefault()
-    await onSubmit()
+    const requiredFields = [
+      'manufacturer_id',
+      'model_id',
+      'supplier_id',
+      'product_type_id',
+      'warehouse_id',
+    ]
+    const allFieldsFilled = requiredFields.every((field) => form.value[field])
+
+    if (allFieldsFilled) {
+      await onSubmit()
+      show.value = false // Закриваємо діалог після успішного збереження
+    } else {
+      $q.notify({
+        color: 'warning',
+        message: t('products.fillRequiredFields'),
+        icon: 'warning',
+      })
+    }
   }
 }
 
@@ -496,27 +514,26 @@ const onSubmit = async () => {
         message: t('products.updateSuccess'),
         icon: 'check',
       })
-      show.value = false
+      show.value = false // Закриваємо після редагування
     } else {
       await ProductsApi.createProduct({
         ...form.value,
         created_by: authStore.user.id,
       })
-
       saveFormToStorage(form.value)
       $q.notify({
         color: 'positive',
         message: t('products.createSuccess'),
         icon: 'check',
       })
-
-      // Після створення зберігаємо всі поля але очищаємо SKU
       form.value.sku = ''
-      if (skuInput.value) {
-        skuInput.value.focus()
-      }
+      nextTick(() => {
+        if (skuInput.value) {
+          skuInput.value.focus()
+        }
+      })
+      show.value = false // Закриваємо після створення
     }
-
     emit('saved')
   } catch (error) {
     console.error('Error saving product:', error)
