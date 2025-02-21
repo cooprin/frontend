@@ -122,13 +122,45 @@ import { ProductsApi } from 'src/api/products'
 import { debounce } from 'lodash'
 import ProductDialog from 'components/products/ProductDialog.vue'
 import ProductFilters from 'components/products/ProductFilters.vue'
+import { date } from 'quasar'
 
 const $q = useQuasar()
 const router = useRouter()
 const { t, locale } = useI18n()
-
+const exporting = ref(false)
 const showDialog = ref(false)
 const editProduct = ref(null)
+
+const exportProducts = async () => {
+  exporting.value = true
+  try {
+    const response = await ProductsApi.exportProducts({
+      ...formatFiltersForApi(filters.value),
+      export: true,
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `products-${date.formatDate(Date.now(), 'YYYY-MM-DD')}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    $q.notify({
+      type: 'positive',
+      message: t('products.exportSuccess'),
+    })
+  } catch (error) {
+    console.error('Error exporting products:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('products.exportError'),
+    })
+  } finally {
+    exporting.value = false
+  }
+}
 
 const handleKeydown = (e) => {
   if (e.key === 'F7') {

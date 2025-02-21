@@ -21,7 +21,8 @@
             <!-- Пошук -->
             <div class="col-12 col-sm-4">
               <q-input
-                v-model="localFilters.search"
+                :value="filters.search"
+                @update:model-value="(val) => updateFilters('search', val)"
                 :label="$t('products.filters.search')"
                 outlined
                 dense
@@ -36,7 +37,8 @@
             <!-- Виробник -->
             <div class="col-12 col-sm-4">
               <q-select
-                v-model="localFilters.manufacturer"
+                :value="filters.manufacturer"
+                @update:model-value="(val) => updateFilters('manufacturer', val)"
                 :options="manufacturerOptions"
                 :label="$t('products.manufacturer')"
                 outlined
@@ -50,7 +52,8 @@
             <!-- Статус -->
             <div class="col-12 col-sm-4">
               <q-select
-                v-model="localFilters.status"
+                :value="filters.status"
+                @update:model-value="(val) => updateFilters('status', val)"
                 :options="[
                   { label: $t('products.statuses.in_stock'), value: 'in_stock' },
                   { label: $t('products.statuses.installed'), value: 'installed' },
@@ -69,7 +72,8 @@
             <!-- Власність -->
             <div class="col-12 col-sm-4">
               <q-select
-                v-model="localFilters.isOwn"
+                :value="filters.isOwn"
+                @update:model-value="(val) => updateFilters('isOwn', val)"
                 :options="[
                   { label: $t('products.all'), value: null },
                   { label: $t('products.own'), value: true },
@@ -99,9 +103,10 @@
     </q-card-section>
   </q-card>
 </template>
-
 <script setup>
 import { ref, watch } from 'vue'
+
+import { debounce } from 'lodash'
 
 const props = defineProps({
   filters: {
@@ -121,6 +126,13 @@ const props = defineProps({
 const emit = defineEmits(['update:filters', 'export'])
 
 const showFilters = ref(false)
+const updateFilters = debounce((key, value) => {
+  emit('update:filters', {
+    ...props.filters,
+    [key]: value,
+  })
+}, 300)
+
 const localFilters = ref({
   search: '',
   manufacturer: null,
@@ -146,11 +158,11 @@ watch(
 )
 
 const clearFilters = () => {
-  localFilters.value = {
+  emit('update:filters', {
     search: '',
     manufacturer: null,
     status: null,
     isOwn: null,
-  }
+  })
 }
 </script>
