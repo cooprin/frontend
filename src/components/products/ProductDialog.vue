@@ -496,43 +496,27 @@ const onSubmit = async () => {
         message: t('products.updateSuccess'),
         icon: 'check',
       })
-      show.value = false // закриваємо при редагуванні
+      show.value = false
     } else {
-      const requiredFields = [
-        'manufacturer_id',
-        'model_id',
-        'supplier_id',
-        'product_type_id',
-        'warehouse_id',
-      ]
-      const allFieldsFilled = requiredFields.every((field) => form.value[field])
-
-      if (!allFieldsFilled) {
-        $q.notify({
-          color: 'warning',
-          message: t('products.fillRequiredFields'),
-          icon: 'warning',
-        })
-        return
-      }
-
       await ProductsApi.createProduct({
         ...form.value,
         created_by: authStore.user.id,
       })
+
       saveFormToStorage(form.value)
       $q.notify({
         color: 'positive',
         message: t('products.createSuccess'),
         icon: 'check',
       })
-      form.value.sku = '' // очищаємо тільки SKU
-      nextTick(() => {
-        if (skuInput.value) {
-          skuInput.value.focus()
-        }
-      })
+
+      // Після створення зберігаємо всі поля але очищаємо SKU
+      form.value.sku = ''
+      if (skuInput.value) {
+        skuInput.value.focus()
+      }
     }
+
     emit('saved')
   } catch (error) {
     console.error('Error saving product:', error)
@@ -558,39 +542,18 @@ const loadNewProductForm = () => {
 // При редагуванні існуючого продукту
 
 const loadEditProductForm = async (editData) => {
-  try {
-    // Очищаємо попередні дані
-    form.value = { ...defaultForm }
-    characteristics.value = []
+  if (!editData) return
 
-    if (!editData) return
+  form.value = {
+    ...defaultForm,
+    ...editData,
+  }
 
-    // Завантажуємо базові дані продукту
-    form.value = {
-      sku: editData.sku || '',
-      manufacturer_id: editData.manufacturer_id,
-      model_id: editData.model_id,
-      supplier_id: editData.supplier_id,
-      product_type_id: editData.product_type_id,
-      warehouse_id: editData.warehouse_id,
-      is_own: editData.is_own,
-      characteristics: editData.characteristics || {},
-    }
-
-    // Завантажуємо пов'язані дані послідовно
-    if (form.value.manufacturer_id) {
-      await loadModels()
-    }
-    if (form.value.product_type_id) {
-      await loadCharacteristics()
-    }
-  } catch (error) {
-    console.error('Error loading edit form data:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
+  if (form.value.manufacturer_id) {
+    await loadModels()
+  }
+  if (form.value.product_type_id) {
+    await loadCharacteristics()
   }
 }
 

@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -145,15 +145,11 @@ const manufacturerOptions = ref([])
 
 // Фільтри
 const formatFiltersForApi = (filters) => {
-  const formatted = {
+  return {
     search: filters.search || undefined,
     manufacturer_id: filters.manufacturer || undefined,
     status: filters.status || undefined,
   }
-  // Видаляємо пусті значення
-  return Object.fromEntries(
-    Object.entries(formatted).filter((entry) => entry[1] !== undefined && entry[1] !== null),
-  )
 }
 
 const filters = ref({
@@ -283,12 +279,6 @@ const openDetails = (product) => {
 const openCreateDialog = () => {
   editProduct.value = null
   showDialog.value = true
-  // Фокус на SKU після відкриття діалогу
-  nextTick(() => {
-    if (filtersRef.value) {
-      filtersRef.value.resetFilters()
-    }
-  })
 }
 
 const openEditDialog = (product) => {
