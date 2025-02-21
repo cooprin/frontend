@@ -147,8 +147,8 @@ const manufacturerOptions = ref([])
 const formatFiltersForApi = (filters) => {
   return {
     search: filters.search || undefined,
-    manufacturer_id: filters.manufacturer || undefined,
-    status: filters.status || undefined,
+    manufacturer_id: filters.manufacturer || undefined, // це правильно, не змінюємо
+    current_status: filters.status || undefined, // це має бути current_status замість status
   }
 }
 
@@ -205,6 +205,7 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
+
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
@@ -216,10 +217,15 @@ const loadProducts = async () => {
     const params = {
       page: pagination.value.page,
       per_page: pagination.value.rowsPerPage,
-      sort_by: pagination.value.sortBy,
-      sort_desc: pagination.value.descending,
+      sort_by: pagination.value.sortBy || 'sku', // додаємо дефолтне значення
+      sort_desc: pagination.value.descending || false, // додаємо дефолтне значення
       ...formatFiltersForApi(filters.value),
     }
+
+    // Видаляємо undefined значення
+    Object.keys(params).forEach(
+      (key) => (params[key] === undefined || params[key] === null) && delete params[key],
+    )
 
     const response = await ProductsApi.getProducts(params)
     products.value = response.data.products
@@ -235,7 +241,6 @@ const loadProducts = async () => {
     loading.value = false
   }
 }
-
 const loadManufacturers = async () => {
   try {
     const response = await ProductsApi.getManufacturers()
@@ -255,10 +260,15 @@ const loadManufacturers = async () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value.page = page
-  pagination.value.rowsPerPage = rowsPerPage
-  pagination.value.sortBy = sortBy
-  pagination.value.descending = descending
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
   await loadProducts()
 }
 
