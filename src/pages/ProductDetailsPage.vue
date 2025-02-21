@@ -55,11 +55,6 @@
               </div>
 
               <div class="col-12 col-sm-6">
-                <div class="text-grey">{{ $t('products.purchaseDate') }}</div>
-                <div>{{ formatDate(product?.purchase_date) }}</div>
-              </div>
-
-              <div class="col-12 col-sm-6">
                 <div class="text-grey">{{ $t('products.ownership') }}</div>
                 <div>{{ product?.is_own ? $t('products.own') : $t('products.notOwn') }}</div>
               </div>
@@ -98,37 +93,6 @@
 
       <!-- Права колонка -->
       <div class="col-12 col-md-6">
-        <!-- Інформація про гарантію -->
-        <q-card flat bordered>
-          <q-card-section>
-            <div class="text-h6">{{ $t('products.warranty') }}</div>
-          </q-card-section>
-
-          <q-separator />
-
-          <q-card-section>
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-6">
-                <div class="text-grey">{{ $t('products.supplierWarrantyEnd') }}</div>
-                <div>{{ formatDate(product?.supplier_warranty_end) }}</div>
-              </div>
-
-              <div class="col-12 col-sm-6">
-                <div class="text-grey">{{ $t('products.warrantyEnd') }}</div>
-                <div>{{ formatDate(product?.warranty_end) }}</div>
-              </div>
-
-              <div class="col-12">
-                <q-linear-progress
-                  :value="warrantyProgress"
-                  :color="warrantyColor"
-                  class="q-mt-sm"
-                />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-
         <!-- Характеристики - новий блок -->
         <q-card flat bordered class="q-mt-md">
           <q-card-section>
@@ -349,18 +313,6 @@ const statusOptions = [
 ]
 
 // Computed
-const warrantyProgress = computed(() => {
-  if (!product.value?.warranty_end) return 0
-  const total = new Date(product.value.warranty_end) - new Date(product.value.purchase_date)
-  const current = new Date() - new Date(product.value.purchase_date)
-  return Math.max(0, Math.min(1, 1 - current / total))
-})
-
-const warrantyColor = computed(() => {
-  if (warrantyProgress.value > 0.5) return 'positive'
-  if (warrantyProgress.value > 0.2) return 'warning'
-  return 'negative'
-})
 
 // Columns
 const movementsColumns = [

@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -144,13 +144,18 @@ const productToDelete = ref(null)
 const manufacturerOptions = ref([])
 
 // Фільтри
+const formatFiltersForApi = (filters) => {
+  return {
+    search: filters.search || undefined,
+    manufacturer_id: filters.manufacturer || undefined, // перейменовуємо параметр
+    status: filters.status || undefined,
+  }
+}
+
 const filters = ref({
   search: '',
   manufacturer: null,
   status: null,
-  isOwn: null,
-  dateFrom: null,
-  dateTo: null,
 })
 
 // Пагінація
@@ -208,13 +213,18 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const loadProducts = async () => {
   loading.value = true
   try {
-    const response = await ProductsApi.getProducts({
+    const params = {
       page: pagination.value.page,
-      perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
-      descending: pagination.value.descending,
-      ...filters.value,
-    })
+      per_page: pagination.value.rowsPerPage,
+      sort_by: pagination.value.sortBy,
+      sort_desc: pagination.value.descending,
+      ...formatFiltersForApi(filters.value),
+    }
+
+    // Видаляємо undefined значення
+    Object.keys(params).forEach((key) => params[key] === undefined && delete params[key])
+
+    const response = await ProductsApi.getProducts(params)
     products.value = response.data.products
     pagination.value.rowsNumber = response.data.total
   } catch (error) {
@@ -272,6 +282,12 @@ const openDetails = (product) => {
 const openCreateDialog = () => {
   editProduct.value = null
   showDialog.value = true
+  // Фокус на SKU після відкриття діалогу
+  nextTick(() => {
+    if (filtersRef.value) {
+      filtersRef.value.resetFilters()
+    }
+  })
 }
 
 const openEditDialog = (product) => {

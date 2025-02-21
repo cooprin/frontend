@@ -1,1 +1,59 @@
 // app global css in SCSS form
+/* Table styles */
+.q-table {
+  thead tr {
+    background: var(--q-primary);
+
+    th {
+      color: white !important;
+      font-weight: 600 !important;
+      padding: 8px 16px;
+    }
+  }
+
+  tbody {
+    tr {
+      &:hover {
+        background: rgba(var(--q-primary), 0.1);
+      }
+
+      &:nth-child(even) {
+        background: rgba(0, 0, 0, 0.03);
+      }
+    }
+
+    td {
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Dark theme overrides */
+.body--dark {
+  .q-table {
+    thead tr {
+      background: var(--q-dark);
+
+      th {
+        color: white !important;
+      }
+    }
+
+    tbody {
+      tr {
+        &:nth-child(even) {
+          background: rgba(255, 255, 255, 0.03);
+        }
+      }
+
+      td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      }
+    }
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+}

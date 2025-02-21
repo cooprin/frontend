@@ -326,11 +326,9 @@ const loadWarehouses = async () => {
 
 const loadUsers = async () => {
   try {
-    const response = await UsersApi.get('/users', {
-      params: {
-        isActive: true,
-        perPage: 'All',
-      },
+    const response = await UsersApi.getUsers({
+      is_active: true,
+      per_page: 'All',
     })
     userOptions.value = response.data.users.map((u) => ({
       label: `${u.first_name} ${u.last_name}`,
@@ -338,6 +336,11 @@ const loadUsers = async () => {
     }))
   } catch (error) {
     console.error('Error loading users:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 

@@ -93,6 +93,17 @@
                     map-options
                     @update:model-value="loadCharacteristics"
                   />
+                  <q-select
+                    v-model="form.warehouse_id"
+                    :options="warehouseOptions"
+                    :label="t('products.warehouse')"
+                    :rules="[(val) => !!val || t('validation.required')]"
+                    :loading="loadingWarehouses"
+                    outlined
+                    emit-value
+                    map-options
+                  />
+                  <q-toggle v-model="form.is_own" :label="t('products.isOwn')" />
                 </q-card-section>
               </q-card>
             </div>
@@ -188,11 +199,14 @@ import { ProductsApi } from 'src/api/products'
 import { ModelsApi } from 'src/api/models'
 import { SuppliersApi } from 'src/api/suppliers'
 import { ProductTypesApi } from 'src/api/product-types'
+import { WarehousesApi } from 'src/api/warehouses'
+import { useAuthStore } from 'src/stores/auth'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const emit = defineEmits(['update:modelValue', 'saved'])
 const skuInput = ref(null)
+const authStore = useAuthStore()
 
 const props = defineProps({
   modelValue: {
@@ -219,6 +233,8 @@ const modelOptions = ref([])
 const supplierOptions = ref([])
 const productTypeOptions = ref([])
 const characteristics = ref([])
+const warehouseOptions = ref([])
+const loadingWarehouses = ref(false)
 
 // Default form
 const defaultForm = {
@@ -227,6 +243,8 @@ const defaultForm = {
   model_id: null,
   supplier_id: null,
   product_type_id: null,
+  warehouse_id: null,
+  is_own: true,
   characteristics: {},
 }
 
@@ -250,6 +268,31 @@ const loadFormFromStorage = () => {
   return { ...defaultForm }
 }
 
+//склади
+
+const loadWarehouses = async () => {
+  loadingWarehouses.value = true
+  try {
+    const response = await WarehousesApi.getWarehouses({
+      is_active: true,
+      per_page: 'All',
+    })
+    warehouseOptions.value = response.data.warehouses.map((w) => ({
+      label: w.name,
+      value: w.id,
+    }))
+  } catch (error) {
+    console.error('Error loading warehouses:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingWarehouses.value = false
+  }
+}
+
 const form = ref(loadFormFromStorage())
 
 // Computed
@@ -264,11 +307,19 @@ const isEdit = computed(() => !!props.editData)
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
     e.preventDefault()
-    const requiredFields = ['manufacturer_id', 'model_id', 'supplier_id', 'product_type_id']
+    const requiredFields = [
+      'manufacturer_id',
+      'model_id',
+      'supplier_id',
+      'product_type_id',
+      'warehouse_id',
+    ]
     const allFieldsFilled = requiredFields.every((field) => form.value[field])
 
     if (allFieldsFilled) {
       await onSubmit()
+      // Якщо збереження успішне, закриваємо діалог
+      show.value = false
     } else {
       $q.notify({
         color: 'warning',
@@ -464,29 +515,25 @@ const onSubmit = async () => {
         message: t('products.updateSuccess'),
         icon: 'check',
       })
+      // Закриваємо діалог після редагування
+      show.value = false
     } else {
-      await ProductsApi.createProduct(form.value)
+      await ProductsApi.createProduct({
+        ...form.value,
+        created_by: authStore.user.id,
+      })
       saveFormToStorage(form.value)
-
       $q.notify({
         color: 'positive',
         message: t('products.createSuccess'),
         icon: 'check',
       })
-
-      // Очищаємо тільки SKU
+      // Залишаємо діалог відкритим для нового сканування,
+      // але очищуємо тільки SKU
       form.value.sku = ''
-
-      // Фокусуємося на полі SKU для наступного сканування
-      nextTick(() => {
-        if (skuInput.value) {
-          skuInput.value.focus()
-        }
-      })
     }
-
+    // Емітимо подію щоб оновити список
     emit('saved')
-    show.value = false
   } catch (error) {
     console.error('Error saving product:', error)
     $q.notify({
@@ -498,30 +545,65 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+// При створенні нового продукту
+const loadNewProductForm = () => {
+  const savedForm = loadFormFromStorage() // завантаження з localStorage
+  form.value = {
+    ...defaultForm,
+    ...savedForm,
+    sku: '', // SKU завжди пустий для нового продукту
+  }
+}
 
-// Watchers
-watch(
-  () => props.editData,
-  (newValue) => {
-    if (newValue) {
-      form.value = { ...newValue }
-      if (form.value.manufacturer_id) {
-        loadModels()
-      }
-      if (form.value.product_type_id) {
-        loadCharacteristics()
-      }
-    } else {
-      form.value = loadFormFromStorage()
+// При редагуванні існуючого продукту
+const loadEditProductForm = async (editData) => {
+  try {
+    // Очищаємо попередні дані
+    form.value = { ...defaultForm }
+    characteristics.value = []
+
+    if (!editData) return
+
+    // Завантажуємо базові дані продукту
+    form.value = {
+      ...form.value,
+      sku: editData.sku,
+      manufacturer_id: editData.manufacturer_id,
+      model_id: editData.model_id,
+      supplier_id: editData.supplier_id,
+      product_type_id: editData.product_type_id,
+      warehouse_id: editData.warehouse_id,
+      is_own: editData.is_own,
     }
-  },
-)
 
+    // Завантажуємо пов'язані дані
+    if (form.value.manufacturer_id) {
+      await loadModels()
+    }
+
+    if (form.value.product_type_id) {
+      await loadCharacteristics()
+      // Після завантаження характеристик, встановлюємо їх значення
+      if (editData.characteristics) {
+        form.value.characteristics = { ...editData.characteristics }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading edit form data:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  }
+}
+
+// 1. Слідкуємо за відкриттям/закриттям діалогу
 watch(
   () => show.value,
   (newValue) => {
     if (newValue && !isEdit.value) {
-      // При відкритті діалогу фокусуємося на полі SKU
+      // При відкритті діалогу фокусуємось на полі SKU
       nextTick(() => {
         if (skuInput.value) {
           skuInput.value.focus()
@@ -531,22 +613,29 @@ watch(
   },
 )
 
+// 2. Слідкуємо за зміною даних для редагування
+watch(
+  () => props.editData,
+  (newValue) => {
+    if (newValue) {
+      loadEditProductForm(newValue)
+    } else {
+      loadNewProductForm()
+    }
+  },
+)
+
 // Lifecycle hooks
 onMounted(() => {
   loadManufacturers()
   loadSuppliers()
   loadProductTypes()
+  loadWarehouses()
 
   if (props.editData) {
-    form.value = { ...props.editData }
-    if (form.value.manufacturer_id) {
-      loadModels()
-    }
-    if (form.value.product_type_id) {
-      loadCharacteristics()
-    }
+    loadEditProductForm(props.editData)
   } else {
-    form.value = loadFormFromStorage()
+    loadNewProductForm()
   }
 })
 </script>

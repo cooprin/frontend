@@ -20,7 +20,7 @@
     <div class="col-12 col-md-4">
       <q-select
         v-model="filters.manufacturer"
-        :options="manufacturerOptions"
+        :options="props.manufacturerOptions"
         :label="$t('products.filters.manufacturer')"
         dense
         outlined
@@ -59,6 +59,13 @@ import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits(['update:filters'])
 const { t } = useI18n()
+
+const props = defineProps({
+  manufacturerOptions: {
+    type: Array,
+    default: () => [],
+  },
+})
 
 // Опції для селектів
 const statusOptions = computed(() => [
