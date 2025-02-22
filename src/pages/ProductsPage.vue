@@ -55,6 +55,20 @@
                   map-options
                 />
               </div>
+              <!-- Модель -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.model"
+                  :options="modelOptions"
+                  :label="$t('products.model')"
+                  :disable="!filters.manufacturer"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
               <!-- Статус -->
               <div class="col-12 col-sm-4">
@@ -217,6 +231,7 @@ const products = ref([])
 const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const manufacturerOptions = ref([])
+const modelOptions = ref([])
 
 const pagination = ref({
   sortBy: 'sku', // змінити з 'created_at'
@@ -230,9 +245,25 @@ const pagination = ref({
 const filters = ref({
   search: '',
   manufacturer: null,
+  model: null,
   status: null,
   isOwn: null,
 })
+const loadModels = async (manufacturerId = null) => {
+  try {
+    const response = await ProductsApi.getModels(manufacturerId)
+    modelOptions.value = response.data.models.map((m) => ({
+      label: m.name,
+      value: m.id,
+    }))
+  } catch (error) {
+    console.error('Error loading models:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('common.errors.loading'),
+    })
+  }
+}
 
 // Options
 const statusOptions = computed(() => [
@@ -246,6 +277,7 @@ const formatFiltersForApi = (filters) => {
   return {
     search: filters.search || undefined,
     manufacturer_id: filters.manufacturer || undefined,
+    model_id: filters.model || undefined,
     current_status: filters.status || undefined,
     is_own: filters.isOwn === null ? undefined : filters.isOwn,
   }
@@ -365,6 +397,7 @@ const clearFilters = () => {
   filters.value = {
     search: '',
     manufacturer: null,
+    model: null,
     status: null,
     isOwn: null,
   }
@@ -479,11 +512,23 @@ watch(
   },
   { deep: true },
 )
+watch(
+  () => filters.value.manufacturer,
+  async (newManufacturer) => {
+    filters.value.model = null // скидаємо вибрану модель при зміні виробника
+    if (newManufacturer) {
+      await loadModels(newManufacturer)
+    } else {
+      await loadModels()
+    }
+  },
+)
 
 // Lifecycle
 onMounted(() => {
   loadProducts()
   loadManufacturers()
+  loadModels()
   window.addEventListener('keydown', handleKeydown)
 })
 
