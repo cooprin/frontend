@@ -105,6 +105,7 @@
           :loading="loading"
           v-model:pagination="pagination"
           @request="onRequest"
+          binary-state-sort
           :rows-per-page-options="pagination.rowsPerPageOptions"
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
@@ -217,16 +218,14 @@ const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const manufacturerOptions = ref([])
 
-// Pagination (як в AuditLogsPage)
 const pagination = ref({
-  sortBy: 'created_at',
-  descending: true,
+  sortBy: 'sku', // змінити з 'created_at'
+  descending: false, // змінити з true
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
-
 // Filters
 const filters = ref({
   search: '',
@@ -242,6 +241,15 @@ const statusOptions = computed(() => [
   { label: t('products.statuses.in_repair'), value: 'in_repair' },
   { label: t('products.statuses.written_off'), value: 'written_off' },
 ])
+
+const formatFiltersForApi = (filters) => {
+  return {
+    search: filters.search || undefined,
+    manufacturer_id: filters.manufacturer || undefined,
+    current_status: filters.status || undefined,
+    is_own: filters.isOwn === null ? undefined : filters.isOwn,
+  }
+}
 
 const ownershipOptions = computed(() => [
   { label: t('products.all'), value: null },
@@ -301,35 +309,33 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
 
+// Використовуємо один loadProducts
 const loadProducts = async () => {
   loading.value = true
   try {
-    // Форматуємо параметри правильно
     const params = {
       page: pagination.value.page,
-      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
+      perPage: pagination.value.rowsPerPage,
       sortBy: pagination.value.sortBy,
       sort_desc: pagination.value.descending ? 1 : 0,
-      // Форматуємо фільтри
-      search: filters.value.search || undefined,
-      manufacturer_id: filters.value.manufacturer || undefined,
-      current_status: filters.value.status || undefined,
-      is_own: filters.value.isOwn === null ? undefined : filters.value.isOwn,
+      ...formatFiltersForApi(filters.value),
     }
 
-    // Видаляємо undefined значення
-    Object.keys(params).forEach((key) => params[key] === undefined && delete params[key])
+    // Якщо sortBy не визначено, видаляємо його з параметрів
+    if (!params.sortBy) {
+      delete params.sortBy
+      delete params.sort_desc
+    }
 
     const response = await ProductsApi.getProducts(params)
-    if (response.data.success) {
-      products.value = response.data.products
-      pagination.value.rowsNumber = response.data.total
-    }
+    products.value = response.data.products
+    pagination.value.rowsNumber = response.data.total
   } catch (error) {
     console.error('Error loading products:', error)
     $q.notify({
-      type: 'negative',
+      color: 'negative',
       message: t('common.errors.loading'),
+      icon: 'error',
     })
   } finally {
     loading.value = false
@@ -362,19 +368,28 @@ const clearFilters = () => {
 }
 
 const onRequest = async (props) => {
+  // Додаємо логування
   console.log('Request props:', props)
+
   const { page, rowsPerPage, sortBy, descending } = props.pagination
 
-  // Завжди зберігаємо sortBy, навіть якщо він null
-  pagination.value = {
-    ...pagination.value,
-    page: page || 1,
-    rowsPerPage: rowsPerPage || 10,
-    sortBy: sortBy || 'sku', // якщо sortBy = null, використовуємо дефолтне значення
-    descending: descending || false,
-  }
+  // Оновлюємо pagination тільки якщо значення змінились
+  if (
+    page !== pagination.value.page ||
+    rowsPerPage !== pagination.value.rowsPerPage ||
+    sortBy !== pagination.value.sortBy ||
+    descending !== pagination.value.descending
+  ) {
+    pagination.value = {
+      ...pagination.value,
+      page,
+      rowsPerPage,
+      sortBy,
+      descending,
+    }
 
-  await loadProducts()
+    await loadProducts()
+  }
 }
 
 const getStatusColor = (status) => {
