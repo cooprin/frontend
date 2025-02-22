@@ -9,13 +9,109 @@
     </div>
 
     <!-- Фільтри -->
-    <ProductFilters
-      v-model:filters="filters"
-      :manufacturer-options="manufacturerOptions"
-      :exporting="exporting"
-      @export="exportProducts"
-      class="q-mb-md"
-    />
+    <q-card flat bordered class="q-mb-md">
+      <q-card-section>
+        <div class="row items-center q-mb-md">
+          <div class="text-h6">{{ $t('products.filters.title') }}</div>
+          <q-space />
+          <q-btn
+            :icon="showFilters ? 'expand_less' : 'expand_more'"
+            :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
+            flat
+            color="primary"
+            @click="showFilters = !showFilters"
+          />
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <q-slide-transition>
+          <div v-show="showFilters">
+            <div class="row q-col-gutter-sm q-mb-md">
+              <!-- Пошук -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  :value="filters.search"
+                  @update:model-value="(val) => updateFilter('search', val)"
+                  :label="$t('products.filters.search')"
+                  outlined
+                  dense
+                  clearable
+                >
+                  <template v-slot:append>
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
+
+              <!-- Виробник -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  :value="filters.manufacturer"
+                  @update:model-value="(val) => updateFilter('manufacturer', val)"
+                  :options="manufacturerOptions"
+                  :label="$t('products.manufacturer')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
+
+              <!-- Статус -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  :value="filters.status"
+                  @update:model-value="(val) => updateFilter('status', val)"
+                  :options="[
+                    { label: $t('products.statuses.in_stock'), value: 'in_stock' },
+                    { label: $t('products.statuses.installed'), value: 'installed' },
+                    { label: $t('products.statuses.in_repair'), value: 'in_repair' },
+                    { label: $t('products.statuses.written_off'), value: 'written_off' },
+                  ]"
+                  :label="$t('products.status')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
+
+              <!-- Власність -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  :value="filters.isOwn"
+                  @update:model-value="(val) => updateFilter('isOwn', val)"
+                  :options="[
+                    { label: $t('products.all'), value: null },
+                    { label: $t('products.own'), value: true },
+                    { label: $t('products.notOwn'), value: false },
+                  ]"
+                  :label="$t('products.ownership')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                />
+              </div>
+
+              <!-- Кнопки -->
+              <div class="col-12 q-gutter-x-sm">
+                <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
+                <q-btn
+                  color="secondary"
+                  :label="$t('common.export')"
+                  @click="exportProducts"
+                  :loading="exporting"
+                />
+              </div>
+            </div>
+          </div>
+        </q-slide-transition>
+      </q-card-section>
+    </q-card>
 
     <!-- Таблиця -->
     <q-table
@@ -119,72 +215,25 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
-import { debounce } from 'lodash'
 import ProductDialog from 'components/products/ProductDialog.vue'
-import ProductFilters from 'components/products/ProductFilters.vue'
 import { date } from 'quasar'
 
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
-const exporting = ref(false)
-const showDialog = ref(false)
-const editProduct = ref(null)
-
-const exportProducts = async () => {
-  exporting.value = true
-  try {
-    const response = await ProductsApi.exportProducts({
-      ...formatFiltersForApi(filters.value),
-      export: true,
-    })
-
-    const url = window.URL.createObjectURL(new Blob([response.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `products-${date.formatDate(Date.now(), 'YYYY-MM-DD')}.xlsx`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-
-    $q.notify({
-      type: 'positive',
-      message: t('products.exportSuccess'),
-    })
-  } catch (error) {
-    console.error('Error exporting products:', error)
-    $q.notify({
-      type: 'negative',
-      message: t('products.exportError'),
-    })
-  } finally {
-    exporting.value = false
-  }
-}
-
-const handleKeydown = (e) => {
-  if (e.key === 'F7') {
-    openCreateDialog()
-  }
-}
 
 // Стани
 const loading = ref(false)
+const exporting = ref(false)
+const showDialog = ref(false)
+const showFilters = ref(false)
+const editProduct = ref(null)
 const products = ref([])
 const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const manufacturerOptions = ref([])
 
 // Фільтри
-const formatFiltersForApi = (filters) => {
-  return {
-    search: filters.search || undefined,
-    manufacturer_id: filters.manufacturer || undefined,
-    current_status: filters.status || undefined,
-    is_own: filters.isOwn,
-  }
-}
-
 const filters = ref({
   search: '',
   manufacturer: null,
@@ -199,7 +248,6 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'sku',
   descending: false,
-  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
 // Computed
@@ -232,7 +280,6 @@ const columns = computed(() => [
     align: 'left',
     sortable: true,
   },
-  // Додати колонку is_own
   {
     name: 'is_own',
     field: 'is_own',
@@ -247,7 +294,17 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
+
 // Methods
+const formatFiltersForApi = (filters) => {
+  return {
+    search: filters.search || undefined,
+    manufacturer_id: filters.manufacturer || undefined,
+    current_status: filters.status || undefined,
+    is_own: filters.isOwn,
+  }
+}
+
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
@@ -259,11 +316,10 @@ const loadProducts = async () => {
       page: pagination.value.page,
       per_page: pagination.value.rowsPerPage,
       sort_by: pagination.value.sortBy || 'sku',
-      sort_desc: pagination.value.descending ? 1 : 0, // Змінюємо на 1/0
+      sort_desc: pagination.value.descending ? 1 : 0,
       ...formatFiltersForApi(filters.value),
     }
 
-    // Видаляємо пусті значення
     Object.keys(params).forEach(
       (key) => (params[key] === undefined || params[key] === null) && delete params[key],
     )
@@ -282,6 +338,7 @@ const loadProducts = async () => {
     loading.value = false
   }
 }
+
 const loadManufacturers = async () => {
   try {
     const response = await ProductsApi.getManufacturers()
@@ -299,19 +356,25 @@ const loadManufacturers = async () => {
   }
 }
 
+const updateFilter = (key, value) => {
+  filters.value = {
+    ...filters.value,
+    [key]: value,
+  }
+}
+
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    manufacturer: null,
+    status: null,
+    isOwn: null,
+  }
+}
+
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-
-  // Оновлюємо pagination перед завантаженням
-  pagination.value = {
-    ...pagination.value,
-    page,
-    rowsPerPage,
-    sortBy,
-    descending,
-  }
-
-  // Важливо - викликаємо loadProducts напряму, без debounce
+  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
   await loadProducts()
 }
 
@@ -363,25 +426,54 @@ const deleteProduct = async () => {
   }
 }
 
-// Watchers
+const exportProducts = async () => {
+  exporting.value = true
+  try {
+    const response = await ProductsApi.exportProducts({
+      ...formatFiltersForApi(filters.value),
+      export: true,
+    })
 
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `products-${date.formatDate(Date.now(), 'YYYY-MM-DD')}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    $q.notify({
+      type: 'positive',
+      message: t('products.exportSuccess'),
+    })
+  } catch (error) {
+    console.error('Error exporting products:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('products.exportError'),
+    })
+  } finally {
+    exporting.value = false
+  }
+}
+
+const handleKeydown = (e) => {
+  if (e.key === 'F7') {
+    openCreateDialog()
+  }
+}
+
+// Watchers
 watch(
   filters,
   () => {
-    pagination.value.page = 1 // Скидаємо сторінку при зміні фільтрів
+    pagination.value.page = 1
+    loadProducts()
   },
   { deep: true },
 )
 
-// Єдиний watcher для завантаження даних
-watch(
-  [filters, pagination],
-  debounce(() => {
-    loadProducts()
-  }, 300),
-  { deep: true },
-)
-
+//
 // Lifecycle
 onMounted(() => {
   loadProducts()
@@ -452,5 +544,22 @@ onUnmounted(() => {
 .body--dark :deep(.q-table) th,
 .body--dark :deep(.q-table) td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Анімації для фільтрів */
+.q-slide-transition-enter-active,
+.q-slide-transition-leave-active {
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.q-slide-transition-enter-from,
+.q-slide-transition-leave-to {
+  max-height: 0;
+}
+
+.q-slide-transition-enter-to,
+.q-slide-transition-leave-from {
+  max-height: 1000px;
 }
 </style>
