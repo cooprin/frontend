@@ -260,14 +260,14 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'model_name',
+    name: 'model_name', // це поле з іншої таблиці
     field: 'model_name',
     label: t('products.model'),
     align: 'left',
     sortable: true,
   },
   {
-    name: 'manufacturer_name',
+    name: 'manufacturer_name', // це поле з іншої таблиці
     field: 'manufacturer_name',
     label: t('products.manufacturer'),
     align: 'left',
@@ -294,7 +294,6 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
-
 // Methods
 const formatFiltersForApi = (filters) => {
   return {
