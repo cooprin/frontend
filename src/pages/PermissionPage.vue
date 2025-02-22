@@ -40,6 +40,7 @@
 
               <q-btn
                 color="primary"
+                icon="add"
                 :label="$t('pages.permissions.addPermission')"
                 @click="openPermissionDialog()"
               />

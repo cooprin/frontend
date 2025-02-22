@@ -107,7 +107,6 @@
               :label="$t('products.filters.search')"
               outlined
               dense
-              clearable
               debounce="300"
             >
               <template v-slot:append>

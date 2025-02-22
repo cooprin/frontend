@@ -1,101 +1,85 @@
 <template>
   <q-page padding>
-    <!-- Заголовок і кнопка додавання -->
-    <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-md">{{ $t('manufacturers.title') }}</h5>
-      <q-btn
-        color="primary"
-        :label="$t('manufacturers.add')"
-        icon="add"
-        @click="openCreateDialog"
-      />
-    </div>
-
-    <!-- Фільтри -->
-    <div class="row q-col-gutter-sm q-mb-md">
-      <!-- Пошук -->
-      <div class="col-12 col-sm-4">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="text-h6">{{ $t('manufacturers.title') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <q-table
+          v-model:pagination="pagination"
+          :rows="manufacturers"
+          :columns="columns"
           :loading="loading"
+          :rows-per-page-options="[10, 20, 50, 100]"
+          row-key="id"
+          flat
+          bordered
+          @request="onRequest"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :selected-rows-label="$t('common.selectedRows')"
+          :pagination-label="paginationLabel"
+          @update:pagination="onRequest"
         >
-          <template v-slot:append>
-            <q-icon name="search" />
+          <!-- Пошук -->
+          <template v-slot:top-right>
+            <q-input
+              v-model="filters.search"
+              :label="$t('common.search')"
+              dense
+              outlined
+              debounce="300"
+              :loading="loading"
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-btn
+              color="primary"
+              :label="$t('manufacturers.add')"
+              icon="add"
+              @click="openCreateDialog"
+            />
           </template>
-        </q-input>
-      </div>
 
-      <!-- Фільтр по статусу -->
-      <div class="col-12 col-sm-4">
-        <q-select
-          v-model="filters.isActive"
-          :options="statusOptions"
-          :label="$t('manufacturers.filters.status')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-        />
-      </div>
-    </div>
+          <!-- Слот для статусу -->
+          <template v-slot:body-cell-is_active="props">
+            <q-td :props="props">
+              <q-chip :color="props.row.is_active ? 'positive' : 'grey'" text-color="white" dense>
+                {{ props.row.is_active ? $t('common.active') : $t('common.inactive') }}
+              </q-chip>
+            </q-td>
+          </template>
 
-    <!-- Таблиця -->
-    <q-table
-      v-model:pagination="pagination"
-      :rows="manufacturers"
-      :columns="columns"
-      :loading="loading"
-      :rows-per-page-options="[10, 20, 50, 100]"
-      row-key="id"
-      flat
-      bordered
-      @request="onRequest"
-      :rows-per-page-label="$t('common.rowsPerPage')"
-      :selected-rows-label="$t('common.selectedRows')"
-      :pagination-label="paginationLabel"
-      @update:pagination="onRequest"
-    >
-      <!-- Слот для статусу -->
-      <template v-slot:body-cell-is_active="props">
-        <q-td :props="props">
-          <q-chip :color="props.row.is_active ? 'positive' : 'grey'" text-color="white" dense>
-            {{ props.row.is_active ? $t('common.active') : $t('common.inactive') }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для дій -->
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props" class="q-gutter-sm">
-          <q-btn
-            color="warning"
-            icon="edit"
-            size="sm"
-            flat
-            dense
-            @click="openEditDialog(props.row)"
-          >
-            <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="!props.row.models_count"
-            color="negative"
-            icon="delete"
-            size="sm"
-            flat
-            dense
-            @click="confirmDelete(props.row)"
-          >
-            <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
-          </q-btn>
-        </q-td>
-      </template>
-    </q-table>
+          <!-- Слот для дій -->
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="q-gutter-sm">
+              <q-btn
+                color="warning"
+                icon="edit"
+                size="sm"
+                flat
+                dense
+                @click="openEditDialog(props.row)"
+              >
+                <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                v-if="!props.row.models_count"
+                color="negative"
+                icon="delete"
+                size="sm"
+                flat
+                dense
+                @click="confirmDelete(props.row)"
+              >
+                <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
 
     <!-- Діалог створення/редагування -->
     <q-dialog v-model="showDialog" persistent>
@@ -215,12 +199,6 @@ const pagination = ref({
   descending: false,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
-
-// Опції для селектів
-const statusOptions = computed(() => [
-  { label: t('common.active'), value: true },
-  { label: t('common.inactive'), value: false },
-])
 
 // Колонки таблиці
 const columns = computed(() => [

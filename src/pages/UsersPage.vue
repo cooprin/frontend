@@ -34,6 +34,7 @@
 
             <q-btn
               color="primary"
+              icon="add"
               :label="$t('pages.users.addUser')"
               class="q-ml-md"
               @click="openUserDialog()"

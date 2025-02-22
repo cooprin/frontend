@@ -34,6 +34,7 @@
 
             <q-btn
               color="primary"
+              icon="add"
               :label="$t('pages.roles.addRole')"
               class="q-ml-md"
               @click="openRoleDialog()"
