@@ -13,8 +13,8 @@
 
       <q-card-section>
         <div class="row items-center q-mb-md">
-          <!--          <div class="text-h6">{{ $t('products.filters.title') }}</div>
-          <q-space />-->
+          <!--          <div class="text-h6">{{ $t('products.filters.title') }}</div>-->
+          <q-space />
           <q-btn
             :icon="showFilters ? 'expand_less' : 'expand_more'"
             :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
