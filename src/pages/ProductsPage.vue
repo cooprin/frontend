@@ -29,74 +29,52 @@
           <div v-show="showFilters">
             <div class="row q-col-gutter-sm q-mb-md">
               <!-- Пошук -->
-              <div class="col-12 col-sm-4">
-                <q-input
-                  :value="filters.search"
-                  @update:model-value="(val) => updateFilter('search', val)"
-                  :label="$t('products.filters.search')"
-                  outlined
-                  dense
-                  clearable
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-              </div>
+              <q-input
+                v-model="filters.search"
+                :label="$t('products.filters.search')"
+                outlined
+                dense
+                clearable
+              >
+                <template v-slot:append>
+                  <q-icon name="search" />
+                </template>
+              </q-input>
 
               <!-- Виробник -->
-              <div class="col-12 col-sm-4">
-                <q-select
-                  :value="filters.manufacturer"
-                  @update:model-value="(val) => updateFilter('manufacturer', val)"
-                  :options="manufacturerOptions"
-                  :label="$t('products.manufacturer')"
-                  outlined
-                  dense
-                  clearable
-                  emit-value
-                  map-options
-                />
-              </div>
+              <q-select
+                v-model="filters.manufacturer"
+                :options="manufacturerOptions"
+                :label="$t('products.manufacturer')"
+                outlined
+                dense
+                clearable
+                emit-value
+                map-options
+              />
 
               <!-- Статус -->
-              <div class="col-12 col-sm-4">
-                <q-select
-                  :value="filters.status"
-                  @update:model-value="(val) => updateFilter('status', val)"
-                  :options="[
-                    { label: $t('products.statuses.in_stock'), value: 'in_stock' },
-                    { label: $t('products.statuses.installed'), value: 'installed' },
-                    { label: $t('products.statuses.in_repair'), value: 'in_repair' },
-                    { label: $t('products.statuses.written_off'), value: 'written_off' },
-                  ]"
-                  :label="$t('products.status')"
-                  outlined
-                  dense
-                  clearable
-                  emit-value
-                  map-options
-                />
-              </div>
+              <q-select
+                v-model="filters.status"
+                :options="statusOptions"
+                :label="$t('products.status')"
+                outlined
+                dense
+                clearable
+                emit-value
+                map-options
+              />
 
               <!-- Власність -->
-              <div class="col-12 col-sm-4">
-                <q-select
-                  :value="filters.isOwn"
-                  @update:model-value="(val) => updateFilter('isOwn', val)"
-                  :options="[
-                    { label: $t('products.all'), value: null },
-                    { label: $t('products.own'), value: true },
-                    { label: $t('products.notOwn'), value: false },
-                  ]"
-                  :label="$t('products.ownership')"
-                  outlined
-                  dense
-                  emit-value
-                  map-options
-                />
-              </div>
-
+              <q-select
+                v-model="filters.isOwn"
+                :options="ownershipOptions"
+                :label="$t('products.ownership')"
+                outlined
+                dense
+                emit-value
+                map-options
+              />
               <!-- Кнопки -->
               <div class="col-12 q-gutter-x-sm">
                 <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
@@ -236,10 +214,24 @@ const manufacturerOptions = ref([])
 // Фільтри
 const filters = ref({
   search: '',
-  manufacturer: null,
+  manufacturer: null, // має відповідати value в manufacturerOptions
   status: null,
   isOwn: null,
 })
+
+// Опції для селектів
+const statusOptions = computed(() => [
+  { label: t('products.statuses.in_stock'), value: 'in_stock' },
+  { label: t('products.statuses.installed'), value: 'installed' },
+  { label: t('products.statuses.in_repair'), value: 'in_repair' },
+  { label: t('products.statuses.written_off'), value: 'written_off' },
+])
+
+const ownershipOptions = computed(() => [
+  { label: t('products.all'), value: null },
+  { label: t('products.own'), value: true },
+  { label: t('products.notOwn'), value: false },
+])
 
 // Пагінація
 const pagination = ref({
@@ -296,12 +288,17 @@ const columns = computed(() => [
 ])
 // Methods
 const formatFiltersForApi = (filters) => {
-  return {
+  const formatted = {
     search: filters.search || undefined,
     manufacturer_id: filters.manufacturer || undefined,
     current_status: filters.status || undefined,
     is_own: filters.isOwn,
   }
+
+  // Видаляємо undefined значення
+  Object.keys(formatted).forEach((key) => formatted[key] === undefined && delete formatted[key])
+
+  return formatted
 }
 
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
@@ -315,13 +312,9 @@ const loadProducts = async () => {
       page: pagination.value.page,
       per_page: pagination.value.rowsPerPage,
       sort_by: pagination.value.sortBy || 'sku',
-      sort_desc: pagination.value.descending ? 1 : 0,
+      sort_desc: pagination.value.descending ? 1 : 0, // змінюємо на 1/0
       ...formatFiltersForApi(filters.value),
     }
-
-    Object.keys(params).forEach(
-      (key) => (params[key] === undefined || params[key] === null) && delete params[key],
-    )
 
     const response = await ProductsApi.getProducts(params)
     products.value = response.data.products
@@ -355,13 +348,6 @@ const loadManufacturers = async () => {
   }
 }
 
-const updateFilter = (key, value) => {
-  filters.value = {
-    ...filters.value,
-    [key]: value,
-  }
-}
-
 const clearFilters = () => {
   filters.value = {
     search: '',
@@ -373,7 +359,16 @@ const clearFilters = () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  // Викликаємо loadProducts з оновленими параметрами
   await loadProducts()
 }
 
