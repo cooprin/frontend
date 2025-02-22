@@ -258,12 +258,12 @@ const loadProducts = async () => {
     const params = {
       page: pagination.value.page,
       per_page: pagination.value.rowsPerPage,
-      sort_by: pagination.value.sortBy || 'sku', // додаємо дефолтне значення
-      sort_desc: pagination.value.descending || false, // додаємо дефолтне значення
+      sort_by: pagination.value.sortBy || 'sku',
+      sort_desc: pagination.value.descending ? 1 : 0, // Змінюємо на 1/0
       ...formatFiltersForApi(filters.value),
     }
 
-    // Видаляємо undefined значення
+    // Видаляємо пусті значення
     Object.keys(params).forEach(
       (key) => (params[key] === undefined || params[key] === null) && delete params[key],
     )
@@ -302,16 +302,7 @@ const loadManufacturers = async () => {
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
 
-  // Перевірка чи змінились параметри
-  if (
-    page === pagination.value.page &&
-    rowsPerPage === pagination.value.rowsPerPage &&
-    sortBy === pagination.value.sortBy &&
-    descending === pagination.value.descending
-  ) {
-    return // Якщо нічого не змінилось - не робимо запит
-  }
-
+  // Оновлюємо pagination перед завантаженням
   pagination.value = {
     ...pagination.value,
     page,
@@ -320,6 +311,7 @@ const onRequest = async (props) => {
     descending,
   }
 
+  // Важливо - викликаємо loadProducts напряму, без debounce
   await loadProducts()
 }
 
@@ -383,7 +375,7 @@ watch(
 
 // Єдиний watcher для завантаження даних
 watch(
-  [() => ({ ...filters.value }), () => ({ ...pagination.value })],
+  [filters, pagination],
   debounce(() => {
     loadProducts()
   }, 300),

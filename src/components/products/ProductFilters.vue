@@ -131,7 +131,7 @@ const updateFilters = debounce((key, value) => {
     ...props.filters,
     [key]: value,
   })
-}, 300)
+}, 200)
 
 const clearFilters = () => {
   emit('update:filters', {
