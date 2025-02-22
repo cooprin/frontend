@@ -101,7 +101,7 @@
           :pagination-label="paginationLabel"
         >
           <!-- Пошук -->
-          <div class="col-12 col-sm-4">
+          <template v-slot:top-right>
             <q-input
               v-model="filters.search"
               :label="$t('products.filters.search')"
@@ -113,10 +113,10 @@
                 <q-icon name="search" />
               </template>
             </q-input>
-          </div>
-          <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
-            <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
-          </q-btn>
+            <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
+              <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
+            </q-btn>
+          </template>
           <!-- Слот для статусу -->
           <template v-slot:body-cell-current_status="props">
             <q-td :props="props">
