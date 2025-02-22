@@ -28,7 +28,6 @@
               dense
               outlined
               debounce="300"
-              :loading="loading"
             >
               <template v-slot:append>
                 <q-icon name="search" />
