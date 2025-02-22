@@ -5,16 +5,6 @@
         <div class="row items-center q-mb-md">
           <div class="text-h6">{{ $t('products.title') }}</div>
           <q-space />
-          <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
-            <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
-          </q-btn>
-        </div>
-      </q-card-section>
-
-      <q-card-section>
-        <div class="row items-center q-mb-md">
-          <!--          <div class="text-h6">{{ $t('products.filters.title') }}</div>-->
-          <q-space />
           <q-btn
             :icon="showFilters ? 'expand_less' : 'expand_more'"
             :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
@@ -27,21 +17,6 @@
         <q-slide-transition>
           <div v-show="showFilters">
             <div class="row q-col-gutter-sm q-mb-md">
-              <!-- Пошук -->
-              <div class="col-12 col-sm-4">
-                <q-input
-                  v-model="filters.search"
-                  :label="$t('products.filters.search')"
-                  outlined
-                  dense
-                  clearable
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-              </div>
-
               <!-- Виробник -->
               <div class="col-12 col-sm-4">
                 <q-select
@@ -110,8 +85,8 @@
             </div>
           </div>
         </q-slide-transition>
-
-        <!-- Таблиця -->
+      </q-card-section>
+      <q-card-section>
         <q-table
           :rows="products"
           :columns="columns"
@@ -125,6 +100,23 @@
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
         >
+          <!-- Пошук -->
+          <div class="col-12 col-sm-4">
+            <q-input
+              v-model="filters.search"
+              :label="$t('products.filters.search')"
+              outlined
+              dense
+              clearable
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </div>
+          <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
+            <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
+          </q-btn>
           <!-- Слот для статусу -->
           <template v-slot:body-cell-current_status="props">
             <q-td :props="props">
