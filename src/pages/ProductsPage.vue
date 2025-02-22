@@ -224,7 +224,7 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
-  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
 // Filters
 const filters = ref({
@@ -316,16 +316,19 @@ const loadProducts = async () => {
     const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || undefined,
       sort_desc: pagination.value.descending ? 1 : 0,
       ...formatFiltersForApi(filters.value),
     }
 
-    // Якщо sortBy не визначено, видаляємо його з параметрів
-    if (!params.sortBy) {
-      delete params.sortBy
-      delete params.sort_desc
-    }
+    // Убрати undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
+    })
+
+    console.log('Request params:', params)
 
     const response = await ProductsApi.getProducts(params)
     products.value = response.data.products
@@ -368,28 +371,19 @@ const clearFilters = () => {
 }
 
 const onRequest = async (props) => {
-  // Додаємо логування
   console.log('Request props:', props)
 
   const { page, rowsPerPage, sortBy, descending } = props.pagination
 
-  // Оновлюємо pagination тільки якщо значення змінились
-  if (
-    page !== pagination.value.page ||
-    rowsPerPage !== pagination.value.rowsPerPage ||
-    sortBy !== pagination.value.sortBy ||
-    descending !== pagination.value.descending
-  ) {
-    pagination.value = {
-      ...pagination.value,
-      page,
-      rowsPerPage,
-      sortBy,
-      descending,
-    }
-
-    await loadProducts()
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
   }
+
+  await loadProducts()
 }
 
 const getStatusColor = (status) => {
