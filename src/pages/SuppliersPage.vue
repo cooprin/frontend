@@ -319,10 +319,16 @@ const loadSuppliers = async () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value.page = page
-  pagination.value.rowsPerPage = rowsPerPage
-  pagination.value.sortBy = sortBy
-  pagination.value.descending = descending
+
+  // Зберігаємо поточний стан сортування
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
   await loadSuppliers()
 }
 
