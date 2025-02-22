@@ -105,6 +105,9 @@
 </template>
 <script setup>
 import { debounce } from 'lodash'
+import { ref } from 'vue'
+
+const showFilters = ref(false)
 
 const props = defineProps({
   filters: {

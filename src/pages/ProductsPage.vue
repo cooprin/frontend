@@ -232,6 +232,14 @@ const columns = computed(() => [
     align: 'left',
     sortable: true,
   },
+  // Додати колонку is_own
+  {
+    name: 'is_own',
+    field: 'is_own',
+    label: t('products.ownership'),
+    align: 'left',
+    sortable: true,
+  },
   {
     name: 'actions',
     label: t('common.actions'),
@@ -239,7 +247,6 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
-
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
@@ -294,6 +301,16 @@ const loadManufacturers = async () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  // Перевірка чи змінились параметри
+  if (
+    page === pagination.value.page &&
+    rowsPerPage === pagination.value.rowsPerPage &&
+    sortBy === pagination.value.sortBy &&
+    descending === pagination.value.descending
+  ) {
+    return // Якщо нічого не змінилось - не робимо запит
+  }
 
   pagination.value = {
     ...pagination.value,
