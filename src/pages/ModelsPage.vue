@@ -1,115 +1,96 @@
 <template>
   <q-page padding>
-    <!-- Заголовок і кнопка додавання -->
-    <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-md">{{ $t('models.title') }}</h5>
-      <q-btn color="primary" :label="$t('models.add')" icon="add" @click="openCreateDialog" />
-    </div>
-
-    <!-- Фільтри -->
-    <div class="row q-col-gutter-sm q-mb-md">
-      <!-- Пошук -->
-      <div class="col-12 col-sm-4">
-        <q-input v-model="filters.search" :label="$t('common.search')" dense outlined clearable>
-          <template v-slot:append>
-            <q-icon name="search" />
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="text-h6">{{ $t('models.title') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <!-- Таблиця -->
+        <q-table
+          v-model:pagination="pagination"
+          :rows="models"
+          :columns="columns"
+          :loading="loading"
+          :rows-per-page-options="[10, 20, 50, 100]"
+          row-key="id"
+          flat
+          bordered
+          @request="onRequest"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :selected-rows-label="$t('common.selectedRows')"
+          :pagination-label="paginationLabel"
+          @update:pagination="onRequest"
+        >
+          <template v-slot:top-right>
+            <q-input
+              v-model="filters.search"
+              :label="$t('common.search')"
+              dense
+              outlined
+              debounce="300"
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-btn
+              color="primary"
+              :label="$t('models.add')"
+              icon="add"
+              @click="openCreateDialog"
+              class="q-ml-md"
+            />
           </template>
-        </q-input>
-      </div>
+          <!-- Слот для зображення -->
+          <template v-slot:body-cell-image="props">
+            <q-td :props="props">
+              <q-img
+                :src="props.row.image_url || '/images/no-image.png'"
+                :ratio="1"
+                style="max-width: 50px"
+                fit="contain"
+              />
+            </q-td>
+          </template>
 
-      <!-- Фільтр по виробнику -->
-      <div class="col-12 col-sm-4">
-        <q-select
-          v-model="filters.manufacturer"
-          :options="manufacturerOptions"
-          :label="$t('models.filters.manufacturer')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-        />
-      </div>
+          <!-- Слот для статусу -->
+          <template v-slot:body-cell-is_active="props">
+            <q-td :props="props">
+              <q-chip :color="props.row.is_active ? 'positive' : 'grey'" text-color="white" dense>
+                {{ props.row.is_active ? $t('common.active') : $t('common.inactive') }}
+              </q-chip>
+            </q-td>
+          </template>
 
-      <!-- Фільтр по статусу -->
-      <div class="col-12 col-sm-4">
-        <q-select
-          v-model="filters.isActive"
-          :options="statusOptions"
-          :label="$t('models.filters.status')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-        />
-      </div>
-    </div>
-
-    <!-- Таблиця -->
-    <q-table
-      v-model:pagination="pagination"
-      :rows="models"
-      :columns="columns"
-      :loading="loading"
-      :rows-per-page-options="[10, 20, 50, 100]"
-      row-key="id"
-      flat
-      bordered
-      @request="onRequest"
-      :rows-per-page-label="$t('common.rowsPerPage')"
-      :selected-rows-label="$t('common.selectedRows')"
-      :pagination-label="paginationLabel"
-      @update:pagination="onRequest"
-    >
-      <!-- Слот для зображення -->
-      <template v-slot:body-cell-image="props">
-        <q-td :props="props">
-          <q-img
-            :src="props.row.image_url || '/images/no-image.png'"
-            :ratio="1"
-            style="max-width: 50px"
-            fit="contain"
-          />
-        </q-td>
-      </template>
-
-      <!-- Слот для статусу -->
-      <template v-slot:body-cell-is_active="props">
-        <q-td :props="props">
-          <q-chip :color="props.row.is_active ? 'positive' : 'grey'" text-color="white" dense>
-            {{ props.row.is_active ? $t('common.active') : $t('common.inactive') }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для дій -->
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props" class="q-gutter-sm">
-          <q-btn
-            color="warning"
-            icon="edit"
-            size="sm"
-            flat
-            dense
-            @click="openEditDialog(props.row)"
-          >
-            <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="!props.row.products_count"
-            color="negative"
-            icon="delete"
-            size="sm"
-            flat
-            dense
-            @click="confirmDelete(props.row)"
-          >
-            <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
-          </q-btn>
-        </q-td>
-      </template>
-    </q-table>
+          <!-- Слот для дій -->
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="q-gutter-sm">
+              <q-btn
+                color="warning"
+                icon="edit"
+                size="sm"
+                flat
+                dense
+                @click="openEditDialog(props.row)"
+              >
+                <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                v-if="!props.row.products_count"
+                color="negative"
+                icon="delete"
+                size="sm"
+                flat
+                dense
+                @click="confirmDelete(props.row)"
+              >
+                <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
 
     <!-- Діалог створення/редагування -->
     <q-dialog v-model="showDialog" persistent>
@@ -218,7 +199,7 @@ import { ManufacturersApi } from 'src/api/manufacturers'
 import { debounce } from 'lodash'
 
 const $q = useQuasar()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -245,8 +226,6 @@ const form = ref({ ...defaultForm })
 // Фільтри
 const filters = ref({
   search: '',
-  manufacturer: null,
-  isActive: null,
 })
 
 // Пагінація
@@ -263,36 +242,22 @@ const pagination = ref({
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
 })
 
-// Додамо computed для statusOptions
-const statusOptions = computed(() => [
-  { label: t('common.active'), value: true },
-  { label: t('common.inactive'), value: false },
-])
-
-// Додамо watch для фільтрів
 watch(
-  filters,
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
   debounce(() => {
-    pagination.value.page = 1
     loadModels()
   }, 300),
   { deep: true },
 )
 
-// Додамо watch для locale
-watch(locale, () => {
-  loadModels()
-})
-
 // Колонки таблиці
 const columns = computed(() => [
-  {
-    name: 'image',
-    field: 'image_url',
-    label: '',
-    align: 'left',
-    sortable: false,
-  },
   {
     name: 'name',
     field: 'name',
@@ -342,29 +307,33 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
-
 // Methods
 const loadModels = async () => {
   loading.value = true
   try {
-    const response = await ModelsApi.getModels({
+    const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || 'name',
       descending: pagination.value.descending,
-      ...filters.value,
+      search: filters.value.search || undefined,
+    }
+
+    // Видалимо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await ModelsApi.getModels(params)
     models.value = response.data.models
     pagination.value.rowsNumber = response.data.total
   } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    })
+    console.error('Error loading models:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || t('common.errors.loading'),
+      message: t('common.errors.loading'),
       icon: 'error',
     })
     models.value = []
