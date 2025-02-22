@@ -304,13 +304,21 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const loadProducts = async () => {
   loading.value = true
   try {
+    // Форматуємо параметри правильно
     const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
       sortBy: pagination.value.sortBy,
       sort_desc: pagination.value.descending ? 1 : 0,
-      ...filters.value,
+      // Форматуємо фільтри
+      search: filters.value.search || undefined,
+      manufacturer_id: filters.value.manufacturer || undefined,
+      current_status: filters.value.status || undefined,
+      is_own: filters.value.isOwn === null ? undefined : filters.value.isOwn,
     }
+
+    // Видаляємо undefined значення
+    Object.keys(params).forEach((key) => params[key] === undefined && delete params[key])
 
     const response = await ProductsApi.getProducts(params)
     if (response.data.success) {
@@ -354,8 +362,18 @@ const clearFilters = () => {
 }
 
 const onRequest = async (props) => {
+  console.log('Request props:', props)
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
+
+  // Завжди зберігаємо sortBy, навіть якщо він null
+  pagination.value = {
+    ...pagination.value,
+    page: page || 1,
+    rowsPerPage: rowsPerPage || 10,
+    sortBy: sortBy || 'sku', // якщо sortBy = null, використовуємо дефолтне значення
+    descending: descending || false,
+  }
+
   await loadProducts()
 }
 
