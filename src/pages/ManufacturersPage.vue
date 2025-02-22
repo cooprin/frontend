@@ -38,6 +38,7 @@
               color="primary"
               :label="$t('manufacturers.add')"
               icon="add"
+              class="q-ml-md"
               @click="openCreateDialog"
             />
           </template>
@@ -152,12 +153,7 @@ import { ManufacturersApi } from 'src/api/manufacturers'
 import { debounce } from 'lodash'
 
 const $q = useQuasar()
-const { t, locale } = useI18n()
-
-watch(locale, () => {
-  // Перезавантажуємо дані, якщо потрібно
-  loadManufacturers()
-})
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -183,9 +179,14 @@ const filters = ref({
 })
 
 watch(
-  filters,
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
   debounce(() => {
-    pagination.value.page = 1
     loadManufacturers()
   }, 300),
   { deep: true },
@@ -197,7 +198,7 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'name',
   descending: false,
-  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
 
 // Колонки таблиці
@@ -237,7 +238,6 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
-
 // Methods
 
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
@@ -246,25 +246,30 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const loadManufacturers = async () => {
   loading.value = true
   try {
-    const response = await ManufacturersApi.getManufacturers({
+    const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || 'name',
       descending: pagination.value.descending,
-      ...filters.value,
+      search: filters.value.search || undefined,
+      isActive: filters.value.isActive,
+    }
+
+    // Видалимо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await ManufacturersApi.getManufacturers(params)
     manufacturers.value = response.data.manufacturers
     pagination.value.rowsNumber = response.data.total
   } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    })
-
+    console.error('Error loading manufacturers:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || 'Помилка завантаження даних',
+      message: t('common.errors.loading'),
       icon: 'error',
     })
     manufacturers.value = []
