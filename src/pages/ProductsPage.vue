@@ -77,12 +77,19 @@
               />
               <!-- Кнопки -->
               <div class="col-12 q-gutter-x-sm">
-                <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
+                <q-btn
+                  color="primary"
+                  :label="$t('common.clearFilters')"
+                  @click="clearFilters"
+                  class="q-mb-sm"
+                  outline
+                />
                 <q-btn
                   color="secondary"
                   :label="$t('common.export')"
                   @click="exportProducts"
                   :loading="exporting"
+                  class="q-mb-sm"
                 />
               </div>
             </div>
@@ -308,11 +315,17 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const loadProducts = async () => {
   loading.value = true
   try {
+    // Перевіряємо параметри перед відправкою
+    console.log('Sort params:', {
+      sortBy: pagination.value.sortBy,
+      sort_desc: pagination.value.descending,
+    })
+
     const params = {
       page: pagination.value.page,
       per_page: pagination.value.rowsPerPage,
       sort_by: pagination.value.sortBy || 'sku',
-      sort_desc: pagination.value.descending ? 1 : 0, // змінюємо на 1/0
+      sort_desc: pagination.value.descending ? 1 : 0, // важливо передавати як 1 або 0
       ...formatFiltersForApi(filters.value),
     }
 
@@ -555,5 +568,12 @@ onUnmounted(() => {
 .q-slide-transition-enter-to,
 .q-slide-transition-leave-from {
   max-height: 1000px;
+}
+.q-btn {
+  min-width: 120px;
+}
+
+.q-gutter-x-sm > * {
+  margin-right: 8px;
 }
 </style>
