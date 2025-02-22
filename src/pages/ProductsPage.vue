@@ -28,60 +28,75 @@
         <q-slide-transition>
           <div v-show="showFilters">
             <div class="row q-col-gutter-sm q-mb-md">
-              <!-- Пошук -->
-              <q-input
-                v-model="filters.search"
-                :label="$t('products.filters.search')"
-                outlined
-                dense
-                clearable
-              >
-                <template v-slot:append>
-                  <q-icon name="search" />
-                </template>
-              </q-input>
+              <!-- В template -->
+              <div class="row q-col-gutter-md q-mb-md">
+                <!-- Пошук -->
+                <div class="col-12 col-sm-3">
+                  <q-input
+                    v-model="filters.search"
+                    :label="$t('products.filters.search')"
+                    outlined
+                    dense
+                    clearable
+                    class="full-width"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="search" />
+                    </template>
+                  </q-input>
+                </div>
 
-              <!-- Виробник -->
-              <q-select
-                v-model="filters.manufacturer"
-                :options="manufacturerOptions"
-                :label="$t('products.manufacturer')"
-                outlined
-                dense
-                clearable
-                emit-value
-                map-options
-              />
+                <!-- Виробник -->
+                <div class="col-12 col-sm-3">
+                  <q-select
+                    v-model="filters.manufacturer"
+                    :options="manufacturerOptions"
+                    :label="$t('products.manufacturer')"
+                    outlined
+                    dense
+                    clearable
+                    emit-value
+                    map-options
+                    class="full-width"
+                  />
+                </div>
 
-              <!-- Статус -->
-              <q-select
-                v-model="filters.status"
-                :options="statusOptions"
-                :label="$t('products.status')"
-                outlined
-                dense
-                clearable
-                emit-value
-                map-options
-              />
+                <!-- Статус -->
+                <div class="col-12 col-sm-3">
+                  <q-select
+                    v-model="filters.status"
+                    :options="statusOptions"
+                    :label="$t('products.status')"
+                    outlined
+                    dense
+                    clearable
+                    emit-value
+                    map-options
+                    class="full-width"
+                  />
+                </div>
 
-              <!-- Власність -->
-              <q-select
-                v-model="filters.isOwn"
-                :options="ownershipOptions"
-                :label="$t('products.ownership')"
-                outlined
-                dense
-                emit-value
-                map-options
-              />
+                <!-- Власність -->
+                <div class="col-12 col-sm-3">
+                  <q-select
+                    v-model="filters.isOwn"
+                    :options="ownershipOptions"
+                    :label="$t('products.ownership')"
+                    outlined
+                    dense
+                    emit-value
+                    map-options
+                    class="full-width"
+                  />
+                </div>
+              </div>
+
               <!-- Кнопки -->
-              <div class="col-12 q-gutter-x-sm">
+              <div class="row q-col-gutter-sm justify-end q-mb-md">
                 <q-btn
                   color="primary"
                   :label="$t('common.clearFilters')"
                   @click="clearFilters"
-                  class="q-mb-sm"
                   outline
                 />
                 <q-btn
@@ -89,7 +104,6 @@
                   :label="$t('common.export')"
                   @click="exportProducts"
                   :loading="exporting"
-                  class="q-mb-sm"
                 />
               </div>
             </div>
@@ -104,6 +118,7 @@
       :rows="products"
       :columns="columns"
       :loading="loading"
+      binary-state-sort
       :rows-per-page-options="[10, 20, 50, 100]"
       row-key="id"
       flat
@@ -253,21 +268,21 @@ const pagination = ref({
 const columns = computed(() => [
   {
     name: 'sku',
-    field: 'sku',
+    field: (row) => row.sku?.toLowerCase(),
     label: t('products.sku'),
     align: 'left',
     sortable: true,
   },
   {
-    name: 'model_name', // це поле з іншої таблиці
-    field: 'model_name',
+    name: 'model_name',
+    field: (row) => row.model_name?.toLowerCase(),
     label: t('products.model'),
     align: 'left',
     sortable: true,
   },
   {
-    name: 'manufacturer_name', // це поле з іншої таблиці
-    field: 'manufacturer_name',
+    name: 'manufacturer_name',
+    field: (row) => row.manufacturer_name?.toLowerCase(),
     label: t('products.manufacturer'),
     align: 'left',
     sortable: true,
@@ -575,5 +590,67 @@ onUnmounted(() => {
 
 .q-gutter-x-sm > * {
   margin-right: 8px;
+}
+:deep(.q-table) {
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Стилі для заголовків */
+:deep(.q-table) thead tr {
+  background: var(--q-primary);
+  height: 48px;
+}
+
+:deep(.q-table) thead tr th {
+  color: white !important;
+  font-weight: 500 !important;
+  font-size: 14px;
+  padding: 8px 16px;
+  transition: background-color 0.3s;
+}
+
+/* Стилі для рядків */
+:deep(.q-table) tbody tr {
+  height: 48px;
+  transition: background-color 0.3s;
+}
+
+:deep(.q-table) tbody tr:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Стилі для чіпів статусу */
+:deep(.q-chip) {
+  font-size: 12px;
+  height: 24px;
+}
+
+/* Стилі для кнопок дій */
+:deep(.q-btn) {
+  padding: 4px 8px;
+}
+
+/* Стилі для фільтрів */
+.filter-container {
+  background: #f5f5f5;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.body--dark .filter-container {
+  background: #1d1d1d;
+}
+
+/* Адаптивність */
+@media (max-width: 600px) {
+  :deep(.q-table) td,
+  :deep(.q-table) th {
+    padding: 8px;
+  }
+
+  :deep(.q-btn) {
+    padding: 4px;
+  }
 }
 </style>
