@@ -126,7 +126,7 @@ import { date } from 'quasar'
 
 const $q = useQuasar()
 const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const exporting = ref(false)
 const showDialog = ref(false)
 const editProduct = ref(null)
@@ -355,23 +355,21 @@ const deleteProduct = async () => {
 }
 
 // Watchers
-watch(locale, () => {
-  loadProducts()
-})
 
 watch(
   filters,
-  debounce(() => {
-    pagination.value.page = 1
-    loadProducts()
-  }, 300),
+  () => {
+    pagination.value.page = 1 // Скидаємо сторінку при зміні фільтрів
+  },
   { deep: true },
 )
+
+// Єдиний watcher для завантаження даних
 watch(
-  pagination,
-  () => {
+  [() => ({ ...filters.value }), () => ({ ...pagination.value })],
+  debounce(() => {
     loadProducts()
-  },
+  }, 300),
   { deep: true },
 )
 

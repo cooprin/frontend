@@ -104,8 +104,6 @@
   </q-card>
 </template>
 <script setup>
-import { ref, watch } from 'vue'
-
 import { debounce } from 'lodash'
 
 const props = defineProps({
@@ -125,37 +123,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:filters', 'export'])
 
-const showFilters = ref(false)
 const updateFilters = debounce((key, value) => {
   emit('update:filters', {
     ...props.filters,
     [key]: value,
   })
 }, 300)
-
-const localFilters = ref({
-  search: '',
-  manufacturer: null,
-  status: null,
-  isOwn: null,
-})
-
-// Синхронізація локальних фільтрів з батьківським компонентом
-watch(
-  localFilters,
-  (newFilters) => {
-    emit('update:filters', { ...newFilters })
-  },
-  { deep: true },
-)
-
-watch(
-  () => props.filters,
-  (newFilters) => {
-    localFilters.value = { ...newFilters }
-  },
-  { deep: true },
-)
 
 const clearFilters = () => {
   emit('update:filters', {
