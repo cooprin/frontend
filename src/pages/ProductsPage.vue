@@ -108,12 +108,19 @@
               outlined
               dense
               clearable
+              debounce="300"
             >
               <template v-slot:append>
                 <q-icon name="search" />
               </template>
             </q-input>
-            <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
+            <q-btn
+              color="primary"
+              icon="add"
+              class="q-ml-md"
+              :label="$t('products.add')"
+              @click="openCreateDialog"
+            >
               <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
             </q-btn>
           </template>
