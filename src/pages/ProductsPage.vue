@@ -1,15 +1,16 @@
 <template>
   <q-page padding>
-    <!-- Заголовок і кнопка додавання -->
-    <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-none">{{ $t('products.title') }}</h5>
-      <q-btn color="primary" :label="$t('products.add')" icon="add" @click="openCreateDialog">
-        <q-tooltip> {{ $t('products.add') }} (F7) </q-tooltip>
-      </q-btn>
-    </div>
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="row items-center q-mb-md">
+          <div class="text-h6">{{ $t('products.title') }}</div>
+          <q-space />
+          <q-btn color="primary" icon="add" :label="$t('products.add')" @click="openCreateDialog">
+            <q-tooltip>{{ $t('products.add') }} (F7)</q-tooltip>
+          </q-btn>
+        </div>
+      </q-card-section>
 
-    <!-- Фільтри -->
-    <q-card flat bordered class="q-mb-md">
       <q-card-section>
         <div class="row items-center q-mb-md">
           <div class="text-h6">{{ $t('products.filters.title') }}</div>
@@ -22,83 +23,69 @@
             @click="showFilters = !showFilters"
           />
         </div>
-      </q-card-section>
 
-      <q-card-section>
         <q-slide-transition>
           <div v-show="showFilters">
             <div class="row q-col-gutter-sm q-mb-md">
-              <!-- В template -->
-              <div class="row q-col-gutter-md q-mb-md">
-                <!-- Пошук -->
-                <div class="col-12 col-sm-3">
-                  <q-input
-                    v-model="filters.search"
-                    :label="$t('products.filters.search')"
-                    outlined
-                    dense
-                    clearable
-                    class="full-width"
-                  >
-                    <template v-slot:append>
-                      <q-icon name="search" />
-                    </template>
-                  </q-input>
-                </div>
+              <!-- Пошук -->
+              <div class="col-12 col-sm-4">
+                <q-input
+                  v-model="filters.search"
+                  :label="$t('products.filters.search')"
+                  outlined
+                  dense
+                  clearable
+                >
+                  <template v-slot:append>
+                    <q-icon name="search" />
+                  </template>
+                </q-input>
+              </div>
 
-                <!-- Виробник -->
-                <div class="col-12 col-sm-3">
-                  <q-select
-                    v-model="filters.manufacturer"
-                    :options="manufacturerOptions"
-                    :label="$t('products.manufacturer')"
-                    outlined
-                    dense
-                    clearable
-                    emit-value
-                    map-options
-                    class="full-width"
-                  />
-                </div>
+              <!-- Виробник -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.manufacturer"
+                  :options="manufacturerOptions"
+                  :label="$t('products.manufacturer')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-                <!-- Статус -->
-                <div class="col-12 col-sm-3">
-                  <q-select
-                    v-model="filters.status"
-                    :options="statusOptions"
-                    :label="$t('products.status')"
-                    outlined
-                    dense
-                    clearable
-                    emit-value
-                    map-options
-                    class="full-width"
-                  />
-                </div>
+              <!-- Статус -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.status"
+                  :options="statusOptions"
+                  :label="$t('products.status')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-                <!-- Власність -->
-                <div class="col-12 col-sm-3">
-                  <q-select
-                    v-model="filters.isOwn"
-                    :options="ownershipOptions"
-                    :label="$t('products.ownership')"
-                    outlined
-                    dense
-                    emit-value
-                    map-options
-                    class="full-width"
-                  />
-                </div>
+              <!-- Власність -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.isOwn"
+                  :options="ownershipOptions"
+                  :label="$t('products.ownership')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                />
               </div>
 
               <!-- Кнопки -->
-              <div class="row q-col-gutter-sm justify-end q-mb-md">
-                <q-btn
-                  color="primary"
-                  :label="$t('common.clearFilters')"
-                  @click="clearFilters"
-                  outline
-                />
+              <div class="col-12 q-gutter-x-sm">
+                <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
                 <q-btn
                   color="secondary"
                   :label="$t('common.export')"
@@ -109,81 +96,80 @@
             </div>
           </div>
         </q-slide-transition>
+
+        <!-- Таблиця -->
+        <q-table
+          :rows="products"
+          :columns="columns"
+          row-key="id"
+          :loading="loading"
+          v-model:pagination="pagination"
+          @request="onRequest"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :selected-rows-label="$t('common.selectedRows')"
+          :pagination-label="paginationLabel"
+        >
+          <!-- Слот для статусу -->
+          <template v-slot:body-cell-current_status="props">
+            <q-td :props="props">
+              <q-chip :color="getStatusColor(props.row.current_status)" text-color="white" dense>
+                {{ $t(`products.statuses.${props.row.current_status}`) }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Слот для власності -->
+          <template v-slot:body-cell-is_own="props">
+            <q-td :props="props">
+              <q-chip :color="props.row.is_own ? 'positive' : 'grey'" text-color="white" dense>
+                {{ props.row.is_own ? $t('products.own') : $t('products.notOwn') }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Слот для дій -->
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="text-center">
+              <q-btn-group flat>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="primary"
+                  icon="visibility"
+                  @click="openDetails(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="warning"
+                  icon="edit"
+                  @click="openEditDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="negative"
+                  icon="delete"
+                  @click="confirmDelete(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
+                </q-btn>
+              </q-btn-group>
+            </q-td>
+          </template>
+        </q-table>
       </q-card-section>
     </q-card>
 
-    <!-- Таблиця -->
-    <q-table
-      v-model:pagination="pagination"
-      :rows="products"
-      :columns="columns"
-      :loading="loading"
-      binary-state-sort
-      :rows-per-page-options="[10, 20, 50, 100]"
-      row-key="id"
-      flat
-      bordered
-      @request="onRequest"
-      :rows-per-page-label="$t('common.rowsPerPage')"
-      :selected-rows-label="$t('common.selectedRows')"
-      :pagination-label="paginationLabel"
-    >
-      <!-- Слот для статусу -->
-      <template v-slot:body-cell-current_status="props">
-        <q-td :props="props">
-          <q-chip :color="getStatusColor(props.row.current_status)" text-color="white" dense>
-            {{ $t(`products.statuses.${props.row.current_status}`) }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для власності -->
-      <template v-slot:body-cell-is_own="props">
-        <q-td :props="props">
-          <q-chip :color="props.row.is_own ? 'positive' : 'grey'" text-color="white" dense>
-            {{ props.row.is_own ? $t('products.own') : $t('products.notOwn') }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для дій -->
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props" class="q-gutter-sm">
-          <q-btn
-            color="primary"
-            icon="visibility"
-            size="sm"
-            flat
-            dense
-            @click="openDetails(props.row)"
-          >
-            <q-tooltip>{{ $t('common.view') }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            color="warning"
-            icon="edit"
-            size="sm"
-            flat
-            dense
-            @click="openEditDialog(props.row)"
-          >
-            <q-tooltip>{{ $t('common.edit') }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            color="negative"
-            icon="delete"
-            size="sm"
-            flat
-            dense
-            @click="confirmDelete(props.row)"
-          >
-            <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
-          </q-btn>
-        </q-td>
-      </template>
-    </q-table>
-
-    <!-- Діалог підтвердження видалення -->
+    <!-- Діалоги -->
     <q-dialog v-model="deleteDialog" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -204,11 +190,9 @@
       </q-card>
     </q-dialog>
 
-    <!-- Діалог створення/редагування -->
     <ProductDialog v-model="showDialog" :edit-data="editProduct" @saved="loadProducts" />
   </q-page>
 </template>
-
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
@@ -222,7 +206,7 @@ const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
 
-// Стани
+// State
 const loading = ref(false)
 const exporting = ref(false)
 const showDialog = ref(false)
@@ -233,15 +217,25 @@ const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const manufacturerOptions = ref([])
 
-// Фільтри
+// Pagination (як в AuditLogsPage)
+const pagination = ref({
+  sortBy: 'created_at',
+  descending: true,
+  page: 1,
+  rowsPerPage: 10,
+  rowsNumber: 0,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+})
+
+// Filters
 const filters = ref({
   search: '',
-  manufacturer: null, // має відповідати value в manufacturerOptions
+  manufacturer: null,
   status: null,
   isOwn: null,
 })
 
-// Опції для селектів
+// Options
 const statusOptions = computed(() => [
   { label: t('products.statuses.in_stock'), value: 'in_stock' },
   { label: t('products.statuses.installed'), value: 'installed' },
@@ -255,50 +249,43 @@ const ownershipOptions = computed(() => [
   { label: t('products.notOwn'), value: false },
 ])
 
-// Пагінація
-const pagination = ref({
-  page: 1,
-  rowsPerPage: 10,
-  rowsNumber: 0,
-  sortBy: 'sku',
-  descending: false,
-})
-
-// Computed
+// Columns
 const columns = computed(() => [
   {
     name: 'sku',
-    field: (row) => row.sku?.toLowerCase(),
+    required: true,
     label: t('products.sku'),
     align: 'left',
+    field: 'sku',
     sortable: true,
   },
   {
     name: 'model_name',
-    field: (row) => row.model_name?.toLowerCase(),
+    required: true,
     label: t('products.model'),
     align: 'left',
+    field: 'model_name',
     sortable: true,
   },
   {
     name: 'manufacturer_name',
-    field: (row) => row.manufacturer_name?.toLowerCase(),
     label: t('products.manufacturer'),
     align: 'left',
+    field: 'manufacturer_name',
     sortable: true,
   },
   {
     name: 'current_status',
-    field: 'current_status',
     label: t('products.status'),
     align: 'left',
+    field: 'current_status',
     sortable: true,
   },
   {
     name: 'is_own',
-    field: 'is_own',
     label: t('products.ownership'),
     align: 'left',
+    field: 'is_own',
     sortable: true,
   },
   {
@@ -308,21 +295,8 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
+
 // Methods
-const formatFiltersForApi = (filters) => {
-  const formatted = {
-    search: filters.search || undefined,
-    manufacturer_id: filters.manufacturer || undefined,
-    current_status: filters.status || undefined,
-    is_own: filters.isOwn,
-  }
-
-  // Видаляємо undefined значення
-  Object.keys(formatted).forEach((key) => formatted[key] === undefined && delete formatted[key])
-
-  return formatted
-}
-
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
@@ -330,29 +304,24 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
 const loadProducts = async () => {
   loading.value = true
   try {
-    // Перевіряємо параметри перед відправкою
-    console.log('Sort params:', {
-      sortBy: pagination.value.sortBy,
-      sort_desc: pagination.value.descending,
-    })
-
     const params = {
       page: pagination.value.page,
-      per_page: pagination.value.rowsPerPage,
-      sort_by: pagination.value.sortBy || 'sku',
-      sort_desc: pagination.value.descending ? 1 : 0, // важливо передавати як 1 або 0
-      ...formatFiltersForApi(filters.value),
+      perPage: pagination.value.rowsPerPage === 0 ? 'All' : pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      sort_desc: pagination.value.descending ? 1 : 0,
+      ...filters.value,
     }
 
     const response = await ProductsApi.getProducts(params)
-    products.value = response.data.products
-    pagination.value.rowsNumber = response.data.total
+    if (response.data.success) {
+      products.value = response.data.products
+      pagination.value.rowsNumber = response.data.total
+    }
   } catch (error) {
     console.error('Error loading products:', error)
     $q.notify({
-      color: 'negative',
+      type: 'negative',
       message: t('common.errors.loading'),
-      icon: 'error',
     })
   } finally {
     loading.value = false
@@ -369,9 +338,8 @@ const loadManufacturers = async () => {
   } catch (error) {
     console.error('Error loading manufacturers:', error)
     $q.notify({
-      color: 'negative',
+      type: 'negative',
       message: t('common.errors.loading'),
-      icon: 'error',
     })
   }
 }
@@ -387,16 +355,7 @@ const clearFilters = () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-
-  pagination.value = {
-    ...pagination.value,
-    page,
-    rowsPerPage,
-    sortBy,
-    descending,
-  }
-
-  // Викликаємо loadProducts з оновленими параметрами
+  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
   await loadProducts()
 }
 
@@ -433,17 +392,15 @@ const deleteProduct = async () => {
   try {
     await ProductsApi.deleteProduct(productToDelete.value.id)
     $q.notify({
-      color: 'positive',
+      type: 'positive',
       message: t('products.deleteSuccess'),
-      icon: 'check',
     })
     loadProducts()
   } catch (error) {
     console.error('Error deleting product:', error)
     $q.notify({
-      color: 'negative',
+      type: 'negative',
       message: t('common.errors.deleting'),
-      icon: 'error',
     })
   }
 }
@@ -452,7 +409,7 @@ const exportProducts = async () => {
   exporting.value = true
   try {
     const response = await ProductsApi.exportProducts({
-      ...formatFiltersForApi(filters.value),
+      ...filters.value,
       export: true,
     })
 
@@ -479,6 +436,7 @@ const exportProducts = async () => {
   }
 }
 
+// Keyboard shortcuts
 const handleKeydown = (e) => {
   if (e.key === 'F7') {
     openCreateDialog()
@@ -495,7 +453,6 @@ watch(
   { deep: true },
 )
 
-//
 // Lifecycle
 onMounted(() => {
   loadProducts()
@@ -508,8 +465,48 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
+/* Загальні стилі для pre блоків з змінами */
+.changes-pre {
+  padding: 1rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 /* Стилі для світлої теми */
+.body--light .changes-pre {
+  background-color: #f5f5f5;
+  color: #000;
+  border: 1px solid #e0e0e0;
+}
+
+/* Стилі для темної теми */
+.body--dark .changes-pre {
+  background-color: #1d1d1d;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+.body--dark .q-card {
+  background: #1d1d1d;
+  color: #fff;
+}
+</style>
+
+<style scoped>
+/* Стилі таблиці */
+.groups-table {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Стилі заголовків таблиці */
 :deep(.q-table) thead tr {
   background: var(--q-primary);
 }
@@ -529,7 +526,7 @@ onUnmounted(() => {
   color: white !important;
 }
 
-/* Стилі для ховера рядків */
+/* Стилі для рядків при наведенні */
 :deep(.q-table) tbody tr:hover {
   background: rgba(var(--q-primary), 0.1);
 }
@@ -543,11 +540,6 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* Стилі для клітинок таблиці */
-:deep(.q-table) td {
-  padding: 8px 16px;
-}
-
 /* Стилі для границь таблиці */
 :deep(.q-table) {
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -557,100 +549,28 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Стилі для розділових ліній */
-:deep(.q-table) th,
-:deep(.q-table) td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) th,
-.body--dark :deep(.q-table) td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Анімації для фільтрів */
-.q-slide-transition-enter-active,
-.q-slide-transition-leave-active {
-  transition: max-height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-.q-slide-transition-enter-from,
-.q-slide-transition-leave-to {
-  max-height: 0;
-}
-
-.q-slide-transition-enter-to,
-.q-slide-transition-leave-from {
-  max-height: 1000px;
-}
-.q-btn {
-  min-width: 120px;
-}
-
-.q-gutter-x-sm > * {
-  margin-right: 8px;
-}
-:deep(.q-table) {
-  border-radius: 4px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-}
-
-/* Стилі для заголовків */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-  height: 48px;
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 500 !important;
-  font-size: 14px;
-  padding: 8px 16px;
-  transition: background-color 0.3s;
-}
-
-/* Стилі для рядків */
-:deep(.q-table) tbody tr {
-  height: 48px;
-  transition: background-color 0.3s;
-}
-
-:deep(.q-table) tbody tr:hover {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-/* Стилі для чіпів статусу */
+/* Додаткові стилі з AuditLogsPage */
 :deep(.q-chip) {
-  font-size: 12px;
-  height: 24px;
+  transition: all 0.3s ease;
 }
 
-/* Стилі для кнопок дій */
+:deep(.q-chip):hover {
+  opacity: 0.9;
+}
+
 :deep(.q-btn) {
-  padding: 4px 8px;
+  transition: transform 0.2s ease;
 }
 
-/* Стилі для фільтрів */
-.filter-container {
-  background: #f5f5f5;
-  border-radius: 4px;
-  padding: 16px;
-}
-
-.body--dark .filter-container {
-  background: #1d1d1d;
+:deep(.q-btn):hover {
+  transform: scale(1.1);
 }
 
 /* Адаптивність */
 @media (max-width: 600px) {
   :deep(.q-table) td,
   :deep(.q-table) th {
-    padding: 8px;
-  }
-
-  :deep(.q-btn) {
-    padding: 4px;
+    padding: 6px 8px;
   }
 }
 </style>
