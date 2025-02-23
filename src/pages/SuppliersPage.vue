@@ -11,11 +11,10 @@
           :rows="suppliers"
           :columns="columns"
           :loading="loading"
-          :rows-per-page-options="[10, 20, 50, 100]"
-          row-key="id"
-          flat
-          bordered
+          binary-state-sort
           @request="onRequest"
+          row-key="id"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
@@ -223,12 +222,12 @@ watch(
 
 // Пагінація
 const pagination = ref({
+  sortBy: 'name',
+  descending: false,
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
-  sortBy: 'name',
-  descending: false,
-  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 0],
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
 
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
@@ -287,12 +286,12 @@ const loadSuppliers = async () => {
     const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy || 'name',
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
       search: filters.value.search || undefined,
     }
 
-    // Видалимо undefined параметри
+    // Видалити undefined параметри
     Object.keys(params).forEach((key) => {
       if (params[key] === undefined) {
         delete params[key]
@@ -309,8 +308,6 @@ const loadSuppliers = async () => {
       message: t('common.errors.loading'),
       icon: 'error',
     })
-    suppliers.value = []
-    pagination.value.rowsNumber = 0
   } finally {
     loading.value = false
   }
@@ -319,7 +316,6 @@ const loadSuppliers = async () => {
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
 
-  // Зберігаємо поточний стан сортування
   pagination.value = {
     ...pagination.value,
     page,
