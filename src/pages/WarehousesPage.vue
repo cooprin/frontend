@@ -176,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, debounce } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WarehousesApi } from 'src/api/warehouses'
@@ -269,16 +269,26 @@ const columns = [
 const loadWarehouses = async () => {
   loading.value = true
   try {
-    const response = await WarehousesApi.getWarehouses({
+    const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
-      ...filters.value,
+      search: filters.value.search || undefined,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await WarehousesApi.getWarehouses(params)
     warehouses.value = response.data.warehouses
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error loading data:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -387,6 +397,20 @@ const deleteWarehouse = async () => {
     })
   }
 }
+
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadWarehouses()
+  }, 300),
+  { deep: true },
+)
 
 onMounted(() => {
   loadWarehouses()

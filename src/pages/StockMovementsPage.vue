@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, debounce } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
@@ -181,6 +181,8 @@ const { t } = useI18n()
 const loading = ref(false)
 const movements = ref([])
 const warehouseOptions = ref([])
+
+const showFilters = ref(false)
 
 // Фільтри
 const filters = ref({
@@ -277,16 +279,31 @@ const columns = [
 const loadMovements = async () => {
   loading.value = true
   try {
-    const response = await StockApi.getMovements({
+    const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
-      ...filters.value,
+      search: filters.value.search || undefined,
+      type: filters.value.type || undefined,
+      fromWarehouse: filters.value.fromWarehouse || undefined,
+      toWarehouse: filters.value.toWarehouse || undefined,
+      dateFrom: filters.value.dateFrom || undefined,
+      dateTo: filters.value.dateTo || undefined,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await StockApi.getMovements(params)
     movements.value = response.data.movements
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error loading movements:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -342,6 +359,20 @@ const getTypeColor = (type) => {
 const formatDateTime = (dateTime) => {
   return date.formatDate(dateTime, 'DD.MM.YYYY HH:mm:ss')
 }
+
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadMovements()
+  }, 300),
+  { deep: true },
+)
 
 onMounted(() => {
   loadMovements()

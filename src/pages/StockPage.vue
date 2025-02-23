@@ -262,7 +262,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, debounce } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
@@ -367,16 +367,26 @@ const columns = [
 const loadStock = async () => {
   loading.value = true
   try {
-    const response = await StockApi.getStock({
+    const params = {
       page: pagination.value.page,
       perPage: pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
-      ...filters.value,
+      search: filters.value.search || undefined,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await StockApi.getStock(params)
     stock.value = response.data.stock
     pagination.value.rowsNumber = response.data.total
-  } catch {
+  } catch (error) {
+    console.error('Error loading data:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -526,6 +536,20 @@ const onAdjust = async () => {
     saving.value = false
   }
 }
+
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadStock()
+  }, 300),
+  { deep: true },
+)
 
 onMounted(() => {
   loadStock()
