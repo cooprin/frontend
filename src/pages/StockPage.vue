@@ -55,6 +55,16 @@
               <template v-if="props.row.current_status === 'in_stock'">
                 <q-btn
                   color="primary"
+                  icon="swap_horiz"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openTransferDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.transfer') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  color="primary"
                   icon="engineering"
                   size="sm"
                   flat
@@ -117,6 +127,50 @@
         </q-table>
       </q-card-section>
     </q-card>
+
+    <!-- Діалог переміщення -->
+    <q-dialog v-model="showTransferDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('stock.transfer') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="onTransfer" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
+            </div>
+
+            <!-- Склад призначення -->
+            <q-select
+              v-model="transferForm.to_warehouse_id"
+              :options="warehouseOptions.filter((w) => w.value !== selectedStock?.warehouse_id)"
+              :label="$t('stock.toWarehouse')"
+              :rules="[(val) => !!val || $t('common.validation.required')]"
+              outlined
+              emit-value
+              map-options
+            />
+
+            <!-- Коментар -->
+            <q-input
+              v-model="transferForm.comment"
+              :label="$t('stock.comment')"
+              type="textarea"
+              outlined
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
 
     <!-- Діалог встановлення -->
     <q-dialog v-model="showInstallDialog" persistent>
@@ -325,7 +379,6 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
 //import { ObjectsApi } from 'src/api/objects' // API для об'єктів Wialon
-import { WarehousesApi } from 'src/api/warehouses'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -339,11 +392,18 @@ const warehouseOptions = ref([])
 const objectOptions = ref([])
 
 // Dialog visibility
+const showTransferDialog = ref(false)
 const showInstallDialog = ref(false)
 const showUninstallDialog = ref(false)
 const showRepairDialog = ref(false)
 const showReturnFromRepairDialog = ref(false)
 const showWriteOffDialog = ref(false)
+
+// Transfer form
+const transferForm = ref({
+  to_warehouse_id: null,
+  comment: '',
+})
 
 // Forms
 const installForm = ref({
@@ -443,11 +503,11 @@ const loadStock = async () => {
 }
 
 //const loadObjects = async () => {
-// try {
-//   const response = await ObjectsApi.getObjects()
-//   objectOptions.value = response.data.objects.map((obj) => ({
-//     label: obj.name,
-//      value: obj.id,
+//  try {
+//    const response = await ObjectsApi.getObjects()
+//    objectOptions.value = response.data.objects.map(obj => ({
+//      label: obj.name,
+//      value: obj.id
 //    }))
 //  } catch (error) {
 //    console.error('Error loading objects:', error)
@@ -501,6 +561,43 @@ const onInstall = async () => {
 }
 
 // Відкриття діалогів
+const openTransferDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  transferForm.value = {
+    to_warehouse_id: null,
+    comment: '',
+  }
+  showTransferDialog.value = true
+}
+
+const onTransfer = async () => {
+  saving.value = true
+  try {
+    await StockApi.transferStock({
+      product_id: selectedStock.value.product_id,
+      from_warehouse_id: selectedStock.value.warehouse_id,
+      to_warehouse_id: transferForm.value.to_warehouse_id,
+      comment: transferForm.value.comment,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('stock.transferSuccess'),
+      icon: 'check',
+    })
+    showTransferDialog.value = false
+    loadStock()
+  } catch {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.saving'),
+      icon: 'error',
+    })
+  } finally {
+    saving.value = false
+  }
+}
+
 const openUninstallDialog = (stockItem) => {
   selectedStock.value = stockItem
   uninstallForm.value = {
@@ -560,21 +657,6 @@ const onUninstall = async () => {
     })
   } finally {
     saving.value = false
-  }
-}
-
-const loadWarehouses = async () => {
-  try {
-    const response = await WarehousesApi.getWarehouses({
-      isActive: true,
-      perPage: 'All',
-    })
-    warehouseOptions.value = response.data.warehouses.map((w) => ({
-      label: w.name,
-      value: w.id,
-    }))
-  } catch (error) {
-    console.error('Error loading warehouses:', error)
   }
 }
 
@@ -662,6 +744,5 @@ const onWriteOff = async () => {
 onMounted(() => {
   loadStock()
   //loadObjects()
-  loadWarehouses()
 })
 </script>
