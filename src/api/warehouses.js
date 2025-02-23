@@ -35,9 +35,4 @@ export const WarehousesApi = {
   transferStock: (data) => {
     return api.post('/stock/transfer', data)
   },
-
-  // Коригування кількості
-  adjustStock: (data) => {
-    return api.post('/stock/adjust', data)
-  },
 }
