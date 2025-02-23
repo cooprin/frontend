@@ -176,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { debounce } from 'lodash'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -222,7 +222,7 @@ const pagination = ref({
 })
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'name',
     field: 'name',
@@ -236,13 +236,6 @@ const columns = [
     label: t('warehouses.responsiblePerson'),
     align: 'left',
     sortable: false,
-  },
-  {
-    name: 'products_count',
-    field: 'products_count',
-    label: t('warehouses.productsCount'),
-    align: 'left',
-    sortable: true,
   },
   {
     name: 'total_items',
@@ -264,7 +257,7 @@ const columns = [
     align: 'center',
     sortable: false,
   },
-]
+])
 
 // Methods
 const loadWarehouses = async () => {

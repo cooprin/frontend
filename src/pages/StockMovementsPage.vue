@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { debounce } from 'lodash'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -217,7 +217,7 @@ const typeOptions = [
 ]
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'product',
     field: (row) => row,
@@ -274,7 +274,7 @@ const columns = [
     align: 'left',
     sortable: true,
   },
-]
+])
 
 // Methods
 const loadMovements = async () => {
