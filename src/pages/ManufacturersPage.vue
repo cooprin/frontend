@@ -18,7 +18,6 @@
           :rows-per-page-label="$t('common.rowsPerPage')"
           :selected-rows-label="$t('common.selectedRows')"
           :pagination-label="paginationLabel"
-          @update:pagination="onRequest"
         >
           <!-- Пошук -->
           <template v-slot:top-right>
