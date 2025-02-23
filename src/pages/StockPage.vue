@@ -15,8 +15,6 @@
           @request="onRequest"
           row-key="id"
           :rows-per-page-options="pagination.rowsPerPageOptions"
-          :rows-per-page-label="$t('common.rowsPerPage')"
-          :pagination-label="paginationLabel"
         >
           <template v-slot:top-right>
             <q-input
@@ -30,34 +28,14 @@
                 <q-icon name="search" />
               </template>
             </q-input>
-            <q-btn
-              color="primary"
-              :label="$t('stock.transfer')"
-              icon="swap_horiz"
-              class="q-ml-md"
-              @click="openTransferDialog"
-            />
-            <q-btn
-              color="primary"
-              :label="$t('stock.adjust')"
-              icon="edit"
-              class="q-ml-md"
-              @click="openAdjustDialog"
-            />
           </template>
+
           <!-- Слот для продукту -->
           <template v-slot:body-cell-product="props">
             <q-td :props="props">
               <div class="text-weight-medium">{{ props.row.sku }}</div>
               <div class="text-caption">{{ props.row.model_name }}</div>
               <div class="text-caption">{{ props.row.manufacturer_name }}</div>
-            </q-td>
-          </template>
-
-          <!-- Слот для кількості -->
-          <template v-slot:body-cell-quantity="props">
-            <q-td :props="props">
-              <div class="text-weight-medium">{{ props.row.quantity }}</div>
             </q-td>
           </template>
 
@@ -73,100 +51,103 @@
           <!-- Слот для дій -->
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="q-gutter-sm">
-              <q-btn
-                color="primary"
-                icon="swap_horiz"
-                size="sm"
-                flat
-                dense
-                @click="openTransferDialog(props.row)"
-              >
-                <q-tooltip>{{ $t('stock.transfer') }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                color="warning"
-                icon="edit"
-                size="sm"
-                flat
-                dense
-                @click="openAdjustDialog(props.row)"
-              >
-                <q-tooltip>{{ $t('stock.adjust') }}</q-tooltip>
-              </q-btn>
+              <!-- Кнопки для товарів на складі -->
+              <template v-if="props.row.current_status === 'in_stock'">
+                <q-btn
+                  color="primary"
+                  icon="engineering"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openInstallDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.install') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  color="warning"
+                  icon="build"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openRepairDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.sendToRepair') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  color="negative"
+                  icon="delete"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openWriteOffDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.writeOff') }}</q-tooltip>
+                </q-btn>
+              </template>
+
+              <!-- Кнопки для встановлених товарів -->
+              <template v-if="props.row.current_status === 'installed'">
+                <q-btn
+                  color="primary"
+                  icon="undo"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openUninstallDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.uninstall') }}</q-tooltip>
+                </q-btn>
+              </template>
+
+              <!-- Кнопки для товарів в ремонті -->
+              <template v-if="props.row.current_status === 'in_repair'">
+                <q-btn
+                  color="positive"
+                  icon="check"
+                  size="sm"
+                  flat
+                  dense
+                  @click="openReturnFromRepairDialog(props.row)"
+                >
+                  <q-tooltip>{{ $t('stock.returnFromRepair') }}</q-tooltip>
+                </q-btn>
+              </template>
             </q-td>
           </template>
         </q-table>
       </q-card-section>
     </q-card>
 
-    <!-- Діалог переміщення -->
-    <q-dialog v-model="showTransferDialog" persistent>
+    <!-- Діалог встановлення -->
+    <q-dialog v-model="showInstallDialog" persistent>
       <q-card style="min-width: 500px">
         <q-card-section>
-          <div class="text-h6">{{ $t('stock.transfer') }}</div>
+          <div class="text-h6">{{ $t('stock.install') }}</div>
         </q-card-section>
 
         <q-card-section>
-          <q-form @submit="onTransfer" class="q-gutter-md">
-            <!-- Продукт -->
-            <div v-if="!selectedStock">
-              <q-select
-                v-model="transferForm.product_id"
-                :options="productOptions"
-                :label="$t('stock.product')"
-                :rules="[(val) => !!val || $t('common.validation.required')]"
-                outlined
-                emit-value
-                map-options
-                @update:model-value="loadProductStock"
-              />
-            </div>
-            <div v-else class="q-pa-sm bg-grey-2 rounded-borders">
-              <div class="text-weight-medium">{{ selectedStock.sku }}</div>
-              <div class="text-caption">{{ selectedStock.model_name }}</div>
-              <div class="text-caption">{{ selectedStock.manufacturer_name }}</div>
+          <q-form @submit="onInstall" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
             </div>
 
-            <!-- Склад відправник -->
+            <!-- Вибір об'єкту -->
             <q-select
-              v-model="transferForm.from_warehouse_id"
-              :options="warehouseOptions"
-              :label="$t('stock.fromWarehouse')"
+              v-model="installForm.object_id"
+              :options="objectOptions"
+              :label="$t('stock.object')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
             />
 
-            <!-- Склад отримувач -->
-            <q-select
-              v-model="transferForm.to_warehouse_id"
-              :options="warehouseOptions"
-              :label="$t('stock.toWarehouse')"
-              :rules="[
-                (val) => !!val || $t('common.validation.required'),
-                (val) => val !== transferForm.from_warehouse_id || $t('stock.sameWarehouse'),
-              ]"
-              outlined
-              emit-value
-              map-options
-            />
-
-            <!-- Кількість -->
-            <q-input
-              v-model.number="transferForm.quantity"
-              type="number"
-              :label="$t('stock.quantity')"
-              :rules="[
-                (val) => !!val || $t('common.validation.required'),
-                (val) => val > 0 || $t('stock.positiveQuantity'),
-              ]"
-              outlined
-            />
-
             <!-- Коментар -->
             <q-input
-              v-model="transferForm.comment"
+              v-model="installForm.comment"
               :label="$t('stock.comment')"
               type="textarea"
               outlined
@@ -181,36 +162,25 @@
       </q-card>
     </q-dialog>
 
-    <!-- Діалог коригування -->
-    <q-dialog v-model="showAdjustDialog" persistent>
+    <!-- Діалог демонтажу -->
+    <q-dialog v-model="showUninstallDialog" persistent>
       <q-card style="min-width: 500px">
         <q-card-section>
-          <div class="text-h6">{{ $t('stock.adjust') }}</div>
+          <div class="text-h6">{{ $t('stock.uninstall') }}</div>
         </q-card-section>
 
         <q-card-section>
-          <q-form @submit="onAdjust" class="q-gutter-md">
-            <!-- Продукт -->
-            <div v-if="!selectedStock">
-              <q-select
-                v-model="adjustForm.product_id"
-                :options="productOptions"
-                :label="$t('stock.product')"
-                :rules="[(val) => !!val || $t('common.validation.required')]"
-                outlined
-                emit-value
-                map-options
-              />
-            </div>
-            <div v-else class="q-pa-sm bg-grey-2 rounded-borders">
-              <div class="text-weight-medium">{{ selectedStock.sku }}</div>
-              <div class="text-caption">{{ selectedStock.model_name }}</div>
-              <div class="text-caption">{{ selectedStock.manufacturer_name }}</div>
+          <q-form @submit="onUninstall" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
             </div>
 
-            <!-- Склад -->
+            <!-- Вибір складу -->
             <q-select
-              v-model="adjustForm.warehouse_id"
+              v-model="uninstallForm.warehouse_id"
               :options="warehouseOptions"
               :label="$t('stock.warehouse')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
@@ -219,35 +189,123 @@
               map-options
             />
 
-            <!-- Тип операції -->
+            <!-- Коментар -->
+            <q-input
+              v-model="uninstallForm.comment"
+              :label="$t('stock.comment')"
+              type="textarea"
+              outlined
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог відправки в ремонт -->
+    <q-dialog v-model="showRepairDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('stock.sendToRepair') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="onSendToRepair" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
+            </div>
+
+            <!-- Коментар -->
+            <q-input
+              v-model="repairForm.comment"
+              :label="$t('stock.comment')"
+              type="textarea"
+              outlined
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог повернення з ремонту -->
+    <q-dialog v-model="showReturnFromRepairDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('stock.returnFromRepair') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="onReturnFromRepair" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
+            </div>
+
+            <!-- Вибір складу -->
             <q-select
-              v-model="adjustForm.type"
-              :options="adjustmentTypes"
-              :label="$t('stock.type')"
+              v-model="returnFromRepairForm.warehouse_id"
+              :options="warehouseOptions"
+              :label="$t('stock.warehouse')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
             />
 
-            <!-- Кількість -->
-            <q-input
-              v-model.number="adjustForm.quantity"
-              type="number"
-              :label="$t('stock.quantity')"
-              :rules="[
-                (val) => !!val || $t('common.validation.required'),
-                (val) => val > 0 || $t('stock.positiveQuantity'),
-              ]"
-              outlined
-            />
-
             <!-- Коментар -->
             <q-input
-              v-model="adjustForm.comment"
+              v-model="returnFromRepairForm.comment"
               :label="$t('stock.comment')"
               type="textarea"
               outlined
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог списання -->
+    <q-dialog v-model="showWriteOffDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('stock.writeOff') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="onWriteOff" class="q-gutter-md">
+            <!-- Інформація про продукт -->
+            <div class="q-pa-sm bg-grey-2 rounded-borders">
+              <div class="text-weight-medium">{{ selectedStock?.sku }}</div>
+              <div class="text-caption">{{ selectedStock?.model_name }}</div>
+              <div class="text-caption">{{ selectedStock?.manufacturer_name }}</div>
+            </div>
+
+            <!-- Коментар -->
+            <q-input
+              v-model="writeOffForm.comment"
+              :label="$t('stock.comment')"
+              type="textarea"
+              outlined
+              :rules="[(val) => !!val || $t('common.validation.required')]"
             />
 
             <div class="row justify-end q-gutter-sm">
@@ -262,14 +320,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
-import { debounce } from 'lodash'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
-import { ProductsApi } from 'src/api/products'
+import { ObjectsApi } from 'src/api/objects' // API для об'єктів Wialon
 import { WarehousesApi } from 'src/api/warehouses'
-import { ManufacturersApi } from 'src/api/manufacturers'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -278,39 +334,47 @@ const { t } = useI18n()
 const loading = ref(false)
 const saving = ref(false)
 const stock = ref([])
-const showTransferDialog = ref(false)
-const showAdjustDialog = ref(false)
 const selectedStock = ref(null)
 const warehouseOptions = ref([])
-const manufacturerOptions = ref([])
-const productOptions = ref([])
+const objectOptions = ref([])
 
-// Form
-const defaultTransferForm = {
-  product_id: null,
-  from_warehouse_id: null,
-  to_warehouse_id: null,
-  quantity: null,
+// Dialog visibility
+const showInstallDialog = ref(false)
+const showUninstallDialog = ref(false)
+const showRepairDialog = ref(false)
+const showReturnFromRepairDialog = ref(false)
+const showWriteOffDialog = ref(false)
+
+// Forms
+const installForm = ref({
+  object_id: null,
   comment: '',
-}
+})
 
-const defaultAdjustForm = {
-  product_id: null,
+const uninstallForm = ref({
   warehouse_id: null,
-  type: null,
-  quantity: null,
   comment: '',
-}
+})
 
-const transferForm = ref({ ...defaultTransferForm })
-const adjustForm = ref({ ...defaultAdjustForm })
+const repairForm = ref({
+  comment: '',
+})
 
-// Фільтри
+const returnFromRepairForm = ref({
+  warehouse_id: null,
+  comment: '',
+})
+
+const writeOffForm = ref({
+  comment: '',
+})
+
+// Filters
 const filters = ref({
   search: '',
 })
 
-// Пагінація
+// Pagination
 const pagination = ref({
   page: 1,
   rowsPerPage: 10,
@@ -320,13 +384,7 @@ const pagination = ref({
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
 
-// Опції для селектів
-const adjustmentTypes = [
-  { label: t('stock.types.stock_in'), value: 'stock_in' },
-  { label: t('stock.types.stock_out'), value: 'stock_out' },
-]
-
-// Колонки таблиці
+// Table columns
 const columns = computed(() => [
   {
     name: 'product',
@@ -334,13 +392,6 @@ const columns = computed(() => [
     label: t('stock.product'),
     align: 'left',
     sortable: false,
-  },
-  {
-    name: 'quantity',
-    field: 'quantity',
-    label: t('stock.quantity'),
-    align: 'right',
-    sortable: true,
   },
   {
     name: 'warehouse_name',
@@ -376,13 +427,6 @@ const loadStock = async () => {
       search: filters.value.search || undefined,
     }
 
-    // Видалити undefined параметри
-    Object.keys(params).forEach((key) => {
-      if (params[key] === undefined) {
-        delete params[key]
-      }
-    })
-
     const response = await StockApi.getStock(params)
     stock.value = response.data.stock
     pagination.value.rowsNumber = response.data.total
@@ -395,6 +439,127 @@ const loadStock = async () => {
     })
   } finally {
     loading.value = false
+  }
+}
+
+const loadObjects = async () => {
+  try {
+    const response = await ObjectsApi.getObjects()
+    objectOptions.value = response.data.objects.map((obj) => ({
+      label: obj.name,
+      value: obj.id,
+    }))
+  } catch (error) {
+    console.error('Error loading objects:', error)
+  }
+}
+
+const getStatusColor = (status) => {
+  const colors = {
+    in_stock: 'positive',
+    installed: 'info',
+    in_repair: 'warning',
+    written_off: 'negative',
+  }
+  return colors[status] || 'grey'
+}
+
+const openInstallDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  installForm.value = {
+    object_id: null,
+    comment: '',
+  }
+  showInstallDialog.value = true
+}
+
+const onInstall = async () => {
+  saving.value = true
+  try {
+    await StockApi.installProduct({
+      product_id: selectedStock.value.product_id,
+      object_id: installForm.value.object_id,
+      comment: installForm.value.comment,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('stock.installSuccess'),
+      icon: 'check',
+    })
+    showInstallDialog.value = false
+    loadStock()
+  } catch {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.saving'),
+      icon: 'error',
+    })
+  } finally {
+    saving.value = false
+  }
+}
+
+// Відкриття діалогів
+const openUninstallDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  uninstallForm.value = {
+    warehouse_id: null,
+    comment: '',
+  }
+  showUninstallDialog.value = true
+}
+
+const openRepairDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  repairForm.value = {
+    comment: '',
+  }
+  showRepairDialog.value = true
+}
+
+const openReturnFromRepairDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  returnFromRepairForm.value = {
+    warehouse_id: null,
+    comment: '',
+  }
+  showReturnFromRepairDialog.value = true
+}
+
+const openWriteOffDialog = (stockItem) => {
+  selectedStock.value = stockItem
+  writeOffForm.value = {
+    comment: '',
+  }
+  showWriteOffDialog.value = true
+}
+
+// Обробники подій
+const onUninstall = async () => {
+  saving.value = true
+  try {
+    await StockApi.uninstallProduct({
+      product_id: selectedStock.value.product_id,
+      warehouse_id: uninstallForm.value.warehouse_id,
+      comment: uninstallForm.value.comment,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('stock.uninstallSuccess'),
+      icon: 'check',
+    })
+    showUninstallDialog.value = false
+    loadStock()
+  } catch {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.saving'),
+      icon: 'error',
+    })
+  } finally {
+    saving.value = false
   }
 }
 
@@ -413,97 +578,21 @@ const loadWarehouses = async () => {
   }
 }
 
-const loadManufacturers = async () => {
-  try {
-    const response = await ManufacturersApi.getManufacturers({
-      isActive: true,
-      perPage: 'All',
-    })
-    manufacturerOptions.value = response.data.manufacturers.map((m) => ({
-      label: m.name,
-      value: m.id,
-    }))
-  } catch (error) {
-    console.error('Error loading manufacturers:', error)
-  }
-}
-
-const loadProducts = async () => {
-  try {
-    const response = await ProductsApi.getProducts({
-      isActive: true,
-      perPage: 'All',
-    })
-    productOptions.value = response.data.products.map((p) => ({
-      label: `${p.sku} - ${p.model_name}`,
-      value: p.id,
-    }))
-  } catch (error) {
-    console.error('Error loading products:', error)
-  }
-}
-
-const onRequest = async (props) => {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination
-
-  pagination.value = {
-    ...pagination.value,
-    page,
-    rowsPerPage,
-    sortBy,
-    descending,
-  }
-  await loadStock()
-}
-
-const getStatusColor = (status) => {
-  const colors = {
-    in_stock: 'positive',
-    installed: 'info',
-    in_repair: 'warning',
-    written_off: 'negative',
-  }
-  return colors[status] || 'grey'
-}
-
-const openTransferDialog = (stockItem = null) => {
-  selectedStock.value = stockItem
-  if (stockItem) {
-    transferForm.value = {
-      ...defaultTransferForm,
-      product_id: stockItem.product_id,
-      from_warehouse_id: stockItem.warehouse_id,
-    }
-  } else {
-    transferForm.value = { ...defaultTransferForm }
-  }
-  showTransferDialog.value = true
-}
-
-const openAdjustDialog = (stockItem = null) => {
-  selectedStock.value = stockItem
-  if (stockItem) {
-    adjustForm.value = {
-      ...defaultAdjustForm,
-      product_id: stockItem.product_id,
-      warehouse_id: stockItem.warehouse_id,
-    }
-  } else {
-    adjustForm.value = { ...defaultAdjustForm }
-  }
-  showAdjustDialog.value = true
-}
-
-const onTransfer = async () => {
+const onSendToRepair = async () => {
   saving.value = true
   try {
-    await StockApi.transferStock(transferForm.value)
+    await StockApi.sendToRepair({
+      product_id: selectedStock.value.product_id,
+      comment: repairForm.value.comment,
+      from_warehouse_id: selectedStock.value.warehouse_id,
+    })
+
     $q.notify({
       color: 'positive',
-      message: t('stock.transferSuccess'),
+      message: t('stock.sendToRepairSuccess'),
       icon: 'check',
     })
-    showTransferDialog.value = false
+    showRepairDialog.value = false
     loadStock()
   } catch {
     $q.notify({
@@ -516,16 +605,21 @@ const onTransfer = async () => {
   }
 }
 
-const onAdjust = async () => {
+const onReturnFromRepair = async () => {
   saving.value = true
   try {
-    await StockApi.adjustStock(adjustForm.value)
+    await StockApi.returnFromRepair({
+      product_id: selectedStock.value.product_id,
+      warehouse_id: returnFromRepairForm.value.warehouse_id,
+      comment: returnFromRepairForm.value.comment,
+    })
+
     $q.notify({
       color: 'positive',
-      message: t('stock.adjustSuccess'),
+      message: t('stock.returnFromRepairSuccess'),
       icon: 'check',
     })
-    showAdjustDialog.value = false
+    showReturnFromRepairDialog.value = false
     loadStock()
   } catch {
     $q.notify({
@@ -538,24 +632,36 @@ const onAdjust = async () => {
   }
 }
 
-watch(
-  () => ({
-    ...filters.value,
-    page: pagination.value.page,
-    rowsPerPage: pagination.value.rowsPerPage,
-    sortBy: pagination.value.sortBy,
-    descending: pagination.value.descending,
-  }),
-  debounce(() => {
+const onWriteOff = async () => {
+  saving.value = true
+  try {
+    await StockApi.writeOffProduct({
+      product_id: selectedStock.value.product_id,
+      warehouse_id: selectedStock.value.warehouse_id,
+      comment: writeOffForm.value.comment,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('stock.writeOffSuccess'),
+      icon: 'check',
+    })
+    showWriteOffDialog.value = false
     loadStock()
-  }, 300),
-  { deep: true },
-)
+  } catch {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.saving'),
+      icon: 'error',
+    })
+  } finally {
+    saving.value = false
+  }
+}
 
 onMounted(() => {
   loadStock()
+  loadObjects()
   loadWarehouses()
-  loadManufacturers()
-  loadProducts()
 })
 </script>
