@@ -378,7 +378,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
-//import { ObjectsApi } from 'src/api/objects' // API для об'єктів Wialon
+//import { ObjectsApi } from 'src/api/objects'
+import { WarehousesApi } from 'src/api/warehouses' // API для об'єктів Wialon
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -513,6 +514,26 @@ const loadStock = async () => {
 //    console.error('Error loading objects:', error)
 //  }
 //}
+
+const loadWarehouses = async () => {
+  try {
+    const response = await WarehousesApi.getWarehouses({
+      isActive: true,
+      perPage: 'All',
+    })
+    warehouseOptions.value = response.data.warehouses.map((w) => ({
+      label: w.name,
+      value: w.id,
+    }))
+  } catch (error) {
+    console.error('Error loading warehouses:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  }
+}
 
 const getStatusColor = (status) => {
   const colors = {
@@ -744,5 +765,6 @@ const onWriteOff = async () => {
 onMounted(() => {
   loadStock()
   //loadObjects()
+  loadWarehouses()
 })
 </script>
