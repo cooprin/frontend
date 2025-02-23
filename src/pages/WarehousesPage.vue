@@ -2,7 +2,7 @@
   <q-page padding>
     <q-card flat bordered>
       <q-card-section>
-        <div class="text-h6">>{{ $t('warehouses.title') }}</div>
+        <div class="text-h6">{{ $t('warehouses.title') }}</div>
       </q-card-section>
       <q-card-section>
         <q-table
@@ -176,7 +176,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, debounce } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { debounce } from 'lodash'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WarehousesApi } from 'src/api/warehouses'

@@ -167,7 +167,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, debounce } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { debounce } from 'lodash'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
@@ -358,6 +359,16 @@ const getTypeColor = (type) => {
 
 const formatDateTime = (dateTime) => {
   return date.formatDate(dateTime, 'DD.MM.YYYY HH:mm:ss')
+}
+const clearFilters = () => {
+  filters.value = {
+    search: '',
+    type: null,
+    fromWarehouse: null,
+    toWarehouse: null,
+    dateFrom: null,
+    dateTo: null,
+  }
 }
 
 watch(

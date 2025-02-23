@@ -262,7 +262,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, debounce } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { debounce } from 'lodash'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
