@@ -1,148 +1,168 @@
 <template>
   <q-page padding>
-    <!-- Заголовок -->
-    <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-md">{{ $t('stock.movements') }}</h5>
-    </div>
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="row items-center q-mb-md">
+          <div class="text-h6">{{ $t('stock.movements') }}</div>
+          <q-space />
+          <q-btn
+            :icon="showFilters ? 'expand_less' : 'expand_more'"
+            :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
+            flat
+            color="primary"
+            @click="showFilters = !showFilters"
+          />
+        </div>
 
-    <!-- Фільтри -->
-    <div class="row q-col-gutter-sm q-mb-md">
-      <!-- Пошук -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </div>
+        <!-- Фільтри -->
+        <q-slide-transition>
+          <div v-show="showFilters">
+            <div class="row q-col-gutter-sm q-mb-md">
+              <!-- Фільтр по типу операції -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.type"
+                  :options="typeOptions"
+                  :label="$t('stock.filters.type')"
+                  dense
+                  outlined
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-      <!-- Фільтр по типу операції -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.type"
-          :options="typeOptions"
-          :label="$t('stock.filters.type')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
+              <!-- Фільтр по складу відправника -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.fromWarehouse"
+                  :options="warehouseOptions"
+                  :label="$t('stock.filters.fromWarehouse')"
+                  dense
+                  outlined
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-      <!-- Фільтр по складу відправника -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.fromWarehouse"
-          :options="warehouseOptions"
-          :label="$t('stock.filters.fromWarehouse')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
+              <!-- Фільтр по складу отримувача -->
+              <div class="col-12 col-sm-3">
+                <q-select
+                  v-model="filters.toWarehouse"
+                  :options="warehouseOptions"
+                  :label="$t('stock.filters.toWarehouse')"
+                  dense
+                  outlined
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
-      <!-- Фільтр по складу отримувача -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.toWarehouse"
-          :options="warehouseOptions"
-          :label="$t('stock.filters.toWarehouse')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
+              <!-- Дата з -->
+              <div class="col-12 col-sm-3">
+                <q-input
+                  v-model="filters.dateFrom"
+                  :label="$t('stock.filters.dateFrom')"
+                  dense
+                  outlined
+                  clearable
+                  type="date"
+                />
+              </div>
 
-      <!-- Дата з -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="filters.dateFrom"
-          :label="$t('stock.filters.dateFrom')"
-          dense
-          outlined
-          clearable
-          type="date"
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-
-      <!-- Дата по -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="filters.dateTo"
-          :label="$t('stock.filters.dateTo')"
-          dense
-          outlined
-          clearable
-          type="date"
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-    </div>
-
-    <!-- Таблиця -->
-    <q-table
-      v-model:pagination="pagination"
-      :rows="movements"
-      :columns="columns"
-      :loading="loading"
-      :rows-per-page-options="[10, 20, 50, 100]"
-      row-key="id"
-      flat
-      bordered
-      @request="onRequest"
-    >
-      <!-- Слот для продукту -->
-      <template v-slot:body-cell-product="props">
-        <q-td :props="props">
-          <div class="text-weight-medium">{{ props.row.sku }}</div>
-          <div class="text-caption">{{ props.row.model_name }}</div>
-        </q-td>
-      </template>
-
-      <!-- Слот для типу операції -->
-      <template v-slot:body-cell-type="props">
-        <q-td :props="props">
-          <q-chip :color="getTypeColor(props.row.type)" text-color="white" dense>
-            {{ $t(`stock.types.${props.row.type}`) }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для коментаря -->
-      <template v-slot:body-cell-comment="props">
-        <q-td :props="props">
-          <q-tooltip v-if="props.row.comment">
-            {{ props.row.comment }}
-          </q-tooltip>
-          <div class="ellipsis" style="max-width: 150px">
-            {{ props.row.comment || '-' }}
+              <!-- Дата по -->
+              <div class="col-12 col-sm-3">
+                <q-input
+                  v-model="filters.dateTo"
+                  :label="$t('stock.filters.dateTo')"
+                  dense
+                  outlined
+                  clearable
+                  type="date"
+                />
+              </div>
+              <!-- Кнопки -->
+              <div class="col-12 q-gutter-x-sm">
+                <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
+                <q-btn
+                  color="secondary"
+                  :label="$t('common.export')"
+                  @click="exportProducts"
+                  :loading="exporting"
+                />
+              </div>
+            </div>
           </div>
-        </q-td>
-      </template>
+        </q-slide-transition>
+      </q-card-section>
+      <q-card-section>
+        <!-- Таблиця -->
+        <q-table
+          v-model:pagination="pagination"
+          :rows="movements"
+          :columns="columns"
+          :loading="loading"
+          binary-state-sort
+          @request="onRequest"
+          row-key="id"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :pagination-label="paginationLabel"
+        >
+          <!-- Пошук -->
+          <template v-slot:top-right>
+            <q-input
+              v-model="filters.search"
+              :label="$t('common.search')"
+              dense
+              outlined
+              debounce="300"
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </template>
+          <!-- Слот для продукту -->
+          <template v-slot:body-cell-product="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.row.sku }}</div>
+              <div class="text-caption">{{ props.row.model_name }}</div>
+            </q-td>
+          </template>
 
-      <!-- Слот для дати -->
-      <template v-slot:body-cell-created_at="props">
-        <q-td :props="props">
-          {{ formatDateTime(props.row.created_at) }}
-        </q-td>
-      </template>
-    </q-table>
+          <!-- Слот для типу операції -->
+          <template v-slot:body-cell-type="props">
+            <q-td :props="props">
+              <q-chip :color="getTypeColor(props.row.type)" text-color="white" dense>
+                {{ $t(`stock.types.${props.row.type}`) }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Слот для коментаря -->
+          <template v-slot:body-cell-comment="props">
+            <q-td :props="props">
+              <q-tooltip v-if="props.row.comment">
+                {{ props.row.comment }}
+              </q-tooltip>
+              <div class="ellipsis" style="max-width: 150px">
+                {{ props.row.comment || '-' }}
+              </div>
+            </q-td>
+          </template>
+
+          <!-- Слот для дати -->
+          <template v-slot:body-cell-created_at="props">
+            <q-td :props="props">
+              {{ formatDateTime(props.row.created_at) }}
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
   </q-page>
 </template>
 
@@ -179,8 +199,8 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'created_at',
   descending: true,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
-
 // Опції для селектів
 const typeOptions = [
   { label: t('stock.types.transfer'), value: 'transfer' },
@@ -294,16 +314,15 @@ const loadWarehouses = async () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value.page = page
-  pagination.value.rowsPerPage = rowsPerPage
-  pagination.value.sortBy = sortBy
-  pagination.value.descending = descending
-  await loadMovements()
-}
 
-const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadMovements()
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+  await loadMovements()
 }
 
 const getTypeColor = (type) => {

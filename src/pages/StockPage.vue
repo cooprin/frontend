@@ -1,144 +1,103 @@
 <template>
   <q-page padding>
-    <!-- Заголовок і кнопки -->
-    <div class="row items-center justify-between q-mb-md">
-      <h5 class="q-mt-none q-mb-md">{{ $t('stock.title') }}</h5>
-      <div class="row q-gutter-sm">
-        <q-btn
-          color="primary"
-          :label="$t('stock.transfer')"
-          icon="swap_horiz"
-          @click="openTransferDialog"
-        />
-        <q-btn color="primary" :label="$t('stock.adjust')" icon="edit" @click="openAdjustDialog" />
-      </div>
-    </div>
-
-    <!-- Фільтри -->
-    <div class="row q-col-gutter-sm q-mb-md">
-      <!-- Пошук -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model="filters.search"
-          :label="$t('common.search')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="text-h6">{{ $t('stock.title') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <!-- Таблиця -->
+        <q-table
+          v-model:pagination="pagination"
+          :rows="stock"
+          :columns="columns"
+          :loading="loading"
+          binary-state-sort
+          @request="onRequest"
+          row-key="id"
+          :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :pagination-label="paginationLabel"
         >
-          <template v-slot:append>
-            <q-icon name="search" />
+          <template v-slot:top-right>
+            <q-input
+              v-model="filters.search"
+              :label="$t('common.search')"
+              dense
+              outlined
+              debounce="300"
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-btn
+              color="primary"
+              :label="$t('stock.transfer')"
+              icon="swap_horiz"
+              class="q-ml-md"
+              @click="openTransferDialog"
+            />
+            <q-btn
+              color="primary"
+              :label="$t('stock.adjust')"
+              icon="edit"
+              class="q-ml-md"
+              @click="openAdjustDialog"
+            />
           </template>
-        </q-input>
-      </div>
+          <!-- Слот для продукту -->
+          <template v-slot:body-cell-product="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.row.sku }}</div>
+              <div class="text-caption">{{ props.row.model_name }}</div>
+              <div class="text-caption">{{ props.row.manufacturer_name }}</div>
+            </q-td>
+          </template>
 
-      <!-- Фільтр по складу -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.warehouse"
-          :options="warehouseOptions"
-          :label="$t('stock.warehouse')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
+          <!-- Слот для кількості -->
+          <template v-slot:body-cell-quantity="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.row.quantity }}</div>
+            </q-td>
+          </template>
 
-      <!-- Фільтр по виробнику -->
-      <div class="col-12 col-sm-3">
-        <q-select
-          v-model="filters.manufacturer"
-          :options="manufacturerOptions"
-          :label="$t('products.manufacturer')"
-          dense
-          outlined
-          clearable
-          emit-value
-          map-options
-          @update:model-value="onFiltersChange"
-        />
-      </div>
+          <!-- Слот для статусу -->
+          <template v-slot:body-cell-current_status="props">
+            <q-td :props="props">
+              <q-chip :color="getStatusColor(props.row.current_status)" text-color="white" dense>
+                {{ $t(`products.statuses.${props.row.current_status}`) }}
+              </q-chip>
+            </q-td>
+          </template>
 
-      <!-- Фільтр по мінімальній кількості -->
-      <div class="col-12 col-sm-3">
-        <q-input
-          v-model.number="filters.minQuantity"
-          type="number"
-          :label="$t('stock.filters.minQuantity')"
-          dense
-          outlined
-          clearable
-          @update:model-value="onFiltersChange"
-        />
-      </div>
-    </div>
-
-    <!-- Таблиця -->
-    <q-table
-      v-model:pagination="pagination"
-      :rows="stock"
-      :columns="columns"
-      :loading="loading"
-      :rows-per-page-options="[10, 20, 50, 100]"
-      row-key="id"
-      flat
-      bordered
-      @request="onRequest"
-    >
-      <!-- Слот для продукту -->
-      <template v-slot:body-cell-product="props">
-        <q-td :props="props">
-          <div class="text-weight-medium">{{ props.row.sku }}</div>
-          <div class="text-caption">{{ props.row.model_name }}</div>
-          <div class="text-caption">{{ props.row.manufacturer_name }}</div>
-        </q-td>
-      </template>
-
-      <!-- Слот для кількості -->
-      <template v-slot:body-cell-quantity="props">
-        <q-td :props="props">
-          <div class="text-weight-medium">{{ props.row.quantity }}</div>
-        </q-td>
-      </template>
-
-      <!-- Слот для статусу -->
-      <template v-slot:body-cell-current_status="props">
-        <q-td :props="props">
-          <q-chip :color="getStatusColor(props.row.current_status)" text-color="white" dense>
-            {{ $t(`products.statuses.${props.row.current_status}`) }}
-          </q-chip>
-        </q-td>
-      </template>
-
-      <!-- Слот для дій -->
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props" class="q-gutter-sm">
-          <q-btn
-            color="primary"
-            icon="swap_horiz"
-            size="sm"
-            flat
-            dense
-            @click="openTransferDialog(props.row)"
-          >
-            <q-tooltip>{{ $t('stock.transfer') }}</q-tooltip>
-          </q-btn>
-          <q-btn
-            color="warning"
-            icon="edit"
-            size="sm"
-            flat
-            dense
-            @click="openAdjustDialog(props.row)"
-          >
-            <q-tooltip>{{ $t('stock.adjust') }}</q-tooltip>
-          </q-btn>
-        </q-td>
-      </template>
-    </q-table>
+          <!-- Слот для дій -->
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="q-gutter-sm">
+              <q-btn
+                color="primary"
+                icon="swap_horiz"
+                size="sm"
+                flat
+                dense
+                @click="openTransferDialog(props.row)"
+              >
+                <q-tooltip>{{ $t('stock.transfer') }}</q-tooltip>
+              </q-btn>
+              <q-btn
+                color="warning"
+                icon="edit"
+                size="sm"
+                flat
+                dense
+                @click="openAdjustDialog(props.row)"
+              >
+                <q-tooltip>{{ $t('stock.adjust') }}</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
 
     <!-- Діалог переміщення -->
     <q-dialog v-model="showTransferDialog" persistent>
@@ -348,9 +307,6 @@ const adjustForm = ref({ ...defaultAdjustForm })
 // Фільтри
 const filters = ref({
   search: '',
-  warehouse: null,
-  manufacturer: null,
-  minQuantity: null,
 })
 
 // Пагінація
@@ -360,6 +316,7 @@ const pagination = ref({
   rowsNumber: 0,
   sortBy: 'sku',
   descending: false,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
 
 // Опції для селектів
@@ -477,16 +434,15 @@ const loadProducts = async () => {
 
 const onRequest = async (props) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value.page = page
-  pagination.value.rowsPerPage = rowsPerPage
-  pagination.value.sortBy = sortBy
-  pagination.value.descending = descending
-  await loadStock()
-}
 
-const onFiltersChange = () => {
-  pagination.value.page = 1
-  loadStock()
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+  await loadStock()
 }
 
 const getStatusColor = (status) => {
