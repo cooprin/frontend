@@ -225,33 +225,30 @@ const productTypeOptions = ref([])
 
 const loadProductTypes = async () => {
   try {
-    // Використовуємо параметри у тому ж форматі, що й у ProductTypesPage.vue
-    const params = {
-      perPage: 'All', // Отримуємо всі типи продуктів без пагінації
+    console.log('Starting loadProductTypes')
+
+    // Спрощений запит без параметрів
+    const response = await ProductTypesApi.getProductTypes()
+
+    console.log('Product types response:', response)
+
+    if (response && response.data && response.data.productTypes) {
+      productTypeOptions.value = response.data.productTypes.map((t) => ({
+        label: t.name,
+        value: t.id,
+      }))
+      console.log('Product type options:', productTypeOptions.value)
+    } else {
+      console.error('Unexpected API response structure:', response)
     }
-
-    // Якщо потрібно фільтрувати за активними, можна додати
-    // params.isActive = true;
-
-    const response = await ProductTypesApi.getProductTypes(params)
-
-    // Перевіримо структуру даних у консолі
-    console.log('Product types response:', response.data)
-
-    // Використовуємо правильну структуру response.data.productTypes
-    productTypeOptions.value = response.data.productTypes.map((t) => ({
-      label: t.name,
-      value: t.id,
-    }))
-
-    console.log('Product type options:', productTypeOptions.value)
   } catch (error) {
     console.error('Error loading product types:', error)
-    if (error.response) {
-      console.error('Error response:', error.response.data)
-    }
+
+    // Створимо запасний варіант, якщо API не працює
+    productTypeOptions.value = [{ label: 'Завантаження типів не вдалося', value: null }]
   }
 }
+
 // Form
 const defaultForm = {
   name: '',
@@ -423,6 +420,7 @@ const openCreateDialog = () => {
   imageFile.value = null
   imagePreview.value = null
   showDialog.value = true
+  loadProductTypes()
 }
 
 const openEditDialog = (model) => {
