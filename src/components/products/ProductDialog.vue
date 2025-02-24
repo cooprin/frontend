@@ -377,19 +377,18 @@ const loadModels = async () => {
 
     const response = await ModelsApi.getModels({
       manufacturer: form.value.manufacturer_id,
-      is_active: true,
-      per_page: 'All',
+      isActive: true,
+      perPage: 'All',
     })
 
     if (response.data && Array.isArray(response.data.models)) {
-      modelOptions.value = response.data.models
-        .filter((model) => model.manufacturer_id === form.value.manufacturer_id)
-        .map((m) => ({
-          label: m.name,
-          value: m.id,
-          product_type_id: m.product_type_id,
-          product_type_name: m.product_type_name, // Додаємо назву типу продукту
-        }))
+      // Видаляємо фільтрацію, оскільки ми вже запитали моделі за manufacturer_id
+      modelOptions.value = response.data.models.map((m) => ({
+        label: m.name,
+        value: m.id,
+        product_type_id: m.product_type_id,
+        product_type_name: m.product_type_name,
+      }))
     }
   } catch (error) {
     console.error('Error loading models:', error)

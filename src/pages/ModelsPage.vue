@@ -172,7 +172,7 @@
                     border-radius: 4px;
                   "
                   fit="contain"
-                  @click="form.image_url && openImage(form.image_url)"
+                  @click="openCurrentImage()"
                   class="image-clickable"
                 />
               </div>
@@ -216,7 +216,11 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section class="q-pt-none flex justify-center">
-          <q-img :src="selectedImage" style="max-width: 90vw; max-height: 70vh" fit="contain" />
+          <q-img
+            :src="selectedImage"
+            style="max-width: 90vw; max-height: 70vh; min-width: 300px; min-height: 200px"
+            fit="contain"
+          />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -250,15 +254,19 @@ const productTypeOptions = ref([])
 const showImageDialog = ref(false)
 const selectedImage = ref('')
 
-const openImage = (imagePath) => {
-  if (!imagePath) return
-  selectedImage.value = getImageUrl(imagePath)
-  showImageDialog.value = true
-}
-
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/images/no-image.png'
   return `${process.env.API_URL}/uploads/${imagePath}`
+}
+
+const openCurrentImage = () => {
+  if (imagePreview.value) {
+    selectedImage.value = imagePreview.value
+    showImageDialog.value = true
+  } else if (form.value && form.value.image_url) {
+    selectedImage.value = getImageUrl(form.value.image_url)
+    showImageDialog.value = true
+  }
 }
 
 const loadProductTypes = async () => {
