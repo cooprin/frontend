@@ -43,7 +43,9 @@
           <template v-slot:body-cell-image="props">
             <q-td :props="props">
               <q-img
-                :src="props.row.image_url || '/images/no-image.png'"
+                :src="
+                  props.row.image_url ? getImageUrl(props.row.image_url) : '/images/no-image.png'
+                "
                 :ratio="1"
                 style="max-width: 50px"
                 fit="contain"
@@ -142,7 +144,10 @@
             <div class="row items-center q-col-gutter-md">
               <div class="col-auto">
                 <q-img
-                  :src="imagePreview || form.image_url || '/images/no-image.png'"
+                  :src="
+                    imagePreview ||
+                    (form.image_url ? getImageUrl(form.image_url) : '/images/no-image.png')
+                  "
                   :ratio="1"
                   style="width: 100px"
                   fit="contain"
@@ -222,6 +227,11 @@ const manufacturerOptions = ref([])
 const imageFile = ref(null)
 const imagePreview = ref(null)
 const productTypeOptions = ref([])
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '/images/no-image.png'
+  return `${process.env.API_URL}/uploads/${imagePath}`
+}
 
 const loadProductTypes = async () => {
   try {
@@ -420,7 +430,6 @@ const openCreateDialog = () => {
   imageFile.value = null
   imagePreview.value = null
   showDialog.value = true
-  loadProductTypes()
 }
 
 const openEditDialog = (model) => {
