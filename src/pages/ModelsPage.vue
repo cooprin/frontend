@@ -141,16 +141,18 @@
             />
 
             <!-- Зображення -->
-            <div class="row items-center q-col-gutter-md">
-              <div class="col-auto">
+            <div class="row items-center q-col-gutter-md justify-end">
+              <div class="col-auto order-last">
+                <!-- Змістили праворуч використовуючи order-last -->
                 <q-img
                   :src="
                     imagePreview ||
                     (form.image_url ? getImageUrl(form.image_url) : '/images/no-image.png')
                   "
                   :ratio="1"
-                  style="width: 100px"
+                  style="width: 100px; cursor: pointer; border: 1px solid #ddd"
                   fit="contain"
+                  @click="form.image_url && openImage(form.image_url)"
                 />
               </div>
               <div class="col">
@@ -200,6 +202,16 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="showImageDialog">
+      <q-card style="max-width: 90vw; max-height: 90vh">
+        <q-card-section class="row items-center justify-end">
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+        <q-card-section class="q-pt-none flex justify-center">
+          <q-img :src="selectedImage" style="max-width: 100%; max-height: 80vh" fit="contain" />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -227,6 +239,14 @@ const manufacturerOptions = ref([])
 const imageFile = ref(null)
 const imagePreview = ref(null)
 const productTypeOptions = ref([])
+const showImageDialog = ref(false)
+const selectedImage = ref('')
+
+const openImage = (imagePath) => {
+  if (!imagePath) return
+  selectedImage.value = getImageUrl(imagePath)
+  showImageDialog.value = true
+}
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/images/no-image.png'
