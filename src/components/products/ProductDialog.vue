@@ -81,18 +81,6 @@
                     map-options
                   />
 
-                  <!-- Тип продукту -->
-                  <q-select
-                    v-model="form.product_type_id"
-                    :options="productTypeOptions"
-                    :label="t('products.type')"
-                    :rules="[(val) => !!val || t('validation.required')]"
-                    :loading="loadingProductTypes"
-                    outlined
-                    emit-value
-                    map-options
-                    @update:model-value="loadCharacteristics"
-                  />
                   <q-select
                     v-model="form.warehouse_id"
                     :options="warehouseOptions"
@@ -249,8 +237,10 @@ const defaultForm = {
 }
 
 const saveFormToStorage = (formData) => {
-  const dataToSave = { ...formData }
-  delete dataToSave.sku // Не зберігаємо SKU
+  const dataToSave = {
+    ...formData,
+    sku: undefined, // Не зберігаємо SKU
+  }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
 }
 
@@ -259,7 +249,17 @@ const loadFormFromStorage = () => {
   if (saved) {
     try {
       const parsedData = JSON.parse(saved)
-      return { ...defaultForm, ...parsedData }
+      const formData = { ...defaultForm, ...parsedData }
+      // Зберігаємо характеристики, якщо вони були
+      const savedCharacteristics = formData.characteristics || {}
+      nextTick(async () => {
+        if (formData.model_id && formData.product_type_id) {
+          await loadCharacteristics()
+          // Відновлюємо збережені значення характеристик
+          form.value.characteristics = { ...savedCharacteristics }
+        }
+      })
+      return formData
     } catch (e) {
       console.error('Error parsing saved form data:', e)
       return { ...defaultForm }
@@ -357,6 +357,7 @@ const loadModels = async () => {
   loadingModels.value = true
   try {
     form.value.model_id = null
+    form.value.product_type_id = null // Reset type when manufacturer changes
     modelOptions.value = []
 
     if (!form.value.manufacturer_id) {
@@ -375,6 +376,7 @@ const loadModels = async () => {
         .map((m) => ({
           label: m.name,
           value: m.id,
+          product_type_id: m.product_type_id, // Зберігаємо тип продукту в опції
         }))
     }
   } catch (error) {
@@ -569,9 +571,7 @@ const loadEditProductForm = async (editData) => {
   if (form.value.manufacturer_id) {
     await loadModels()
   }
-  if (form.value.product_type_id) {
-    await loadCharacteristics()
-  }
+  // Характеристики завантажаться автоматично через watch на model_id
 }
 
 // 1. Слідкуємо за відкриттям/закриттям діалогу
@@ -597,6 +597,18 @@ watch(
       loadEditProductForm(newValue)
     } else {
       loadNewProductForm()
+    }
+  },
+)
+watch(
+  () => form.value.model_id,
+  async (newModelId) => {
+    if (newModelId) {
+      const selectedModel = modelOptions.value.find((m) => m.value === newModelId)
+      if (selectedModel && selectedModel.product_type_id) {
+        form.value.product_type_id = selectedModel.product_type_id
+        await loadCharacteristics()
+      }
     }
   },
 )

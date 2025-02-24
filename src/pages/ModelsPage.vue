@@ -119,6 +119,16 @@
               emit-value
               map-options
             />
+            <!-- Тип продукту -->
+            <q-select
+              v-model="form.product_type_id"
+              :options="productTypeOptions"
+              :label="$t('models.productType')"
+              :rules="[(val) => !!val || $t('common.validation.required')]"
+              outlined
+              emit-value
+              map-options
+            />
 
             <!-- Опис -->
             <q-input
@@ -195,6 +205,7 @@ import { useI18n } from 'vue-i18n'
 import { ModelsApi } from 'src/api/models'
 import { ManufacturersApi } from 'src/api/manufacturers'
 import { debounce } from 'lodash'
+import { ProductTypesApi } from 'src/api/product-types'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -210,11 +221,28 @@ const isEdit = ref(false)
 const manufacturerOptions = ref([])
 const imageFile = ref(null)
 const imagePreview = ref(null)
+const productTypeOptions = ref([])
+
+const loadProductTypes = async () => {
+  try {
+    const response = await ProductTypesApi.getProductTypes({
+      is_active: true,
+      perPage: 'All',
+    })
+    productTypeOptions.value = response.data.productTypes.map((t) => ({
+      label: t.name,
+      value: t.id,
+    }))
+  } catch (error) {
+    console.error('Error loading product types:', error)
+  }
+}
 
 // Form
 const defaultForm = {
   name: '',
   manufacturer_id: null,
+  product_type_id: null,
   description: '',
   image_url: null,
   is_active: true,
@@ -267,6 +295,13 @@ const columns = computed(() => [
     name: 'manufacturer_name',
     field: 'manufacturer_name',
     label: t('models.manufacturer'),
+    align: 'left',
+    sortable: true,
+  },
+  {
+    name: 'product_type_name',
+    field: 'product_type_name',
+    label: t('models.productType'),
     align: 'left',
     sortable: true,
   },
@@ -436,6 +471,15 @@ const onImageSelect = (file) => {
 const onSubmit = async () => {
   saving.value = true
   try {
+    if (!form.value.name || !form.value.manufacturer_id || !form.value.product_type_id) {
+      $q.notify({
+        color: 'negative',
+        message: t('common.errors.requiredFields'),
+        icon: 'error',
+      })
+      return
+    }
+
     let modelId
     if (isEdit.value) {
       const response = await ModelsApi.updateModel(form.value.id, form.value)
@@ -461,7 +505,8 @@ const onSubmit = async () => {
 
     showDialog.value = false
     loadModels()
-  } catch {
+  } catch (error) {
+    console.error('Error saving model:', error)
     $q.notify({
       color: 'negative',
       message: t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
@@ -498,6 +543,7 @@ const deleteModel = async () => {
 onMounted(() => {
   loadModels()
   loadManufacturers()
+  loadProductTypes()
 })
 </script>
 <style scoped>
