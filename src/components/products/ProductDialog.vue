@@ -313,7 +313,6 @@ const productTypeName = computed(() => {
   if (!selectedModelInfo.value) return ''
   return selectedModelInfo.value.product_type_name || ''
 })
-
 // Methods
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
@@ -382,7 +381,7 @@ const loadModels = async () => {
     })
 
     if (response.data && Array.isArray(response.data.models)) {
-      // Видаляємо фільтрацію, оскільки ми вже запитали моделі за manufacturer_id
+      // Зберігаємо product_type_id та product_type_name для кожної моделі
       modelOptions.value = response.data.models.map((m) => ({
         label: m.name,
         value: m.id,
