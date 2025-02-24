@@ -214,12 +214,10 @@ const loading = ref(false)
 const loadingManufacturers = ref(false)
 const loadingModels = ref(false)
 const loadingSuppliers = ref(false)
-const loadingProductTypes = ref(false)
 const loadingCharacteristics = ref(false)
 const manufacturerOptions = ref([])
 const modelOptions = ref([])
 const supplierOptions = ref([])
-const productTypeOptions = ref([])
 const characteristics = ref([])
 const warehouseOptions = ref([])
 const loadingWarehouses = ref(false)
@@ -230,7 +228,6 @@ const defaultForm = {
   manufacturer_id: null,
   model_id: null,
   supplier_id: null,
-  product_type_id: null,
   warehouse_id: null,
   is_own: true,
   characteristics: {},
@@ -414,29 +411,6 @@ const loadSuppliers = async () => {
   }
 }
 
-const loadProductTypes = async () => {
-  loadingProductTypes.value = true
-  try {
-    const response = await ProductTypesApi.getProductTypes({
-      is_active: true,
-      per_page: 'All',
-    })
-    productTypeOptions.value = response.data.productTypes.map((t) => ({
-      label: t.name,
-      value: t.id,
-    }))
-  } catch (error) {
-    console.error('Error loading product types:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.loading'),
-      icon: 'error',
-    })
-  } finally {
-    loadingProductTypes.value = false
-  }
-}
-
 const loadCharacteristics = async () => {
   loadingCharacteristics.value = true
   try {
@@ -617,7 +591,7 @@ watch(
 onMounted(() => {
   loadManufacturers()
   loadSuppliers()
-  loadProductTypes()
+
   loadWarehouses()
 
   if (props.editData) {
