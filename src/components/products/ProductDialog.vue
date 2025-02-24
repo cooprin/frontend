@@ -673,7 +673,7 @@ watch(
 onMounted(() => {
   loadManufacturers()
   loadSuppliers()
-
+  loadModels()
   loadWarehouses()
 
   if (props.editData) {
