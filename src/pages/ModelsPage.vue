@@ -226,18 +226,39 @@ const productTypeOptions = ref([])
 const loadProductTypes = async () => {
   try {
     const response = await ProductTypesApi.getProductTypes({
-      is_active: true,
+      isActive: true, // Змінено з is_active на isActive
       perPage: 'All',
     })
-    productTypeOptions.value = response.data.productTypes.map((t) => ({
-      label: t.name,
-      value: t.id,
-    }))
+
+    // Додамо логування для діагностики
+    console.log('Product types response:', response.data)
+
+    // Перевіряємо, яка саме структура даних повертається
+    if (response.data.productTypes) {
+      productTypeOptions.value = response.data.productTypes.map((t) => ({
+        label: t.name,
+        value: t.id,
+      }))
+    } else if (response.data.data) {
+      // Альтернативна структура, яка може повертатися з бекенду
+      productTypeOptions.value = response.data.data.map((t) => ({
+        label: t.name,
+        value: t.id,
+      }))
+    } else {
+      // Якщо дані повертаються в іншому форматі
+      console.error('Unexpected data structure:', response.data)
+    }
+
+    console.log('Product type options:', productTypeOptions.value)
   } catch (error) {
     console.error('Error loading product types:', error)
+    // Додамо більш детальне логування помилки
+    if (error.response) {
+      console.error('Error response:', error.response.data)
+    }
   }
 }
-
 // Form
 const defaultForm = {
   name: '',
