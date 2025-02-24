@@ -6,6 +6,10 @@ export const ModelsApi = {
     return api.get('/models', { params })
   },
 
+  getModel: (id) => {
+    return api.get(`/models/${id}`)
+  },
+
   // Створення моделі
   createModel: (data) => {
     return api.post('/models', data)

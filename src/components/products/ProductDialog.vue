@@ -374,20 +374,34 @@ const loadModels = async () => {
       return
     }
 
+    console.log('ProductDialog - Завантаження моделей для виробника:', form.value.manufacturer_id)
+
+    // Запит до ModelsApi
     const response = await ModelsApi.getModels({
       manufacturer: form.value.manufacturer_id,
       isActive: true,
       perPage: 'All',
     })
 
+    console.log('ProductDialog - Відповідь API моделей:', response.data)
+
     if (response.data && Array.isArray(response.data.models)) {
+      // Виводимо структуру першої моделі, якщо вона є
+      if (response.data.models.length > 0) {
+        console.log('ProductDialog - Структура першої моделі:', response.data.models[0])
+      }
+
       modelOptions.value = response.data.models.map((m) => ({
-        // Додаємо тип продукту до назви моделі у випадаючому списку
+        // Додаємо тип продукту до назви моделі
         label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
         value: m.id,
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
       }))
+
+      console.log('ProductDialog - Підготовлені опції моделей:', modelOptions.value)
+    } else {
+      console.warn('ProductDialog - Неочікуваний формат відповіді API:', response.data)
     }
   } catch (error) {
     console.error('Error loading models:', error)
@@ -555,10 +569,24 @@ const loadEditProductForm = async (editData) => {
     ...editData,
   }
 
+  console.log('ProductDialog - Форма для редагування:', form.value)
+
   if (form.value.manufacturer_id) {
     await loadModels()
+
+    // Після завантаження моделей, переконуємося, що product_type_id встановлено
+    if (form.value.model_id && !form.value.product_type_id) {
+      const selectedModel = modelOptions.value.find((m) => m.value === form.value.model_id)
+      if (selectedModel && selectedModel.product_type_id) {
+        form.value.product_type_id = selectedModel.product_type_id
+      }
+    }
+
+    // Завантажуємо характеристики після встановлення product_type_id
+    if (form.value.product_type_id) {
+      await loadCharacteristics()
+    }
   }
-  // Характеристики завантажаться автоматично через watch на model_id
 }
 
 // 1. Слідкуємо за відкриттям/закриттям діалогу
@@ -590,11 +618,52 @@ watch(
 watch(
   () => form.value.model_id,
   async (newModelId) => {
+    console.log('ProductDialog - Зміна model_id:', newModelId)
+    console.log('ProductDialog - Доступні опції моделей:', modelOptions.value)
+
     if (newModelId) {
       const selectedModel = modelOptions.value.find((m) => m.value === newModelId)
-      if (selectedModel && selectedModel.product_type_id) {
-        form.value.product_type_id = selectedModel.product_type_id
-        await loadCharacteristics()
+      console.log('ProductDialog - Знайдена модель:', selectedModel)
+
+      if (selectedModel) {
+        if (selectedModel.product_type_id) {
+          form.value.product_type_id = selectedModel.product_type_id
+          console.log('ProductDialog - Встановлено product_type_id:', selectedModel.product_type_id)
+          console.log(
+            'ProductDialog - Встановлено product_type_name:',
+            selectedModel.product_type_name,
+          )
+
+          // Завантажуємо характеристики для типу продукту
+          await loadCharacteristics()
+        } else {
+          console.warn('ProductDialog - Не знайдено product_type_id у вибраній моделі')
+
+          // Спробуємо отримати додаткову інформацію про модель через запит до API
+          try {
+            const modelDetails = await ModelsApi.getModel(newModelId)
+            console.log('ProductDialog - Деталі моделі:', modelDetails.data)
+
+            if (
+              modelDetails.data &&
+              modelDetails.data.model &&
+              modelDetails.data.model.product_type_id
+            ) {
+              form.value.product_type_id = modelDetails.data.model.product_type_id
+              console.log(
+                'ProductDialog - Встановлено product_type_id з деталей моделі:',
+                form.value.product_type_id,
+              )
+              await loadCharacteristics()
+            } else {
+              console.warn('ProductDialog - Не знайдено product_type_id у деталях моделі')
+            }
+          } catch (error) {
+            console.error('Error loading model details:', error)
+          }
+        }
+      } else {
+        console.warn('ProductDialog - Не знайдено модель за ідентифікатором')
       }
     }
   },

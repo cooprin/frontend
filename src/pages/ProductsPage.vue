@@ -214,6 +214,7 @@ import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
 import ProductDialog from 'components/products/ProductDialog.vue'
 import { date } from 'quasar'
+import { ModelsApi } from 'src/api/models'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -249,17 +250,39 @@ const filters = ref({
 })
 const loadModels = async (manufacturerId = null) => {
   try {
-    const response = await ProductsApi.getModels(manufacturerId)
-    modelOptions.value = response.data.models.map((m) => ({
-      label: m.name,
-      value: m.id,
-    }))
+    console.log('ProductsPage - Завантаження моделей для виробника:', manufacturerId)
+
+    // Використовуємо ModelsApi замість ProductsApi, щоб отримати такий самий формат даних
+    const response = await ModelsApi.getModels({
+      manufacturer: manufacturerId,
+      isActive: true,
+      perPage: 'All',
+    })
+
+    console.log('ProductsPage - Відповідь API моделей:', response.data)
+
+    // Перевіряємо структуру даних у відповіді
+    if (response.data && Array.isArray(response.data.models)) {
+      // Додаємо тип продукту до назви моделі у списку
+      modelOptions.value = response.data.models.map((m) => ({
+        label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
+        value: m.id,
+        product_type_id: m.product_type_id,
+        product_type_name: m.product_type_name,
+      }))
+
+      console.log('ProductsPage - Підготовлені опції моделей:', modelOptions.value)
+    } else {
+      console.warn('ProductsPage - Неочікувана структура відповіді API')
+      modelOptions.value = []
+    }
   } catch (error) {
     console.error('Error loading models:', error)
     $q.notify({
       type: 'negative',
       message: t('common.errors.loading'),
     })
+    modelOptions.value = []
   }
 }
 
@@ -513,10 +536,13 @@ watch(
 watch(
   () => filters.value.manufacturer,
   async (newManufacturer) => {
+    console.log('ProductsPage - Зміна виробника:', newManufacturer)
     filters.value.model = null // скидаємо вибрану модель при зміні виробника
+
     if (newManufacturer) {
       await loadModels(newManufacturer)
     } else {
+      // Завантажуємо всі моделі, якщо виробник не вибраний
       await loadModels()
     }
   },
