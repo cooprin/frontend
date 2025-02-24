@@ -225,35 +225,28 @@ const productTypeOptions = ref([])
 
 const loadProductTypes = async () => {
   try {
-    const response = await ProductTypesApi.getProductTypes({
-      isActive: true, // Змінено з is_active на isActive
-      perPage: 'All',
-    })
+    // Використовуємо параметри у тому ж форматі, що й у ProductTypesPage.vue
+    const params = {
+      perPage: 'All', // Отримуємо всі типи продуктів без пагінації
+    }
 
-    // Додамо логування для діагностики
+    // Якщо потрібно фільтрувати за активними, можна додати
+    // params.isActive = true;
+
+    const response = await ProductTypesApi.getProductTypes(params)
+
+    // Перевіримо структуру даних у консолі
     console.log('Product types response:', response.data)
 
-    // Перевіряємо, яка саме структура даних повертається
-    if (response.data.productTypes) {
-      productTypeOptions.value = response.data.productTypes.map((t) => ({
-        label: t.name,
-        value: t.id,
-      }))
-    } else if (response.data.data) {
-      // Альтернативна структура, яка може повертатися з бекенду
-      productTypeOptions.value = response.data.data.map((t) => ({
-        label: t.name,
-        value: t.id,
-      }))
-    } else {
-      // Якщо дані повертаються в іншому форматі
-      console.error('Unexpected data structure:', response.data)
-    }
+    // Використовуємо правильну структуру response.data.productTypes
+    productTypeOptions.value = response.data.productTypes.map((t) => ({
+      label: t.name,
+      value: t.id,
+    }))
 
     console.log('Product type options:', productTypeOptions.value)
   } catch (error) {
     console.error('Error loading product types:', error)
-    // Додамо більш детальне логування помилки
     if (error.response) {
       console.error('Error response:', error.response.data)
     }
