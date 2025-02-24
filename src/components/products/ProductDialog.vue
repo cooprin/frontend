@@ -381,9 +381,9 @@ const loadModels = async () => {
     })
 
     if (response.data && Array.isArray(response.data.models)) {
-      // Зберігаємо product_type_id та product_type_name для кожної моделі
       modelOptions.value = response.data.models.map((m) => ({
-        label: m.name,
+        // Додаємо тип продукту до назви моделі у випадаючому списку
+        label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
         value: m.id,
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
