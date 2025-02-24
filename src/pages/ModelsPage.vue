@@ -141,20 +141,8 @@
             />
 
             <!-- Зображення -->
-            <div class="row items-center q-col-gutter-md justify-end">
-              <div class="col-auto order-last">
-                <!-- Змістили праворуч використовуючи order-last -->
-                <q-img
-                  :src="
-                    imagePreview ||
-                    (form.image_url ? getImageUrl(form.image_url) : '/images/no-image.png')
-                  "
-                  :ratio="1"
-                  style="width: 100px; cursor: pointer; border: 1px solid #ddd"
-                  fit="contain"
-                  @click="form.image_url && openImage(form.image_url)"
-                />
-              </div>
+
+            <div class="row items-center q-gutter-sm q-mb-md">
               <div class="col">
                 <q-file
                   v-model="imageFile"
@@ -167,6 +155,26 @@
                     <q-icon name="attach_file" />
                   </template>
                 </q-file>
+              </div>
+
+              <div class="col-auto flex justify-center">
+                <q-img
+                  :src="
+                    imagePreview ||
+                    (form.image_url ? getImageUrl(form.image_url) : '/images/no-image.png')
+                  "
+                  :ratio="1"
+                  style="
+                    width: 120px;
+                    height: 120px;
+                    cursor: pointer;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                  "
+                  fit="contain"
+                  @click="form.image_url && openImage(form.image_url)"
+                  class="image-clickable"
+                />
               </div>
             </div>
 
@@ -203,12 +211,12 @@
       </q-card>
     </q-dialog>
     <q-dialog v-model="showImageDialog">
-      <q-card style="max-width: 90vw; max-height: 90vh">
-        <q-card-section class="row items-center justify-end">
+      <q-card class="image-dialog-card">
+        <q-card-section class="row items-center justify-end q-pb-none">
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
         <q-card-section class="q-pt-none flex justify-center">
-          <q-img :src="selectedImage" style="max-width: 100%; max-height: 80vh" fit="contain" />
+          <q-img :src="selectedImage" style="max-width: 90vw; max-height: 70vh" fit="contain" />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -652,5 +660,19 @@ onMounted(() => {
   width: 100px;
   height: 100px;
   object-fit: contain;
+}
+.image-dialog-card {
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 8px;
+}
+
+.image-clickable {
+  transition: transform 0.2s;
+}
+
+.image-clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 </style>

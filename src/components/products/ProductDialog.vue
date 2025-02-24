@@ -68,7 +68,10 @@
                     map-options
                     :disable="!form.manufacturer_id"
                   />
-
+                  <div v-if="productTypeName" class="text-caption q-ml-sm q-mb-md">
+                    {{ t('products.productType') }}:
+                    <span class="text-weight-bold">{{ productTypeName }}</span>
+                  </div>
                   <!-- Постачальник -->
                   <q-select
                     v-model="form.supplier_id"
@@ -300,6 +303,17 @@ const show = computed({
 
 const isEdit = computed(() => !!props.editData)
 
+const selectedModelInfo = computed(() => {
+  if (!form.value.model_id) return null
+  const model = modelOptions.value.find((m) => m.value === form.value.model_id)
+  return model
+})
+
+const productTypeName = computed(() => {
+  if (!selectedModelInfo.value) return ''
+  return selectedModelInfo.value.product_type_name || ''
+})
+
 // Methods
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
@@ -373,7 +387,8 @@ const loadModels = async () => {
         .map((m) => ({
           label: m.name,
           value: m.id,
-          product_type_id: m.product_type_id, // Зберігаємо тип продукту в опції
+          product_type_id: m.product_type_id,
+          product_type_name: m.product_type_name, // Додаємо назву типу продукту
         }))
     }
   } catch (error) {
