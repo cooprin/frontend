@@ -544,13 +544,14 @@ const onSubmit = async () => {
   loading.value = true
   try {
     if (isEdit.value) {
-      // При редагуванні відправляємо тільки дозволені поля
+      // При редагуванні відправляємо дозволені поля та додаємо product_type_id
       const editableData = {
         is_own: form.value.is_own,
         characteristics: form.value.characteristics,
+        product_type_id: form.value.product_type_id, // додаємо product_type_id для валідації характеристик
       }
 
-      console.log('ProductDialog - Відправляємо дані для оновлення:', editableData)
+      console.log('ProductDialog - Дані для оновлення продукту:', editableData)
 
       await ProductsApi.updateProduct(props.editData.id, editableData)
       $q.notify({
@@ -577,7 +578,7 @@ const onSubmit = async () => {
           skuInput.value.focus()
         }
       })
-      show.value = false
+      show.value = false // Закриваємо після створення
     }
     emit('saved')
   } catch (error) {
@@ -618,21 +619,6 @@ const loadEditProductForm = async (editData) => {
       const productData = response.data.product
       console.log('ProductDialog - Отримано дані продукту:', productData)
 
-      // Отримуємо поточне розташування товару, щоб дізнатися warehouse_id
-      try {
-        const locationResponse = await ProductsApi.getCurrentLocation(productData.id)
-        if (
-          locationResponse.data &&
-          locationResponse.data.location &&
-          locationResponse.data.location.warehouse_id
-        ) {
-          productData.warehouse_id = locationResponse.data.location.warehouse_id
-          console.log('ProductDialog - Встановлено warehouse_id:', productData.warehouse_id)
-        }
-      } catch (err) {
-        console.error('Error loading current location:', err)
-      }
-
       // Обробляємо характеристики, якщо вони є
       const processedCharacteristics = {}
       if (productData.characteristics) {
@@ -644,6 +630,20 @@ const loadEditProductForm = async (editData) => {
         })
       }
 
+      // Знайдемо модель в довідниках для правильного відображення
+      await loadModels()
+      let selectedModel = modelOptions.value.find((m) => m.value === productData.model_id)
+
+      // Знайдемо склад для правильного відображення
+      try {
+        const locationResponse = await ProductsApi.getCurrentLocation(productData.id)
+        if (locationResponse.data && locationResponse.data.location) {
+          productData.warehouse_id = locationResponse.data.location.warehouse_id
+        }
+      } catch (err) {
+        console.error('Error loading current location:', err)
+      }
+
       // Заповнюємо форму з даними
       form.value = {
         ...defaultForm,
@@ -651,32 +651,13 @@ const loadEditProductForm = async (editData) => {
         characteristics: processedCharacteristics,
       }
 
-      console.log('ProductDialog - Форма після заповнення:', {
-        sku: form.value.sku,
-        manufacturer_id: form.value.manufacturer_id,
-        model_id: form.value.model_id,
-        supplier_id: form.value.supplier_id,
-        warehouse_id: form.value.warehouse_id,
-        is_own: form.value.is_own,
-        characteristics: form.value.characteristics,
-      })
-
-      // Завантажуємо моделі для отримання даних типу продукту
-      if (form.value.manufacturer_id) {
-        await loadModels(form.value.manufacturer_id)
-
-        // Шукаємо модель для отримання product_type_id
-        if (modelOptions.value.length > 0 && form.value.model_id) {
-          const selectedModel = modelOptions.value.find((m) => m.value === form.value.model_id)
-          if (selectedModel && selectedModel.product_type_id) {
-            form.value.product_type_id = selectedModel.product_type_id
-            console.log('ProductDialog - Отримано product_type_id:', form.value.product_type_id)
-
-            // Завантажуємо характеристики для цього типу
-            await loadCharacteristics()
-          }
-        }
+      // Завантажимо модель та тип продукту
+      if (selectedModel && selectedModel.product_type_id) {
+        form.value.product_type_id = selectedModel.product_type_id
+        await loadCharacteristics()
       }
+
+      console.log('ProductDialog - Форма після заповнення:', form.value)
     } else {
       console.warn('ProductDialog - Не вдалося отримати дані продукту з API')
       form.value = {
