@@ -363,46 +363,56 @@ const loadManufacturers = async () => {
 }
 
 const loadModels = async (manufacturerId = null) => {
+  // Якщо manufacturerId не передано, використовуємо manufacturerId з форми
   const selectedManufacturer = manufacturerId || form.value.manufacturer_id
-  console.log('loadModels викликано з manufacturerId:', selectedManufacturer)
-
   loadingModels.value = true
+
   try {
+    console.log('ProductDialog - Завантаження моделей для виробника ID:', selectedManufacturer)
     form.value.model_id = null
     form.value.product_type_id = null
     modelOptions.value = []
 
     if (!selectedManufacturer) {
-      console.log('Виробник не вибрано, вихід з loadModels')
+      console.log('ProductDialog - Виробник не вибрано')
       return
     }
 
-    console.log('Завантаження моделей для виробника ID:', selectedManufacturer)
-
-    // Переконаємося, що параметр називається правильно
-    const response = await ModelsApi.getModels({
-      manufacturer_id: selectedManufacturer, // Спробуйте цей варіант
-      // Якщо не працює, спробуйте інші варіанти параметра:
-      // manufacturer: selectedManufacturer,
+    // Виводимо повне URL запиту і параметри для дебагу
+    console.log('ProductDialog - Параметри запиту:', {
+      manufacturer: selectedManufacturer,
       isActive: true,
       perPage: 'All',
     })
 
-    console.log('Відповідь API для моделей:', response.data)
-    console.log('Кількість отриманих моделей:', response.data?.models?.length || 0)
+    // Пробуємо варіант з параметром "manufacturer" (як вказано в бекенді)
+    const response = await ModelsApi.getModels({
+      manufacturer: selectedManufacturer,
+      isActive: true,
+      perPage: 'All',
+    })
+
+    console.log('ProductDialog - Відповідь API:', response)
+    console.log('ProductDialog - Кількість отриманих моделей:', response.data?.models?.length || 0)
 
     if (response.data && Array.isArray(response.data.models)) {
-      modelOptions.value = response.data.models.map((m) => ({
+      // Фільтруємо моделі за виробником на стороні клієнта, якщо API не фільтрує
+      const filteredModels = response.data.models.filter(
+        (m) => m.manufacturer_id == selectedManufacturer,
+      )
+      console.log('ProductDialog - Відфільтровані моделі за виробником:', filteredModels.length)
+
+      modelOptions.value = filteredModels.map((m) => ({
         label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
         value: m.id,
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
       }))
     } else {
-      console.warn('Неочікуваний формат відповіді API:', response.data)
+      console.warn('ProductDialog - Неочікуваний формат відповіді API:', response.data)
     }
   } catch (error) {
-    console.error('Помилка завантаження моделей:', error)
+    console.error('ProductDialog - Помилка завантаження моделей:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -558,7 +568,6 @@ const loadNewProductForm = () => {
 }
 
 // При редагуванні існуючого продукту
-
 const loadEditProductForm = async (editData) => {
   if (!editData) return
 
@@ -570,7 +579,8 @@ const loadEditProductForm = async (editData) => {
   console.log('ProductDialog - Форма для редагування:', form.value)
 
   if (form.value.manufacturer_id) {
-    await loadModels()
+    // При редагуванні спочатку завантажуємо моделі для цього виробника
+    await loadModels(form.value.manufacturer_id)
 
     // Після завантаження моделей, переконуємося, що product_type_id встановлено
     if (form.value.model_id && !form.value.product_type_id) {
