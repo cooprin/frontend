@@ -15,6 +15,12 @@
         <q-btn icon="close" flat round dense v-close-popup />
       </q-card-section>
 
+      <q-card-section v-if="isEdit" class="bg-yellow-1 q-pa-sm">
+        <div class="text-subtitle2 text-warning">
+          {{ t('products.editLimitedFields') }}
+        </div>
+      </q-card-section>
+
       <q-card-section class="q-pt-none">
         <q-form @submit="onSubmit" class="q-gutter-md">
           <div class="row q-col-gutter-md">
@@ -53,6 +59,7 @@
                     outlined
                     emit-value
                     map-options
+                    :disable="isEdit"
                   />
 
                   <!-- Модель -->
@@ -65,7 +72,7 @@
                     outlined
                     emit-value
                     map-options
-                    :disable="!form.manufacturer_id"
+                    :disable="isEdit || !form.manufacturer_id"
                   />
                   <div v-if="productTypeName" class="text-caption q-ml-sm q-mb-md">
                     {{ t('products.productType') }}:
@@ -81,6 +88,7 @@
                     outlined
                     emit-value
                     map-options
+                    :disable="isEdit"
                   />
 
                   <q-select
@@ -92,6 +100,7 @@
                     outlined
                     emit-value
                     map-options
+                    :disable="isEdit"
                   />
                   <q-toggle v-model="form.is_own" :label="t('products.isOwn')" />
                 </q-card-section>
@@ -519,14 +528,22 @@ const onSubmit = async () => {
   loading.value = true
   try {
     if (isEdit.value) {
-      await ProductsApi.updateProduct(props.editData.id, form.value)
+      // При редагуванні відправляємо лише дозволені поля
+      const editableData = {
+        id: props.editData.id,
+        is_own: form.value.is_own,
+        characteristics: form.value.characteristics,
+      }
+
+      await ProductsApi.updateProduct(props.editData.id, editableData)
       $q.notify({
         color: 'positive',
         message: t('products.updateSuccess'),
         icon: 'check',
       })
-      show.value = false // Закриваємо після редагування
+      show.value = false
     } else {
+      // При створенні нового продукту - відправляємо всі поля
       await ProductsApi.createProduct({
         ...form.value,
         created_by: authStore.user.id,
@@ -543,7 +560,7 @@ const onSubmit = async () => {
           skuInput.value.focus()
         }
       })
-      show.value = false // Закриваємо після створення
+      show.value = false
     }
     emit('saved')
   } catch (error) {
@@ -569,34 +586,58 @@ const loadNewProductForm = () => {
 
 // При редагуванні існуючого продукту
 const loadEditProductForm = async (editData) => {
-  if (!editData) return
+  if (!editData || !editData.id) return
 
-  form.value = {
-    ...defaultForm,
-    ...editData,
-  }
+  try {
+    console.log('ProductDialog - Початок завантаження даних для редагування, ID:', editData.id)
 
-  console.log('ProductDialog - Форма для редагування:', form.value)
+    // Завантажуємо повні дані продукту з API
+    const response = await ProductsApi.getProduct(editData.id)
 
-  if (form.value.manufacturer_id) {
-    // При редагуванні спочатку завантажуємо моделі для цього виробника
-    await loadModels(form.value.manufacturer_id)
+    if (response.data && response.data.product) {
+      // Використовуємо повні дані з API
+      const fullProductData = response.data.product
+      console.log('ProductDialog - Отримано повні дані продукту:', fullProductData)
 
-    // Після завантаження моделей, переконуємося, що product_type_id встановлено
-    if (form.value.model_id && !form.value.product_type_id) {
-      const selectedModel = modelOptions.value.find((m) => m.value === form.value.model_id)
-      if (selectedModel && selectedModel.product_type_id) {
-        form.value.product_type_id = selectedModel.product_type_id
+      form.value = {
+        ...defaultForm,
+        ...fullProductData,
+      }
+    } else {
+      // Якщо API не повернув дані у правильному форматі, використовуємо editData
+      form.value = {
+        ...defaultForm,
+        ...editData,
       }
     }
 
-    // Завантажуємо характеристики після встановлення product_type_id
+    // Завантажуємо характеристики на основі типу продукту
     if (form.value.product_type_id) {
       await loadCharacteristics()
+    } else if (form.value.manufacturer_id && form.value.model_id) {
+      // Завантажуємо моделі для отримання типу продукту
+      await loadModels(form.value.manufacturer_id)
+
+      const selectedModel = modelOptions.value.find((m) => m.value === form.value.model_id)
+      if (selectedModel && selectedModel.product_type_id) {
+        form.value.product_type_id = selectedModel.product_type_id
+        await loadCharacteristics()
+      }
+    }
+  } catch (error) {
+    console.error('Error loading full product data:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+
+    form.value = {
+      ...defaultForm,
+      ...editData,
     }
   }
 }
-
 // 1. Слідкуємо за відкриттям/закриттям діалогу
 watch(
   () => show.value,
@@ -625,9 +666,13 @@ watch(
 )
 
 // Перевіряємо зміну виробника
+// Перевіряємо зміну виробника
 watch(
   () => form.value.manufacturer_id,
   async (newManufacturerId) => {
+    // Пропускаємо для режиму редагування
+    if (isEdit.value) return
+
     console.log('ProductDialog - Зміна виробника:', newManufacturerId)
     // Скидаємо модель при зміні виробника
     form.value.model_id = null
@@ -645,6 +690,9 @@ watch(
 watch(
   () => form.value.model_id,
   async (newModelId) => {
+    // Пропускаємо для режиму редагування
+    if (isEdit.value) return
+
     if (newModelId) {
       const selectedModel = modelOptions.value.find((m) => m.value === newModelId)
       if (selectedModel) {
@@ -653,29 +701,12 @@ watch(
           // Завантажуємо характеристики для типу продукту
           await loadCharacteristics()
         } else {
-          try {
-            const modelDetails = await ModelsApi.getModel(newModelId)
-            if (
-              modelDetails.data &&
-              modelDetails.data.model &&
-              modelDetails.data.model.product_type_id
-            ) {
-              form.value.product_type_id = modelDetails.data.model.product_type_id
-              await loadCharacteristics()
-            } else {
-              console.warn('ProductDialog - Не знайдено product_type_id у деталях моделі')
-            }
-          } catch (error) {
-            console.error('Error loading model details:', error)
-          }
+          // Інший код...
         }
-      } else {
-        console.warn('ProductDialog - Не знайдено модель за ідентифікатором')
       }
     }
   },
 )
-
 // Lifecycle hooks
 onMounted(() => {
   loadManufacturers()
