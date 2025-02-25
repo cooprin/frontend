@@ -364,22 +364,30 @@ const loadManufacturers = async () => {
 }
 
 const loadModels = async (manufacturerId = null) => {
+  // Використовуємо переданий manufacturerId або значення з форми
+  const manufacturer = manufacturerId || form.value.manufacturer_id
   loadingModels.value = true
   try {
+    // Скидаємо модель при зміні виробника
     form.value.model_id = null
     form.value.product_type_id = null // Reset type when manufacturer changes
     modelOptions.value = []
-    const manufacturer = manufacturerId || form.value.manufacturer_id
-    if (!form.value.manufacturer_id) {
+
+    if (!manufacturer) {
       return
     }
 
+    console.log('ProductDialog - Завантаження моделей для виробника:', manufacturer)
+
     // Запит до ModelsApi
+    console.log('ProductDialog - Використовуємо manufacturer ID для фільтрації:', manufacturer)
     const response = await ModelsApi.getModels({
       manufacturer: manufacturer,
       isActive: true,
       perPage: 'All',
     })
+
+    console.log('ProductDialog - Відповідь API моделей:', response.data)
 
     if (response.data && Array.isArray(response.data.models)) {
       // Виводимо структуру першої моделі, якщо вона є
