@@ -260,7 +260,12 @@ const loadModels = async (manufacturerId = null) => {
     })
 
     if (response.data && Array.isArray(response.data.models)) {
-      modelOptions.value = response.data.models.map((m) => ({
+      // Фільтруємо моделі на стороні клієнта аналогічно до ProductDialog
+      const filteredModels = manufacturerId
+        ? response.data.models.filter((m) => m.manufacturer_id == manufacturerId)
+        : response.data.models
+
+      modelOptions.value = filteredModels.map((m) => ({
         label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
         value: m.id,
         product_type_id: m.product_type_id,
