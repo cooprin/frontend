@@ -637,8 +637,8 @@ const loadEditProductForm = async (editData) => {
       // Знайдемо склад для правильного відображення
       try {
         const locationResponse = await ProductsApi.getCurrentLocation(productData.id)
-        if (locationResponse.data && locationResponse.data.location) {
-          productData.warehouse_id = locationResponse.data.location.warehouse_id
+        if (locationResponse.data) {
+          productData.warehouse_id = locationResponse.data.warehouse_id
         }
       } catch (err) {
         console.error('Error loading current location:', err)
