@@ -607,11 +607,6 @@ const loadEditProductForm = async (editData) => {
   if (!editData || !editData.id) return
 
   try {
-    console.log('ProductDialog - Початок завантаження даних для редагування, ID:', editData.id)
-
-    // Завантажуємо всі довідники спочатку
-    await Promise.all([loadManufacturers(), loadSuppliers(), loadWarehouses()])
-
     // Завантажуємо повні дані продукту з API
     const response = await ProductsApi.getProduct(editData.id)
 
@@ -631,7 +626,7 @@ const loadEditProductForm = async (editData) => {
       }
 
       // Знайдемо модель в довідниках для правильного відображення
-      await loadModels()
+      await loadModels(productData.manufacturer_id)
       let selectedModel = modelOptions.value.find((m) => m.value === productData.model_id)
 
       // Знайдемо склад для правильного відображення
