@@ -363,27 +363,23 @@ const loadManufacturers = async () => {
   }
 }
 
-const loadModels = async () => {
+const loadModels = async (manufacturerId = null) => {
   loadingModels.value = true
   try {
     form.value.model_id = null
     form.value.product_type_id = null // Reset type when manufacturer changes
     modelOptions.value = []
-
+    const manufacturer = manufacturerId || form.value.manufacturer_id
     if (!form.value.manufacturer_id) {
       return
     }
 
-    console.log('ProductDialog - Завантаження моделей для виробника:', form.value.manufacturer_id)
-
     // Запит до ModelsApi
     const response = await ModelsApi.getModels({
-      manufacturer: form.value.manufacturer_id,
+      manufacturer: manufacturer,
       isActive: true,
       perPage: 'All',
     })
-
-    console.log('ProductDialog - Відповідь API моделей:', response.data)
 
     if (response.data && Array.isArray(response.data.models)) {
       // Виводимо структуру першої моделі, якщо вона є
@@ -615,45 +611,44 @@ watch(
     }
   },
 )
+
+// Перевіряємо зміну виробника
+watch(
+  () => form.value.manufacturer_id,
+  async (newManufacturerId) => {
+    console.log('ProductDialog - Зміна виробника:', newManufacturerId)
+    // Скидаємо модель при зміні виробника
+    form.value.model_id = null
+    form.value.product_type_id = null
+
+    // Завантажуємо моделі для вибраного виробника
+    if (newManufacturerId) {
+      await loadModels(newManufacturerId)
+    } else {
+      modelOptions.value = [] // Очищаємо список моделей, якщо виробник не вибраний
+    }
+  },
+)
+
 watch(
   () => form.value.model_id,
   async (newModelId) => {
-    console.log('ProductDialog - Зміна model_id:', newModelId)
-    console.log('ProductDialog - Доступні опції моделей:', modelOptions.value)
-
     if (newModelId) {
       const selectedModel = modelOptions.value.find((m) => m.value === newModelId)
-      console.log('ProductDialog - Знайдена модель:', selectedModel)
-
       if (selectedModel) {
         if (selectedModel.product_type_id) {
           form.value.product_type_id = selectedModel.product_type_id
-          console.log('ProductDialog - Встановлено product_type_id:', selectedModel.product_type_id)
-          console.log(
-            'ProductDialog - Встановлено product_type_name:',
-            selectedModel.product_type_name,
-          )
-
           // Завантажуємо характеристики для типу продукту
           await loadCharacteristics()
         } else {
-          console.warn('ProductDialog - Не знайдено product_type_id у вибраній моделі')
-
-          // Спробуємо отримати додаткову інформацію про модель через запит до API
           try {
             const modelDetails = await ModelsApi.getModel(newModelId)
-            console.log('ProductDialog - Деталі моделі:', modelDetails.data)
-
             if (
               modelDetails.data &&
               modelDetails.data.model &&
               modelDetails.data.model.product_type_id
             ) {
               form.value.product_type_id = modelDetails.data.model.product_type_id
-              console.log(
-                'ProductDialog - Встановлено product_type_id з деталей моделі:',
-                form.value.product_type_id,
-              )
               await loadCharacteristics()
             } else {
               console.warn('ProductDialog - Не знайдено product_type_id у деталях моделі')

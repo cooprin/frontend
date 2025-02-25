@@ -250,16 +250,11 @@ const filters = ref({
 })
 const loadModels = async (manufacturerId = null) => {
   try {
-    console.log('ProductsPage - Завантаження моделей для виробника:', manufacturerId)
-
-    // Використовуємо ModelsApi замість ProductsApi, щоб отримати такий самий формат даних
     const response = await ModelsApi.getModels({
       manufacturer: manufacturerId,
       isActive: true,
       perPage: 'All',
     })
-
-    console.log('ProductsPage - Відповідь API моделей:', response.data)
 
     // Перевіряємо структуру даних у відповіді
     if (response.data && Array.isArray(response.data.models)) {
@@ -269,6 +264,8 @@ const loadModels = async (manufacturerId = null) => {
         value: m.id,
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
+        manufacturer_id: m.manufacturer_id,
+        manufacturer_name: m.manufacturer_name,
       }))
 
       console.log('ProductsPage - Підготовлені опції моделей:', modelOptions.value)
