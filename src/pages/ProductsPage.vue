@@ -206,6 +206,7 @@
     <ProductDialog v-model="showDialog" :edit-data="editProduct" @saved="loadProducts" />
   </q-page>
 </template>
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
@@ -233,13 +234,14 @@ const manufacturerOptions = ref([])
 const modelOptions = ref([])
 
 const pagination = ref({
-  sortBy: 'sku', // змінити з 'created_at'
-  descending: false, // змінити з true
+  sortBy: 'sku',
+  descending: false,
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
   rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50, 100],
 })
+
 // Filters
 const filters = ref({
   search: '',
@@ -248,6 +250,7 @@ const filters = ref({
   status: null,
   isOwn: null,
 })
+
 const loadModels = async (manufacturerId = null) => {
   try {
     const response = await ModelsApi.getModels({
@@ -256,9 +259,7 @@ const loadModels = async (manufacturerId = null) => {
       perPage: 'All',
     })
 
-    // Перевіряємо структуру даних у відповіді
     if (response.data && Array.isArray(response.data.models)) {
-      // Додаємо тип продукту до назви моделі у списку
       modelOptions.value = response.data.models.map((m) => ({
         label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
         value: m.id,
@@ -267,14 +268,10 @@ const loadModels = async (manufacturerId = null) => {
         manufacturer_id: m.manufacturer_id,
         manufacturer_name: m.manufacturer_name,
       }))
-
-      console.log('ProductsPage - Підготовлені опції моделей:', modelOptions.value)
     } else {
-      console.warn('ProductsPage - Неочікувана структура відповіді API')
       modelOptions.value = []
     }
-  } catch (error) {
-    console.error('Error loading models:', error)
+  } catch {
     $q.notify({
       type: 'negative',
       message: t('common.errors.loading'),
@@ -359,7 +356,6 @@ const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
 
-// Використовуємо один loadProducts
 const loadProducts = async () => {
   loading.value = true
   try {
@@ -371,20 +367,16 @@ const loadProducts = async () => {
       ...formatFiltersForApi(filters.value),
     }
 
-    // Убрати undefined параметри
     Object.keys(params).forEach((key) => {
       if (params[key] === undefined) {
         delete params[key]
       }
     })
 
-    console.log('Request params:', params)
-
     const response = await ProductsApi.getProducts(params)
     products.value = response.data.products
     pagination.value.rowsNumber = response.data.total
-  } catch (error) {
-    console.error('Error loading products:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -402,8 +394,7 @@ const loadManufacturers = async () => {
       label: m.name,
       value: m.id,
     }))
-  } catch (error) {
-    console.error('Error loading manufacturers:', error)
+  } catch {
     $q.notify({
       type: 'negative',
       message: t('common.errors.loading'),
@@ -422,8 +413,6 @@ const clearFilters = () => {
 }
 
 const onRequest = async (props) => {
-  console.log('Request props:', props)
-
   const { page, rowsPerPage, sortBy, descending } = props.pagination
 
   pagination.value = {
@@ -474,8 +463,7 @@ const deleteProduct = async () => {
       message: t('products.deleteSuccess'),
     })
     loadProducts()
-  } catch (error) {
-    console.error('Error deleting product:', error)
+  } catch {
     $q.notify({
       type: 'negative',
       message: t('common.errors.deleting'),
@@ -503,8 +491,7 @@ const exportProducts = async () => {
       type: 'positive',
       message: t('products.exportSuccess'),
     })
-  } catch (error) {
-    console.error('Error exporting products:', error)
+  } catch {
     $q.notify({
       type: 'negative',
       message: t('products.exportError'),
@@ -530,16 +517,15 @@ watch(
   },
   { deep: true },
 )
+
 watch(
   () => filters.value.manufacturer,
   async (newManufacturer) => {
-    console.log('ProductsPage - Зміна виробника:', newManufacturer)
-    filters.value.model = null // скидаємо вибрану модель при зміні виробника
+    filters.value.model = null
 
     if (newManufacturer) {
       await loadModels(newManufacturer)
     } else {
-      // Завантажуємо всі моделі, якщо виробник не вибраний
       await loadModels()
     }
   },

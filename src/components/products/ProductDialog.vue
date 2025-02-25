@@ -190,7 +190,6 @@
 </template>
 
 <script setup>
-//ProductDialog.vue
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -247,7 +246,7 @@ const defaultForm = {
 const saveFormToStorage = (formData) => {
   const dataToSave = {
     ...formData,
-    sku: undefined, // Не зберігаємо SKU
+    sku: undefined,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
 }
@@ -258,25 +257,20 @@ const loadFormFromStorage = () => {
     try {
       const parsedData = JSON.parse(saved)
       const formData = { ...defaultForm, ...parsedData }
-      // Зберігаємо характеристики, якщо вони були
       const savedCharacteristics = formData.characteristics || {}
       nextTick(async () => {
         if (formData.model_id && formData.product_type_id) {
           await loadCharacteristics()
-          // Відновлюємо збережені значення характеристик
           form.value.characteristics = { ...savedCharacteristics }
         }
       })
       return formData
-    } catch (e) {
-      console.error('Error parsing saved form data:', e)
+    } catch {
       return { ...defaultForm }
     }
   }
   return { ...defaultForm }
 }
-
-//склади
 
 const loadWarehouses = async () => {
   loadingWarehouses.value = true
@@ -289,8 +283,7 @@ const loadWarehouses = async () => {
       label: w.name,
       value: w.id,
     }))
-  } catch (error) {
-    console.error('Error loading warehouses:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -321,6 +314,7 @@ const productTypeName = computed(() => {
   if (!selectedModelInfo.value) return ''
   return selectedModelInfo.value.product_type_name || ''
 })
+
 // Methods
 const handleSkuKeydown = async (e) => {
   if (e.key === 'Enter') {
@@ -336,7 +330,7 @@ const handleSkuKeydown = async (e) => {
 
     if (allFieldsFilled) {
       await onSubmit()
-      show.value = false // Закриваємо діалог після успішного збереження
+      show.value = false
     } else {
       $q.notify({
         color: 'warning',
@@ -351,7 +345,6 @@ const loadManufacturers = async () => {
   loadingManufacturers.value = true
   try {
     const response = await ProductsApi.getManufacturers({
-      // Змінюємо на ProductsApi
       is_active: true,
       per_page: 'All',
     })
@@ -359,8 +352,7 @@ const loadManufacturers = async () => {
       label: m.name,
       value: m.id,
     }))
-  } catch (error) {
-    console.error('Error loading manufacturers:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -372,44 +364,28 @@ const loadManufacturers = async () => {
 }
 
 const loadModels = async (manufacturerId = null) => {
-  // Якщо manufacturerId не передано, використовуємо manufacturerId з форми
   const selectedManufacturer = manufacturerId || form.value.manufacturer_id
   loadingModels.value = true
 
   try {
-    console.log('ProductDialog - Завантаження моделей для виробника ID:', selectedManufacturer)
     form.value.model_id = null
     form.value.product_type_id = null
     modelOptions.value = []
 
     if (!selectedManufacturer) {
-      console.log('ProductDialog - Виробник не вибрано')
       return
     }
 
-    // Виводимо повне URL запиту і параметри для дебагу
-    console.log('ProductDialog - Параметри запиту:', {
-      manufacturer: selectedManufacturer,
-      isActive: true,
-      perPage: 'All',
-    })
-
-    // Пробуємо варіант з параметром "manufacturer" (як вказано в бекенді)
     const response = await ModelsApi.getModels({
       manufacturer: selectedManufacturer,
       isActive: true,
       perPage: 'All',
     })
 
-    console.log('ProductDialog - Відповідь API:', response)
-    console.log('ProductDialog - Кількість отриманих моделей:', response.data?.models?.length || 0)
-
     if (response.data && Array.isArray(response.data.models)) {
-      // Фільтруємо моделі за виробником на стороні клієнта, якщо API не фільтрує
       const filteredModels = response.data.models.filter(
         (m) => m.manufacturer_id == selectedManufacturer,
       )
-      console.log('ProductDialog - Відфільтровані моделі за виробником:', filteredModels.length)
 
       modelOptions.value = filteredModels.map((m) => ({
         label: `${m.name} (${m.product_type_name || 'Тип не вказано'})`,
@@ -417,11 +393,8 @@ const loadModels = async (manufacturerId = null) => {
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
       }))
-    } else {
-      console.warn('ProductDialog - Неочікуваний формат відповіді API:', response.data)
     }
-  } catch (error) {
-    console.error('ProductDialog - Помилка завантаження моделей:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -443,8 +416,7 @@ const loadSuppliers = async () => {
       label: s.name,
       value: s.id,
     }))
-  } catch (error) {
-    console.error('Error loading suppliers:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -458,7 +430,6 @@ const loadSuppliers = async () => {
 const loadCharacteristics = async () => {
   loadingCharacteristics.value = true
   try {
-    // Зберігаємо поточні значення характеристик
     const currentValues = { ...form.value.characteristics }
 
     if (!form.value.product_type_id) {
@@ -472,7 +443,6 @@ const loadCharacteristics = async () => {
       characteristics.value = response.data.characteristics
 
       if (!isEdit.value) {
-        // При створенні нового продукту встановлюємо значення за замовчуванням
         const newCharacteristics = {}
         characteristics.value.forEach((char) => {
           if (char.default_value !== undefined) {
@@ -481,17 +451,14 @@ const loadCharacteristics = async () => {
         })
         form.value.characteristics = newCharacteristics
       } else {
-        // При редагуванні зберігаємо поточні значення
         characteristics.value.forEach((char) => {
-          // Якщо характеристика була відсутня, додаємо зі значенням за замовчуванням
           if (currentValues[char.code] === undefined && char.default_value !== undefined) {
             form.value.characteristics[char.code] = char.default_value
           }
         })
       }
     }
-  } catch (error) {
-    console.error('Error loading characteristics:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -544,14 +511,11 @@ const onSubmit = async () => {
   loading.value = true
   try {
     if (isEdit.value) {
-      // При редагуванні відправляємо дозволені поля та додаємо product_type_id
       const editableData = {
         is_own: form.value.is_own,
         characteristics: form.value.characteristics,
-        product_type_id: form.value.product_type_id, // додаємо product_type_id для валідації характеристик
+        product_type_id: form.value.product_type_id,
       }
-
-      console.log('ProductDialog - Дані для оновлення продукту:', editableData)
 
       await ProductsApi.updateProduct(props.editData.id, editableData)
       $q.notify({
@@ -559,9 +523,8 @@ const onSubmit = async () => {
         message: t('products.updateSuccess'),
         icon: 'check',
       })
-      show.value = false // Закриваємо після редагування
+      show.value = false
     } else {
-      // При створенні нового продукту - відправляємо всі поля (без змін)
       await ProductsApi.createProduct({
         ...form.value,
         created_by: authStore.user.id,
@@ -578,11 +541,10 @@ const onSubmit = async () => {
           skuInput.value.focus()
         }
       })
-      show.value = false // Закриваємо після створення
+      show.value = false
     }
     emit('saved')
-  } catch (error) {
-    console.error('Error saving product:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
@@ -592,13 +554,14 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
 // При створенні нового продукту
 const loadNewProductForm = () => {
-  const savedForm = loadFormFromStorage() // завантаження з localStorage
+  const savedForm = loadFormFromStorage()
   form.value = {
     ...defaultForm,
     ...savedForm,
-    sku: '', // SKU завжди пустий для нового продукту
+    sku: '',
   }
 }
 
@@ -607,61 +570,48 @@ const loadEditProductForm = async (editData) => {
   if (!editData || !editData.id) return
 
   try {
-    // Завантажуємо повні дані продукту з API
     const response = await ProductsApi.getProduct(editData.id)
 
     if (response.data && response.data.product) {
       const productData = response.data.product
-      console.log('ProductDialog - Отримано дані продукту:', productData)
 
-      // Обробляємо характеристики, якщо вони є
       const processedCharacteristics = {}
       if (productData.characteristics) {
-        // Обробляємо характеристики в форматі {key: {name, type, value}}
         Object.keys(productData.characteristics).forEach((key) => {
           const char = productData.characteristics[key]
-          // Беремо значення з поля value
           processedCharacteristics[key] = char.value !== undefined ? char.value : null
         })
       }
 
-      // Знайдемо модель в довідниках для правильного відображення
       await loadModels(productData.manufacturer_id)
       let selectedModel = modelOptions.value.find((m) => m.value === productData.model_id)
 
-      // Знайдемо склад для правильного відображення
       try {
         const locationResponse = await ProductsApi.getCurrentLocation(productData.id)
         if (locationResponse.data) {
           productData.warehouse_id = locationResponse.data.warehouse_id
         }
-      } catch (err) {
-        console.error('Error loading current location:', err)
+      } catch {
+        // Помилка обробляється тихо, продовжуємо роботу
       }
 
-      // Заповнюємо форму з даними
       form.value = {
         ...defaultForm,
         ...productData,
         characteristics: processedCharacteristics,
       }
 
-      // Завантажимо модель та тип продукту
       if (selectedModel && selectedModel.product_type_id) {
         form.value.product_type_id = selectedModel.product_type_id
         await loadCharacteristics()
       }
-
-      console.log('ProductDialog - Форма після заповнення:', form.value)
     } else {
-      console.warn('ProductDialog - Не вдалося отримати дані продукту з API')
       form.value = {
         ...defaultForm,
         ...editData,
       }
     }
-  } catch (error) {
-    console.error('Error loading product data:', error)
+  } catch {
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
@@ -674,12 +624,12 @@ const loadEditProductForm = async (editData) => {
     }
   }
 }
+
 // 1. Слідкуємо за відкриттям/закриттям діалогу
 watch(
   () => show.value,
   (newValue) => {
     if (newValue && !isEdit.value) {
-      // При відкритті діалогу фокусуємось на полі SKU
       nextTick(() => {
         if (skuInput.value) {
           skuInput.value.focus()
@@ -702,23 +652,18 @@ watch(
 )
 
 // Перевіряємо зміну виробника
-// Перевіряємо зміну виробника
 watch(
   () => form.value.manufacturer_id,
   async (newManufacturerId) => {
-    // Пропускаємо для режиму редагування
     if (isEdit.value) return
 
-    console.log('ProductDialog - Зміна виробника:', newManufacturerId)
-    // Скидаємо модель при зміні виробника
     form.value.model_id = null
     form.value.product_type_id = null
 
-    // Завантажуємо моделі для вибраного виробника
     if (newManufacturerId) {
       await loadModels(newManufacturerId)
     } else {
-      modelOptions.value = [] // Очищаємо список моделей, якщо виробник не вибраний
+      modelOptions.value = []
     }
   },
 )
@@ -726,7 +671,6 @@ watch(
 watch(
   () => form.value.model_id,
   async (newModelId) => {
-    // Пропускаємо для режиму редагування
     if (isEdit.value) return
 
     if (newModelId) {
@@ -734,20 +678,17 @@ watch(
       if (selectedModel) {
         if (selectedModel.product_type_id) {
           form.value.product_type_id = selectedModel.product_type_id
-          // Завантажуємо характеристики для типу продукту
           await loadCharacteristics()
-        } else {
-          // Інший код...
         }
       }
     }
   },
 )
+
 // Lifecycle hooks
 onMounted(() => {
   loadManufacturers()
   loadSuppliers()
-
   loadWarehouses()
 
   if (props.editData) {
