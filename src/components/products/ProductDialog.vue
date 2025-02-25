@@ -143,16 +143,36 @@
                       />
 
                       <!-- Date характеристика -->
-                      <q-input
+                      <q-field
                         v-else-if="char.type === 'date'"
                         v-model="form.characteristics[char.code]"
-                        type="date"
                         :label="char.name"
                         :rules="getCharacteristicRules(char)"
-                        :min="char.validation_rules?.min"
-                        :max="char.validation_rules?.max"
                         outlined
-                      />
+                        stack-label
+                      >
+                        <template v-slot:control>
+                          <div class="self-center full-width no-outline" tabindex="0">
+                            {{ formatDate(form.characteristics[char.code]) }}
+                          </div>
+                        </template>
+                        <template v-slot:append>
+                          <q-icon name="event" class="cursor-pointer">
+                            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                              <q-date
+                                v-model="form.characteristics[char.code]"
+                                mask="YYYY-MM-DD"
+                                :min="char.validation_rules?.min"
+                                :max="char.validation_rules?.max"
+                              >
+                                <div class="row items-center justify-end">
+                                  <q-btn v-close-popup label="OK" color="primary" flat />
+                                </div>
+                              </q-date>
+                            </q-popup-proxy>
+                          </q-icon>
+                        </template>
+                      </q-field>
 
                       <!-- Boolean характеристика -->
                       <q-toggle
@@ -193,6 +213,7 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
+import { date } from 'quasar'
 import { ProductsApi } from 'src/api/products'
 import { ModelsApi } from 'src/api/models'
 import { SuppliersApi } from 'src/api/suppliers'
@@ -243,6 +264,20 @@ const defaultForm = {
   characteristics: {},
 }
 
+// Функції форматування дат
+const formatDate = (dateString) => {
+  return dateString ? date.formatDate(dateString, 'DD.MM.YYYY') : ''
+}
+
+const formatDateForInput = (dateString) => {
+  if (!dateString) return ''
+  try {
+    return date.formatDate(new Date(dateString), 'YYYY-MM-DD')
+  } catch {
+    return ''
+  }
+}
+
 const saveFormToStorage = (formData) => {
   const dataToSave = {
     ...formData,
@@ -262,6 +297,15 @@ const loadFormFromStorage = () => {
         if (formData.model_id && formData.product_type_id) {
           await loadCharacteristics()
           form.value.characteristics = { ...savedCharacteristics }
+
+          // Форматуємо дати
+          characteristics.value.forEach((char) => {
+            if (char.type === 'date' && form.value.characteristics[char.code]) {
+              form.value.characteristics[char.code] = formatDateForInput(
+                form.value.characteristics[char.code],
+              )
+            }
+          })
         }
       })
       return formData
@@ -446,14 +490,24 @@ const loadCharacteristics = async () => {
         const newCharacteristics = {}
         characteristics.value.forEach((char) => {
           if (char.default_value !== undefined) {
-            newCharacteristics[char.code] = char.default_value
+            let value = char.default_value
+            if (char.type === 'date' && value) {
+              value = formatDateForInput(value)
+            }
+            newCharacteristics[char.code] = value
           }
         })
         form.value.characteristics = newCharacteristics
       } else {
         characteristics.value.forEach((char) => {
           if (currentValues[char.code] === undefined && char.default_value !== undefined) {
-            form.value.characteristics[char.code] = char.default_value
+            let value = char.default_value
+            if (char.type === 'date' && value) {
+              value = formatDateForInput(value)
+            }
+            form.value.characteristics[char.code] = value
+          } else if (char.type === 'date' && currentValues[char.code]) {
+            form.value.characteristics[char.code] = formatDateForInput(currentValues[char.code])
           }
         })
       }
@@ -579,7 +633,14 @@ const loadEditProductForm = async (editData) => {
       if (productData.characteristics) {
         Object.keys(productData.characteristics).forEach((key) => {
           const char = productData.characteristics[key]
-          processedCharacteristics[key] = char.value !== undefined ? char.value : null
+          let value = char.value !== undefined ? char.value : null
+
+          // Форматуємо дати для інпуту
+          if (char.type === 'date' && value) {
+            value = formatDateForInput(value)
+          }
+
+          processedCharacteristics[key] = value
         })
       }
 
@@ -592,7 +653,7 @@ const loadEditProductForm = async (editData) => {
           productData.warehouse_id = locationResponse.data.warehouse_id
         }
       } catch {
-        // Помилка обробляється тихо, продовжуємо роботу
+        // Помилка обробляється тихо
       }
 
       form.value = {
@@ -604,6 +665,15 @@ const loadEditProductForm = async (editData) => {
       if (selectedModel && selectedModel.product_type_id) {
         form.value.product_type_id = selectedModel.product_type_id
         await loadCharacteristics()
+
+        // Додаткова перевірка форматів дат
+        characteristics.value.forEach((char) => {
+          if (char.type === 'date' && form.value.characteristics[char.code]) {
+            form.value.characteristics[char.code] = formatDateForInput(
+              form.value.characteristics[char.code],
+            )
+          }
+        })
       }
     } else {
       form.value = {
@@ -625,7 +695,7 @@ const loadEditProductForm = async (editData) => {
   }
 }
 
-// 1. Слідкуємо за відкриттям/закриттям діалогу
+// Відстеження змін
 watch(
   () => show.value,
   (newValue) => {
@@ -639,7 +709,6 @@ watch(
   },
 )
 
-// 2. Слідкуємо за зміною даних для редагування
 watch(
   () => props.editData,
   (newValue) => {
@@ -651,7 +720,6 @@ watch(
   },
 )
 
-// Перевіряємо зміну виробника
 watch(
   () => form.value.manufacturer_id,
   async (newManufacturerId) => {
@@ -679,13 +747,22 @@ watch(
         if (selectedModel.product_type_id) {
           form.value.product_type_id = selectedModel.product_type_id
           await loadCharacteristics()
+
+          // Перевіряємо формати дат після завантаження характеристик
+          characteristics.value.forEach((char) => {
+            if (char.type === 'date' && form.value.characteristics[char.code]) {
+              form.value.characteristics[char.code] = formatDateForInput(
+                form.value.characteristics[char.code],
+              )
+            }
+          })
         }
       }
     }
   },
 )
 
-// Lifecycle hooks
+// Завантаження даних при монтуванні компонента
 onMounted(() => {
   loadManufacturers()
   loadSuppliers()
