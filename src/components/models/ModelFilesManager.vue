@@ -12,7 +12,7 @@
         "
         header-class="text-primary"
       >
-        <template v-slot:header-right>
+        <template #header-right>
           <q-btn
             color="primary"
             :label="$t('models.files.add')"
