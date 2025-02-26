@@ -1,16 +1,6 @@
 <template>
   <div class="model-files">
     <div class="q-mb-md">
-      <div class="row justify-between items-center">
-        <div>{{ $t('models.files.title') }}</div>
-        <q-btn
-          color="primary"
-          :label="$t('models.files.add')"
-          icon="add"
-          dense
-          @click="openUploadDialog"
-        />
-      </div>
       <q-expansion-item
         switch-toggle-side
         expand-separator
@@ -60,6 +50,16 @@
           </q-card-section>
         </q-card>
       </q-expansion-item>
+      <div class="row justify-between items-right q-mt-md">
+        <div>{{ $t('models.files.title') }}</div>
+        <q-btn
+          color="primary"
+          :label="$t('models.files.add')"
+          icon="add"
+          dense
+          @click="openUploadDialog"
+        />
+      </div>
     </div>
 
     <!-- Діалог завантаження файлу -->
