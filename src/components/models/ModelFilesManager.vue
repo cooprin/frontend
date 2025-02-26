@@ -12,17 +12,6 @@
         "
         header-class="text-primary"
       >
-        <template #header-right>
-          <q-btn
-            color="primary"
-            :label="$t('models.files.add')"
-            icon="add"
-            dense
-            flat
-            @click.stop="openUploadDialog"
-          />
-        </template>
-
         <q-card>
           <q-card-section>
             <div v-if="!files.length" class="text-center q-pa-md text-grey">
@@ -60,6 +49,16 @@
             </div>
           </q-card-section>
         </q-card>
+        <template #header-right>
+          <q-btn
+            color="primary"
+            :label="$t('models.files.add')"
+            icon="add"
+            dense
+            flat
+            @click.stop="openUploadDialog"
+          />
+        </template>
       </q-expansion-item>
     </div>
 
