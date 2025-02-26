@@ -12,62 +12,52 @@
         "
         header-class="text-primary"
       >
-        <template v-slot:header-right>
-          <q-btn
-            slot="header-right"
-            color="primary"
-            :label="$t('models.files.add')"
-            icon="add"
-            dense
-            flat
-            @click.stop="openUploadDialog"
-          />
-          <q-card>
-            <q-card-section>
-              <div v-if="!files.length" class="text-center q-pa-md text-grey">
-                {{ $t('models.files.noFiles') }}
-              </div>
-              <div v-else>
-                <q-list bordered separator>
-                  <q-item
-                    v-for="file in files"
-                    :key="file.id"
-                    clickable
-                    @click="downloadFile(file)"
-                  >
-                    <q-item-section avatar>
-                      <q-icon :name="getFileIcon(file.file_type)" size="md" color="primary" />
-                    </q-item-section>
+        <q-btn
+          color="primary"
+          :label="$t('models.files.add')"
+          icon="add"
+          dense
+          flat
+          @click.stop="openUploadDialog"
+        />
+        <q-card>
+          <q-card-section>
+            <div v-if="!files.length" class="text-center q-pa-md text-grey">
+              {{ $t('models.files.noFiles') }}
+            </div>
+            <div v-else>
+              <q-list bordered separator>
+                <q-item v-for="file in files" :key="file.id" clickable @click="downloadFile(file)">
+                  <q-item-section avatar>
+                    <q-icon :name="getFileIcon(file.file_type)" size="md" color="primary" />
+                  </q-item-section>
 
-                    <q-item-section>
-                      <q-item-label>{{ file.file_name }}</q-item-label>
-                      <q-item-label caption>
-                        {{ formatFileSize(file.file_size) }} • {{ formatDate(file.created_at) }}
-                        <span v-if="file.description" class="q-ml-sm"
-                          >• {{ file.description }}</span
-                        >
-                      </q-item-label>
-                    </q-item-section>
+                  <q-item-section>
+                    <q-item-label>{{ file.file_name }}</q-item-label>
+                    <q-item-label caption>
+                      {{ formatFileSize(file.file_size) }} • {{ formatDate(file.created_at) }}
+                      <span v-if="file.description" class="q-ml-sm">• {{ file.description }}</span>
+                    </q-item-label>
+                  </q-item-section>
 
-                    <q-item-section side>
-                      <q-btn
-                        flat
-                        round
-                        dense
-                        color="negative"
-                        icon="delete"
-                        @click.stop="confirmDeleteFile(file)"
-                      >
-                        <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
-                      </q-btn>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </div>
-            </q-card-section>
-          </q-card>
-        </template></q-expansion-item
-      >
+                  <q-item-section side>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      color="negative"
+                      icon="delete"
+                      @click.stop="confirmDeleteFile(file)"
+                    >
+                      <q-tooltip>{{ $t('common.delete') }}</q-tooltip>
+                    </q-btn>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </div>
+          </q-card-section>
+        </q-card>
+      </q-expansion-item>
     </div>
 
     <!-- Діалог завантаження файлу -->
