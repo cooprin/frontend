@@ -12,12 +12,6 @@
 
       <div class="row q-gutter-sm">
         <q-btn color="warning" icon="edit" :label="$t('common.edit')" @click="openEditDialog" />
-        <q-btn
-          color="primary"
-          icon="sync"
-          :label="$t('products.changeStatus')"
-          @click="openStatusDialog"
-        />
       </div>
     </div>
 
