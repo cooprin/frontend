@@ -5,6 +5,7 @@ export default {
   edit: 'Edit Warehouse',
   create: 'Create Warehouse',
   delete: 'Delete Warehouse',
+  viewStock: 'View Stock',
 
   // Поля
   name: 'Name',

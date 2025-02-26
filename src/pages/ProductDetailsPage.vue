@@ -241,7 +241,7 @@ import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { ProductsApi } from 'src/api/products'
 import ProductDialog from 'components/products/ProductDialog.vue'
-
+import { SuppliersApi } from 'src/api/suppliers'
 const route = useRoute()
 const $q = useQuasar()
 const { t } = useI18n()
@@ -359,8 +359,8 @@ const loadProduct = async () => {
   try {
     const response = await ProductsApi.getProduct(route.params.id)
     product.value = response.data.product
-    loadMovements()
-    loadCurrentLocation()
+
+    await Promise.all([loadMovements(), loadCurrentLocation(), loadSupplierInfo()])
   } catch {
     $q.notify({
       color: 'negative',
@@ -389,6 +389,24 @@ const loadCurrentLocation = async () => {
       currentLocation.value = response.data
     } catch (error) {
       console.error('Error loading location:', error)
+    }
+  }
+}
+
+const loadSupplierInfo = async () => {
+  if (product.value?.supplier_id) {
+    try {
+      const response = await SuppliersApi.getSupplier(product.value.supplier_id)
+
+      // Отримуємо об'єкт постачальника з відповіді
+      const supplier = response.data.supplier
+
+      // Копіюємо потрібні поля для відображення
+      product.value.supplier_contact = supplier.contact_person || '-'
+      product.value.supplier_phone = supplier.phone || '-'
+      product.value.supplier_email = supplier.email || '-'
+    } catch (error) {
+      console.error('Помилка при завантаженні даних постачальника:', error)
     }
   }
 }

@@ -12,15 +12,16 @@ export default {
   isActive: 'Активний',
   contactPerson: 'Контактна особа',
   phone: 'Телефон',
-  email: 'Email',
+  email: 'Електронна пошта',
   address: 'Адреса',
   productsCount: 'Кількість продуктів',
   activeWarrantyCount: 'Кількість активних гарантій',
+  contacts: 'Контакти',
 
   // Повідомлення
-  createSuccess: 'Постачальника успішно створено',
-  updateSuccess: 'Постачальника успішно оновлено',
-  deleteSuccess: 'Постачальника успішно видалено',
+  createSuccess: 'Постачальника створено успішно',
+  updateSuccess: 'Постачальника оновлено успішно',
+  deleteSuccess: 'Постачальника видалено успішно',
   deleteConfirmation: 'Ви впевнені, що хочете видалити цього постачальника?',
   cannotDelete: 'Неможливо видалити постачальника з існуючими продуктами',
 

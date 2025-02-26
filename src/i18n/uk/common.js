@@ -48,5 +48,6 @@ export default {
     invalidFileType: 'Недійсний тип файлу. Дозволені лише JPEG, PNG',
     requiredFields: "Будь ласка, заповніть всі обов'язкові поля",
     validation: 'Помилка валідації',
+    saving: 'Помилка збереження даних',
   },
 }

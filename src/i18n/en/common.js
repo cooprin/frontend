@@ -48,5 +48,6 @@ export default {
     invalidFileType: 'Invalid file type. Only JPEG, PNG are allowed',
     requiredFields: 'Please fill all required fields',
     validation: 'Validation error',
+    saving: 'Error saving data',
   },
 }

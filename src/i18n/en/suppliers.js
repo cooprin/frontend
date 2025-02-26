@@ -16,6 +16,7 @@ export default {
   address: 'Address',
   productsCount: 'Products Count',
   activeWarrantyCount: 'Active Warranty Count',
+  contacts: 'Contacts',
 
   // Повідомлення
   createSuccess: 'Supplier created successfully',

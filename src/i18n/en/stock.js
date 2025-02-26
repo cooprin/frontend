@@ -4,6 +4,11 @@ export default {
   movements: 'Stock Movements',
   transfer: 'Transfer Stock',
   adjust: 'Adjust Stock',
+  install: 'Install',
+  uninstall: 'Uninstall',
+  sendToRepair: 'Send to Repair',
+  returnFromRepair: 'Return from Repair',
+  writeOff: 'Write Off',
 
   // Поля
   warehouse: 'Warehouse',
@@ -15,6 +20,7 @@ export default {
   comment: 'Comment',
   createdBy: 'Created By',
   createdAt: 'Created At',
+  object: 'Object',
 
   // Типи операцій
   types: {
@@ -37,6 +43,11 @@ export default {
   transferSuccess: 'Stock transferred successfully',
   adjustSuccess: 'Stock adjusted successfully',
   insufficientStock: 'Insufficient stock in source warehouse',
+  installSuccess: 'Product installed successfully',
+  uninstallSuccess: 'Product uninstalled successfully',
+  sendToRepairSuccess: 'Product sent to repair successfully',
+  returnFromRepairSuccess: 'Product returned from repair successfully',
+  writeOffSuccess: 'Product written off successfully',
 
   // Фільтри
   filters: {
@@ -46,5 +57,7 @@ export default {
     dateTo: 'Date to',
     type: 'Filter by operation type',
     product: 'Filter by product',
+    fromWarehouse: 'From Warehouse',
+    toWarehouse: 'To Warehouse',
   },
 }

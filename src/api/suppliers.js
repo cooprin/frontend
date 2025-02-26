@@ -20,4 +20,7 @@ export const SuppliersApi = {
   deleteSupplier: (id) => {
     return api.delete(`/suppliers/${id}`)
   },
+  getSupplier: (id) => {
+    return api.get(`/suppliers/${id}`)
+  },
 }
