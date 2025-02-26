@@ -50,18 +50,17 @@
           </q-card-section>
         </q-card>
       </q-expansion-item>
-      <div class="row justify-between items-right q-mt-md">
-        <div>{{ $t('models.files.title') }}</div>
-        <q-btn
-          color="primary"
-          :label="$t('models.files.add')"
-          icon="add"
-          dense
-          @click="openUploadDialog"
-        />
-      </div>
     </div>
-
+    <div class="row justify-between items-right q-mt-md">
+      <div>{{ $t('models.files.title') }}</div>
+      <q-btn
+        color="primary"
+        :label="$t('models.files.add')"
+        icon="add"
+        dense
+        @click="openUploadDialog"
+      />
+    </div>
     <!-- Діалог завантаження файлу -->
     <q-dialog v-model="uploadDialog">
       <q-card style="min-width: 400px">
