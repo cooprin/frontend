@@ -33,4 +33,25 @@ export const ModelsApi = {
       },
     })
   },
+  getModelFiles: (modelId) => {
+    return api.get(`/models/${modelId}/files`)
+  },
+
+  uploadModelFile: (modelId, formData) => {
+    return api.post(`/models/${modelId}/files`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+
+  deleteModelFile: (modelId, fileId) => {
+    return api.delete(`/models/${modelId}/files/${fileId}`)
+  },
+
+  // Допоміжний метод для отримання шляху до файлу
+  getFileUrl: (filePath) => {
+    if (!filePath) return null
+    return `${process.env.API_URL}/uploads/${filePath}`
+  },
 }

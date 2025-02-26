@@ -180,7 +180,11 @@
 
             <!-- Статус -->
             <q-toggle v-if="isEdit" v-model="form.is_active" :label="$t('models.isActive')" />
-
+            <model-files-manager
+              v-if="isEdit && form.id"
+              :model-id="form.id"
+              :refresh-trigger="filesRefreshTrigger"
+            />
             <div class="row justify-end q-gutter-sm">
               <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
               <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
@@ -235,9 +239,11 @@ import { ModelsApi } from 'src/api/models'
 import { ManufacturersApi } from 'src/api/manufacturers'
 import { debounce } from 'lodash'
 import { ProductTypesApi } from 'src/api/product-types'
+import ModelFilesManager from 'src/components/models/ModelFilesManager.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
+const filesRefreshTrigger = ref(0)
 
 // State
 const loading = ref(false)
@@ -596,6 +602,15 @@ const deleteModel = async () => {
     })
   }
 }
+
+watch(
+  form,
+  () => {
+    // Скидаємо лічильник оновлення файлів при зміні форми
+    filesRefreshTrigger.value += 1
+  },
+  { deep: true },
+)
 
 onMounted(() => {
   loadModels()
