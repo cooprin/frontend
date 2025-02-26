@@ -15,6 +15,7 @@ export default {
   productsCount: 'Products Count',
   inStockCount: 'In Stock Count',
   installedCount: 'Installed Count',
+  productType: 'Product Type',
 
   // Повідомлення
   createSuccess: 'Model created successfully',
@@ -28,5 +29,22 @@ export default {
     title: 'Filters',
     manufacturer: 'Filter by manufacturer',
     status: 'Filter by status',
+  },
+
+  // Файли моделей
+  files: {
+    title: 'Files',
+    count: '{count} Files',
+    empty: 'No files',
+    add: 'Add file',
+    noFiles: 'No files uploaded',
+    upload: 'Upload File',
+    selectFile: 'Select file',
+    hint: 'Allowed formats: PDF, DOC, DOCX, XLS, XLSX, TXT, ZIP',
+    description: 'Description',
+    deleteConfirmation: 'Are you sure you want to delete this file?',
+    uploadSuccess: 'File uploaded successfully',
+    deleteSuccess: 'File deleted successfully',
+    invalidFile: 'Invalid file format',
   },
 }

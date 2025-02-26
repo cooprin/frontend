@@ -27,6 +27,10 @@ export default {
     warranty_change: 'Warranty Change',
     stock_in: 'Stock In',
     stock_out: 'Stock Out',
+    receipt: 'Receipt',
+    shipment: 'Shipment',
+    return: 'Return',
+    adjustment: 'Adjustment',
   },
 
   // Повідомлення

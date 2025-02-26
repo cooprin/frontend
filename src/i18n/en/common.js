@@ -20,6 +20,11 @@ export default {
   noResults: 'No results found',
   minValue: 'Minimum value',
   maxValue: 'Maximum value',
+  view: 'View',
+  clearFilters: 'Clear Filters',
+  export: 'Export',
+  upload: 'Upload',
+
   validation: {
     required: 'This field is required',
     invalidSKU: 'Invalid SKU format',
@@ -38,5 +43,10 @@ export default {
     creating: 'Error creating record',
     updating: 'Error updating record',
     deleting: 'Error deleting record',
+    uploading: 'Error uploading file',
+    fileTooLarge: 'File is too large. Maximum file size is 5MB',
+    invalidFileType: 'Invalid file type. Only JPEG, PNG are allowed',
+    requiredFields: 'Please fill all required fields',
+    validation: 'Validation error',
   },
 }

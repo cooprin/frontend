@@ -10,6 +10,9 @@ export default {
   noCharacteristics: 'No characteristics defined',
   type: 'Product Type',
   mainInfo: 'Main Information',
+  editLimitedFields: 'You can edit limited fields in edit mode',
+  skuHint: 'Format: uppercase letters, numbers and dashes',
+  fillRequiredFields: 'Please fill all required fields',
 
   // Поля продукту
   sku: 'SKU',
@@ -28,6 +31,17 @@ export default {
   currentObject: 'Current Object',
   price: 'Price',
   description: 'Description',
+  warehouse: 'Warehouse',
+  productType: 'Product Type',
+  all: 'All',
+  currentLocation: 'Current Location',
+  movements: 'Movement History',
+  objectId: 'Object ID',
+  supplierInfo: 'Supplier Information',
+  supplierContact: 'Contact Person',
+  supplierPhone: 'Phone',
+  supplierEmail: 'Email',
+  changeStatus: 'Change Status',
 
   // Статуси
   statuses: {
@@ -44,6 +58,8 @@ export default {
   statusUpdateSuccess: 'Product status updated successfully',
   deleteConfirmation: 'Are you sure you want to delete this product?',
   cannotDelete: 'Cannot delete product with existing stock or movement history',
+  exportSuccess: 'Products exported successfully',
+  exportError: 'Error exporting products',
 
   // Фільтри
   filters: {
@@ -54,5 +70,6 @@ export default {
     dateFrom: 'Purchase date from',
     dateTo: 'Purchase date to',
     warranty: 'Warranty status',
+    search: 'Search products...',
   },
 }
