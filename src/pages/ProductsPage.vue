@@ -480,7 +480,7 @@ const exportProducts = async () => {
   exporting.value = true
   try {
     const response = await ProductsApi.exportProducts({
-      ...filters.value,
+      ...formatFiltersForApi(filters.value),
       export: true,
     })
 
@@ -496,7 +496,8 @@ const exportProducts = async () => {
       type: 'positive',
       message: t('products.exportSuccess'),
     })
-  } catch {
+  } catch (error) {
+    console.error('Error exporting products:', error)
     $q.notify({
       type: 'negative',
       message: t('products.exportError'),
