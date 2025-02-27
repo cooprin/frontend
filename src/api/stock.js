@@ -45,4 +45,10 @@ export const StockApi = {
   writeOffProduct: (data) => {
     return api.post('/stock/write-off', data)
   },
+  exportMovements(params = {}) {
+    return api.get('/stock/movements/export', {
+      params,
+      responseType: 'blob',
+    })
+  },
 }

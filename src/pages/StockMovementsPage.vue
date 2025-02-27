@@ -180,6 +180,7 @@ const { t } = useI18n()
 
 // State
 const loading = ref(false)
+const exporting = ref(false)
 const movements = ref([])
 const warehouseOptions = ref([])
 
@@ -215,6 +216,54 @@ const typeOptions = [
   { label: t('stock.types.stock_in'), value: 'stock_in' },
   { label: t('stock.types.stock_out'), value: 'stock_out' },
 ]
+
+const exportProducts = async () => {
+  exporting.value = true
+  try {
+    const params = {
+      search: filters.value.search || undefined,
+      type: filters.value.type || undefined,
+      fromWarehouse: filters.value.fromWarehouse || undefined,
+      toWarehouse: filters.value.toWarehouse || undefined,
+      dateFrom: filters.value.dateFrom || undefined,
+      dateTo: filters.value.dateTo || undefined,
+      export: true,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
+    })
+
+    const response = await StockApi.exportMovements(params)
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute(
+      'download',
+      `stock-movements-${date.formatDate(Date.now(), 'YYYY-MM-DD')}.xlsx`,
+    )
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    $q.notify({
+      type: 'positive',
+      message: t('stock.exportSuccess'),
+    })
+  } catch (error) {
+    console.error('Error exporting stock movements:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('stock.exportError'),
+    })
+  } finally {
+    exporting.value = false
+  }
+}
 
 // Колонки таблиці
 const columns = computed(() => [
