@@ -145,15 +145,15 @@ const routes = [
           permission: 'clients.read',
         },
       },
-      {
-        path: '/client-documents',
-        name: 'client-documents',
-        component: () => import('pages/ClientDocumentsPage.vue'),
-        meta: {
-          requiresAuth: true,
-          permission: 'client_documents.read',
-        },
-      },
+      //{
+      //  path: '/client-documents',
+      //  name: 'client-documents',
+      //  component: () => import('pages/ClientDocumentsPage.vue'),
+      //  meta: {
+      //    requiresAuth: true,
+      //    permission: 'client_documents.read',
+      //  },
+      //},
 
       // Нові маршрути для послуг
       {
