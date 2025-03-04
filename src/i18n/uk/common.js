@@ -50,4 +50,5 @@ export default {
     validation: 'Помилка валідації',
     saving: 'Помилка збереження даних',
   },
+  present: 'зараз',
 }

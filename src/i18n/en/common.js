@@ -50,4 +50,5 @@ export default {
     validation: 'Validation error',
     saving: 'Error saving data',
   },
+  present: 'present',
 }

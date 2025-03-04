@@ -8,6 +8,11 @@ import models from './models'
 import warehouses from './warehouses'
 import stock from './stock'
 import productTypes from './productTypes'
+import wialonObjects from './wialonObjects'
+import clients from './clients'
+import invoices from './invoices'
+import services from './services'
+import tariffs from './tariffs'
 
 export default {
   layouts,
@@ -20,4 +25,9 @@ export default {
   warehouses,
   stock,
   productTypes,
+  clients,
+  wialonObjects,
+  invoices,
+  services,
+  tariffs,
 }

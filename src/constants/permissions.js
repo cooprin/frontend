@@ -55,6 +55,52 @@ export const MENU_PERMISSIONS = {
       DELETE: 'stock_movements.delete',
     },
   },
+  // Клієнти
+  CLIENTS: {
+    VIEW: {
+      LIST: 'clients.read',
+      CREATE: 'clients.create',
+      UPDATE: 'clients.update',
+      DELETE: 'clients.delete',
+    },
+    DOCUMENTS: {
+      LIST: 'client_documents.read',
+      CREATE: 'client_documents.create',
+      DELETE: 'client_documents.delete',
+    },
+  },
+
+  // Послуги та тарифи
+  SERVICES: {
+    VIEW: {
+      LIST: 'services.read',
+      CREATE: 'services.create',
+      UPDATE: 'services.update',
+      DELETE: 'services.delete',
+    },
+    TARIFFS: {
+      LIST: 'tariffs.read',
+      CREATE: 'tariffs.create',
+      UPDATE: 'tariffs.update',
+      DELETE: 'tariffs.delete',
+    },
+    INVOICES: {
+      LIST: 'invoices.read',
+      CREATE: 'invoices.create',
+      UPDATE: 'invoices.update',
+      DELETE: 'invoices.delete',
+    },
+  },
+
+  // Wialon об'єкти
+  WIALON: {
+    OBJECTS: {
+      LIST: 'wialon_objects.read',
+      CREATE: 'wialon_objects.create',
+      UPDATE: 'wialon_objects.update',
+      DELETE: 'wialon_objects.delete',
+    },
+  },
 
   // Адміністративне меню
   SETTINGS: {
@@ -98,5 +144,8 @@ const getListPermissions = (section) => {
 export const MENU_SECTIONS_PERMISSIONS = {
   PRODUCTS: getListPermissions(MENU_PERMISSIONS.PRODUCTS),
   WAREHOUSES: getListPermissions(MENU_PERMISSIONS.WAREHOUSES),
+  CLIENTS: getListPermissions(MENU_PERMISSIONS.CLIENTS),
+  SERVICES: getListPermissions(MENU_PERMISSIONS.SERVICES),
+  WIALON: getListPermissions(MENU_PERMISSIONS.WIALON),
   SETTINGS: getListPermissions(MENU_PERMISSIONS.SETTINGS),
 }

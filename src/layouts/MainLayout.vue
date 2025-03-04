@@ -234,6 +234,129 @@
             </q-expansion-item>
           </template>
 
+          <!-- Клієнти Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.CLIENTS)"
+          >
+            <q-expansion-item
+              icon="people"
+              :label="$t('layouts.mainLayout.clients')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.VIEW.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'clients' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="person" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.clientsList') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.DOCUMENTS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'client-documents' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="description" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.clientDocuments') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
+          <!-- Послуги Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SERVICES)"
+          >
+            <q-expansion-item
+              icon="miscellaneous_services"
+              :label="$t('layouts.mainLayout.services')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.VIEW.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'services' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="design_services" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.servicesList') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.TARIFFS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'tariffs' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="attach_money" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.tariffs') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.INVOICES.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'invoices' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="receipt" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.invoices') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
+          <!-- Wialon Menu - Full Mode -->
+          <template
+            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WIALON)"
+          >
+            <q-expansion-item
+              icon="location_on"
+              :label="$t('layouts.mainLayout.wialon')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WIALON.OBJECTS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'wialon-objects' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="directions_car" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.wialonObjects') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
+
           <!-- Settings Menu - Full Mode -->
           <template
             v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)"
@@ -458,6 +581,123 @@
                         </q-item-section>
                         <q-item-section>
                           {{ $t('layouts.mainLayout.stockMovements') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Клієнти Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.CLIENTS)" dense>
+              <q-item-section avatar>
+                <q-icon name="people">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.VIEW.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'clients' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="person" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.clientsList') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.DOCUMENTS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'client-documents' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="description" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.clientDocuments') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Послуги Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SERVICES)" dense>
+              <q-item-section avatar>
+                <q-icon name="miscellaneous_services">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.VIEW.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'services' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="design_services" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.servicesList') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.TARIFFS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'tariffs' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="attach_money" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.tariffs') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.INVOICES.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'invoices' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="receipt" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.invoices') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Wialon Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WIALON)" dense>
+              <q-item-section avatar>
+                <q-icon name="location_on">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WIALON.OBJECTS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'wialon-objects' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="directions_car" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.wialonObjects') }}
                         </q-item-section>
                       </q-item>
                     </q-list>

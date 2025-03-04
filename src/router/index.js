@@ -50,10 +50,7 @@ const routes = [
         component: () => import('pages/AuditLogsPage.vue'),
         meta: { requiresAuth: true },
       },
-      {
-        path: '/:catchAll(.*)*',
-        component: () => import('pages/ErrorNotFound.vue'),
-      },
+
       {
         path: 'products',
         name: 'products',
@@ -128,6 +125,118 @@ const routes = [
           requiresAuth: true,
           permission: 'products.update',
         },
+      },
+      // Нові маршрути для клієнтів
+      {
+        path: '/clients',
+        name: 'clients',
+        component: () => import('pages/ClientsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'clients.read',
+        },
+      },
+      {
+        path: '/clients/:id',
+        name: 'client-details',
+        component: () => import('pages/ClientDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'clients.read',
+        },
+      },
+      {
+        path: '/client-documents',
+        name: 'client-documents',
+        component: () => import('pages/ClientDocumentsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'client_documents.read',
+        },
+      },
+
+      // Нові маршрути для послуг
+      {
+        path: '/services',
+        name: 'services',
+        component: () => import('pages/ServicesPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'services.read',
+        },
+      },
+      {
+        path: '/services/:id',
+        name: 'service-details',
+        component: () => import('pages/ServiceDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'services.read',
+        },
+      },
+
+      // Нові маршрути для тарифів
+      {
+        path: '/tariffs',
+        name: 'tariffs',
+        component: () => import('pages/TariffsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'tariffs.read',
+        },
+      },
+      {
+        path: '/tariffs/:id',
+        name: 'tariff-details',
+        component: () => import('pages/TariffDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'tariffs.read',
+        },
+      },
+
+      // Нові маршрути для рахунків
+      {
+        path: '/invoices',
+        name: 'invoices',
+        component: () => import('pages/InvoicesPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'invoices.read',
+        },
+      },
+      {
+        path: '/invoices/:id',
+        name: 'invoice-details',
+        component: () => import('pages/InvoiceDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'invoices.read',
+        },
+      },
+
+      // Нові маршрути для об'єктів Wialon
+      {
+        path: '/wialon-objects',
+        name: 'wialon-objects',
+        component: () => import('pages/WialonObjectsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'wialon_objects.read',
+        },
+      },
+      {
+        path: '/wialon-objects/:id',
+        name: 'wialon-object-details',
+        component: () => import('pages/WialonObjectDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'wialon_objects.read',
+        },
+      },
+      {
+        path: '/:catchAll(.*)*',
+        component: () => import('pages/ErrorNotFound.vue'),
       },
     ],
   },
