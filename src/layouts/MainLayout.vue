@@ -257,21 +257,6 @@
                   {{ $t('layouts.mainLayout.clientsList') }}
                 </q-item-section>
               </q-item>
-
-              <q-item
-                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.DOCUMENTS.LIST])"
-                clickable
-                v-ripple
-                :to="{ name: 'client-documents' }"
-                dense
-              >
-                <q-item-section avatar>
-                  <q-icon name="description" />
-                </q-item-section>
-                <q-item-section>
-                  {{ $t('layouts.mainLayout.clientDocuments') }}
-                </q-item-section>
-              </q-item>
             </q-expansion-item>
           </template>
 
@@ -606,20 +591,6 @@
                         </q-item-section>
                         <q-item-section>
                           {{ $t('layouts.mainLayout.clientsList') }}
-                        </q-item-section>
-                      </q-item>
-
-                      <q-item
-                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.CLIENTS.DOCUMENTS.LIST])"
-                        clickable
-                        v-ripple
-                        :to="{ name: 'client-documents' }"
-                      >
-                        <q-item-section avatar>
-                          <q-icon name="description" />
-                        </q-item-section>
-                        <q-item-section>
-                          {{ $t('layouts.mainLayout.clientDocuments') }}
                         </q-item-section>
                       </q-item>
                     </q-list>
