@@ -567,6 +567,7 @@ const onInstall = async () => {
   try {
     await StockApi.installProduct({
       product_id: selectedStock.value.product_id,
+      warehouse_id: selectedStock.value.warehouse_id, // Додайте це поле
       object_id: installForm.value.object_id,
       comment: installForm.value.comment,
     })
