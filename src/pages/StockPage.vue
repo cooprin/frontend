@@ -378,7 +378,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
-//import { ObjectsApi } from 'src/api/objects'
+import { ObjectsApi } from 'src/api/objects'
 import { WarehousesApi } from 'src/api/warehouses' // API для об'єктів Wialon
 
 const $q = useQuasar()
@@ -503,17 +503,17 @@ const loadStock = async () => {
   }
 }
 
-//const loadObjects = async () => {
-//  try {
-//    const response = await ObjectsApi.getObjects()
-//    objectOptions.value = response.data.objects.map(obj => ({
-//      label: obj.name,
-//      value: obj.id
-//    }))
-//  } catch (error) {
-//    console.error('Error loading objects:', error)
-//  }
-//}
+const loadObjects = async () => {
+  try {
+    const response = await ObjectsApi.getObjects()
+    objectOptions.value = response.data.objects.map((obj) => ({
+      label: obj.name,
+      value: obj.id,
+    }))
+  } catch (error) {
+    console.error('Error loading objects:', error)
+  }
+}
 
 const loadWarehouses = async () => {
   try {
@@ -764,7 +764,7 @@ const onWriteOff = async () => {
 
 onMounted(() => {
   loadStock()
-  //loadObjects()
+  loadObjects()
   loadWarehouses()
 })
 </script>
