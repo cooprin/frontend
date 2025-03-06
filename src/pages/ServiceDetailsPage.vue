@@ -134,12 +134,6 @@
           <q-tab-panel name="clients">
             <div class="row justify-between q-mb-md">
               <div class="text-h6">{{ $t('services.clients.title') }}</div>
-              <q-btn
-                color="primary"
-                icon="add"
-                :label="$t('services.assignment.assignTo')"
-                @click="openAssignDialog"
-              />
             </div>
 
             <div
@@ -227,9 +221,6 @@
     <!-- Діалог редагування послуги -->
     <service-dialog v-model="showDialog" :edit-data="service" @saved="loadService" />
 
-    <!-- Діалог призначення послуги -->
-    <service-assign-dialog v-model="showAssignDialog" :service="service" @saved="loadService" />
-
     <!-- Діалог припинення надання послуги -->
     <q-dialog v-model="showTerminateDialog" persistent>
       <q-card style="min-width: 400px">
@@ -291,7 +282,6 @@ import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
-import ServiceAssignDialog from 'components/services/ServiceAssignDialog.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -303,7 +293,6 @@ const service = ref(null)
 const loading = ref(true)
 const tab = ref('info')
 const showDialog = ref(false)
-const showAssignDialog = ref(false)
 const showTerminateDialog = ref(false)
 const clientAssignmentToTerminate = ref(null)
 const terminating = ref(false)
@@ -390,10 +379,6 @@ const goBack = () => {
 
 const openEditDialog = () => {
   showDialog.value = true
-}
-
-const openAssignDialog = () => {
-  showAssignDialog.value = true
 }
 
 const openTerminateDialog = (clientAssignment) => {

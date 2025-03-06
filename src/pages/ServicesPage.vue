@@ -127,16 +127,7 @@
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
               <q-btn-group flat>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="info"
-                  icon="people"
-                  @click="openAssignDialog(props.row)"
-                >
-                  <q-tooltip>{{ $t('services.assignment.assignTo') }}</q-tooltip>
-                </q-btn>
+                <!-- Видалено кнопку призначення послуги -->
                 <q-btn
                   flat
                   round
@@ -196,11 +187,7 @@
     </q-dialog>
 
     <service-dialog v-model="showDialog" :edit-data="editService" @saved="loadServices" />
-    <service-assign-dialog
-      v-model="showAssignDialog"
-      :service="serviceToAssign"
-      @saved="loadServices"
-    />
+    <!-- Видалено діалог призначення послуги -->
   </q-page>
 </template>
 
@@ -211,7 +198,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
-import ServiceAssignDialog from 'components/services/ServiceAssignDialog.vue'
+// Видалено імпорт компонента ServiceAssignDialog
 
 const $q = useQuasar()
 const router = useRouter()
@@ -220,10 +207,10 @@ const { t } = useI18n()
 // State
 const loading = ref(false)
 const showDialog = ref(false)
-const showAssignDialog = ref(false)
+// Видалено showAssignDialog
 const showFilters = ref(false)
 const editService = ref(null)
-const serviceToAssign = ref(null)
+// Видалено serviceToAssign
 const services = ref([])
 const deleteDialog = ref(false)
 const serviceToDelete = ref(null)
@@ -391,10 +378,7 @@ const openEditDialog = (service) => {
   showDialog.value = true
 }
 
-const openAssignDialog = (service) => {
-  serviceToAssign.value = service
-  showAssignDialog.value = true
-}
+// Видалено метод openAssignDialog
 
 const confirmDelete = (service) => {
   serviceToDelete.value = service
