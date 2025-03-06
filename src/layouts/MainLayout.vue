@@ -946,7 +946,7 @@ const logout = async () => {
   transform: scale(0.8);
   pointer-events: none;
 }
-.drawer-menu .q-expansion-item .q-item__section--main {
+.drawer-menu .q-expansion-item > .q-expansion-item__container > .q-item > .q-item__section--main {
   font-weight: 600;
 }
 
@@ -954,5 +954,6 @@ const logout = async () => {
 .q-expansion-item__content .q-item {
   padding-left: 48px;
   min-height: 40px;
+  font-weight: normal;
 }
 </style>
