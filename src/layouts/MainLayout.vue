@@ -946,4 +946,13 @@ const logout = async () => {
   transform: scale(0.8);
   pointer-events: none;
 }
+.drawer-menu .q-expansion-item .q-item__section--main {
+  font-weight: 600;
+}
+
+/* Стилі для вкладених елементів */
+.q-expansion-item__content .q-item {
+  padding-left: 48px;
+  min-height: 40px;
+}
 </style>
