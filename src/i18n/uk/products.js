@@ -72,4 +72,6 @@ export default {
     warranty: 'Статус гарантії',
     search: 'Пошук продуктів...',
   },
+  wialonObject: "Об'єкт Wialon",
+  errorLoadingWialonObject: "Помилка при завантаженні даних об'єкта Wialon",
 }

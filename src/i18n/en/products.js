@@ -72,4 +72,6 @@ export default {
     warranty: 'Warranty status',
     search: 'Search products...',
   },
+  wialonObject: 'Wialon Object',
+  errorLoadingWialonObject: 'Error loading Wialon object data',
 }
