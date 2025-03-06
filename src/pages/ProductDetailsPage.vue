@@ -139,8 +139,14 @@
               </template>
               <template v-else-if="product?.current_status === 'installed'">
                 <div class="col-12">
-                  <div class="text-grey">{{ $t('products.objectId') }}</div>
-                  <div>{{ product?.current_object_id || '-' }}</div>
+                  <div class="text-grey">{{ $t('products.wialonObject') }}</div>
+                  <div v-if="wialonObject">
+                    {{ wialonObject.name }} (ID в Wialon: {{ wialonObject.wialon_id }})
+                  </div>
+                  <div v-else-if="loadingWialonObject">
+                    <q-spinner size="xs" /> {{ $t('common.loading') }}
+                  </div>
+                  <div v-else>-</div>
                 </div>
               </template>
             </div>
@@ -228,64 +234,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { ProductsApi } from 'src/api/products'
+import { WialonApi } from 'src/api/wialon'
 import ProductDialog from 'components/products/ProductDialog.vue'
 import { SuppliersApi } from 'src/api/suppliers'
+
 const route = useRoute()
 const $q = useQuasar()
 const { t } = useI18n()
-const hasCharacteristics = computed(() => {
-  return (
-    product.value?.characteristics &&
-    Object.keys(product.value.characteristics).length > 0 &&
-    Object.keys(product.value.characteristics)[0] !== 'none'
-  )
-})
-const productCharacteristics = computed(() => {
-  if (!hasCharacteristics.value) return []
-
-  return Object.entries(product.value.characteristics)
-    .map(([code, data]) => ({
-      code,
-      ...data,
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name))
-})
-
-// Додаємо нові методи
-const getCharacteristicColor = (type) => {
-  const colors = {
-    string: 'blue',
-    number: 'green',
-    date: 'purple',
-    boolean: 'orange',
-    select: 'red',
-  }
-  return colors[type] || 'grey'
-}
-
-const formatCharacteristicValue = (char) => {
-  if (!char.value) return '-'
-
-  switch (char.type) {
-    case 'boolean':
-      return char.value === 'true' || char.value === true ? t('common.yes') : t('common.no')
-
-    case 'date':
-      return formatDate(char.value)
-
-    case 'number':
-      return Number(char.value).toLocaleString()
-
-    default:
-      return char.value
-  }
-}
 
 // State
 const product = ref(null)
@@ -297,6 +258,28 @@ const newStatus = ref(null)
 const objectId = ref(null)
 const updatingStatus = ref(false)
 const currentLocation = ref(null)
+// Новий стан для об'єкта Wialon
+const wialonObject = ref(null)
+const loadingWialonObject = ref(false)
+
+const hasCharacteristics = computed(() => {
+  return (
+    product.value?.characteristics &&
+    Object.keys(product.value.characteristics).length > 0 &&
+    Object.keys(product.value.characteristics)[0] !== 'none'
+  )
+})
+
+const productCharacteristics = computed(() => {
+  if (!hasCharacteristics.value) return []
+
+  return Object.entries(product.value.characteristics)
+    .map(([code, data]) => ({
+      code,
+      ...data,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
 
 // Options
 const statusOptions = [
@@ -305,8 +288,6 @@ const statusOptions = [
   { label: t('products.statuses.in_repair'), value: 'in_repair' },
   { label: t('products.statuses.written_off'), value: 'written_off' },
 ]
-
-// Computed
 
 // Columns
 const movementsColumns = [
@@ -348,13 +329,47 @@ const movementsColumns = [
   },
 ]
 
-// Methods
+// Методи
+const getCharacteristicColor = (type) => {
+  const colors = {
+    string: 'blue',
+    number: 'green',
+    date: 'purple',
+    boolean: 'orange',
+    select: 'red',
+  }
+  return colors[type] || 'grey'
+}
+
+const formatCharacteristicValue = (char) => {
+  if (!char.value) return '-'
+
+  switch (char.type) {
+    case 'boolean':
+      return char.value === 'true' || char.value === true ? t('common.yes') : t('common.no')
+
+    case 'date':
+      return formatDate(char.value)
+
+    case 'number':
+      return Number(char.value).toLocaleString()
+
+    default:
+      return char.value
+  }
+}
+
 const loadProduct = async () => {
   try {
     const response = await ProductsApi.getProduct(route.params.id)
     product.value = response.data.product
 
     await Promise.all([loadMovements(), loadCurrentLocation(), loadSupplierInfo()])
+
+    // Перевіряємо потребу завантаження об'єкта Wialon
+    if (product.value?.current_status === 'installed' && product.value?.current_object_id) {
+      loadWialonObject()
+    }
   } catch {
     $q.notify({
       color: 'negative',
@@ -386,6 +401,40 @@ const loadCurrentLocation = async () => {
     }
   }
 }
+
+// Нова функція для завантаження даних об'єкта Wialon
+const loadWialonObject = async () => {
+  if (!product.value?.current_object_id || product.value?.current_status !== 'installed') {
+    return
+  }
+
+  loadingWialonObject.value = true
+  wialonObject.value = null
+
+  try {
+    const response = await WialonApi.getObject(product.value.current_object_id)
+    wialonObject.value = response.data.object
+  } catch (error) {
+    console.error("Помилка при завантаженні об'єкта Wialon:", error)
+    $q.notify({
+      color: 'warning',
+      message: t('products.errorLoadingWialonObject'),
+      icon: 'warning',
+    })
+  } finally {
+    loadingWialonObject.value = false
+  }
+}
+
+// Відстежуємо зміни ID об'єкта, щоб при зміні перезавантажити інформацію
+watch(
+  () => product.value?.current_object_id,
+  (newVal, oldVal) => {
+    if (newVal && newVal !== oldVal && product.value?.current_status === 'installed') {
+      loadWialonObject()
+    }
+  },
+)
 
 const loadSupplierInfo = async () => {
   if (product.value?.supplier_id) {
