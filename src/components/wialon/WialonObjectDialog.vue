@@ -39,15 +39,27 @@
           />
 
           <!-- Тариф -->
-          <q-select
-            v-model="form.tariff_id"
-            :options="tariffOptions"
-            :label="t('wialonObjects.tariff')"
-            outlined
-            emit-value
-            map-options
-            :loading="loadingTariffs"
-          />
+          <div>
+            <q-toggle
+              v-model="autoAssignTariff"
+              :label="t('wialonObjects.autoAssignTariff')"
+              class="q-mb-sm"
+            />
+
+            <q-select
+              v-if="!autoAssignTariff"
+              v-model="form.tariff_id"
+              :options="tariffOptions"
+              :label="t('wialonObjects.tariff')"
+              outlined
+              emit-value
+              map-options
+              :loading="loadingTariffs"
+            />
+            <div v-else class="text-caption q-pl-sm text-grey">
+              {{ t('wialonObjects.autoTariffAssignment') }}
+            </div>
+          </div>
 
           <!-- Статус -->
           <q-select
@@ -109,6 +121,8 @@ const loadingClients = ref(false)
 const loadingTariffs = ref(false)
 const clientOptions = ref([])
 const tariffOptions = ref([])
+// Автоматичне призначення тарифу
+const autoAssignTariff = ref(true)
 
 // Default form
 const defaultForm = {
@@ -195,6 +209,13 @@ const onSubmit = async () => {
   try {
     const data = { ...form.value }
 
+    // Якщо встановлене автоматичне призначення тарифу, вилучаємо tariff_id з даних
+    if (autoAssignTariff.value) {
+      data.tariff_id = null
+      // Можна додати спеціальний флаг для бекенду, якщо потрібно
+      data.auto_assign_tariff = true
+    }
+
     if (isEdit.value) {
       await WialonApi.updateObject(props.editData.id, data)
       $q.notify({
@@ -232,11 +253,24 @@ watch(
   (newValue) => {
     if (newValue) {
       form.value = { ...defaultForm, ...newValue }
+      // Якщо редагуємо і є тариф, вимикаємо автоматичне призначення
+      autoAssignTariff.value = !newValue.tariff_id
     } else {
       form.value = { ...defaultForm }
+      // При створенні нового об'єкту по замовчуванню вмикаємо автоматичне призначення
+      autoAssignTariff.value = true
     }
   },
   { immediate: true },
+)
+watch(
+  () => autoAssignTariff.value,
+  (newValue) => {
+    if (newValue) {
+      // Якщо включили автоматичне призначення, обнуляємо вибраний тариф
+      form.value.tariff_id = null
+    }
+  },
 )
 
 // Lifecycle

@@ -73,4 +73,6 @@ export default {
   },
   noTariff: 'Тариф не призначено',
   present: 'наразі',
+  autoAssignTariff: 'Автоматично призначити тариф',
+  autoTariffAssignment: 'Тариф буде призначено автоматично на основі налаштувань системи',
 }

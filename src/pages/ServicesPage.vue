@@ -198,7 +198,6 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
-// Видалено імпорт компонента ServiceAssignDialog
 
 const $q = useQuasar()
 const router = useRouter()
@@ -207,7 +206,7 @@ const { t } = useI18n()
 // State
 const loading = ref(false)
 const showDialog = ref(false)
-// Видалено showAssignDialog
+
 const showFilters = ref(false)
 const editService = ref(null)
 // Видалено serviceToAssign
