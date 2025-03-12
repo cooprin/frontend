@@ -278,6 +278,12 @@
           <q-tab-panel name="services">
             <div class="row justify-between q-mb-md">
               <div class="text-h6">{{ $t('clients.tabs.services') }}</div>
+              <q-btn
+                color="primary"
+                icon="add"
+                :label="$t('services.assignment.assignNew')"
+                @click="openAssignServiceDialog"
+              />
             </div>
 
             <div v-if="loadingServices" class="text-center q-pa-md">
@@ -324,15 +330,92 @@
 
           <!-- Вкладка з рахунками -->
           <q-tab-panel name="invoices">
-            <div class="text-h6">{{ $t('clients.tabs.invoices') }}</div>
-            <div class="text-center q-pa-md text-grey">
-              {{ $t('invoices.noInvoices') }}
-              <!-- Буде реалізовано пізніше -->
+            <div class="row justify-between q-mb-md">
+              <div class="text-h6">{{ $t('clients.tabs.invoices') }}</div>
+              <q-btn
+                color="primary"
+                icon="add"
+                :label="$t('invoices.create')"
+                @click="openCreateInvoiceDialog"
+              />
             </div>
+
+            <div v-if="loadingInvoices" class="text-center q-pa-md">
+              <q-spinner color="primary" size="3em" />
+            </div>
+
+            <div
+              v-else-if="!clientInvoices || clientInvoices.items.length === 0"
+              class="text-center q-pa-md text-grey"
+            >
+              {{ $t('invoices.noInvoices') }}
+            </div>
+
+            <q-table
+              v-else
+              :rows="clientInvoices.items"
+              :columns="invoiceColumns"
+              row-key="id"
+              :pagination="{ rowsPerPage: 0 }"
+              flat
+              bordered
+            >
+              <!-- Слот для дати рахунку -->
+              <template v-slot:body-cell-invoice_date="props">
+                <q-td :props="props">
+                  {{ formatDate(props.row.invoice_date) }}
+                </q-td>
+              </template>
+
+              <!-- Слот для розрахункового періоду -->
+              <template v-slot:body-cell-billing_period="props">
+                <q-td :props="props">
+                  {{ $t(`invoices.months.${props.row.billing_month}`) }}
+                  {{ props.row.billing_year }}
+                </q-td>
+              </template>
+
+              <!-- Слот для загальної суми -->
+              <template v-slot:body-cell-total_amount="props">
+                <q-td :props="props" class="text-right">
+                  {{ formatCurrency(props.row.total_amount) }}
+                </q-td>
+              </template>
+
+              <!-- Слот для статусу -->
+              <template v-slot:body-cell-status="props">
+                <q-td :props="props">
+                  <q-chip :color="getInvoiceStatusColor(props.row.status)" text-color="white" dense>
+                    {{ $t(`invoices.statuses.${props.row.status}`) }}
+                  </q-chip>
+                </q-td>
+              </template>
+
+              <!-- Слот для дій -->
+              <template v-slot:body-cell-actions="props">
+                <q-td :props="props" class="text-center">
+                  <q-btn
+                    flat
+                    round
+                    dense
+                    color="primary"
+                    icon="visibility"
+                    @click="openInvoiceDetails(props.row)"
+                  >
+                    <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+                  </q-btn>
+                </q-td>
+              </template>
+            </q-table>
           </q-tab-panel>
         </q-tab-panels>
       </q-card>
     </template>
+    <client-service-assign-dialog
+      v-model="showServiceAssignDialog"
+      :client-id="client?.id"
+      @saved="loadClientServices"
+    />
 
     <!-- Діалог завантаження документа -->
     <q-dialog v-model="uploadDialog">
@@ -405,13 +488,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { ServicesApi } from 'src/api/services'
+import ClientServiceAssignDialog from 'components/services/ClientServiceAssignDialog.vue'
+import { InvoicesApi } from 'src/api/invoices'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -453,6 +538,52 @@ const uploading = ref(false)
 const deleteDocumentDialog = ref(false)
 const documentToDelete = ref(null)
 const deletingDocument = ref(false)
+const showServiceAssignDialog = ref(false)
+const clientInvoices = ref({ items: [], total: 0 })
+const loadingInvoices = ref(false)
+const showInvoiceDialog = ref(false)
+
+const loadClientInvoices = async () => {
+  if (!client.value) return
+
+  loadingInvoices.value = true
+  try {
+    const response = await InvoicesApi.getClientInvoices(client.value.id, { perPage: 'All' })
+    clientInvoices.value = response.data
+  } catch (error) {
+    console.error('Error loading client invoices:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+    clientInvoices.value = { items: [], total: 0 }
+  } finally {
+    loadingInvoices.value = false
+  }
+}
+
+const openCreateInvoiceDialog = () => {
+  showInvoiceDialog.value = true
+}
+
+const openInvoiceDetails = (invoice) => {
+  router.push({ name: 'invoice-details', params: { id: invoice.id } })
+}
+
+const getInvoiceStatusColor = (status) => {
+  const colors = {
+    draft: 'grey',
+    issued: 'info',
+    paid: 'positive',
+    cancelled: 'negative',
+  }
+  return colors[status] || 'grey'
+}
+
+const openAssignServiceDialog = () => {
+  showServiceAssignDialog.value = true
+}
 
 const openServiceDetails = (service) => {
   router.push({ name: 'service-details', params: { id: service.service_id } })
@@ -470,7 +601,7 @@ const loadClient = async () => {
     const clientId = route.params.id
     const response = await ClientsApi.getClient(clientId)
     client.value = response.data.client
-    await loadClientServices() // Завантажуємо послуги після завантаження клієнта
+    await Promise.all([loadClientServices(), loadClientInvoices()])
   } catch (error) {
     console.error('Error loading client:', error)
     $q.notify({
@@ -483,6 +614,51 @@ const loadClient = async () => {
     loading.value = false
   }
 }
+
+const invoiceColumns = computed(() => [
+  {
+    name: 'invoice_number',
+    required: true,
+    label: t('invoices.invoiceNumber'),
+    align: 'left',
+    field: 'invoice_number',
+    sortable: true,
+  },
+  {
+    name: 'invoice_date',
+    label: t('invoices.invoiceDate'),
+    align: 'left',
+    field: 'invoice_date',
+    sortable: true,
+  },
+  {
+    name: 'billing_period',
+    label: t('invoices.billingPeriod'),
+    align: 'left',
+    field: (row) => `${row.billing_month}-${row.billing_year}`,
+    sortable: true,
+  },
+  {
+    name: 'total_amount',
+    label: t('invoices.totalAmount'),
+    align: 'right',
+    field: 'total_amount',
+    sortable: true,
+  },
+  {
+    name: 'status',
+    label: t('invoices.status'),
+    align: 'center',
+    field: 'status',
+    sortable: true,
+  },
+  {
+    name: 'actions',
+    label: t('common.actions'),
+    align: 'center',
+    sortable: false,
+  },
+])
 
 const goBack = () => {
   router.push({ name: 'clients' })
