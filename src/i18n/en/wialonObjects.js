@@ -73,6 +73,4 @@ export default {
   },
   noTariff: 'No tariff assigned',
   present: 'present',
-  autoAssignTariff: 'Automatically assign tariff',
-  autoTariffAssignment: 'Tariff will be assigned automatically based on system settings',
 }

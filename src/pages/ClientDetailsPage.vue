@@ -276,11 +276,50 @@
 
           <!-- Вкладка з послугами -->
           <q-tab-panel name="services">
-            <div class="text-h6">{{ $t('clients.tabs.services') }}</div>
-            <div class="text-center q-pa-md text-grey">
-              {{ $t('services.noServices') }}
-              <!-- Буде реалізовано пізніше -->
+            <div class="row justify-between q-mb-md">
+              <div class="text-h6">{{ $t('clients.tabs.services') }}</div>
             </div>
+
+            <div v-if="loadingServices" class="text-center q-pa-md">
+              <q-spinner color="primary" size="3em" />
+            </div>
+
+            <div
+              v-else-if="!clientServices || clientServices.length === 0"
+              class="text-center q-pa-md text-grey"
+            >
+              {{ $t('services.noServices') }}
+            </div>
+
+            <q-list v-else bordered separator>
+              <q-item
+                v-for="service in clientServices"
+                :key="service.id"
+                clickable
+                @click="openServiceDetails(service)"
+              >
+                <q-item-section>
+                  <q-item-label>{{ service.service_name }}</q-item-label>
+                  <q-item-label caption>
+                    {{ $t(`services.types.${service.service_type}`) }}
+                  </q-item-label>
+                </q-item-section>
+
+                <q-item-section side>
+                  <q-chip
+                    :color="service.status === 'active' ? 'positive' : 'grey'"
+                    text-color="white"
+                    dense
+                  >
+                    {{ $t(`services.statuses.${service.status}`) }}
+                  </q-chip>
+                </q-item-section>
+
+                <q-item-section side>
+                  <q-item-label>{{ formatCurrency(service.calculated_price) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
           </q-tab-panel>
 
           <!-- Вкладка з рахунками -->
@@ -372,11 +411,35 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
+import { ServicesApi } from 'src/api/services'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+
+const clientServices = ref([])
+const loadingServices = ref(false)
+
+const loadClientServices = async () => {
+  if (!client.value) return
+
+  loadingServices.value = true
+  try {
+    const response = await ServicesApi.getClientServices(client.value.id)
+    clientServices.value = response.data.services
+  } catch (error) {
+    console.error('Error loading client services:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+    clientServices.value = []
+  } finally {
+    loadingServices.value = false
+  }
+}
 
 // State
 const client = ref(null)
@@ -391,6 +454,15 @@ const deleteDocumentDialog = ref(false)
 const documentToDelete = ref(null)
 const deletingDocument = ref(false)
 
+const openServiceDetails = (service) => {
+  router.push({ name: 'service-details', params: { id: service.service_id } })
+}
+
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return '-'
+  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+}
+
 // Methods
 const loadClient = async () => {
   loading.value = true
@@ -398,6 +470,7 @@ const loadClient = async () => {
     const clientId = route.params.id
     const response = await ClientsApi.getClient(clientId)
     client.value = response.data.client
+    await loadClientServices() // Завантажуємо послуги після завантаження клієнта
   } catch (error) {
     console.error('Error loading client:', error)
     $q.notify({
