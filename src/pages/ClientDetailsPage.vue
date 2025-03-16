@@ -484,7 +484,6 @@ import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { ServicesApi } from 'src/api/services'
-
 import { InvoicesApi } from 'src/api/invoices'
 
 const $q = useQuasar()
@@ -527,7 +526,7 @@ const uploading = ref(false)
 const deleteDocumentDialog = ref(false)
 const documentToDelete = ref(null)
 const deletingDocument = ref(false)
-const clientInvoices = ref({ items: [], total: 0 })
+const clientInvoices = ref({ invoices: [], total: 0 })
 const loadingInvoices = ref(false)
 const showInvoiceDialog = ref(false)
 
