@@ -278,12 +278,6 @@
           <q-tab-panel name="services">
             <div class="row justify-between q-mb-md">
               <div class="text-h6">{{ $t('clients.tabs.services') }}</div>
-              <q-btn
-                color="primary"
-                icon="add"
-                :label="$t('services.assignment.assignNew')"
-                @click="openAssignServiceDialog"
-              />
             </div>
 
             <div v-if="loadingServices" class="text-center q-pa-md">
@@ -411,11 +405,6 @@
         </q-tab-panels>
       </q-card>
     </template>
-    <client-service-assign-dialog
-      v-model="showServiceAssignDialog"
-      :client-id="client?.id"
-      @saved="loadClientServices"
-    />
 
     <!-- Діалог завантаження документа -->
     <q-dialog v-model="uploadDialog">
@@ -495,7 +484,7 @@ import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { ServicesApi } from 'src/api/services'
-import ClientServiceAssignDialog from 'components/services/ClientServiceAssignDialog.vue'
+
 import { InvoicesApi } from 'src/api/invoices'
 
 const $q = useQuasar()
@@ -538,7 +527,6 @@ const uploading = ref(false)
 const deleteDocumentDialog = ref(false)
 const documentToDelete = ref(null)
 const deletingDocument = ref(false)
-const showServiceAssignDialog = ref(false)
 const clientInvoices = ref({ items: [], total: 0 })
 const loadingInvoices = ref(false)
 const showInvoiceDialog = ref(false)
@@ -579,10 +567,6 @@ const getInvoiceStatusColor = (status) => {
     cancelled: 'negative',
   }
   return colors[status] || 'grey'
-}
-
-const openAssignServiceDialog = () => {
-  showServiceAssignDialog.value = true
 }
 
 const openServiceDetails = (service) => {

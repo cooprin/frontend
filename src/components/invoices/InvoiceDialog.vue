@@ -277,14 +277,24 @@ const monthOptions = computed(() => {
 })
 
 // Доступні послуги для вибраного клієнта
+
 const availableServiceOptions = computed(() => {
-  if (!form.value.client_id || clientServices.value.length === 0) {
-    return serviceOptions.value
+  if (!form.value.client_id) {
+    return []
   }
 
-  // Фільтруємо послуги, які призначені клієнту
+  // Показуємо послуги типу "fixed" незалежно від того, чи призначені вони клієнту,
+  // та послуги типу "object_based", які призначені клієнту
   return serviceOptions.value.filter((option) => {
-    return clientServices.value.some((service) => service.service_id === option.value)
+    const service = serviceOptions.value.find((s) => s.value === option.value)
+
+    // Послуги з фіксованою ціною (fixed) показуємо завжди
+    if (service && service.type === 'fixed') {
+      return true
+    }
+
+    // Послуги на основі об'єктів (object_based) показуємо тільки якщо вони призначені клієнту
+    return clientServices.value.some((clientService) => clientService.service_id === option.value)
   })
 })
 

@@ -26,11 +26,6 @@ export const ServicesApi = {
     return api.delete(`/services/${id}`)
   },
 
-  // Призначення послуги клієнту
-  assignServiceToClient: (data) => {
-    return api.post('/services/assign', data)
-  },
-
   // Припинення надання послуги клієнту
   terminateClientService: (id, data) => {
     return api.post(`/services/terminate/${id}`, data)
