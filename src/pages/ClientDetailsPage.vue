@@ -544,7 +544,7 @@ const loadClientInvoices = async () => {
       message: t('common.errors.loading'),
       icon: 'error',
     })
-    clientInvoices.value = { items: [], total: 0 }
+    clientInvoices.value = { invoices: [], total: 0 }
   } finally {
     loadingInvoices.value = false
   }
