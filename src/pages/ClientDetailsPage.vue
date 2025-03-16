@@ -536,7 +536,10 @@ const loadClientInvoices = async () => {
   loadingInvoices.value = true
   try {
     const response = await InvoicesApi.getClientInvoices(client.value.id, { perPage: 'All' })
-    clientInvoices.value = response.data
+    clientInvoices.value = {
+      items: response.data.invoices,
+      total: response.data.total,
+    }
   } catch (error) {
     console.error('Error loading client invoices:', error)
     $q.notify({
