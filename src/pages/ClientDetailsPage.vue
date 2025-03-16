@@ -388,16 +388,50 @@
               <!-- Слот для дій -->
               <template v-slot:body-cell-actions="props">
                 <q-td :props="props" class="text-center">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="primary"
-                    icon="visibility"
-                    @click="openInvoiceDetails(props.row)"
-                  >
-                    <q-tooltip>{{ $t('common.view') }}</q-tooltip>
-                  </q-btn>
+                  <q-btn-group flat>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      color="primary"
+                      icon="visibility"
+                      @click="openInvoiceDetails(props.row)"
+                    >
+                      <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      flat
+                      round
+                      dense
+                      color="primary"
+                      icon="description"
+                      @click="generateInvoicePdf(props.row)"
+                    >
+                      <q-tooltip>{{ $t('invoices.generatePdf') }}</q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      v-if="props.row.status === 'issued'"
+                      flat
+                      round
+                      dense
+                      color="positive"
+                      icon="payment"
+                      @click="markAsPaid(props.row)"
+                    >
+                      <q-tooltip>{{ $t('invoices.markAsPaid') }}</q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      v-if="props.row.status === 'issued'"
+                      flat
+                      round
+                      dense
+                      color="negative"
+                      icon="cancel"
+                      @click="markAsCancelled(props.row)"
+                    >
+                      <q-tooltip>{{ $t('invoices.markAsCancelled') }}</q-tooltip>
+                    </q-btn>
+                  </q-btn-group>
                 </q-td>
               </template>
             </q-table>
@@ -473,6 +507,100 @@
 
     <!-- Діалог редагування клієнта -->
     <client-dialog v-model="showDialog" :edit-data="client" @saved="loadClient" />
+
+    <!-- Діалог оплати рахунку -->
+    <q-dialog v-model="paymentDialog" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('invoices.markAsPaid') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="savePayment" class="q-gutter-md">
+            <!-- Дата оплати -->
+            <q-input
+              v-model="paymentForm.payment_date"
+              :label="$t('invoices.paymentDate')"
+              outlined
+              :rules="[(val) => !!val || t('common.validation.required')]"
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="paymentForm.payment_date" mask="YYYY-MM-DD">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="OK" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+
+            <!-- Сума платежу -->
+            <q-input
+              v-model.number="paymentForm.amount"
+              :label="$t('invoices.paymentAmount')"
+              type="number"
+              outlined
+              :rules="[(val) => val > 0 || t('common.validation.minValue', { min: 0.01 })]"
+              prefix="₴"
+            />
+
+            <!-- Тип платежу -->
+            <q-select
+              v-model="paymentForm.payment_type"
+              :options="paymentTypeOptions"
+              :label="$t('invoices.paymentType')"
+              outlined
+              map-options
+              emit-value
+            />
+
+            <!-- Примітки -->
+            <q-input
+              v-model="paymentForm.notes"
+              :label="$t('invoices.notes')"
+              type="textarea"
+              outlined
+              autogrow
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="primary" type="submit" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог скасування рахунку -->
+    <q-dialog v-model="cancelDialog" persistent>
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('invoices.markAsCancelled') }}</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="cancelInvoice" class="q-gutter-md">
+            <!-- Примітки -->
+            <q-input
+              v-model="paymentForm.notes"
+              :label="$t('invoices.cancellationReason')"
+              type="textarea"
+              outlined
+              autogrow
+            />
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+              <q-btn :label="$t('common.save')" color="negative" type="submit" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -569,6 +697,153 @@ const getInvoiceStatusColor = (status) => {
     cancelled: 'negative',
   }
   return colors[status] || 'grey'
+}
+
+const paymentTypeOptions = [
+  { label: t('invoices.paymentTypes.regular'), value: 'regular' },
+  { label: t('invoices.paymentTypes.advance'), value: 'advance' },
+  { label: t('invoices.paymentTypes.debt'), value: 'debt' },
+  { label: t('invoices.paymentTypes.adjustment'), value: 'adjustment' },
+]
+
+// Функція для форматування дати
+const formatDate = (dateString, format = 'DD.MM.YYYY') => {
+  if (!dateString) return '-'
+  const dateObj = new Date(dateString)
+
+  // Проста функція форматування, можна замінити на бібліотеку
+  if (format === 'DD.MM.YYYY') {
+    const day = String(dateObj.getDate()).padStart(2, '0')
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const year = dateObj.getFullYear()
+    return `${day}.${month}.${year}`
+  } else if (format === 'YYYY-MM-DD') {
+    const day = String(dateObj.getDate()).padStart(2, '0')
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+    const year = dateObj.getFullYear()
+    return `${year}-${month}-${day}`
+  }
+
+  return dateString
+}
+
+// Метод для генерації PDF
+const generateInvoicePdf = async (invoice) => {
+  try {
+    const response = await InvoicesApi.generateInvoicePdf(invoice.id)
+
+    // Створюємо URL для скачування PDF
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+
+    // Створюємо тимчасове посилання для скачування
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `invoice-${invoice.invoice_number}.pdf`)
+    document.body.appendChild(link)
+    link.click()
+
+    // Очищаємо після скачування
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    $q.notify({
+      color: 'positive',
+      message: 'PDF успішно згенеровано',
+      icon: 'check',
+    })
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка при генерації PDF',
+      icon: 'error',
+    })
+  }
+}
+
+// Діалоги для зміни статусу
+const paymentDialog = ref(false)
+const cancelDialog = ref(false)
+const currentInvoice = ref(null)
+const paymentForm = ref({
+  payment_date: '',
+  amount: 0,
+  payment_type: 'regular',
+  notes: '',
+})
+
+// Метод для відкриття діалогу оплати
+const markAsPaid = (invoice) => {
+  currentInvoice.value = invoice
+  paymentForm.value = {
+    payment_date: formatDate(new Date(), 'YYYY-MM-DD'),
+    amount: invoice.total_amount,
+    payment_type: 'regular',
+    notes: '',
+  }
+  paymentDialog.value = true
+}
+
+// Метод для відкриття діалогу скасування
+const markAsCancelled = (invoice) => {
+  currentInvoice.value = invoice
+  cancelDialog.value = true
+}
+
+// Метод для збереження оплати
+const savePayment = async () => {
+  try {
+    await InvoicesApi.updateInvoiceStatus(currentInvoice.value.id, {
+      status: 'paid',
+      payment_date: paymentForm.value.payment_date,
+      amount: paymentForm.value.amount,
+      payment_type: paymentForm.value.payment_type,
+      notes: paymentForm.value.notes,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.paymentSuccess'),
+      icon: 'check',
+    })
+
+    paymentDialog.value = false
+    loadClientInvoices() // Перезавантажуємо рахунки
+  } catch (error) {
+    console.error('Error updating invoice status:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.saving'),
+      icon: 'error',
+    })
+  }
+}
+
+// Метод для скасування рахунку
+const cancelInvoice = async () => {
+  try {
+    await InvoicesApi.updateInvoiceStatus(currentInvoice.value.id, {
+      status: 'cancelled',
+      notes: paymentForm.value.notes,
+    })
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.cancelSuccess'),
+      icon: 'check',
+    })
+
+    cancelDialog.value = false
+    loadClientInvoices() // Перезавантажуємо рахунки
+  } catch (error) {
+    console.error('Error cancelling invoice:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.saving'),
+      icon: 'error',
+    })
+  }
 }
 
 const openServiceDetails = (service) => {

@@ -40,4 +40,10 @@ export const InvoicesApi = {
     if (!filePath) return null
     return `${process.env.API_URL}/uploads/${filePath}`
   },
+  // Генерація PDF рахунку
+  generateInvoicePdf: (id) => {
+    return api.get(`/services/invoices/${id}/pdf`, {
+      responseType: 'blob', // Важливо для отримання бінарних даних
+    })
+  },
 }
