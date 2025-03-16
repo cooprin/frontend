@@ -956,4 +956,39 @@ const logout = async () => {
   min-height: 40px;
   font-weight: normal;
 }
+/* Стилі для меню */
+/* Стилі для лівого меню - колір як у футера */
+.drawer-menu {
+  background-color: var(--q-primary);
+}
+
+/* Стилі для світлої теми в лівому меню */
+.body--light .drawer-menu .q-item,
+.body--light .drawer-menu .q-icon {
+  color: #ffffff !important; /* Білий текст для контрасту з кольоровим фоном */
+  transition: all 0.3s ease;
+}
+
+.body--light .drawer-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.body--light .drawer-menu .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+}
+
+/* Стилі для темної теми в лівому меню */
+.body--dark .drawer-menu {
+  background-color: var(--q-primary);
+}
+
+.body--dark .drawer-menu .q-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.body--dark .drawer-menu .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: 500;
+}
 </style>
