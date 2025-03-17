@@ -38,18 +38,25 @@
             :loading="loadingClients"
           />
 
-          <!-- Дата створення/зміни власника -->
-          <q-date
+          <!-- Дата операції (компактний варіант) -->
+          <q-input
             v-model="form.operation_date"
             :label="t('wialonObjects.operationDate')"
             outlined
-            today-btn
-            :max="maxDate"
+            readonly
           >
-            <div class="row items-center justify-end">
-              <q-btn v-close-popup label="OK" color="primary" flat />
-            </div>
-          </q-date>
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                  <q-date v-model="form.operation_date" mask="YYYY-MM-DD" :max="maxDate">
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="OK" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
 
           <!-- Тариф -->
           <q-select
@@ -135,7 +142,7 @@ const defaultForm = {
   client_id: null,
   tariff_id: null,
   status: 'active',
-  operation_date: date.formatDate(new Date(), 'YYYY/MM/DD'),
+  operation_date: date.formatDate(new Date(), 'YYYY-MM-DD'),
 }
 
 const form = ref({ ...defaultForm })
@@ -252,7 +259,7 @@ watch(
       form.value = {
         ...defaultForm,
         ...newValue,
-        operation_date: date.formatDate(new Date(), 'YYYY/MM/DD'),
+        operation_date: newValue.operation_date || date.formatDate(new Date(), 'YYYY-MM-DD'),
       }
     } else {
       form.value = { ...defaultForm }
