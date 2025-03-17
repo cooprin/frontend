@@ -94,4 +94,13 @@ export default {
   },
   markAsPaid: 'Mark as Paid',
   markAsCancelled: 'Mark as Cancelled',
+  generateTitle: 'Generate Invoices',
+  generate: 'Generate',
+  generateInvoices: 'Generate Invoices',
+  generationInfo:
+    'Invoices will be created for all clients with active object-based services for the selected period.',
+  generatedSuccess: 'Successfully created {count} invoices',
+  month: 'Month',
+  year: 'Year',
+  optional: 'optional',
 }

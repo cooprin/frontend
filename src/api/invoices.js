@@ -46,4 +46,7 @@ export const InvoicesApi = {
       responseType: 'blob', // Важливо для отримання бінарних даних
     })
   },
+  generateInvoices: (data) => {
+    return api.post('/services/invoices/generate', data)
+  },
 }

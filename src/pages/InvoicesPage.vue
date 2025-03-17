@@ -95,6 +95,13 @@
               </template>
             </q-input>
             <q-btn
+              color="deep-orange"
+              icon="receipt_long"
+              :label="$t('invoices.generateInvoices')"
+              @click="showGenerateDialog = true"
+              class="q-ml-sm"
+            />
+            <q-btn
               color="primary"
               icon="add"
               class="q-ml-md"
@@ -155,6 +162,7 @@
     </q-card>
 
     <invoice-dialog v-model="showDialog" @saved="loadInvoices" />
+    <invoice-generator-dialog v-model="showGenerateDialog" @generated="onInvoicesGenerated" />
   </q-page>
 </template>
 
@@ -166,6 +174,7 @@ import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import { date } from 'quasar'
+import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -176,6 +185,19 @@ const loading = ref(false)
 const showDialog = ref(false)
 const showFilters = ref(false)
 const invoices = ref([])
+const showGenerateDialog = ref(false)
+
+const onInvoicesGenerated = (invoices) => {
+  // Перезавантажити дані
+  loadInvoices()
+
+  // Показати повідомлення про успіх
+  $q.notify({
+    color: 'positive',
+    message: t('invoices.generatedSuccess', { count: invoices.length }),
+    icon: 'check',
+  })
+}
 
 const pagination = ref({
   sortBy: 'invoice_date',

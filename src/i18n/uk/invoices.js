@@ -94,4 +94,13 @@ export default {
   },
   markAsPaid: 'Позначити як оплачений',
   markAsCancelled: 'Позначити як скасований',
+  generateTitle: 'Створення рахунків',
+  generate: 'Згенерувати рахунки',
+  generateInvoices: 'Згенерувати рахунки',
+  generationInfo:
+    "Буде створено рахунки для всіх клієнтів з активними послугами на основі об'єктів за вибраний період.",
+  generatedSuccess: 'Успішно створено {count} рахунків',
+  month: 'Місяць',
+  year: 'Рік',
+  optional: "необов'язково",
 }
