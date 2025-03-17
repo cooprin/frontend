@@ -155,6 +155,33 @@ const routes = [
       //  },
       //},
 
+      // Маршрути для платежів
+      {
+        path: '/payments',
+        component: () => import('layouts/MainLayout.vue'),
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '',
+            name: 'payments',
+            component: () => import('pages/PaymentsPage.vue'),
+            meta: {
+              requiresAuth: true,
+              requiredPermissions: ['payments.read'],
+            },
+          },
+          {
+            path: ':id',
+            name: 'payment-details',
+            component: () => import('pages/PaymentDetailsPage.vue'),
+            meta: {
+              requiresAuth: true,
+              requiredPermissions: ['payments.read'],
+            },
+          },
+        ],
+      },
+
       // Нові маршрути для послуг
       {
         path: '/services',

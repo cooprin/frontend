@@ -1,0 +1,404 @@
+<template>
+  <div>
+    <q-card flat bordered>
+      <q-card-section>
+        <div class="row items-center">
+          <div class="text-h6">{{ $t('payments.objectHistory') }}</div>
+          <q-space />
+          <q-btn
+            :icon="showFilters ? 'expand_less' : 'expand_more'"
+            :label="showFilters ? $t('common.hideFilters') : $t('common.showFilters')"
+            flat
+            color="primary"
+            @click="showFilters = !showFilters"
+          />
+        </div>
+
+        <q-slide-transition>
+          <div v-show="showFilters" class="q-mt-md">
+            <div class="row q-col-gutter-sm">
+              <!-- Рік -->
+              <div class="col-12 col-sm-6">
+                <q-select
+                  v-model="filters.year"
+                  :options="yearOptions"
+                  :label="$t('payments.filters.year')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
+
+              <!-- Місяць -->
+              <div class="col-12 col-sm-6">
+                <q-select
+                  v-model="filters.month"
+                  :options="monthOptions"
+                  :label="$t('payments.filters.month')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
+
+              <!-- Кнопки -->
+              <div class="col-12 q-gutter-x-sm">
+                <q-btn color="primary" :label="$t('common.clearFilters')" @click="clearFilters" />
+              </div>
+            </div>
+          </div>
+        </q-slide-transition>
+      </q-card-section>
+
+      <q-card-section>
+        <div v-if="loading" class="text-center q-pa-md">
+          <q-spinner color="primary" size="3em" />
+          <div class="q-mt-sm">{{ $t('common.loading') }}</div>
+        </div>
+
+        <div v-else-if="payments.length === 0" class="text-center q-pa-md text-grey">
+          {{ $t('payments.noPayments') }}
+        </div>
+
+        <q-table
+          v-else
+          :rows="payments"
+          :columns="columns"
+          row-key="id"
+          :pagination="{ rowsPerPage: 0 }"
+          flat
+          bordered
+        >
+          <!-- Слот для дати платежу -->
+          <template v-slot:body-cell-payment_date="props">
+            <q-td :props="props">
+              {{ formatDate(props.row.payment_date) }}
+            </q-td>
+          </template>
+
+          <!-- Слот для періоду -->
+          <template v-slot:body-cell-billing_period="props">
+            <q-td :props="props">
+              {{ $t(`payments.months.${props.row.billing_month}`) }}
+              {{ props.row.billing_year }}
+            </q-td>
+          </template>
+
+          <!-- Слот для суми -->
+          <template v-slot:body-cell-amount="props">
+            <q-td :props="props" class="text-right">
+              {{ formatCurrency(props.row.amount) }}
+            </q-td>
+          </template>
+
+          <!-- Слот для тарифу -->
+          <template v-slot:body-cell-tariff="props">
+            <q-td :props="props">
+              <div>{{ props.row.tariff_name }}</div>
+              <div class="text-caption">{{ formatCurrency(props.row.tariff_price) }}</div>
+            </q-td>
+          </template>
+
+          <!-- Слот для типу платежу -->
+          <template v-slot:body-cell-payment_type="props">
+            <q-td :props="props">
+              <q-chip :color="getPaymentTypeColor(props.row.payment_type)" text-color="white" dense>
+                {{ $t(`payments.types.${props.row.payment_type}`) }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Слот для статусу -->
+          <template v-slot:body-cell-status="props">
+            <q-td :props="props">
+              <q-chip :color="getPaymentStatusColor(props.row.status)" text-color="white" dense>
+                {{ $t(`payments.statuses.${props.row.status}`) }}
+              </q-chip>
+            </q-td>
+          </template>
+
+          <!-- Слот для дій -->
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="text-center">
+              <q-btn
+                flat
+                round
+                dense
+                color="primary"
+                icon="visibility"
+                @click="openPaymentDetails(props.row)"
+              >
+                <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+
+    <!-- Зведена статистика платежів за об'єктом -->
+    <q-card flat bordered class="q-mt-md" v-if="objectInfo">
+      <q-card-section>
+        <div class="text-h6">{{ $t('payments.statistics.objectSummary') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <div class="row q-col-gutter-md">
+          <!-- Загальна сума оплат -->
+          <div class="col-12 col-sm-4">
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>{{ $t('payments.statistics.totalPaid') }}</q-item-label>
+                <q-item-label class="text-h5 text-primary">
+                  {{ formatCurrency(totalPaid) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Кількість платежів -->
+          <div class="col-12 col-sm-4">
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>{{ $t('payments.statistics.paymentsCount') }}</q-item-label>
+                <q-item-label class="text-h5 text-secondary">
+                  {{ payments.length }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+
+          <!-- Поточний тариф -->
+          <div class="col-12 col-sm-4">
+            <q-item>
+              <q-item-section>
+                <q-item-label caption>{{ $t('payments.statistics.currentTariff') }}</q-item-label>
+                <q-item-label class="text-h5 text-accent">
+                  {{ objectInfo.current_price ? formatCurrency(objectInfo.current_price) : '-' }}
+                </q-item-label>
+                <q-item-label caption v-if="objectInfo.current_tariff">
+                  {{ objectInfo.current_tariff }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { PaymentsApi } from 'src/api/payments'
+
+const props = defineProps({
+  objectId: {
+    type: String,
+    required: true,
+  },
+})
+
+const router = useRouter()
+const { t } = useI18n()
+
+// State
+const loading = ref(false)
+const payments = ref([])
+const objectInfo = ref(null)
+const showFilters = ref(false)
+const totalItems = ref(0)
+
+// Фільтри
+const filters = ref({
+  year: null,
+  month: null,
+})
+
+// Обчислювані властивості
+const totalPaid = computed(() => {
+  return payments.value.reduce((total, payment) => total + payment.amount, 0)
+})
+
+// Опції
+const yearOptions = computed(() => {
+  const currentYear = new Date().getFullYear()
+  const years = []
+  for (let i = currentYear - 3; i <= currentYear; i++) {
+    years.push({ label: i.toString(), value: i.toString() })
+  }
+  return years
+})
+
+const monthOptions = computed(() => [
+  { label: t('payments.months.1'), value: '1' },
+  { label: t('payments.months.2'), value: '2' },
+  { label: t('payments.months.3'), value: '3' },
+  { label: t('payments.months.4'), value: '4' },
+  { label: t('payments.months.5'), value: '5' },
+  { label: t('payments.months.6'), value: '6' },
+  { label: t('payments.months.7'), value: '7' },
+  { label: t('payments.months.8'), value: '8' },
+  { label: t('payments.months.9'), value: '9' },
+  { label: t('payments.months.10'), value: '10' },
+  { label: t('payments.months.11'), value: '11' },
+  { label: t('payments.months.12'), value: '12' },
+])
+
+// Columns
+const columns = computed(() => [
+  {
+    name: 'payment_date',
+    required: true,
+    label: t('payments.date'),
+    align: 'left',
+    field: 'payment_date',
+    sortable: true,
+  },
+  {
+    name: 'billing_period',
+    label: t('payments.billingPeriod'),
+    align: 'left',
+    field: (row) => `${row.billing_month}-${row.billing_year}`,
+    sortable: true,
+  },
+  {
+    name: 'amount',
+    label: t('payments.amount'),
+    align: 'right',
+    field: 'amount',
+    sortable: true,
+  },
+  {
+    name: 'tariff',
+    label: t('payments.tariff'),
+    align: 'left',
+    field: 'tariff_name',
+    sortable: true,
+  },
+  {
+    name: 'payment_type',
+    label: t('payments.type'),
+    align: 'center',
+    field: 'payment_type',
+    sortable: true,
+  },
+  {
+    name: 'status',
+    label: t('payments.status'),
+    align: 'center',
+    field: 'status',
+    sortable: true,
+  },
+  {
+    name: 'actions',
+    label: t('common.actions'),
+    align: 'center',
+    sortable: false,
+  },
+])
+
+// Methods
+const loadPaymentHistory = async () => {
+  if (!props.objectId) return
+
+  loading.value = true
+  try {
+    const params = {
+      perPage: 'All',
+      year: filters.value.year,
+      month: filters.value.month,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
+    })
+
+    const response = await PaymentsApi.getObjectPaymentHistory(props.objectId, params)
+    payments.value = response.data.payments
+    objectInfo.value = response.data.object
+    totalItems.value = response.data.total
+  } catch (error) {
+    console.error('Error loading payment history:', error)
+    payments.value = []
+    objectInfo.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+const clearFilters = () => {
+  filters.value = {
+    year: null,
+    month: null,
+  }
+}
+
+const openPaymentDetails = (payment) => {
+  router.push({ name: 'payment-details', params: { id: payment.payment_id } })
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('uk-UA')
+}
+
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return '-'
+  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+}
+
+const getPaymentTypeColor = (type) => {
+  const colors = {
+    regular: 'primary',
+    advance: 'positive',
+    debt: 'warning',
+    adjustment: 'purple',
+  }
+  return colors[type] || 'grey'
+}
+
+const getPaymentStatusColor = (status) => {
+  const colors = {
+    paid: 'positive',
+    partial: 'warning',
+    pending: 'info',
+    overdue: 'negative',
+  }
+  return colors[status] || 'grey'
+}
+
+// Watchers
+watch(
+  filters,
+  () => {
+    loadPaymentHistory()
+  },
+  { deep: true },
+)
+
+watch(
+  () => props.objectId,
+  (newValue) => {
+    if (newValue) {
+      loadPaymentHistory()
+    }
+  },
+)
+
+// Життєвий цикл
+onMounted(() => {
+  if (props.objectId) {
+    loadPaymentHistory()
+  }
+})
+</script>

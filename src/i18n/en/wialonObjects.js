@@ -70,6 +70,7 @@ export default {
     info: 'Information',
     products: 'Products',
     history: 'History',
+    finances: 'Finances',
   },
   noTariff: 'No tariff assigned',
   present: 'present',

@@ -13,6 +13,7 @@ import clients from './clients'
 import invoices from './invoices'
 import services from './services'
 import tariffs from './tariffs'
+import payments from './payments'
 
 export default {
   layouts,
@@ -30,4 +31,5 @@ export default {
   invoices,
   services,
   tariffs,
+  payments,
 }

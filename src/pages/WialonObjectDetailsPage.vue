@@ -46,6 +46,7 @@
           <q-tab name="info" :label="$t('wialonObjects.tabs.info')" />
           <q-tab name="products" :label="$t('wialonObjects.tabs.products')" />
           <q-tab name="history" :label="$t('wialonObjects.tabs.history')" />
+          <q-tab name="finances" :label="$t('wialonObjects.tabs.finances')" />
         </q-tabs>
 
         <q-separator />
@@ -185,6 +186,12 @@
               </q-timeline-entry>
             </q-timeline>
           </q-tab-panel>
+
+          <!-- Вкладка з фінансами -->
+          <q-tab-panel name="finances">
+            <div class="text-h6">{{ $t('wialonObjects.tabs.finances') }}</div>
+            <object-payments-history :object-id="route.params.id" />
+          </q-tab-panel>
         </q-tab-panels>
       </q-card>
     </template>
@@ -208,6 +215,7 @@ import { WialonApi } from 'src/api/wialon'
 import { date } from 'quasar'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
+import ObjectPaymentsHistory from 'components/payments/ObjectPaymentsHistory.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()

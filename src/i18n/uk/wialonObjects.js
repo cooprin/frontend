@@ -70,6 +70,7 @@ export default {
     info: 'Інформація',
     products: 'Продукти',
     history: 'Історія',
+    finances: 'Фінанси',
   },
   noTariff: 'Тариф не призначено',
   present: 'наразі',
