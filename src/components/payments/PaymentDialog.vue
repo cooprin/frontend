@@ -336,7 +336,14 @@ const loadClientObjects = async (clientId) => {
         .filter((obj) => obj.status === 'active')
         .map((obj) => {
           // Додаємо початкову суму для кожного об'єкта
-          objectAmounts.value[obj.id] = obj.tariff_price || 0
+          // і перевіряємо наявність tariff_price
+          if (obj.tariff_price) {
+            objectAmounts.value[obj.id] = parseFloat(obj.tariff_price)
+          } else if (obj.current_price) {
+            objectAmounts.value[obj.id] = parseFloat(obj.current_price)
+          } else {
+            objectAmounts.value[obj.id] = 0
+          }
           return obj
         })
 
@@ -408,6 +415,21 @@ watch(
     }
   },
   { immediate: true },
+)
+watch(
+  selectedObjects,
+  (newSelection) => {
+    // Перераховувати загальну суму коли обрані об'єкти змінюються
+    if (newSelection.length > 0 && !form.value.invoice_id) {
+      // Оновлюємо суму лише якщо не вибраний рахунок
+      let totalObjectsAmount = 0
+      newSelection.forEach((objId) => {
+        totalObjectsAmount += objectAmounts.value[objId] || 0
+      })
+      form.value.amount = totalObjectsAmount
+    }
+  },
+  { deep: true },
 )
 
 // Життєвий цикл
