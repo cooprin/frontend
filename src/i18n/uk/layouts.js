@@ -30,5 +30,6 @@ export default {
     invoices: 'Рахунки',
     wialon: 'GPS Моніторинг',
     wialonObjects: "Об'єкти моніторингу",
+    payments: 'Платежі',
   },
 }

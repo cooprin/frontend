@@ -313,6 +313,20 @@
                   {{ $t('layouts.mainLayout.invoices') }}
                 </q-item-section>
               </q-item>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.PAYMENTS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'payments' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="payments" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.payments') }}
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </template>
 
@@ -644,6 +658,19 @@
                         </q-item-section>
                         <q-item-section>
                           {{ $t('layouts.mainLayout.invoices') }}
+                        </q-item-section>
+                      </q-item>
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SERVICES.PAYMENTS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'payments' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="payments" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.payments') }}
                         </q-item-section>
                       </q-item>
                     </q-list>

@@ -90,6 +90,12 @@ export const MENU_PERMISSIONS = {
       UPDATE: 'invoices.update',
       DELETE: 'invoices.delete',
     },
+    PAYMENTS: {
+      LIST: 'payments.read',
+      CREATE: 'payments.create',
+      UPDATE: 'payments.update',
+      DELETE: 'payments.delete',
+    },
   },
 
   // Wialon об'єкти

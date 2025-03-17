@@ -30,5 +30,6 @@ export default {
     invoices: 'Invoices',
     wialon: 'GPS Tracking',
     wialonObjects: 'Tracking Objects',
+    payments: 'Payments',
   },
 }
