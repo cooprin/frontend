@@ -38,6 +38,19 @@
             :loading="loadingClients"
           />
 
+          <!-- Дата створення/зміни власника -->
+          <q-date
+            v-model="form.operation_date"
+            :label="t('wialonObjects.operationDate')"
+            outlined
+            today-btn
+            :max="maxDate"
+          >
+            <div class="row items-center justify-end">
+              <q-btn v-close-popup label="OK" color="primary" flat />
+            </div>
+          </q-date>
+
           <!-- Тариф -->
           <q-select
             v-model="form.tariff_id"
@@ -86,6 +99,7 @@ import { useI18n } from 'vue-i18n'
 import { WialonApi } from 'src/api/wialon'
 import { ClientsApi } from 'src/api/clients'
 import { TariffsApi } from 'src/api/tariffs'
+import { date } from 'quasar'
 
 const props = defineProps({
   modelValue: {
@@ -110,6 +124,9 @@ const loadingTariffs = ref(false)
 const clientOptions = ref([])
 const tariffOptions = ref([])
 
+// Обмеження дати - не можна вибрати дату з майбутнього
+const maxDate = date.formatDate(new Date(), 'YYYY/MM/DD')
+
 // Default form
 const defaultForm = {
   name: '',
@@ -118,6 +135,7 @@ const defaultForm = {
   client_id: null,
   tariff_id: null,
   status: 'active',
+  operation_date: date.formatDate(new Date(), 'YYYY/MM/DD'),
 }
 
 const form = ref({ ...defaultForm })
@@ -231,7 +249,11 @@ watch(
   () => props.editData,
   (newValue) => {
     if (newValue) {
-      form.value = { ...defaultForm, ...newValue }
+      form.value = {
+        ...defaultForm,
+        ...newValue,
+        operation_date: date.formatDate(new Date(), 'YYYY/MM/DD'),
+      }
     } else {
       form.value = { ...defaultForm }
     }

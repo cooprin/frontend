@@ -17,6 +17,7 @@ export default {
   tariff: 'Тариф',
   tariffName: 'Назва тарифу',
   tariffPrice: 'Ціна тарифу',
+  operationDate: 'Дата операції',
 
   // Статуси
   statuses: {
@@ -46,6 +47,7 @@ export default {
     changeOwner: 'Змінити власника',
     selectClient: 'Виберіть нового власника',
     notes: 'Примітки',
+    operationDate: 'Дата операції',
     changeSuccess: 'Власника успішно змінено',
     history: 'Історія власності',
     noHistory: 'Немає записів історії власності',

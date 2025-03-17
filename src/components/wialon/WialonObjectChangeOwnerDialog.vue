@@ -35,6 +35,26 @@
             :loading="loadingClients"
           />
 
+          <!-- Дата зміни власника -->
+          <q-input
+            v-model="form.operation_date"
+            :label="$t('wialonObjects.ownership.operationDate')"
+            outlined
+            readonly
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                  <q-date v-model="form.operation_date" mask="YYYY-MM-DD" :max="maxDate">
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="OK" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+
           <!-- Примітки -->
           <q-input
             v-model="form.notes"
@@ -60,6 +80,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonApi } from 'src/api/wialon'
 import { ClientsApi } from 'src/api/clients'
+import { date } from 'quasar'
 
 const props = defineProps({
   modelValue: {
@@ -82,10 +103,14 @@ const loading = ref(false)
 const loadingClients = ref(false)
 const clientOptions = ref([])
 
+// Обмеження дати - не можна вибрати дату з майбутнього
+const maxDate = date.formatDate(new Date(), 'YYYY/MM/DD')
+
 // Default form
 const defaultForm = {
   client_id: null,
   notes: '',
+  operation_date: date.formatDate(new Date(), 'YYYY-MM-DD'),
 }
 
 const form = ref({ ...defaultForm })
@@ -154,7 +179,10 @@ watch(
   () => props.object,
   (newValue) => {
     if (newValue) {
-      form.value = { ...defaultForm }
+      form.value = {
+        ...defaultForm,
+        operation_date: date.formatDate(new Date(), 'YYYY-MM-DD'),
+      }
       loadClients()
     } else {
       form.value = { ...defaultForm }
