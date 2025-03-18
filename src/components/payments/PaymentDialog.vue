@@ -324,11 +324,17 @@ const onClientSelected = async (clientId) => {
     return
   }
 
+  const actualClientId = clientId.value || clientId
+
+  // Скидаємо вибраний рахунок при зміні клієнта
+  form.value.invoice_id = null
+  selectedObjects.value = []
+
   // Завантажуємо рахунки клієнта
-  await loadClientInvoices(clientId.value || clientId)
+  await loadClientInvoices(actualClientId)
 
   // Завантажуємо об'єкти клієнта
-  await loadClientObjects(clientId.value || clientId)
+  await loadClientObjects(actualClientId)
 }
 
 const loadClientInvoices = async (clientId) => {
@@ -411,57 +417,75 @@ const onInvoiceSelected = async () => {
     // Якщо рахунок не вибрано, розблокуємо вибір об'єктів і сум
     objectsLocked.value = false
     objectInputsLocked.value = false
+    selectedObjects.value = [] // Очищаємо вибрані об'єкти
     updateTotalAmount()
     return
   }
 
-  const invoice = invoiceOptions.value.find(
-    (i) => i.value === (form.value.invoice_id.value || form.value.invoice_id),
-  )
+  const invoiceId = form.value.invoice_id.value || form.value.invoice_id
 
-  if (invoice) {
+  try {
+    // Завантажуємо деталі рахунку незалежно від типу
+    const response = await InvoicesApi.getInvoiceDetails(invoiceId)
+    const invoiceDetails = response.data.invoice
+
     // Встановлюємо суму з рахунку
-    form.value.amount = invoice.amount
+    form.value.amount = invoiceDetails.total_amount
 
-    // Якщо це рахунок з об'єктами, завантажуємо деталі
-    if (invoice.has_objects) {
-      try {
-        const response = await InvoicesApi.getInvoiceDetails(invoice.value)
-        const invoiceDetails = response.data.invoice
+    // Очищаємо вибрані об'єкти
+    selectedObjects.value = []
 
-        // Очищаємо вибрані об'єкти
-        selectedObjects.value = []
+    // Перевірка, чи має рахунок позиції
+    if (invoiceDetails.items && Array.isArray(invoiceDetails.items)) {
+      let hasObjectBasedItems = false
 
-        // Якщо є позиції рахунку
-        if (invoiceDetails.items && invoiceDetails.items.length > 0) {
-          // Для позицій з типом object_based
-          for (const item of invoiceDetails.items) {
-            if (item.metadata && item.metadata.objects) {
-              // Для кожного об'єкта в метаданих позиції
-              for (const obj of item.metadata.objects) {
-                // Додаємо об'єкт до вибраних
-                if (!selectedObjects.value.includes(obj.id)) {
-                  selectedObjects.value.push(obj.id)
-                }
+      // Проходимо по кожній позиції рахунку
+      for (const item of invoiceDetails.items) {
+        // Перевіряємо, чи є метадані об'єктів
+        if (item.metadata && item.metadata.objects && Array.isArray(item.metadata.objects)) {
+          hasObjectBasedItems = true
 
-                // Встановлюємо суму об'єкта
-                objectAmounts.value[obj.id] = parseFloat(obj.price)
+          // Для кожного об'єкта в метаданих
+          for (const obj of item.metadata.objects) {
+            // Знаходимо відповідний об'єкт в clientObjects
+            const matchingClientObj = clientObjects.value.find((o) => o.id === obj.id)
+
+            if (matchingClientObj) {
+              // Додаємо об'єкт до вибраних, якщо він ще не вибраний
+              if (!selectedObjects.value.includes(obj.id)) {
+                selectedObjects.value.push(obj.id)
               }
+
+              // Встановлюємо суму для об'єкта
+              objectAmounts.value[obj.id] = parseFloat(obj.price)
             }
           }
         }
+      }
 
-        // Блокуємо вибір об'єктів і редагування сум, оскільки рахунок вже вибрано
+      // Якщо рахунок містить об'єкти, блокуємо їх редагування
+      if (hasObjectBasedItems) {
         objectsLocked.value = true
         objectInputsLocked.value = true
-      } catch (error) {
-        console.error('Error loading invoice details:', error)
+      } else {
+        // Якщо рахунок не містить об'єктів (це fixed послуга), просто блокуємо вибір
+        objectsLocked.value = true
+        objectInputsLocked.value = true
+        selectedObjects.value = [] // Очищаємо вибрані об'єкти для рахунків без об'єктів
       }
-    } else {
-      // Якщо це не рахунок на основі об'єктів, очищаємо вибрані об'єкти
-      selectedObjects.value = []
-      objectsLocked.value = true
     }
+
+    // Додамо логування для діагностики
+    console.log('Invoice details:', invoiceDetails)
+    console.log('Selected objects after processing:', selectedObjects.value)
+    console.log('Object amounts after processing:', objectAmounts.value)
+  } catch (error) {
+    console.error('Error loading invoice details:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
