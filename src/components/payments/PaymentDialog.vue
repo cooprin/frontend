@@ -426,7 +426,7 @@ const onInvoiceSelected = async () => {
 
   try {
     // Завантажуємо деталі рахунку незалежно від типу
-    const response = await InvoicesApi.getInvoiceDetails(invoiceId)
+    const response = await InvoicesApi.getInvoic(invoiceId)
     const invoiceDetails = response.data.invoice
 
     // Встановлюємо суму з рахунку

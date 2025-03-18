@@ -3,7 +3,7 @@ import { api } from 'boot/axios'
 export const InvoicesApi = {
   // Отримання списку рахунків з фільтрами і пагінацією
   getInvoices: (params) => {
-    return api.get('/services/invoices', { params }) // додано 'services/' перед 'invoices'
+    return api.get('/services/invoices', { params })
   },
 
   // Отримання рахунків клієнта
