@@ -107,7 +107,9 @@
                   <q-item>
                     <q-item-section>
                       <q-item-label caption>{{ $t('payments.createdBy') }}</q-item-label>
-                      <q-item-label>{{ payment.created_by_username || '-' }}</q-item-label>
+                      <q-item-label>{{
+                        payment.created_by_name || payment.created_by_email || '-'
+                      }}</q-item-label>
                     </q-item-section>
                   </q-item>
                 </div>
