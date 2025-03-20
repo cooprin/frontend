@@ -72,7 +72,28 @@
                     emit-value
                     map-options
                   />
+                  <!-- Індикатор оплачених періодів -->
+                  <div v-if="paidPeriods.length > 0" class="q-mt-md">
+                    <q-banner class="bg-yellow-2">
+                      <template v-slot:avatar>
+                        <q-icon name="info" color="warning" />
+                      </template>
+                      {{ $t('invoices.somePeriodsAlreadyPaid') }}
+                    </q-banner>
 
+                    <q-list bordered separator dense class="q-mt-sm">
+                      <q-item v-for="obj in paidPeriods" :key="obj.id">
+                        <q-item-section>
+                          <q-item-label>{{ obj.name }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-chip color="positive" text-color="white" dense>
+                            {{ $t('invoices.paid') }}
+                          </q-chip>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </div>
                   <!-- Примітки -->
                   <q-input
                     v-model="form.notes"
@@ -210,7 +231,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { PaymentsApi } from 'src/api/payments'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
@@ -237,6 +259,32 @@ const loadingServices = ref(false)
 const clientOptions = ref([])
 const serviceOptions = ref([])
 const clientServices = ref([])
+
+// Додайте нові стани
+const paidPeriods = ref([])
+const loadingPaidPeriods = ref(false)
+
+// Метод для перевірки оплачених періодів
+const checkPaidPeriods = async (clientId) => {
+  if (!clientId) return
+
+  loadingPaidPeriods.value = true
+  try {
+    // Для спрощення приймаємо, що API повертає всі оплачені періоди для клієнта
+    const response = await PaymentsApi.getClientObjectsWithPayments(clientId, {
+      year: form.value.billing_year,
+      month: form.value.billing_month,
+    })
+
+    // Фільтруємо, щоб отримати тільки повністю оплачені об'єкти
+    paidPeriods.value = response.data.objects.filter((obj) => obj.is_period_paid) || []
+  } catch (error) {
+    console.error('Error checking paid periods:', error)
+    paidPeriods.value = []
+  } finally {
+    loadingPaidPeriods.value = false
+  }
+}
 
 // Default form
 const defaultForm = {
@@ -364,8 +412,12 @@ const loadClientServices = async (clientId) => {
   }
 }
 
-const onClientChange = (clientId) => {
-  loadClientServices(clientId)
+const onClientChange = async (clientId) => {
+  if (!clientId) return
+
+  await loadClientServices(clientId)
+  await checkPaidPeriods(clientId)
+
   form.value.items = [] // Очищаємо список позицій при зміні клієнта
 }
 
@@ -441,6 +493,12 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
+watch([() => form.value.billing_year, () => form.value.billing_month], async () => {
+  if (form.value.client_id) {
+    await checkPaidPeriods(form.value.client_id)
+  }
+})
 
 // Lifecycle
 onMounted(() => {

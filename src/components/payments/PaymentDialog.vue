@@ -123,6 +123,82 @@
               </q-item>
             </q-list>
           </div>
+          <!-- Вибір періодів для оплати -->
+          <div v-if="selectedObjects.length === 1 && !objectsLocked">
+            <q-separator class="q-my-md" />
+
+            <div class="row items-center q-mb-sm">
+              <div class="text-subtitle1">{{ $t('payments.periodPayment') }}</div>
+              <q-space />
+              <q-btn
+                flat
+                dense
+                :icon="showPeriodSelection ? 'expand_less' : 'expand_more'"
+                :label="showPeriodSelection ? $t('common.hide') : $t('common.show')"
+                @click="togglePeriodSelection"
+              />
+            </div>
+
+            <q-slide-transition>
+              <div v-show="showPeriodSelection">
+                <div v-if="loadingPeriods" class="text-center q-py-md">
+                  <q-spinner color="primary" size="2em" />
+                  <div class="q-mt-sm">{{ $t('common.loading') }}</div>
+                </div>
+
+                <div
+                  v-else-if="availablePeriods.length === 0"
+                  class="text-grey text-center q-py-md"
+                >
+                  {{ $t('payments.noPeriods') }}
+                </div>
+
+                <div v-else>
+                  <q-list bordered separator>
+                    <q-item
+                      v-for="period in availablePeriods"
+                      :key="`${period.year}-${period.month}`"
+                    >
+                      <q-item-section>
+                        <q-item-label
+                          >{{ $t(`payments.months.${period.month}`) }}
+                          {{ period.year }}</q-item-label
+                        >
+                        <q-item-label caption v-if="period.is_paid" class="text-positive">
+                          {{ $t('payments.alreadyPaid') }}
+                        </q-item-label>
+                      </q-item-section>
+
+                      <q-item-section side>
+                        <!-- Перемикач для вибору періоду -->
+                        <q-toggle
+                          v-model="selectedPeriods"
+                          :val="`${period.year}-${period.month}`"
+                          :disable="period.is_paid"
+                          color="primary"
+                          @update:model-value="updateTotalFromPeriods"
+                        />
+                      </q-item-section>
+
+                      <q-item-section side style="width: 120px">
+                        <!-- Поле для введення суми -->
+                        <q-input
+                          v-if="selectedPeriods.includes(`${period.year}-${period.month}`)"
+                          v-model.number="periodAmounts[`${period.year}-${period.month}`]"
+                          dense
+                          outlined
+                          type="number"
+                          prefix="₴"
+                          :disable="period.is_paid"
+                          @update:model-value="updateTotalFromPeriods"
+                        />
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
+              </div>
+            </q-slide-transition>
+          </div>
 
           <!-- Примітки -->
           <q-input
@@ -181,6 +257,58 @@ const objectAmounts = ref({})
 const showObjectPayments = ref(false)
 const objectsLocked = ref(false) // Блокувати вибір об'єктів (якщо рахунок вибраний)
 const objectInputsLocked = ref(false) // Блокувати редагування сум (якщо рахунок вибраний)
+const availablePeriods = ref([])
+const loadingPeriods = ref(false)
+const selectedPeriods = ref([])
+const showPeriodSelection = ref(false)
+const periodAmounts = ref({})
+
+const loadAvailablePeriods = async (objectId) => {
+  if (!objectId) return
+
+  loadingPeriods.value = true
+  try {
+    const response = await PaymentsApi.getAvailablePaymentPeriods(objectId)
+    availablePeriods.value = response.data.periods || []
+
+    // Ініціалізуємо суми для кожного періоду
+    availablePeriods.value.forEach((period) => {
+      // Використовуємо ключ у форматі 'YYYY-MM' для зручності
+      const periodKey = `${period.year}-${period.month}`
+      periodAmounts.value[periodKey] = period.suggested_amount || 0
+    })
+  } catch (error) {
+    console.error('Error loading available periods:', error)
+    availablePeriods.value = []
+  } finally {
+    loadingPeriods.value = false
+  }
+}
+
+// Метод для перемикання відображення вибору періодів
+const togglePeriodSelection = () => {
+  showPeriodSelection.value = !showPeriodSelection.value
+  if (showPeriodSelection.value && selectedObjects.value.length === 1) {
+    // Завантажуємо доступні періоди тільки для одного вибраного об'єкта
+    loadAvailablePeriods(selectedObjects.value[0])
+  }
+}
+
+// Метод для обчислення загальної суми з вибраних періодів
+const calculatePeriodTotal = () => {
+  let total = 0
+  selectedPeriods.value.forEach((periodKey) => {
+    total += periodAmounts.value[periodKey] || 0
+  })
+  return total
+}
+
+// Метод для оновлення загальної суми платежу при зміні вибраних періодів
+const updateTotalFromPeriods = () => {
+  if (selectedPeriods.value.length > 0) {
+    form.value.amount = calculatePeriodTotal()
+  }
+}
 
 // Default form
 const defaultForm = {
@@ -229,18 +357,38 @@ const onSubmit = async () => {
     }
 
     // Додаємо інформацію про оплату об'єктів, якщо рахунок не вибрано
-    if (!form.value.invoice_id && selectedObjects.value.length > 0) {
-      paymentData.object_payments = selectedObjects.value.map((objId) => {
-        // Знаходимо об'єкт щоб отримати його тариф
-        const obj = clientObjects.value.find((o) => o.id === objId)
-        return {
-          object_id: objId,
-          tariff_id: obj.current_tariff_id,
-          amount: objectAmounts.value[objId] || obj.current_tariff_price || 0,
-          billing_month: new Date(form.value.payment_date).getMonth() + 1,
-          billing_year: new Date(form.value.payment_date).getFullYear(),
-        }
-      })
+    if (!form.value.invoice_id) {
+      // Платіж за об'єкти
+      if (selectedObjects.value.length > 0) {
+        paymentData.object_payments = selectedObjects.value.map((objId) => {
+          // Знаходимо об'єкт щоб отримати його тариф
+          const obj = clientObjects.value.find((o) => o.id === objId)
+          return {
+            object_id: objId,
+            tariff_id: obj.current_tariff_id,
+            amount: objectAmounts.value[objId] || obj.current_tariff_price || 0,
+            billing_month: new Date(form.value.payment_date).getMonth() + 1,
+            billing_year: new Date(form.value.payment_date).getFullYear(),
+          }
+        })
+      }
+
+      // Платіж за періоди
+      if (selectedPeriods.value.length > 0 && selectedObjects.value.length === 1) {
+        const objectId = selectedObjects.value[0]
+        const obj = clientObjects.value.find((o) => o.id === objectId)
+
+        paymentData.period_payments = selectedPeriods.value.map((periodKey) => {
+          const [year, month] = periodKey.split('-')
+          return {
+            object_id: objectId,
+            tariff_id: obj.current_tariff_id,
+            amount: periodAmounts.value[periodKey] || 0,
+            billing_month: parseInt(month),
+            billing_year: parseInt(year),
+          }
+        })
+      }
     }
 
     if (isEdit.value) {
@@ -321,6 +469,12 @@ const onClientSelected = async (clientId) => {
     invoiceOptions.value = []
     form.value.invoice_id = null
     showObjectPayments.value = false
+
+    // Скидаємо дані періодів
+    availablePeriods.value = []
+    selectedPeriods.value = []
+    periodAmounts.value = {}
+    showPeriodSelection.value = false
     return
   }
 
@@ -330,13 +484,15 @@ const onClientSelected = async (clientId) => {
   form.value.invoice_id = null
   selectedObjects.value = []
 
+  // Скидаємо вибрані періоди
+  selectedPeriods.value = []
+
   // Завантажуємо рахунки клієнта
   await loadClientInvoices(actualClientId)
 
   // Завантажуємо об'єкти клієнта
   await loadClientObjects(actualClientId)
 }
-
 const loadClientInvoices = async (clientId) => {
   if (!clientId) return
 

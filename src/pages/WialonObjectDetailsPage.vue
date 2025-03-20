@@ -131,6 +131,42 @@
                     </q-list>
                   </q-card-section>
                 </q-card>
+                <!-- Заплановані зміни тарифів -->
+                <q-card flat bordered class="q-mt-md" v-if="plannedTariffChanges.length > 0">
+                  <q-card-section>
+                    <div class="text-subtitle1">{{ $t('tariffs.plannedChanges') }}</div>
+                  </q-card-section>
+                  <q-card-section>
+                    <q-list bordered separator>
+                      <q-item v-for="change in plannedTariffChanges" :key="change.id">
+                        <q-item-section>
+                          <q-item-label>{{ change.new_tariff_name }}</q-item-label>
+                          <q-item-label caption>
+                            {{ $t('tariffs.priceChange') }}:
+                            {{ formatCurrency(object.tariff_price) }} →
+                            {{ formatCurrency(change.new_tariff_price) }}
+                          </q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-item-label caption>{{ $t('tariffs.effectiveFrom') }}</q-item-label>
+                          <q-item-label>{{ formatDate(change.effective_date) }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                          <q-btn
+                            flat
+                            round
+                            dense
+                            color="negative"
+                            icon="cancel"
+                            @click="openCancelChangeDialog(change)"
+                          >
+                            <q-tooltip>{{ $t('tariffs.cancelChange') }}</q-tooltip>
+                          </q-btn>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-card-section>
+                </q-card>
               </div>
             </div>
           </q-tab-panel>
@@ -197,6 +233,32 @@
     </template>
 
     <!-- Діалоги -->
+    <!-- Діалог підтвердження скасування зміни тарифу -->
+    <q-dialog v-model="showCancelChangeDialog">
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="warning" color="negative" text-color="white" />
+          <span class="q-ml-sm">{{ $t('tariffs.cancelChangeConfirmation') }}</span>
+        </q-card-section>
+        <q-card-section v-if="changeToCancel">
+          <div>{{ $t('tariffs.from') }}: {{ object.tariff_name }}</div>
+          <div>{{ $t('tariffs.to') }}: {{ changeToCancel.new_tariff_name }}</div>
+          <div>
+            {{ $t('tariffs.effectiveDate') }}: {{ formatDate(changeToCancel.effective_date) }}
+          </div>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('common.cancel')" color="primary" v-close-popup />
+          <q-btn
+            flat
+            :label="$t('tariffs.cancelChange')"
+            color="negative"
+            @click="cancelPlannedChange"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <wialon-object-dialog v-model="showDialog" :edit-data="object" @saved="loadObject" />
     <wialon-object-change-owner-dialog
       v-model="showChangeOwnerDialog"
@@ -216,6 +278,7 @@ import { date } from 'quasar'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
 import ObjectPaymentsHistory from 'components/payments/ObjectPaymentsHistory.vue'
+import { TariffsApi } from 'src/api/tariffs'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -229,22 +292,74 @@ const tab = ref('info')
 const showDialog = ref(false)
 const showChangeOwnerDialog = ref(false)
 
-// Computed
-const sortedOwnershipHistory = computed(() => {
-  if (!object.value || !object.value.ownership_history) return []
+// Додати до списку станів
+const plannedTariffChanges = ref([])
+const loadingPlannedChanges = ref(false)
+const showCancelChangeDialog = ref(false)
+const changeToCancel = ref(null)
 
-  return [...object.value.ownership_history].sort((a, b) => {
-    return new Date(b.start_date) - new Date(a.start_date)
-  })
-})
+// Додати новий метод для завантаження запланованих змін тарифів
+const loadPlannedTariffChanges = async () => {
+  if (!object.value || !object.value.id) return
 
-// Methods
+  loadingPlannedChanges.value = true
+  try {
+    const response = await TariffsApi.getPlannedChanges({ object_id: object.value.id })
+    plannedTariffChanges.value = response.data.planned_changes || []
+  } catch (error) {
+    console.error('Error loading planned tariff changes:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingPlannedChanges.value = false
+  }
+}
+
+// Додати метод для скасування запланованої зміни тарифу
+const cancelPlannedChange = async () => {
+  if (!changeToCancel.value) return
+
+  try {
+    await TariffsApi.cancelPlannedChange(object.value.id)
+
+    $q.notify({
+      color: 'positive',
+      message: t('tariffs.cancelChangeSuccess'),
+      icon: 'check',
+    })
+
+    showCancelChangeDialog.value = false
+    loadPlannedTariffChanges()
+    loadObject() // Перезавантажуємо об'єкт для отримання актуальних даних
+  } catch (error) {
+    console.error('Error cancelling planned tariff change:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.saving'),
+      icon: 'error',
+    })
+  }
+}
+
+// Додати метод для відкриття діалогу скасування зміни
+const openCancelChangeDialog = (change) => {
+  changeToCancel.value = change
+  showCancelChangeDialog.value = true
+}
+
+// Оновити метод loadObject, щоб також викликав loadPlannedTariffChanges
 const loadObject = async () => {
   loading.value = true
   try {
     const objectId = route.params.id
     const response = await WialonApi.getObject(objectId)
     object.value = response.data.object
+
+    // Завантажуємо заплановані зміни тарифів
+    await loadPlannedTariffChanges()
   } catch (error) {
     console.error('Error loading object:', error)
     $q.notify({
@@ -257,6 +372,15 @@ const loadObject = async () => {
     loading.value = false
   }
 }
+
+// Computed
+const sortedOwnershipHistory = computed(() => {
+  if (!object.value || !object.value.ownership_history) return []
+
+  return [...object.value.ownership_history].sort((a, b) => {
+    return new Date(b.start_date) - new Date(a.start_date)
+  })
+})
 
 const goBack = () => {
   router.push({ name: 'wialon-objects' })

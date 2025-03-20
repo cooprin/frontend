@@ -37,7 +37,31 @@
             :loading="loadingClients"
             @filter="filterClients"
           />
+          <!-- Попередження, якщо всі періоди оплачені -->
+          <q-banner v-if="showPendingWarning" class="bg-yellow-2 q-my-md">
+            <template v-slot:avatar>
+              <q-icon name="info" color="warning" />
+            </template>
+            {{ $t('invoices.allPeriodsAlreadyPaid') }}
+          </q-banner>
 
+          <!-- Список неоплачених об'єктів -->
+          <div v-if="pendingObjects.length > 0" class="q-my-md">
+            <div class="text-subtitle2 q-mb-sm">{{ $t('invoices.pendingObjects') }}</div>
+            <q-list bordered separator dense>
+              <q-item v-for="obj in pendingObjects" :key="obj.id">
+                <q-item-section>
+                  <q-item-label>{{ obj.name }}</q-item-label>
+                  <q-item-label caption>{{ obj.tariff_name }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-chip color="warning" text-color="white" dense>
+                    {{ formatCurrency(obj.tariff_price) }}
+                  </q-chip>
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
           <div class="text-caption q-mb-md">
             {{ $t('invoices.generationInfo') }}
           </div>
@@ -58,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
@@ -80,6 +104,40 @@ const { t } = useI18n()
 const loading = ref(false)
 const loadingClients = ref(false)
 const clientOptions = ref([])
+const pendingObjects = ref([])
+
+const checkingPending = ref(false)
+const showPendingWarning = ref(false)
+
+// Метод для перевірки неоплачених періодів
+const checkPendingPayments = async () => {
+  if (!form.value.clientId || !form.value.year || !form.value.month) {
+    return
+  }
+
+  checkingPending.value = true
+  showPendingWarning.value = false
+
+  try {
+    const clientId = form.value.clientId.value || form.value.clientId
+    const response = await InvoicesApi.checkPendingInvoices(clientId, {
+      year: form.value.year,
+      month: form.value.month,
+    })
+
+    pendingObjects.value = response.data.pendingObjects || []
+    showPendingWarning.value = !response.data.hasPendingPayments
+  } catch (error) {
+    console.error('Error checking pending payments:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    checkingPending.value = false
+  }
+}
 
 // Default form
 const currentDate = new Date()
@@ -128,23 +186,42 @@ const onSubmit = async () => {
     const requestData = {
       year: parseInt(form.value.year),
       month: parseInt(form.value.month),
+      use_smart_generation: true, // Додаємо параметр для розумної генерації рахунків
     }
 
     // Додаємо clientId, якщо вибраний клієнт
     if (form.value.clientId) {
-      requestData.clientId = form.value.clientId.value || form.value.clientId
+      const clientId = form.value.clientId.value || form.value.clientId
+
+      if (pendingObjects.value.length > 0) {
+        // Якщо є неоплачені періоди, використовуємо generateInvoicesForClient
+        const response = await InvoicesApi.generateInvoicesForClient(clientId, requestData)
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+          icon: 'check',
+        })
+      } else {
+        // Якщо всі періоди оплачені, використовуємо стандартну генерацію
+        const response = await InvoicesApi.generateInvoices(requestData)
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+          icon: 'check',
+        })
+      }
+    } else {
+      // Генерація для всіх клієнтів
+      const response = await InvoicesApi.generateInvoices(requestData)
+      $q.notify({
+        color: 'positive',
+        message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+        icon: 'check',
+      })
     }
 
-    const response = await InvoicesApi.generateInvoices(requestData)
-
-    $q.notify({
-      color: 'positive',
-      message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
-      icon: 'check',
-    })
-
     show.value = false
-    emit('generated', response.data.invoices)
+    emit('generated')
   } catch (error) {
     console.error('Error generating invoices:', error)
     $q.notify({
@@ -156,7 +233,6 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
-
 const loadClients = async () => {
   loadingClients.value = true
   try {
@@ -193,6 +269,11 @@ const filterClients = (val, update) => {
     )
   })
 }
+watch([() => form.value.clientId, () => form.value.year, () => form.value.month], () => {
+  if (form.value.clientId && form.value.year && form.value.month) {
+    checkPendingPayments()
+  }
+})
 
 // Lifecycle
 onMounted(() => {

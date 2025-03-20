@@ -332,6 +332,14 @@
                 :label="$t('invoices.create')"
                 @click="openCreateInvoiceDialog"
               />
+              <!-- Кнопка для розумної генерації рахунків -->
+              <q-btn
+                color="accent"
+                icon="auto_awesome"
+                :label="$t('invoices.smartGenerate')"
+                class="q-ml-sm"
+                @click="openGenerateSmartInvoiceDialog"
+              />
             </div>
 
             <div v-if="loadingInvoices" class="text-center q-pa-md">
@@ -600,6 +608,13 @@
           </q-form>
         </q-card-section>
       </q-card>
+      <!-- Діалог розумної генерації рахунків -->
+      <invoice-generator-dialog
+        v-model="showGenerateSmartInvoiceDialog"
+        :client-id="client ? client.id : null"
+        :smart-only="true"
+        @generated="onSmartInvoicesGenerated"
+      />
     </q-dialog>
   </q-page>
 </template>
@@ -613,6 +628,7 @@ import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { ServicesApi } from 'src/api/services'
 import { InvoicesApi } from 'src/api/invoices'
+import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -621,6 +637,24 @@ const router = useRouter()
 
 const clientServices = ref([])
 const loadingServices = ref(false)
+
+// Додайте новий стан
+const showGenerateSmartInvoiceDialog = ref(false)
+
+// Додайте метод для відкриття діалогу генерації інтелектуальних рахунків
+const openGenerateSmartInvoiceDialog = () => {
+  showGenerateSmartInvoiceDialog.value = true
+}
+
+// Метод для обробки згенерованих рахунків
+const onSmartInvoicesGenerated = () => {
+  loadClientInvoices() // Перезавантажуємо список рахунків
+  $q.notify({
+    color: 'positive',
+    message: t('invoices.smartGenerationSuccess'),
+    icon: 'check',
+  })
+}
 
 const loadClientServices = async () => {
   if (!client.value) return

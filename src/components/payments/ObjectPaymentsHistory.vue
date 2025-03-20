@@ -188,6 +188,85 @@
         </div>
       </q-card-section>
     </q-card>
+    <!-- Оплачені періоди -->
+    <q-card flat bordered class="q-mt-md" v-if="paidPeriods.length > 0">
+      <q-card-section>
+        <div class="text-h6">{{ $t('payments.paidPeriods') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <div class="row q-col-gutter-sm">
+          <div
+            v-for="period in paidPeriods"
+            :key="`${period.billing_year}-${period.billing_month}`"
+            class="col-6 col-sm-4 col-md-3"
+          >
+            <q-chip
+              color="positive"
+              text-color="white"
+              icon="check_circle"
+              class="full-width justify-center"
+            >
+              {{ $t(`payments.months.${period.billing_month}`) }} {{ period.billing_year }}
+            </q-chip>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <!-- Наступний неоплачений період -->
+    <q-card flat bordered class="q-mt-md" v-if="nextUnpaidPeriod">
+      <q-card-section>
+        <div class="text-h6">{{ $t('payments.nextUnpaidPeriod') }}</div>
+      </q-card-section>
+      <q-card-section>
+        <div class="row items-center">
+          <div class="col">
+            <q-chip color="warning" text-color="white" icon="warning" outline class="q-pa-md">
+              {{ $t(`payments.months.${nextUnpaidPeriod.billing_month}`) }}
+              {{ nextUnpaidPeriod.billing_year }}
+            </q-chip>
+          </div>
+          <div class="col-auto">
+            <q-btn
+              color="primary"
+              icon="payment"
+              :label="$t('payments.payNow')"
+              @click="openPayPeriodDialog(nextUnpaidPeriod)"
+            />
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <!-- Діалог оплати періоду -->
+    <q-dialog v-model="showPayPeriodDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('payments.payPeriod') }}</div>
+        </q-card-section>
+        <q-card-section v-if="selectedPeriodForPayment">
+          <p>{{ $t('payments.payPeriodConfirmation') }}</p>
+          <q-chip color="warning" text-color="white" class="q-ma-md">
+            {{ $t(`payments.months.${selectedPeriodForPayment.billing_month}`) }}
+            {{ selectedPeriodForPayment.billing_year }}
+          </q-chip>
+          <p v-if="objectInfo && objectInfo.current_tariff">
+            {{ $t('payments.tariffInfo') }}: {{ objectInfo.current_tariff }} ({{
+              formatCurrency(objectInfo.current_price)
+            }})
+          </p>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('common.cancel')" color="primary" v-close-popup />
+          <q-btn
+            :label="$t('payments.pay')"
+            color="positive"
+            @click="createPeriodPayment"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -196,6 +275,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
+import { useQuasar } from 'quasar'
 
 const props = defineProps({
   objectId: {
@@ -204,6 +284,7 @@ const props = defineProps({
   },
 })
 
+const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
 
@@ -213,6 +294,76 @@ const payments = ref([])
 const objectInfo = ref(null)
 const showFilters = ref(false)
 const totalItems = ref(0)
+const paidPeriods = ref([])
+const nextUnpaidPeriod = ref(null)
+const loadingPeriods = ref(false)
+const showPayPeriodDialog = ref(false)
+const selectedPeriodForPayment = ref(null)
+
+// Додати метод для створення оплати за період
+const createPeriodPayment = async () => {
+  if (!selectedPeriodForPayment.value || !objectInfo.value) return
+
+  try {
+    const paymentData = {
+      object_id: props.objectId,
+      client_id: objectInfo.value.client_id,
+      billing_month: selectedPeriodForPayment.value.billing_month,
+      billing_year: selectedPeriodForPayment.value.billing_year,
+      amount: objectInfo.value.current_price || 0,
+      payment_type: 'regular',
+      payment_date: new Date().toISOString().slice(0, 10),
+    }
+
+    await PaymentsApi.createPeriodPayment(paymentData)
+
+    $q.notify({
+      color: 'positive',
+      message: t('payments.periodPaymentSuccess'),
+      icon: 'check',
+    })
+
+    // Перезавантажуємо дані після успішної оплати
+    loadPaymentHistory()
+  } catch (error) {
+    console.error('Error creating period payment:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.saving'),
+      icon: 'error',
+    })
+  }
+}
+
+const loadPaidPeriods = async () => {
+  if (!props.objectId) return
+
+  loadingPeriods.value = true
+  try {
+    // Отримання оплачених періодів
+    const periodsResponse = await PaymentsApi.getObjectPaidPeriods(props.objectId)
+    paidPeriods.value = periodsResponse.data.periods || []
+
+    // Отримання наступного неоплаченого періоду
+    const nextPeriodResponse = await PaymentsApi.getNextUnpaidPeriod(props.objectId)
+    nextUnpaidPeriod.value = nextPeriodResponse.data.period
+  } catch (error) {
+    console.error('Error loading paid periods:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingPeriods.value = false
+  }
+}
+
+// Додати метод для відкриття діалогу оплати періоду
+const openPayPeriodDialog = (period) => {
+  selectedPeriodForPayment.value = period
+  showPayPeriodDialog.value = true
+}
 
 // Фільтри
 const filters = ref({
@@ -326,6 +477,9 @@ const loadPaymentHistory = async () => {
     payments.value = response.data.payments
     objectInfo.value = response.data.object
     totalItems.value = response.data.total
+
+    // Завантажуємо оплачені періоди та наступний неоплачений період
+    await loadPaidPeriods()
   } catch (error) {
     console.error('Error loading payment history:', error)
     payments.value = []
@@ -334,7 +488,6 @@ const loadPaymentHistory = async () => {
     loading.value = false
   }
 }
-
 const clearFilters = () => {
   filters.value = {
     year: null,
