@@ -180,16 +180,36 @@ const monthOptions = computed(() => [
 ])
 
 // Methods
+
 const onSubmit = async () => {
+  // Перевіряємо наявність обов'язкових полів
+  if (!form.value.year || !form.value.month) {
+    $q.notify({
+      color: 'negative',
+      message: t('common.validation.required'),
+      icon: 'error',
+    })
+    return
+  }
+
   loading.value = true
   try {
-    const requestData = {
-      year: parseInt(form.value.year),
-      month: parseInt(form.value.month),
-      use_smart_generation: true, // Додаємо параметр для розумної генерації рахунків
+    // Безпечно парсимо значення
+    const year = parseInt(form.value.year, 10)
+    const month = parseInt(form.value.month, 10)
+
+    // Перевіряємо правильність значень
+    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+      throw new Error(t('common.errors.invalidInput'))
     }
 
-    // Додаємо clientId, якщо вибраний клієнт
+    const requestData = {
+      year: year,
+      month: month,
+      use_smart_generation: true, // Параметр для розумної генерації рахунків
+    }
+
+    // Продовжуємо існуючу логіку
     if (form.value.clientId) {
       const clientId = form.value.clientId.value || form.value.clientId
 
