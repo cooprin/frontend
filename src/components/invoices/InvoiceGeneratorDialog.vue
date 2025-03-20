@@ -209,41 +209,63 @@ const onSubmit = async () => {
       use_smart_generation: true, // Параметр для розумної генерації рахунків
     }
 
-    // Продовжуємо існуючу логіку
-    if (form.value.clientId) {
-      const clientId = form.value.clientId.value || form.value.clientId
+    // Додаємо логування для діагностики
+    console.log('Відправляємо запит з даними:', JSON.stringify(requestData))
 
-      if (pendingObjects.value.length > 0) {
-        // Якщо є неоплачені періоди, використовуємо generateInvoicesForClient
-        const response = await InvoicesApi.generateInvoicesForClient(clientId, requestData)
-        $q.notify({
-          color: 'positive',
-          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
-          icon: 'check',
-        })
+    // Визначаємо, який метод API потрібно викликати
+    let response
+
+    if (form.value.clientId) {
+      // Отримуємо правильний ID клієнта
+      let clientId
+
+      if (typeof form.value.clientId === 'object' && form.value.clientId !== null) {
+        clientId = form.value.clientId.value
       } else {
-        // Якщо всі періоди оплачені, використовуємо стандартну генерацію
-        const response = await InvoicesApi.generateInvoices(requestData)
-        $q.notify({
-          color: 'positive',
-          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
-          icon: 'check',
+        clientId = form.value.clientId
+      }
+
+      console.log('ID клієнта:', clientId)
+
+      if (!clientId) {
+        throw new Error('Невірний ID клієнта')
+      }
+
+      // Перевіряємо наявність неоплачених об'єктів
+      if (pendingObjects.value && pendingObjects.value.length > 0) {
+        console.log('Викликаємо generateInvoicesForClient для клієнта', clientId)
+        response = await InvoicesApi.generateInvoicesForClient(clientId, requestData)
+      } else {
+        console.log('Викликаємо generateInvoices для клієнта', clientId)
+        // Додаємо clientId в запит для генерації рахунків тільки для цього клієнта
+        response = await InvoicesApi.generateInvoices({
+          ...requestData,
+          client_id: clientId,
         })
       }
     } else {
-      // Генерація для всіх клієнтів
-      const response = await InvoicesApi.generateInvoices(requestData)
-      $q.notify({
-        color: 'positive',
-        message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
-        icon: 'check',
-      })
+      console.log('Викликаємо generateInvoices для всіх клієнтів')
+      response = await InvoicesApi.generateInvoices(requestData)
     }
+
+    console.log('Відповідь від сервера:', response)
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.generatedSuccess', { count: response.data.invoices?.length || 0 }),
+      icon: 'check',
+    })
 
     show.value = false
     emit('generated')
   } catch (error) {
     console.error('Error generating invoices:', error)
+    // Розширене логування помилки
+    if (error.response) {
+      console.error('Response status:', error.response.status)
+      console.error('Response data:', error.response.data)
+    }
+
     $q.notify({
       color: 'negative',
       message: error.response?.data?.message || t('common.errors.generating'),
