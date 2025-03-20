@@ -181,7 +181,11 @@ const monthOptions = computed(() => [
 
 // Methods
 
+// Замініть функцію onSubmit у файлі InvoiceGeneratorDialog.vue
 const onSubmit = async () => {
+  // Додаємо діагностичне логування
+  console.log('Form values:', JSON.stringify(form.value))
+
   // Перевіряємо наявність обов'язкових полів
   if (!form.value.year || !form.value.month) {
     $q.notify({
@@ -194,81 +198,96 @@ const onSubmit = async () => {
 
   loading.value = true
   try {
-    // Безпечно парсимо значення
-    const year = parseInt(form.value.year, 10)
-    const month = parseInt(form.value.month, 10)
+    // Виводимо значення в консоль перед парсингом
+    console.log('Year before parsing:', form.value.year, 'type:', typeof form.value.year)
+    console.log('Month before parsing:', form.value.month, 'type:', typeof form.value.month)
 
-    // Перевіряємо правильність значень
-    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
-      throw new Error(t('common.errors.invalidInput'))
+    // Переконуємося, що значення є рядками перед парсингом
+    const yearStr = String(form.value.year)
+    const monthStr = String(form.value.month)
+
+    // Тепер безпечно парсимо значення
+    const year = parseInt(yearStr, 10)
+    const month = parseInt(monthStr, 10)
+
+    console.log('Year after parsing:', year, 'Month after parsing:', month)
+
+    // Спрощуємо перевірку і додаємо більше діагностики
+    if (isNaN(year)) {
+      console.error('Invalid year value:', form.value.year)
+      throw new Error(t('common.errors.invalidYear'))
+    }
+
+    if (isNaN(month) || month < 1 || month > 12) {
+      console.error('Invalid month value:', form.value.month)
+      throw new Error(t('common.errors.invalidMonth'))
     }
 
     const requestData = {
       year: year,
       month: month,
-      use_smart_generation: true, // Параметр для розумної генерації рахунків
+      use_smart_generation: true,
     }
 
-    // Додаємо логування для діагностики
-    console.log('Відправляємо запит з даними:', JSON.stringify(requestData))
+    console.log('Request data:', JSON.stringify(requestData))
 
-    // Визначаємо, який метод API потрібно викликати
-    let response
-
+    // Продовжуємо існуючу логіку
     if (form.value.clientId) {
-      // Отримуємо правильний ID клієнта
-      let clientId
+      const clientId = form.value.clientId.value || form.value.clientId
+      console.log('Using client ID:', clientId)
 
-      if (typeof form.value.clientId === 'object' && form.value.clientId !== null) {
-        clientId = form.value.clientId.value
+      if (pendingObjects.value.length > 0) {
+        // Якщо є неоплачені періоди, використовуємо generateInvoicesForClient
+        const response = await InvoicesApi.generateInvoicesForClient(clientId, requestData)
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+          icon: 'check',
+        })
       } else {
-        clientId = form.value.clientId
-      }
-
-      console.log('ID клієнта:', clientId)
-
-      if (!clientId) {
-        throw new Error('Невірний ID клієнта')
-      }
-
-      // Перевіряємо наявність неоплачених об'єктів
-      if (pendingObjects.value && pendingObjects.value.length > 0) {
-        console.log('Викликаємо generateInvoicesForClient для клієнта', clientId)
-        response = await InvoicesApi.generateInvoicesForClient(clientId, requestData)
-      } else {
-        console.log('Викликаємо generateInvoices для клієнта', clientId)
-        // Додаємо clientId в запит для генерації рахунків тільки для цього клієнта
-        response = await InvoicesApi.generateInvoices({
-          ...requestData,
-          client_id: clientId,
+        // Якщо всі періоди оплачені, використовуємо стандартну генерацію
+        const response = await InvoicesApi.generateInvoices(requestData)
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+          icon: 'check',
         })
       }
     } else {
-      console.log('Викликаємо generateInvoices для всіх клієнтів')
-      response = await InvoicesApi.generateInvoices(requestData)
+      // Генерація для всіх клієнтів
+      const response = await InvoicesApi.generateInvoices(requestData)
+      $q.notify({
+        color: 'positive',
+        message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
+        icon: 'check',
+      })
     }
-
-    console.log('Відповідь від сервера:', response)
-
-    $q.notify({
-      color: 'positive',
-      message: t('invoices.generatedSuccess', { count: response.data.invoices?.length || 0 }),
-      icon: 'check',
-    })
 
     show.value = false
     emit('generated')
   } catch (error) {
     console.error('Error generating invoices:', error)
+
     // Розширене логування помилки
     if (error.response) {
       console.error('Response status:', error.response.status)
-      console.error('Response data:', error.response.data)
+      console.error('Response data:', JSON.stringify(error.response.data))
+    }
+
+    // Показуємо відповідне повідомлення про помилку
+    let errorMessage = t('common.errors.generating')
+
+    if (error.message === t('common.errors.invalidYear')) {
+      errorMessage = t('common.errors.invalidYear')
+    } else if (error.message === t('common.errors.invalidMonth')) {
+      errorMessage = t('common.errors.invalidMonth')
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
     }
 
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || t('common.errors.generating'),
+      message: errorMessage,
       icon: 'error',
     })
   } finally {
