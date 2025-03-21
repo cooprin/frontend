@@ -195,6 +195,7 @@ import { PaymentsApi } from 'src/api/payments'
 import { ClientsApi } from 'src/api/clients'
 import { InvoicesApi } from 'src/api/invoices'
 import { WialonApi } from 'src/api/wialon'
+import { TariffsApi } from 'src/api/tariffs'
 
 const props = defineProps({
   modelValue: {
@@ -261,7 +262,6 @@ const onObjectToggle = async (objectId) => {
 }
 
 // Функція для завантаження періодів для конкретного об'єкта
-// Замінити існуючу функцію loadPeriodsForObject на цю
 const loadPeriodsForObject = async (objectId) => {
   if (!objectId) return
 
@@ -269,11 +269,88 @@ const loadPeriodsForObject = async (objectId) => {
   loadingObjectPeriods.value[objectId] = true
 
   try {
-    // Завантажуємо доступні періоди
-    const response = await PaymentsApi.getAvailablePaymentPeriods(objectId)
+    // Завантажуємо інформацію про дату призначення об'єкта клієнту
+    const ownershipResponse = await WialonApi.getObjectOwnership(objectId)
+    const ownershipStartDate = ownershipResponse.data.start_date
+      ? new Date(ownershipResponse.data.start_date)
+      : null
 
-    // Отримуємо неоплачені періоди
-    let unpaidPeriods = (response.data.periods || []).filter((period) => !period.is_paid)
+    // Завантажуємо тарифну історію об'єкта
+    const tariffHistoryResponse = await TariffsApi.getObjectTariffHistory(objectId)
+    const tariffHistory = tariffHistoryResponse.data.history || []
+
+    // Завантажуємо всі зроблені платежі для об'єкта
+    const paymentsResponse = await PaymentsApi.getObjectPayments(objectId)
+    const existingPayments = paymentsResponse.data.payments || []
+
+    // Визначаємо початкову дату для аналізу (дата придбання або першого тарифу)
+    const firstTariffDate =
+      tariffHistory.length > 0
+        ? new Date(tariffHistory[tariffHistory.length - 1].effective_from)
+        : null
+
+    let startDate = ownershipStartDate
+    if (!startDate || (firstTariffDate && firstTariffDate > startDate)) {
+      startDate = firstTariffDate
+    }
+
+    // Якщо немає дати початку, використовуємо поточну дату
+    if (!startDate) {
+      startDate = new Date()
+    }
+
+    // Обчислюємо всі місяці від дати початку до поточного місяця
+    const currentDate = new Date()
+    const allPeriods = []
+
+    // Клонуємо дату початку, щоб не змінити оригінал
+    const iterDate = new Date(startDate)
+    // Встановлюємо на перше число місяця
+    iterDate.setDate(1)
+
+    // Перебираємо всі місяці від дати початку до поточного
+    while (
+      iterDate.getFullYear() < currentDate.getFullYear() ||
+      (iterDate.getFullYear() === currentDate.getFullYear() &&
+        iterDate.getMonth() <= currentDate.getMonth())
+    ) {
+      const year = iterDate.getFullYear()
+      const month = iterDate.getMonth() + 1 // JavaScript місяці починаються з 0
+
+      // Знаходимо тариф, який був активний у цей період
+      const activeTariff = tariffHistory.find((t) => {
+        const effectiveFrom = new Date(t.effective_from)
+        const effectiveTo = t.effective_to ? new Date(t.effective_to) : new Date()
+
+        // Перше число поточного місяця
+        const periodStart = new Date(year, month - 1, 1)
+        // Перевіряємо, чи тариф був активний у цей період
+        return effectiveFrom <= periodStart && periodStart <= effectiveTo
+      })
+
+      // Перевіряємо, чи цей період вже оплачений
+      const isPaid = existingPayments.some(
+        (payment) => payment.billing_year === year && payment.billing_month === month,
+      )
+
+      // Додаємо період до списку, якщо є активний тариф і об'єкт був активний
+      if (activeTariff) {
+        allPeriods.push({
+          billing_year: year,
+          billing_month: month,
+          is_paid: isPaid,
+          tariff_id: activeTariff.tariff_id,
+          tariff_name: activeTariff.tariff_name,
+          price: activeTariff.price,
+        })
+      }
+
+      // Переходимо до наступного місяця
+      iterDate.setMonth(iterDate.getMonth() + 1)
+    }
+
+    // Фільтруємо неоплачені періоди
+    let unpaidPeriods = allPeriods.filter((period) => !period.is_paid)
 
     // Додаємо запит для перевірки рахунків за періоди
     const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
