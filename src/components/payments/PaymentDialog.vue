@@ -146,16 +146,20 @@
                           :key="`${obj.id}-${period.billing_year}-${period.billing_month}`"
                         >
                           <q-item-section>
-                            <q-item-label
-                              >{{ $t(`payments.months.${period.billing_month}`) }}
-                              {{ period.billing_year }}</q-item-label
-                            >
+                            <q-item-label>
+                              {{ $t(`payments.months.${period.billing_month}`) }}
+                              {{ period.billing_year }}
+                            </q-item-label>
+                            <q-item-label v-if="period.has_invoice" caption class="text-orange">
+                              {{ $t('payments.invoiceExists', { number: period.invoice_number }) }}
+                            </q-item-label>
                           </q-item-section>
                           <q-item-section side>
                             <q-checkbox
                               v-model="selectedPeriodsByObject[obj.id]"
                               :val="`${period.billing_year}-${period.billing_month}`"
                               color="primary"
+                              :disable="period.has_invoice"
                               @update:model-value="updateTotalFromSelectedPeriods"
                             />
                           </q-item-section>
@@ -299,59 +303,18 @@ const loadPeriodsForObject = async (objectId) => {
       availablePeriods = []
     }
 
-    console.log('Available periods before invoice check:', availablePeriods)
-
-    // Тепер unpaidPeriods гарантовано є масивом
-    let unpaidPeriods = availablePeriods
-
-    // Додаємо запит для перевірки рахунків за періоди
-    if (unpaidPeriods.length > 0) {
-      const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
-        try {
-          // Додаємо запит до API для перевірки наявності рахунку за період
-          const invoiceResponse = await InvoicesApi.checkInvoiceExistence(
-            objectId,
-            period.billing_year,
-            period.billing_month,
-          )
-
-          // Додаємо інформацію про рахунок до періоду
-          period.has_invoice = invoiceResponse.data.exists
-          period.invoice_number = invoiceResponse.data.invoice_number || null
-
-          console.log(
-            `Period ${period.billing_year}-${period.billing_month} has invoice:`,
-            period.has_invoice,
-          )
-
-          return period
-        } catch (error) {
-          console.error(
-            `Error checking invoice for period ${period.billing_year}-${period.billing_month}:`,
-            error,
-          )
-          period.has_invoice = false
-          return period
-        }
-      })
-
-      // Чекаємо завершення всіх перевірок
-      unpaidPeriods = await Promise.all(invoiceCheckPromises)
-
-      console.log('Periods after invoice check:', unpaidPeriods)
-    }
-
-    // Фільтруємо періоди, виключаючи ті, для яких вже є рахунки
-    const periodsWithoutInvoices = unpaidPeriods.filter((period) => !period.has_invoice)
-
-    console.log('Periods without invoices:', periodsWithoutInvoices)
-
-    // Зберігаємо періоди для об'єкта
-    objectPeriodsMap.value[objectId] = periodsWithoutInvoices
+    // Зберігаємо періоди для об'єкта - включаємо всі неоплачені періоди
+    // незалежно від того, чи є для них виставлені рахунки
+    objectPeriodsMap.value[objectId] = availablePeriods
 
     // Якщо є неоплачені періоди, автоматично вибираємо перший
-    if (periodsWithoutInvoices.length > 0) {
-      const firstPeriod = periodsWithoutInvoices[0]
+    if (availablePeriods.length > 0) {
+      // Знаходимо перший період без виставленого рахунку
+      const firstPeriodWithoutInvoice = availablePeriods.find((period) => !period.has_invoice)
+
+      // Якщо такого немає, беремо просто перший період
+      const firstPeriod = firstPeriodWithoutInvoice || availablePeriods[0]
+
       const periodKey = `${firstPeriod.billing_year}-${firstPeriod.billing_month}`
 
       // Переконуємося, що масив існує
@@ -369,9 +332,6 @@ const loadPeriodsForObject = async (objectId) => {
 
       // Оновлюємо загальну суму
       updateTotalFromSelectedPeriods()
-    } else {
-      // Якщо немає періодів без рахунків, показуємо повідомлення
-      console.log('No periods without invoices available for this object')
     }
   } catch (error) {
     console.error(`Error loading periods for object ${objectId}:`, error)
