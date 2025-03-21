@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
@@ -109,6 +109,28 @@ const pendingObjects = ref([])
 const checkingPending = ref(false)
 const showPendingWarning = ref(false)
 
+// Створюємо масив опцій місяців
+const createMonthOptions = (t) => [
+  { label: t('invoices.months.1'), value: '1' },
+  { label: t('invoices.months.2'), value: '2' },
+  { label: t('invoices.months.3'), value: '3' },
+  { label: t('invoices.months.4'), value: '4' },
+  { label: t('invoices.months.5'), value: '5' },
+  { label: t('invoices.months.6'), value: '6' },
+  { label: t('invoices.months.7'), value: '7' },
+  { label: t('invoices.months.8'), value: '8' },
+  { label: t('invoices.months.9'), value: '9' },
+  { label: t('invoices.months.10'), value: '10' },
+  { label: t('invoices.months.11'), value: '11' },
+  { label: t('invoices.months.12'), value: '12' },
+]
+
+// Створюємо масив опцій
+const monthOptionsArray = createMonthOptions(t)
+
+// Створюємо обчислювану властивість для місячних опцій
+const monthOptions = computed(() => monthOptionsArray)
+
 // Метод для перевірки неоплачених періодів
 const checkPendingPayments = async () => {
   if (!form.value.clientId || !form.value.year || !form.value.month) {
@@ -120,9 +142,28 @@ const checkPendingPayments = async () => {
 
   try {
     const clientId = form.value.clientId.value || form.value.clientId
+
+    // Переконуємось, що передаємо числові значення або правильно форматовані рядки
+    const year = parseInt(form.value.year, 10)
+    let month
+
+    if (typeof form.value.month === 'string') {
+      month = parseInt(form.value.month, 10)
+    } else if (typeof form.value.month === 'number') {
+      month = form.value.month
+    } else if (form.value.month && form.value.month.value) {
+      month = parseInt(form.value.month.value, 10)
+    }
+
+    // Якщо не вдалося коректно отримати значення місяця, виходимо
+    if (isNaN(month) || month < 1 || month > 12) {
+      console.warn('Invalid month value for checkPendingPayments:', form.value.month)
+      return
+    }
+
     const response = await InvoicesApi.checkPendingInvoices(clientId, {
-      year: form.value.year,
-      month: form.value.month,
+      year: year,
+      month: month,
     })
 
     pendingObjects.value = response.data.pendingObjects || []
@@ -139,15 +180,26 @@ const checkPendingPayments = async () => {
   }
 }
 
-// Default form
+// Отримуємо поточну дату
 const currentDate = new Date()
-const defaultForm = {
-  year: currentDate.getFullYear().toString(),
-  month: (currentDate.getMonth() + 1).toString(),
-  clientId: null,
-}
+const currentYear = currentDate.getFullYear()
+const currentMonth = currentDate.getMonth() + 1 // JavaScript місяці починаються з 0
 
-const form = ref({ ...defaultForm })
+// Знаходимо об'єкт місяця для поточного місяця
+const currentMonthOption = monthOptionsArray.find((opt) => parseInt(opt.value) === currentMonth)
+
+// Ініціалізуємо форму з правильним місяцем
+const form = ref({
+  year: currentYear.toString(),
+  month: currentMonthOption ? currentMonthOption.value : currentMonth.toString(),
+  clientId: null,
+})
+
+// Функція для форматування валюти
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return '-'
+  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+}
 
 // Computed
 const show = computed({
@@ -164,24 +216,21 @@ const yearOptions = computed(() => {
   return years
 })
 
-const monthOptions = computed(() => [
-  { label: t('invoices.months.1'), value: '1' },
-  { label: t('invoices.months.2'), value: '2' },
-  { label: t('invoices.months.3'), value: '3' },
-  { label: t('invoices.months.4'), value: '4' },
-  { label: t('invoices.months.5'), value: '5' },
-  { label: t('invoices.months.6'), value: '6' },
-  { label: t('invoices.months.7'), value: '7' },
-  { label: t('invoices.months.8'), value: '8' },
-  { label: t('invoices.months.9'), value: '9' },
-  { label: t('invoices.months.10'), value: '10' },
-  { label: t('invoices.months.11'), value: '11' },
-  { label: t('invoices.months.12'), value: '12' },
-])
+// Функція для коректної ініціалізації форми при відкритті діалогу
+const initializeForm = () => {
+  // Переконуємося, що місяць показується як текст, а не цифра
+  if (form.value.month) {
+    const monthValue =
+      typeof form.value.month === 'string' ? parseInt(form.value.month, 10) : form.value.month
+
+    const monthOption = monthOptionsArray.find((opt) => parseInt(opt.value) === monthValue)
+    if (monthOption) {
+      form.value.month = monthOption.value
+    }
+  }
+}
 
 // Methods
-
-// Замініть функцію onSubmit у файлі InvoiceGeneratorDialog.vue
 const onSubmit = async () => {
   // Перевіряємо наявність обов'язкових полів
   if (!form.value.year || !form.value.month) {
@@ -263,6 +312,7 @@ const onSubmit = async () => {
         color: 'positive',
         message: t('invoices.generatedSuccess', { count: response.data.invoices.length }),
         icon: 'check',
+        timeoutDelay: 3000, // Додатковий час для показу сповіщення
       })
     }
 
@@ -297,6 +347,7 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
 const loadClients = async () => {
   loadingClients.value = true
   try {
@@ -333,6 +384,20 @@ const filterClients = (val, update) => {
     )
   })
 }
+
+// Додаємо спостерігач за показом діалогу
+watch(
+  () => show.value,
+  (newVal) => {
+    if (newVal === true) {
+      // Ініціалізуємо форму при відкритті діалогу
+      nextTick(() => {
+        initializeForm()
+      })
+    }
+  },
+)
+
 watch([() => form.value.clientId, () => form.value.year, () => form.value.month], () => {
   if (form.value.clientId && form.value.year && form.value.month) {
     checkPendingPayments()
@@ -342,5 +407,10 @@ watch([() => form.value.clientId, () => form.value.year, () => form.value.month]
 // Lifecycle
 onMounted(() => {
   loadClients()
+
+  // Ініціалізуємо форму після загрузки компонента
+  nextTick(() => {
+    initializeForm()
+  })
 })
 </script>
