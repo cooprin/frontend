@@ -274,8 +274,8 @@ const loadAvailablePeriods = async (objectId) => {
     // Ініціалізуємо суми для кожного періоду
     availablePeriods.value.forEach((period) => {
       // Використовуємо ключ у форматі 'YYYY-MM' для зручності
-      const periodKey = `${period.year}-${period.month}`
-      periodAmounts.value[periodKey] = period.suggested_amount || 0
+      const periodKey = `${period.billing_year}-${period.billing_month}`
+      periodAmounts.value[periodKey] = period.price || 0
     })
   } catch (error) {
     console.error('Error loading available periods:', error)
@@ -360,34 +360,35 @@ const onSubmit = async () => {
     if (!form.value.invoice_id) {
       // Платіж за об'єкти
       if (selectedObjects.value.length > 0) {
-        paymentData.object_payments = selectedObjects.value.map((objId) => {
-          // Знаходимо об'єкт щоб отримати його тариф
-          const obj = clientObjects.value.find((o) => o.id === objId)
-          return {
-            object_id: objId,
-            tariff_id: obj.current_tariff_id,
-            amount: objectAmounts.value[objId] || obj.current_tariff_price || 0,
-            billing_month: new Date(form.value.payment_date).getMonth() + 1,
-            billing_year: new Date(form.value.payment_date).getFullYear(),
-          }
-        })
-      }
+        // Якщо вибрані періоди, використовуємо їх
+        if (selectedPeriods.value.length > 0 && selectedObjects.value.length === 1) {
+          const objectId = selectedObjects.value[0]
+          const obj = clientObjects.value.find((o) => o.id === objectId)
 
-      // Платіж за періоди
-      if (selectedPeriods.value.length > 0 && selectedObjects.value.length === 1) {
-        const objectId = selectedObjects.value[0]
-        const obj = clientObjects.value.find((o) => o.id === objectId)
-
-        paymentData.period_payments = selectedPeriods.value.map((periodKey) => {
-          const [year, month] = periodKey.split('-')
-          return {
-            object_id: objectId,
-            tariff_id: obj.current_tariff_id,
-            amount: periodAmounts.value[periodKey] || 0,
-            billing_month: parseInt(month),
-            billing_year: parseInt(year),
-          }
-        })
+          paymentData.object_payments = selectedPeriods.value.map((periodKey) => {
+            const [year, month] = periodKey.split('-')
+            return {
+              object_id: objectId,
+              tariff_id: obj.current_tariff_id,
+              amount: periodAmounts.value[periodKey] || 0,
+              billing_month: parseInt(month),
+              billing_year: parseInt(year),
+            }
+          })
+        } else {
+          // Звичайна оплата за об'єкти без вказання періоду
+          paymentData.object_payments = selectedObjects.value.map((objId) => {
+            // Знаходимо об'єкт щоб отримати його тариф
+            const obj = clientObjects.value.find((o) => o.id === objId)
+            return {
+              object_id: objId,
+              tariff_id: obj.current_tariff_id,
+              amount: objectAmounts.value[objId] || obj.current_tariff_price || 0,
+              billing_month: new Date(form.value.payment_date).getMonth() + 1,
+              billing_year: new Date(form.value.payment_date).getFullYear(),
+            }
+          })
+        }
       }
     }
 
@@ -422,7 +423,6 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
-
 const loadClients = async () => {
   loadingClients.value = true
   try {
@@ -486,6 +486,9 @@ const onClientSelected = async (clientId) => {
 
   // Скидаємо вибрані періоди
   selectedPeriods.value = []
+  availablePeriods.value = []
+  periodAmounts.value = {}
+  showPeriodSelection.value = false
 
   // Завантажуємо рахунки клієнта
   await loadClientInvoices(actualClientId)
@@ -659,6 +662,15 @@ const updateTotalAmount = () => {
 
   // Оновлюємо суму форми
   form.value.amount = total
+
+  // Якщо вибрано один об'єкт, показуємо секцію вибору періодів
+  if (selectedObjects.value.length === 1) {
+    // Завантажуємо доступні періоди для об'єкта
+    loadAvailablePeriods(selectedObjects.value[0])
+    showPeriodSelection.value = true
+  } else {
+    showPeriodSelection.value = false
+  }
 }
 
 const formatCurrency = (amount) => {
