@@ -264,6 +264,15 @@
               formatCurrency(objectInfo.current_price)
             }})
           </p>
+
+          <!-- Додаємо поле для коментаря -->
+          <q-input
+            v-model="paymentNotes"
+            :label="$t('payments.notes')"
+            type="textarea"
+            outlined
+            autogrow
+          />
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat :label="$t('common.cancel')" color="primary" v-close-popup />
@@ -309,6 +318,7 @@ const loadingPeriods = ref(false)
 const showPayPeriodDialog = ref(false)
 const selectedPeriodForPayment = ref(null)
 const processingPayment = ref(false)
+const paymentNotes = ref('')
 
 // Метод для правильного розрахунку загальної суми
 const calculateTotalPaid = () => {
@@ -350,21 +360,29 @@ const createPeriodPayment = async () => {
       throw new Error('Не вдалося отримати ID клієнта')
     }
 
-    if (!objectInfo.value.current_price) {
-      throw new Error('Не вдалося отримати ціну тарифу')
+    if (!objectInfo.value.current_tariff_id) {
+      throw new Error('Не вдалося отримати ID тарифу')
     }
 
     const paymentData = {
-      object_id: props.objectId,
       client_id: objectInfo.value.client_id,
-      billing_month: selectedPeriodForPayment.value.billing_month,
-      billing_year: selectedPeriodForPayment.value.billing_year,
       amount: objectInfo.value.current_price || 0,
-      payment_type: 'regular',
       payment_date: new Date().toISOString().slice(0, 10),
+      payment_type: 'regular',
+      notes: paymentNotes.value,
+      // Додаємо інформацію про оплату для конкретного об'єкта
+      object_payments: [
+        {
+          object_id: props.objectId,
+          tariff_id: objectInfo.value.current_tariff_id,
+          amount: objectInfo.value.current_price || 0,
+          billing_month: selectedPeriodForPayment.value.billing_month,
+          billing_year: selectedPeriodForPayment.value.billing_year,
+        },
+      ],
     }
 
-    await PaymentsApi.createPeriodPayment(paymentData)
+    await PaymentsApi.createPayment(paymentData)
 
     showPayPeriodDialog.value = false
 
@@ -440,6 +458,7 @@ const openPayPeriodDialog = (period) => {
   }
 
   selectedPeriodForPayment.value = period
+  paymentNotes.value = '' // Обнуляємо коментар при відкритті діалогу
   showPayPeriodDialog.value = true
 }
 
