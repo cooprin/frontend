@@ -14,6 +14,8 @@
             :label="$t('invoices.year')"
             :rules="[(val) => !!val || $t('common.validation.required')]"
             outlined
+            map-options
+            emit-value
           />
 
           <!-- Місяць -->
@@ -23,6 +25,8 @@
             :label="$t('invoices.month')"
             :rules="[(val) => !!val || $t('common.validation.required')]"
             outlined
+            map-options
+            emit-value
           />
 
           <!-- Клієнт (опціонально) -->
