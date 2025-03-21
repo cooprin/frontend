@@ -123,6 +123,7 @@
               </q-item>
             </q-list>
           </div>
+
           <!-- Вибір періодів для оплати -->
           <div v-if="selectedObjects.length === 1 && !objectsLocked">
             <q-separator class="q-my-md" />
@@ -157,12 +158,12 @@
                   <q-list bordered separator>
                     <q-item
                       v-for="period in availablePeriods"
-                      :key="`${period.year}-${period.month}`"
+                      :key="`${period.billing_year}-${period.billing_month}`"
                     >
                       <q-item-section>
                         <q-item-label
-                          >{{ $t(`payments.months.${period.month}`) }}
-                          {{ period.year }}</q-item-label
+                          >{{ $t(`payments.months.${period.billing_month}`) }}
+                          {{ period.billing_year }}</q-item-label
                         >
                         <q-item-label caption v-if="period.is_paid" class="text-positive">
                           {{ $t('payments.alreadyPaid') }}
@@ -173,7 +174,7 @@
                         <!-- Перемикач для вибору періоду -->
                         <q-toggle
                           v-model="selectedPeriods"
-                          :val="`${period.year}-${period.month}`"
+                          :val="`${period.billing_year}-${period.billing_month}`"
                           :disable="period.is_paid"
                           color="primary"
                           @update:model-value="updateTotalFromPeriods"
@@ -183,8 +184,14 @@
                       <q-item-section side style="width: 120px">
                         <!-- Поле для введення суми -->
                         <q-input
-                          v-if="selectedPeriods.includes(`${period.year}-${period.month}`)"
-                          v-model.number="periodAmounts[`${period.year}-${period.month}`]"
+                          v-if="
+                            selectedPeriods.includes(
+                              `${period.billing_year}-${period.billing_month}`,
+                            )
+                          "
+                          v-model.number="
+                            periodAmounts[`${period.billing_year}-${period.billing_month}`]
+                          "
                           dense
                           outlined
                           type="number"
@@ -218,7 +225,6 @@
     </q-card>
   </q-dialog>
 </template>
-
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
@@ -271,12 +277,28 @@ const loadAvailablePeriods = async (objectId) => {
     const response = await PaymentsApi.getAvailablePaymentPeriods(objectId)
     availablePeriods.value = response.data.periods || []
 
-    // Ініціалізуємо суми для кожного періоду
-    availablePeriods.value.forEach((period) => {
-      // Використовуємо ключ у форматі 'YYYY-MM' для зручності
-      const periodKey = `${period.billing_year}-${period.billing_month}`
-      periodAmounts.value[periodKey] = period.price || 0
-    })
+    // Очищаємо вибрані періоди
+    selectedPeriods.value = []
+    periodAmounts.value = {}
+
+    if (availablePeriods.value.length > 0) {
+      // Знаходимо перший неоплачений період
+      const firstUnpaidPeriod = availablePeriods.value.find((period) => !period.is_paid)
+
+      if (firstUnpaidPeriod) {
+        // Формуємо ключ для періоду у форматі "YYYY-MM"
+        const periodKey = `${firstUnpaidPeriod.billing_year}-${firstUnpaidPeriod.billing_month}`
+
+        // Автоматично вибираємо перший неоплачений період
+        selectedPeriods.value.push(periodKey)
+
+        // Встановлюємо суму для періоду
+        periodAmounts.value[periodKey] = parseFloat(firstUnpaidPeriod.price) || 0
+
+        // Оновлюємо загальну суму форми
+        updateTotalFromPeriods()
+      }
+    }
   } catch (error) {
     console.error('Error loading available periods:', error)
     availablePeriods.value = []
