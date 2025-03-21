@@ -270,7 +270,7 @@ const loadPeriodsForObject = async (objectId) => {
 
   try {
     // Завантажуємо інформацію про дату призначення об'єкта клієнту
-    const ownershipResponse = await WialonApi.getObjectById(objectId)
+    const ownershipResponse = await WialonApi.getObject(objectId)
     const ownershipStartDate = ownershipResponse.data.start_date
       ? new Date(ownershipResponse.data.start_date)
       : null
