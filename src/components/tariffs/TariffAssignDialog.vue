@@ -104,6 +104,7 @@ import { useI18n } from 'vue-i18n'
 import { TariffsApi } from 'src/api/tariffs'
 import { PaymentsApi } from 'src/api/payments'
 import { date } from 'quasar'
+import { WialonApi } from 'src/api/wialon'
 
 const props = defineProps({
   modelValue: {
@@ -167,28 +168,16 @@ const isDateInPaidPeriod = computed(() => {
 const loadObjects = async () => {
   loadingObjects.value = true
   try {
-    // Тут буде API запит для отримання об'єктів
-    const response = await fetch('/api/wialon-objects')
-    const data = await response.json()
-
-    objectOptions.value = data.objects.map((obj) => ({
-      label: obj.name,
-      value: obj.id,
-      client_name: obj.client_name,
-    }))
-
-    /* Реальний код буде приблизно такий:
     const response = await WialonApi.getObjects({
       perPage: 'All',
       status: 'active',
-    });
+    })
 
     objectOptions.value = response.data.objects.map((obj) => ({
       label: obj.name,
       value: obj.id,
       client_name: obj.client_name,
-    }));
-    */
+    }))
   } catch (error) {
     console.error('Error loading objects:', error)
     $q.notify({

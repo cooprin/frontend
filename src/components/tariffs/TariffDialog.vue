@@ -31,6 +31,8 @@
             type="number"
             outlined
             prefix="₴"
+            :readonly="isEdit"
+            :hint="isEdit ? t('tariffs.priceEditDisabled') : ''"
           />
 
           <!-- Опис -->
