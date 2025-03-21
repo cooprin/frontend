@@ -57,4 +57,14 @@ export const InvoicesApi = {
   generateSmartInvoice: (data) => {
     return api.post('/services/invoices/generate-smart', data)
   },
+
+  checkInvoiceExistence: (objectId, year, month) => {
+    return api.get('/services/invoices/check-existence', {
+      params: {
+        objectId,
+        year,
+        month,
+      },
+    })
+  },
 }

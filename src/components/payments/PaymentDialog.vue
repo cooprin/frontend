@@ -126,6 +126,13 @@
                     </q-card-section>
 
                     <q-card-section
+                      v-else-if="objectPeriodsMap[obj.id] && objectPeriodsMap[obj.id].length === 0"
+                      class="text-orange text-center"
+                    >
+                      {{ $t('payments.allPeriodsHaveInvoices') }}
+                    </q-card-section>
+
+                    <q-card-section
                       v-else-if="!objectPeriodsMap[obj.id].length"
                       class="text-grey text-center"
                     >
@@ -248,6 +255,7 @@ const onObjectToggle = async (objectId) => {
 }
 
 // Функція для завантаження періодів для конкретного об'єкта
+// Замінити існуючу функцію loadPeriodsForObject на цю
 const loadPeriodsForObject = async (objectId) => {
   if (!objectId) return
 
@@ -258,8 +266,39 @@ const loadPeriodsForObject = async (objectId) => {
     // Завантажуємо доступні періоди
     const response = await PaymentsApi.getAvailablePaymentPeriods(objectId)
 
-    // Фільтруємо тільки неоплачені періоди
-    const unpaidPeriods = (response.data.periods || []).filter((period) => !period.is_paid)
+    // Отримуємо неоплачені періоди
+    let unpaidPeriods = (response.data.periods || []).filter((period) => !period.is_paid)
+
+    // Додаємо запит для перевірки рахунків за періоди
+    const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
+      try {
+        // Додаємо запит до API для перевірки наявності рахунку за період
+        const invoiceResponse = await InvoicesApi.checkInvoiceExistence(
+          objectId,
+          period.billing_year,
+          period.billing_month,
+        )
+
+        // Додаємо інформацію про рахунок до періоду
+        period.has_invoice = invoiceResponse.data.exists
+        period.invoice_number = invoiceResponse.data.invoice_number || null
+
+        return period
+      } catch (error) {
+        console.error(
+          `Error checking invoice for period ${period.billing_year}-${period.billing_month}:`,
+          error,
+        )
+        period.has_invoice = false
+        return period
+      }
+    })
+
+    // Чекаємо завершення всіх перевірок
+    unpaidPeriods = await Promise.all(invoiceCheckPromises)
+
+    // Фільтруємо періоди, виключаючи ті, для яких вже є рахунки
+    unpaidPeriods = unpaidPeriods.filter((period) => !period.has_invoice)
 
     // Зберігаємо періоди для об'єкта
     objectPeriodsMap.value[objectId] = unpaidPeriods
