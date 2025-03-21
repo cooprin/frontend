@@ -128,40 +128,47 @@
                           <q-item-label>{{ formatCurrency(object.tariff_price) }}</q-item-label>
                         </q-item-section>
                       </q-item>
+
+                      <q-item v-if="object.tariff_effective_from">
+                        <q-item-section>
+                          <q-item-label caption>{{ $t('tariffs.effectiveFrom') }}</q-item-label>
+                          <q-item-label>{{
+                            formatDate(object.tariff_effective_from)
+                          }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
                     </q-list>
                   </q-card-section>
                 </q-card>
-                <!-- Заплановані зміни тарифів -->
-                <q-card flat bordered class="q-mt-md" v-if="plannedTariffChanges.length > 0">
+
+                <!-- Історія тарифів -->
+                <q-card flat bordered class="q-mt-md">
                   <q-card-section>
-                    <div class="text-subtitle1">{{ $t('tariffs.plannedChanges') }}</div>
+                    <div class="text-subtitle1">{{ $t('tariffs.history') }}</div>
                   </q-card-section>
                   <q-card-section>
-                    <q-list bordered separator>
-                      <q-item v-for="change in plannedTariffChanges" :key="change.id">
+                    <div v-if="loadingTariffHistory" class="text-center">
+                      <q-spinner color="primary" size="2em" />
+                    </div>
+                    <div
+                      v-else-if="!tariffHistory || tariffHistory.length === 0"
+                      class="text-grey text-center"
+                    >
+                      {{ $t('tariffs.noHistory') }}
+                    </div>
+                    <q-list v-else bordered separator>
+                      <q-item v-for="tariff in tariffHistory" :key="tariff.id">
                         <q-item-section>
-                          <q-item-label>{{ change.new_tariff_name }}</q-item-label>
+                          <q-item-label>{{ tariff.tariff_name }}</q-item-label>
                           <q-item-label caption>
-                            {{ $t('tariffs.priceChange') }}:
-                            {{ formatCurrency(object.tariff_price) }} →
-                            {{ formatCurrency(change.new_tariff_price) }}
+                            {{ formatCurrency(tariff.price) }}
                           </q-item-label>
                         </q-item-section>
                         <q-item-section side>
-                          <q-item-label caption>{{ $t('tariffs.effectiveFrom') }}</q-item-label>
-                          <q-item-label>{{ formatDate(change.effective_date) }}</q-item-label>
-                        </q-item-section>
-                        <q-item-section side>
-                          <q-btn
-                            flat
-                            round
-                            dense
-                            color="negative"
-                            icon="cancel"
-                            @click="openCancelChangeDialog(change)"
-                          >
-                            <q-tooltip>{{ $t('tariffs.cancelChange') }}</q-tooltip>
-                          </q-btn>
+                          <q-item-label caption>{{ $t('tariffs.period') }}</q-item-label>
+                          <q-item-label>{{
+                            formatDateRange(tariff.effective_from, tariff.effective_to)
+                          }}</q-item-label>
                         </q-item-section>
                       </q-item>
                     </q-list>
@@ -233,32 +240,6 @@
     </template>
 
     <!-- Діалоги -->
-    <!-- Діалог підтвердження скасування зміни тарифу -->
-    <q-dialog v-model="showCancelChangeDialog">
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="negative" text-color="white" />
-          <span class="q-ml-sm">{{ $t('tariffs.cancelChangeConfirmation') }}</span>
-        </q-card-section>
-        <q-card-section v-if="changeToCancel">
-          <div>{{ $t('tariffs.from') }}: {{ object.tariff_name }}</div>
-          <div>{{ $t('tariffs.to') }}: {{ changeToCancel.new_tariff_name }}</div>
-          <div>
-            {{ $t('tariffs.effectiveDate') }}: {{ formatDate(changeToCancel.effective_date) }}
-          </div>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat :label="$t('common.cancel')" color="primary" v-close-popup />
-          <q-btn
-            flat
-            :label="$t('tariffs.cancelChange')"
-            color="negative"
-            @click="cancelPlannedChange"
-            v-close-popup
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <wialon-object-dialog v-model="showDialog" :edit-data="object" @saved="loadObject" />
     <wialon-object-change-owner-dialog
       v-model="showChangeOwnerDialog"
@@ -291,66 +272,30 @@ const loading = ref(true)
 const tab = ref('info')
 const showDialog = ref(false)
 const showChangeOwnerDialog = ref(false)
+const tariffHistory = ref([])
+const loadingTariffHistory = ref(false)
 
-// Додати до списку станів
-const plannedTariffChanges = ref([])
-const loadingPlannedChanges = ref(false)
-const showCancelChangeDialog = ref(false)
-const changeToCancel = ref(null)
-
-// Додати новий метод для завантаження запланованих змін тарифів
-const loadPlannedTariffChanges = async () => {
+// Метод для завантаження історії тарифів об'єкта
+const loadTariffHistory = async () => {
   if (!object.value || !object.value.id) return
 
-  loadingPlannedChanges.value = true
+  loadingTariffHistory.value = true
   try {
-    const response = await TariffsApi.getPlannedChanges({ object_id: object.value.id })
-    plannedTariffChanges.value = response.data.planned_changes || []
+    const response = await TariffsApi.getObjectTariffHistory(object.value.id)
+    tariffHistory.value = response.data.history || []
   } catch (error) {
-    console.error('Error loading planned tariff changes:', error)
+    console.error('Error loading tariff history:', error)
     $q.notify({
       color: 'negative',
       message: t('common.errors.loading'),
       icon: 'error',
     })
   } finally {
-    loadingPlannedChanges.value = false
+    loadingTariffHistory.value = false
   }
 }
 
-// Додати метод для скасування запланованої зміни тарифу
-const cancelPlannedChange = async () => {
-  if (!changeToCancel.value) return
-
-  try {
-    await TariffsApi.cancelPlannedChange(object.value.id)
-
-    $q.notify({
-      color: 'positive',
-      message: t('tariffs.cancelChangeSuccess'),
-      icon: 'check',
-    })
-
-    showCancelChangeDialog.value = false
-    loadPlannedTariffChanges()
-    loadObject() // Перезавантажуємо об'єкт для отримання актуальних даних
-  } catch (error) {
-    console.error('Error cancelling planned tariff change:', error)
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.message || t('common.errors.saving'),
-      icon: 'error',
-    })
-  }
-}
-
-// Додати метод для відкриття діалогу скасування зміни
-const openCancelChangeDialog = (change) => {
-  changeToCancel.value = change
-  showCancelChangeDialog.value = true
-}
-
-// Оновити метод loadObject, щоб також викликав loadPlannedTariffChanges
+// Оновлений метод loadObject
 const loadObject = async () => {
   loading.value = true
   try {
@@ -358,8 +303,8 @@ const loadObject = async () => {
     const response = await WialonApi.getObject(objectId)
     object.value = response.data.object
 
-    // Завантажуємо заплановані зміни тарифів
-    await loadPlannedTariffChanges()
+    // Завантажуємо історію тарифів
+    await loadTariffHistory()
   } catch (error) {
     console.error('Error loading object:', error)
     $q.notify({

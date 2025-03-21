@@ -147,13 +147,13 @@
       </q-card-section>
       <q-card-section>
         <div class="row q-col-gutter-md">
-          <!-- Загальна сума оплат -->
+          <!-- Загальна сума оплат - виправлений розрахунок -->
           <div class="col-12 col-sm-4">
             <q-item>
               <q-item-section>
                 <q-item-label caption>{{ $t('payments.statistics.totalPaid') }}</q-item-label>
                 <q-item-label class="text-h5 text-primary">
-                  {{ formatCurrency(totalPaid) }}
+                  {{ formatCurrency(calculateTotalPaid()) }}
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -188,26 +188,35 @@
         </div>
       </q-card-section>
     </q-card>
-    <!-- Оплачені періоди -->
-    <q-card flat bordered class="q-mt-md" v-if="paidPeriods.length > 0">
+
+    <!-- Оплачені періоди - групування по роках -->
+    <q-card
+      flat
+      bordered
+      class="q-mt-md"
+      v-if="groupedPaidPeriods && Object.keys(groupedPaidPeriods).length > 0"
+    >
       <q-card-section>
         <div class="text-h6">{{ $t('payments.paidPeriods') }}</div>
       </q-card-section>
       <q-card-section>
-        <div class="row q-col-gutter-sm">
-          <div
-            v-for="period in paidPeriods"
-            :key="`${period.billing_year}-${period.billing_month}`"
-            class="col-6 col-sm-4 col-md-3"
-          >
-            <q-chip
-              color="positive"
-              text-color="white"
-              icon="check_circle"
-              class="full-width justify-center"
+        <div v-for="(periods, year) in groupedPaidPeriods" :key="year" class="q-mb-md">
+          <div class="text-subtitle1 q-mb-sm">{{ year }}</div>
+          <div class="row q-col-gutter-sm">
+            <div
+              v-for="period in periods"
+              :key="`${period.billing_year}-${period.billing_month}`"
+              class="col-6 col-sm-4 col-md-2"
             >
-              {{ $t(`payments.months.${period.billing_month}`) }} {{ period.billing_year }}
-            </q-chip>
+              <q-chip
+                color="positive"
+                text-color="white"
+                icon="check_circle"
+                class="full-width justify-center"
+              >
+                {{ $t(`payments.months.${period.billing_month}`) }}
+              </q-chip>
+            </div>
           </div>
         </div>
       </q-card-section>
@@ -262,7 +271,7 @@
             :label="$t('payments.pay')"
             color="positive"
             @click="createPeriodPayment"
-            v-close-popup
+            :loading="processingPayment"
           />
         </q-card-actions>
       </q-card>
@@ -299,12 +308,52 @@ const nextUnpaidPeriod = ref(null)
 const loadingPeriods = ref(false)
 const showPayPeriodDialog = ref(false)
 const selectedPeriodForPayment = ref(null)
+const processingPayment = ref(false)
+
+// Метод для правильного розрахунку загальної суми
+const calculateTotalPaid = () => {
+  return payments.value.reduce((total, payment) => {
+    // Переконуємося, що значення є числом
+    const amount = parseFloat(payment.amount)
+    if (!isNaN(amount)) {
+      return total + amount
+    }
+    return total
+  }, 0)
+}
+
+// Групування оплачених періодів по роках
+const groupedPaidPeriods = computed(() => {
+  const grouped = {}
+  if (!paidPeriods.value || paidPeriods.value.length === 0) return null
+
+  paidPeriods.value.forEach((period) => {
+    if (!grouped[period.billing_year]) {
+      grouped[period.billing_year] = []
+    }
+    grouped[period.billing_year].push(period)
+  })
+
+  // Сортуємо роки від найновіших до найстаріших
+  return Object.fromEntries(Object.entries(grouped).sort((a, b) => b[0] - a[0]))
+})
 
 // Додати метод для створення оплати за період
 const createPeriodPayment = async () => {
   if (!selectedPeriodForPayment.value || !objectInfo.value) return
 
+  processingPayment.value = true
+
   try {
+    // Перевіряємо наявність всіх необхідних даних
+    if (!objectInfo.value.client_id) {
+      throw new Error('Не вдалося отримати ID клієнта')
+    }
+
+    if (!objectInfo.value.current_price) {
+      throw new Error('Не вдалося отримати ціну тарифу')
+    }
+
     const paymentData = {
       object_id: props.objectId,
       client_id: objectInfo.value.client_id,
@@ -317,6 +366,8 @@ const createPeriodPayment = async () => {
 
     await PaymentsApi.createPeriodPayment(paymentData)
 
+    showPayPeriodDialog.value = false
+
     $q.notify({
       color: 'positive',
       message: t('payments.periodPaymentSuccess'),
@@ -324,7 +375,7 @@ const createPeriodPayment = async () => {
     })
 
     // Перезавантажуємо дані після успішної оплати
-    loadPaymentHistory()
+    await loadPaymentHistory()
   } catch (error) {
     console.error('Error creating period payment:', error)
     $q.notify({
@@ -332,6 +383,8 @@ const createPeriodPayment = async () => {
       message: error.response?.data?.message || t('common.errors.saving'),
       icon: 'error',
     })
+  } finally {
+    processingPayment.value = false
   }
 }
 
@@ -346,7 +399,22 @@ const loadPaidPeriods = async () => {
 
     // Отримання наступного неоплаченого періоду
     const nextPeriodResponse = await PaymentsApi.getNextUnpaidPeriod(props.objectId)
-    nextUnpaidPeriod.value = nextPeriodResponse.data.period
+
+    // Перевіряємо, чи отримали валідні дані
+    if (
+      nextPeriodResponse.data &&
+      nextPeriodResponse.data.period &&
+      nextPeriodResponse.data.period.billing_year &&
+      nextPeriodResponse.data.period.billing_month
+    ) {
+      nextUnpaidPeriod.value = nextPeriodResponse.data.period
+    } else {
+      console.warn(
+        'Отримано неповні дані про наступний неоплачений період:',
+        nextPeriodResponse.data,
+      )
+      nextUnpaidPeriod.value = null
+    }
   } catch (error) {
     console.error('Error loading paid periods:', error)
     $q.notify({
@@ -361,6 +429,16 @@ const loadPaidPeriods = async () => {
 
 // Додати метод для відкриття діалогу оплати періоду
 const openPayPeriodDialog = (period) => {
+  if (!period || !period.billing_year || !period.billing_month) {
+    console.error('Некоректний період для оплати:', period)
+    $q.notify({
+      color: 'negative',
+      message: t('payments.invalidPeriod'),
+      icon: 'error',
+    })
+    return
+  }
+
   selectedPeriodForPayment.value = period
   showPayPeriodDialog.value = true
 }
@@ -369,11 +447,6 @@ const openPayPeriodDialog = (period) => {
 const filters = ref({
   year: null,
   month: null,
-})
-
-// Обчислювані властивості
-const totalPaid = computed(() => {
-  return payments.value.reduce((total, payment) => total + payment.amount, 0)
 })
 
 // Опції
@@ -474,9 +547,9 @@ const loadPaymentHistory = async () => {
     })
 
     const response = await PaymentsApi.getObjectPaymentHistory(props.objectId, params)
-    payments.value = response.data.payments
-    objectInfo.value = response.data.object
-    totalItems.value = response.data.total
+    payments.value = response.data.payments || []
+    objectInfo.value = response.data.object || null
+    totalItems.value = response.data.total || 0
 
     // Завантажуємо оплачені періоди та наступний неоплачений період
     await loadPaidPeriods()
@@ -488,6 +561,7 @@ const loadPaymentHistory = async () => {
     loading.value = false
   }
 }
+
 const clearFilters = () => {
   filters.value = {
     year: null,
@@ -496,6 +570,10 @@ const clearFilters = () => {
 }
 
 const openPaymentDetails = (payment) => {
+  if (!payment || !payment.payment_id) {
+    console.error('Неможливо відкрити деталі платежу - відсутній ID платежу:', payment)
+    return
+  }
   router.push({ name: 'payment-details', params: { id: payment.payment_id } })
 }
 
