@@ -195,7 +195,6 @@ import { PaymentsApi } from 'src/api/payments'
 import { ClientsApi } from 'src/api/clients'
 import { InvoicesApi } from 'src/api/invoices'
 import { WialonApi } from 'src/api/wialon'
-import { TariffsApi } from 'src/api/tariffs'
 
 const props = defineProps({
   modelValue: {
@@ -269,17 +268,25 @@ const loadPeriodsForObject = async (objectId) => {
   loadingObjectPeriods.value[objectId] = true
 
   try {
-    // Завантажуємо історію тарифів для об'єкта
-    const tariffHistoryResponse = await TariffsApi.getObjectTariffHistory(objectId)
-    const tariffHistory = tariffHistoryResponse.data.history || []
-
-    // Завантажуємо доступні періоди з сервера
-    // Цей метод повинен враховувати історію тарифів і оплат
+    // Завантажуємо доступні періоди
     const periodsResponse = await PaymentsApi.getAvailablePaymentPeriods(objectId)
-    let availablePeriods = periodsResponse.data.periods || []
 
-    // Отримуємо неоплачені періоди
-    let unpaidPeriods = availablePeriods.filter((period) => !period.is_paid)
+    // Отримуємо масив періодів з response.data.periods
+    // Перевіримо структуру відповіді (новий формат має поле "periods" в data)
+    let availablePeriods = []
+    if (periodsResponse.data && periodsResponse.data.periods) {
+      // Нова структура
+      availablePeriods = periodsResponse.data.periods
+    } else if (Array.isArray(periodsResponse.data)) {
+      // Стара структура
+      availablePeriods = periodsResponse.data
+    } else {
+      console.error('Unexpected response format:', periodsResponse.data)
+      availablePeriods = []
+    }
+
+    // Періоди вже мають відфільтровані неоплачені з бекенду
+    let unpaidPeriods = availablePeriods
 
     // Додаємо запит для перевірки рахунків за періоди
     const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
@@ -294,20 +301,6 @@ const loadPeriodsForObject = async (objectId) => {
         // Додаємо інформацію про рахунок до періоду
         period.has_invoice = invoiceResponse.data.exists
         period.invoice_number = invoiceResponse.data.invoice_number || null
-
-        // Додаємо інформацію про тариф для цього періоду
-        const periodDate = new Date(period.billing_year, period.billing_month - 1, 1)
-        const applicableTariff = tariffHistory.find((tariff) => {
-          const startDate = new Date(tariff.effective_from)
-          const endDate = tariff.effective_to ? new Date(tariff.effective_to) : new Date()
-          return startDate <= periodDate && periodDate <= endDate
-        })
-
-        if (applicableTariff) {
-          period.tariff_id = applicableTariff.tariff_id
-          period.tariff_name = applicableTariff.tariff_name
-          period.price = applicableTariff.price
-        }
 
         return period
       } catch (error) {
@@ -326,18 +319,10 @@ const loadPeriodsForObject = async (objectId) => {
     // Фільтруємо періоди, виключаючи ті, для яких вже є рахунки
     unpaidPeriods = unpaidPeriods.filter((period) => !period.has_invoice)
 
-    // Сортуємо періоди за датою (найстаріші спочатку)
-    unpaidPeriods.sort((a, b) => {
-      if (a.billing_year !== b.billing_year) {
-        return a.billing_year - b.billing_year
-      }
-      return a.billing_month - b.billing_month
-    })
-
     // Зберігаємо періоди для об'єкта
     objectPeriodsMap.value[objectId] = unpaidPeriods
 
-    // Якщо є неоплачені періоди, автоматично вибираємо перший (найстаріший)
+    // Якщо є неоплачені періоди, автоматично вибираємо перший
     if (unpaidPeriods.length > 0) {
       const firstPeriod = unpaidPeriods[0]
       const periodKey = `${firstPeriod.billing_year}-${firstPeriod.billing_month}`
