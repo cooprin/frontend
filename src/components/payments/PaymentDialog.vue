@@ -236,6 +236,12 @@ const objectPeriodsMap = ref({}) // Періоди для кожного об'є
 const loadingObjectPeriods = ref({}) // Стан завантаження для кожного об'єкта
 const selectedPeriodsByObject = ref({}) // Вибрані періоди для кожного об'єкта
 
+const isValidUUID = (str) => {
+  // Регулярний вираз для перевірки UUID формату
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  return str && typeof str === 'string' && uuidRegex.test(str)
+}
+
 // Функція для обробки вибору об'єкта
 const onObjectToggle = async (objectId) => {
   // Якщо об'єкт тільки що вибрали
@@ -459,6 +465,19 @@ const onSubmit = async () => {
       for (const objId of selectedObjects.value) {
         const obj = clientObjects.value.find((o) => o.id === objId)
 
+        // Пропускаємо об'єкти з невалідними тарифами
+        if (!obj || !isValidUUID(obj.current_tariff_id)) {
+          console.warn(
+            `Пропускаємо платіж для об'єкта ${obj?.name || objId} - невалідний або відсутній tariff_id`,
+          )
+          $q.notify({
+            color: 'warning',
+            message: t('payments.invalidTariff', { name: obj?.name || objId }),
+            icon: 'warning',
+          })
+          continue
+        }
+
         // Якщо є вибрані періоди для цього об'єкта
         if (
           selectedPeriodsByObject.value[objId] &&
@@ -477,6 +496,17 @@ const onSubmit = async () => {
             })
           }
         }
+      }
+
+      // Перевіряємо, чи є хоч один валідний платіж
+      if (paymentData.object_payments.length === 0) {
+        $q.notify({
+          color: 'negative',
+          message: t('payments.noValidPayments'),
+          icon: 'error',
+        })
+        loading.value = false
+        return
       }
     }
 
@@ -630,7 +660,8 @@ const loadClientObjects = async (clientId) => {
         id: obj.id,
         name: obj.name,
         wialon_id: obj.wialon_id,
-        current_tariff_id: obj.tariff_id,
+        // Перевіряємо, чи tariff_id є валідним UUID
+        current_tariff_id: isValidUUID(obj.tariff_id) ? obj.tariff_id : null,
         current_tariff_name: obj.tariff_name,
         current_tariff_price: obj.tariff_price,
       }))

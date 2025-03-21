@@ -39,7 +39,7 @@
             <template v-slot:avatar>
               <q-icon name="info" color="amber" />
             </template>
-            {{ $t('tariffs.assignment.paidPeriodsWarning') }}
+            <div class="text-body1">{{ $t('tariffs.assignment.paidPeriodsWarning') }}</div>
             <div v-if="paymentInfo.nextUnpaidPeriod" class="q-mt-sm">
               {{ $t('tariffs.assignment.recommendedDate') }}:
               <strong>{{ formatMonthYear(paymentInfo.nextUnpaidPeriod) }}</strong>
@@ -47,9 +47,9 @@
                 flat
                 dense
                 color="primary"
+                class="q-ml-sm"
                 :label="$t('tariffs.assignment.useRecommended')"
                 @click="useRecommendedDate"
-                class="q-ml-sm"
               />
             </div>
           </q-banner>
@@ -62,6 +62,9 @@
             :rules="[validateEffectiveDate]"
             :class="{ 'bg-amber-1': isDateInPaidPeriod }"
           >
+            <template v-slot:hint v-if="isDateInPaidPeriod">
+              {{ $t('tariffs.assignment.dateInPaidPeriodHint') }}
+            </template>
             <template v-slot:append>
               <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -74,14 +77,6 @@
               </q-icon>
             </template>
           </q-input>
-
-          <!-- Попередження про заплановану зміну -->
-          <q-banner v-if="willBePlanned" class="bg-info-1 q-mb-md">
-            <template v-slot:avatar>
-              <q-icon name="schedule" color="info" />
-            </template>
-            {{ $t('tariffs.assignment.willBePlanned') }}
-          </q-banner>
 
           <!-- Примітки -->
           <q-input
@@ -166,19 +161,6 @@ const isDateInPaidPeriod = computed(() => {
   return paymentInfo.value.paidPeriods.some(
     (period) => period.billing_year == selectedYear && period.billing_month == selectedMonth,
   )
-})
-
-// Визначаємо, чи буде зміна запланована на майбутнє
-const willBePlanned = computed(() => {
-  if (!form.value.effective_from) return false
-
-  const selectedDate = new Date(form.value.effective_from)
-  const today = new Date()
-
-  // видаляємо години, хвилини і секунди для порівняння
-  today.setHours(0, 0, 0, 0)
-
-  return selectedDate > today
 })
 
 // Methods
@@ -271,12 +253,17 @@ const validateEffectiveDate = (val) => {
   if (!val) return t('common.validation.required')
 
   if (isDateInPaidPeriod.value) {
-    return t('tariffs.assignment.dateInPaidPeriod')
+    const recommendedDate = paymentInfo.value.nextUnpaidPeriod
+      ? formatMonthYear(paymentInfo.value.nextUnpaidPeriod)
+      : t('tariffs.assignment.nextMonth')
+
+    return t('tariffs.assignment.dateInPaidPeriod', {
+      date: recommendedDate,
+    })
   }
 
   return true
 }
-
 const formatMonthYear = (period) => {
   if (!period) return ''
 
