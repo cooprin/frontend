@@ -271,50 +271,66 @@ const loadPeriodsForObject = async (objectId) => {
     // Завантажуємо доступні періоди
     const periodsResponse = await PaymentsApi.getAvailablePaymentPeriods(objectId)
 
-    // Отримуємо масив періодів з response.data.periods
-    // Перевіримо структуру відповіді (новий формат має поле "periods" в data)
+    // Витягуємо масив періодів з відповіді
     let availablePeriods = []
+
+    // Перевіряємо структуру відповіді з урахуванням подвійного вкладення
     if (periodsResponse.data && periodsResponse.data.periods) {
-      // Нова структура
-      availablePeriods = periodsResponse.data.periods
+      if (Array.isArray(periodsResponse.data.periods)) {
+        // Структура: { periods: [...] }
+        availablePeriods = periodsResponse.data.periods
+      } else if (
+        periodsResponse.data.periods.periods &&
+        Array.isArray(periodsResponse.data.periods.periods)
+      ) {
+        // Структура: { periods: { periods: [...] } }
+        availablePeriods = periodsResponse.data.periods.periods
+      }
     } else if (Array.isArray(periodsResponse.data)) {
-      // Стара структура
+      // Стара структура (масив безпосередньо в data)
       availablePeriods = periodsResponse.data
     } else {
       console.error('Unexpected response format:', periodsResponse.data)
+    }
+
+    // Переконуємося, що availablePeriods є масивом
+    if (!Array.isArray(availablePeriods)) {
+      console.error('Available periods is not an array:', availablePeriods)
       availablePeriods = []
     }
 
-    // Періоди вже мають відфільтровані неоплачені з бекенду
+    // Тепер unpaidPeriods гарантовано є масивом
     let unpaidPeriods = availablePeriods
 
     // Додаємо запит для перевірки рахунків за періоди
-    const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
-      try {
-        // Додаємо запит до API для перевірки наявності рахунку за період
-        const invoiceResponse = await InvoicesApi.checkInvoiceExistence(
-          objectId,
-          period.billing_year,
-          period.billing_month,
-        )
+    if (unpaidPeriods.length > 0) {
+      const invoiceCheckPromises = unpaidPeriods.map(async (period) => {
+        try {
+          // Додаємо запит до API для перевірки наявності рахунку за період
+          const invoiceResponse = await InvoicesApi.checkInvoiceExistence(
+            objectId,
+            period.billing_year,
+            period.billing_month,
+          )
 
-        // Додаємо інформацію про рахунок до періоду
-        period.has_invoice = invoiceResponse.data.exists
-        period.invoice_number = invoiceResponse.data.invoice_number || null
+          // Додаємо інформацію про рахунок до періоду
+          period.has_invoice = invoiceResponse.data.exists
+          period.invoice_number = invoiceResponse.data.invoice_number || null
 
-        return period
-      } catch (error) {
-        console.error(
-          `Error checking invoice for period ${period.billing_year}-${period.billing_month}:`,
-          error,
-        )
-        period.has_invoice = false
-        return period
-      }
-    })
+          return period
+        } catch (error) {
+          console.error(
+            `Error checking invoice for period ${period.billing_year}-${period.billing_month}:`,
+            error,
+          )
+          period.has_invoice = false
+          return period
+        }
+      })
 
-    // Чекаємо завершення всіх перевірок
-    unpaidPeriods = await Promise.all(invoiceCheckPromises)
+      // Чекаємо завершення всіх перевірок
+      unpaidPeriods = await Promise.all(invoiceCheckPromises)
+    }
 
     // Фільтруємо періоди, виключаючи ті, для яких вже є рахунки
     unpaidPeriods = unpaidPeriods.filter((period) => !period.has_invoice)
@@ -350,6 +366,7 @@ const loadPeriodsForObject = async (objectId) => {
     loadingObjectPeriods.value[objectId] = false
   }
 }
+
 // Функція для оновлення загальної суми на основі вибраних періодів
 const updateTotalFromSelectedPeriods = () => {
   let totalSum = 0
