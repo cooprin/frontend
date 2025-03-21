@@ -183,9 +183,6 @@ const monthOptions = computed(() => [
 
 // Замініть функцію onSubmit у файлі InvoiceGeneratorDialog.vue
 const onSubmit = async () => {
-  // Додаємо діагностичне логування
-  console.log('Form values:', JSON.stringify(form.value))
-
   // Перевіряємо наявність обов'язкових полів
   if (!form.value.year || !form.value.month) {
     $q.notify({
@@ -198,39 +195,45 @@ const onSubmit = async () => {
 
   loading.value = true
   try {
-    // Виводимо значення в консоль перед парсингом
-    console.log('Year before parsing:', form.value.year, 'type:', typeof form.value.year)
-    console.log('Month before parsing:', form.value.month, 'type:', typeof form.value.month)
+    // Гарантуємо, що значення року - це ціле число
+    const year = parseInt(form.value.year, 10)
 
-    // Переконуємося, що значення є рядками перед парсингом
-    const yearStr = String(form.value.year)
-    const monthStr = String(form.value.month)
+    // Гарантуємо, що значення місяця - це ціле число
+    // Спочатку обробляємо випадок, коли місяць вже є числом або рядковим представленням числа
+    let month
 
-    // Тепер безпечно парсимо значення
-    const year = parseInt(yearStr, 10)
-    const month = parseInt(monthStr, 10)
+    // Перетворюємо значення місяця на число, незалежно від типу вхідних даних
+    if (typeof form.value.month === 'string') {
+      // Якщо це рядок, парсимо його як число
+      month = parseInt(form.value.month, 10)
+    } else if (typeof form.value.month === 'number') {
+      // Якщо це вже число, використовуємо як є
+      month = form.value.month
+    } else if (typeof form.value.month === 'object' && form.value.month !== null) {
+      // Якщо це об'єкт (наприклад, з v-model), спробуємо отримати значення
+      month = parseInt(form.value.month.value || form.value.month.toString(), 10)
+    } else {
+      // Інакше викидаємо помилку
+      throw new Error(t('common.errors.invalidMonth'))
+    }
 
-    console.log('Year after parsing:', year, 'Month after parsing:', month)
-
-    // Спрощуємо перевірку і додаємо більше діагностики
+    // Перевіряємо правильність отриманих значень
     if (isNaN(year)) {
-      console.error('Invalid year value:', form.value.year)
       throw new Error(t('common.errors.invalidYear'))
     }
 
     if (isNaN(month) || month < 1 || month > 12) {
-      console.error('Invalid month value:', form.value.month)
       throw new Error(t('common.errors.invalidMonth'))
     }
 
+    // Тепер у нас є правильно перетворені числові значення для запиту
     const requestData = {
       year: year,
-      month: month,
+      month: month, // Гарантовано є числом від 1 до 12
       use_smart_generation: true,
     }
 
-    console.log('Request data:', JSON.stringify(requestData))
-
+    console.log('Sending request with data:', requestData)
     // Продовжуємо існуючу логіку
     if (form.value.clientId) {
       const clientId = form.value.clientId.value || form.value.clientId
