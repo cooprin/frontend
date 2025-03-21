@@ -299,6 +299,8 @@ const loadPeriodsForObject = async (objectId) => {
       availablePeriods = []
     }
 
+    console.log('Available periods before invoice check:', availablePeriods)
+
     // Тепер unpaidPeriods гарантовано є масивом
     let unpaidPeriods = availablePeriods
 
@@ -317,6 +319,11 @@ const loadPeriodsForObject = async (objectId) => {
           period.has_invoice = invoiceResponse.data.exists
           period.invoice_number = invoiceResponse.data.invoice_number || null
 
+          console.log(
+            `Period ${period.billing_year}-${period.billing_month} has invoice:`,
+            period.has_invoice,
+          )
+
           return period
         } catch (error) {
           console.error(
@@ -330,17 +337,21 @@ const loadPeriodsForObject = async (objectId) => {
 
       // Чекаємо завершення всіх перевірок
       unpaidPeriods = await Promise.all(invoiceCheckPromises)
+
+      console.log('Periods after invoice check:', unpaidPeriods)
     }
 
     // Фільтруємо періоди, виключаючи ті, для яких вже є рахунки
-    unpaidPeriods = unpaidPeriods.filter((period) => !period.has_invoice)
+    const periodsWithoutInvoices = unpaidPeriods.filter((period) => !period.has_invoice)
+
+    console.log('Periods without invoices:', periodsWithoutInvoices)
 
     // Зберігаємо періоди для об'єкта
-    objectPeriodsMap.value[objectId] = unpaidPeriods
+    objectPeriodsMap.value[objectId] = periodsWithoutInvoices
 
     // Якщо є неоплачені періоди, автоматично вибираємо перший
-    if (unpaidPeriods.length > 0) {
-      const firstPeriod = unpaidPeriods[0]
+    if (periodsWithoutInvoices.length > 0) {
+      const firstPeriod = periodsWithoutInvoices[0]
       const periodKey = `${firstPeriod.billing_year}-${firstPeriod.billing_month}`
 
       // Переконуємося, що масив існує
@@ -358,6 +369,9 @@ const loadPeriodsForObject = async (objectId) => {
 
       // Оновлюємо загальну суму
       updateTotalFromSelectedPeriods()
+    } else {
+      // Якщо немає періодів без рахунків, показуємо повідомлення
+      console.log('No periods without invoices available for this object')
     }
   } catch (error) {
     console.error(`Error loading periods for object ${objectId}:`, error)
