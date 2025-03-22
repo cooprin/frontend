@@ -235,56 +235,9 @@
               {{ nextUnpaidPeriod.billing_year }}
             </q-chip>
           </div>
-          <div class="col-auto">
-            <q-btn
-              color="primary"
-              icon="payment"
-              :label="$t('payments.payNow')"
-              @click="openPayPeriodDialog(nextUnpaidPeriod)"
-            />
-          </div>
         </div>
       </q-card-section>
     </q-card>
-
-    <!-- Діалог оплати періоду -->
-    <q-dialog v-model="showPayPeriodDialog" persistent>
-      <q-card style="min-width: 350px">
-        <q-card-section>
-          <div class="text-h6">{{ $t('payments.payPeriod') }}</div>
-        </q-card-section>
-        <q-card-section v-if="selectedPeriodForPayment">
-          <p>{{ $t('payments.payPeriodConfirmation') }}</p>
-          <q-chip color="warning" text-color="white" class="q-ma-md">
-            {{ $t(`payments.months.${selectedPeriodForPayment.billing_month}`) }}
-            {{ selectedPeriodForPayment.billing_year }}
-          </q-chip>
-          <p v-if="objectInfo && objectInfo.current_tariff">
-            {{ $t('payments.tariffInfo') }}: {{ objectInfo.current_tariff }} ({{
-              formatCurrency(objectInfo.current_price)
-            }})
-          </p>
-
-          <!-- Додаємо поле для коментаря -->
-          <q-input
-            v-model="paymentNotes"
-            :label="$t('payments.notes')"
-            type="textarea"
-            outlined
-            autogrow
-          />
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat :label="$t('common.cancel')" color="primary" v-close-popup />
-          <q-btn
-            :label="$t('payments.pay')"
-            color="positive"
-            @click="createPeriodPayment"
-            :loading="processingPayment"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
@@ -315,10 +268,6 @@ const totalItems = ref(0)
 const paidPeriods = ref([])
 const nextUnpaidPeriod = ref(null)
 const loadingPeriods = ref(false)
-const showPayPeriodDialog = ref(false)
-const selectedPeriodForPayment = ref(null)
-const processingPayment = ref(false)
-const paymentNotes = ref('')
 
 // Метод для правильного розрахунку загальної суми
 const calculateTotalPaid = () => {
@@ -347,69 +296,6 @@ const groupedPaidPeriods = computed(() => {
   // Сортуємо роки від найновіших до найстаріших
   return Object.fromEntries(Object.entries(grouped).sort((a, b) => b[0] - a[0]))
 })
-
-// Додати метод для створення оплати за період
-const createPeriodPayment = async () => {
-  if (!selectedPeriodForPayment.value || !objectInfo.value) return
-
-  processingPayment.value = true
-
-  try {
-    // Перевіряємо наявність всіх необхідних даних
-    if (!objectInfo.value.client_id) {
-      throw new Error('Не вдалося отримати ID клієнта')
-    }
-
-    // Перевіряємо наявність ID тарифу в різних можливих полях
-    const tariffId = objectInfo.value.tariff_id || objectInfo.value.current_tariff_id
-
-    if (!tariffId) {
-      // Виведемо в консоль доступні поля для діагностики
-      console.error("Об'єкт objectInfo не містить tariff_id:", objectInfo.value)
-      throw new Error('Не вдалося отримати ID тарифу')
-    }
-
-    const paymentData = {
-      client_id: objectInfo.value.client_id,
-      amount: objectInfo.value.current_price || objectInfo.value.tariff_price || 0,
-      payment_date: new Date().toISOString().slice(0, 10),
-      payment_type: 'regular',
-      notes: paymentNotes.value,
-      // Додаємо інформацію про оплату для конкретного об'єкта
-      object_payments: [
-        {
-          object_id: props.objectId,
-          tariff_id: tariffId,
-          amount: objectInfo.value.current_price || objectInfo.value.tariff_price || 0,
-          billing_month: selectedPeriodForPayment.value.billing_month,
-          billing_year: selectedPeriodForPayment.value.billing_year,
-        },
-      ],
-    }
-
-    await PaymentsApi.createPayment(paymentData)
-
-    showPayPeriodDialog.value = false
-
-    $q.notify({
-      color: 'positive',
-      message: t('payments.periodPaymentSuccess'),
-      icon: 'check',
-    })
-
-    // Перезавантажуємо дані після успішної оплати
-    await loadPaymentHistory()
-  } catch (error) {
-    console.error('Error creating period payment:', error)
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.message || t('common.errors.saving'),
-      icon: 'error',
-    })
-  } finally {
-    processingPayment.value = false
-  }
-}
 
 const loadPaidPeriods = async () => {
   if (!props.objectId) return
@@ -448,23 +334,6 @@ const loadPaidPeriods = async () => {
   } finally {
     loadingPeriods.value = false
   }
-}
-
-// Додати метод для відкриття діалогу оплати періоду
-const openPayPeriodDialog = (period) => {
-  if (!period || !period.billing_year || !period.billing_month) {
-    console.error('Некоректний період для оплати:', period)
-    $q.notify({
-      color: 'negative',
-      message: t('payments.invalidPeriod'),
-      icon: 'error',
-    })
-    return
-  }
-
-  selectedPeriodForPayment.value = period
-  paymentNotes.value = '' // Обнуляємо коментар при відкритті діалогу
-  showPayPeriodDialog.value = true
 }
 
 // Фільтри
