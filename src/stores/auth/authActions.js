@@ -81,8 +81,30 @@ export const useAuthActions = () => ({
 
   // Метод ініціалізації
   initializeStore() {
-    if (this.token) {
-      this.fetchUser()
+    // Перевіряємо валідність токена при ініціалізації
+    const token = this.token
+    if (token) {
+      try {
+        // Якщо токен є у форматі JWT, перевіряємо термін його дії
+        const tokenParts = token.split('.')
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]))
+          const now = Math.floor(Date.now() / 1000)
+
+          // Якщо токен вже закінчився, розлогінюємося
+          if (payload.exp && payload.exp < now) {
+            console.log('Токен закінчився при ініціалізації. Автоматичний вихід.')
+            this.logout()
+            return
+          }
+        }
+
+        // Якщо токен валідний, оновлюємо дані користувача
+        this.fetchUser()
+      } catch (e) {
+        console.error('Помилка при перевірці токена при ініціалізації:', e)
+        this.logout()
+      }
     }
   },
 })

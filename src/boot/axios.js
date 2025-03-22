@@ -30,6 +30,17 @@ export default boot(({ app, router }) => {
       // Обробка помилки 401 (Unauthorized)
       if (error.response && error.response.status === 401) {
         console.log('401 помилка: Перенаправлення на логін')
+
+        // Показуємо сповіщення користувачу
+        const { Notify } = require('quasar')
+        Notify.create({
+          type: 'warning',
+          message: 'Ваша сесія закінчилася. Будь ласка, увійдіть знову.',
+          position: 'top',
+          timeout: 5000,
+        })
+
+        // Перенаправляємо на сторінку логування
         router.push('/auth/login')
       }
 
