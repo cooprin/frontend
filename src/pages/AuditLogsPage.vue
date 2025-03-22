@@ -698,9 +698,22 @@ const exportData = async () => {
 }
 
 const onRequest = async (props) => {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
-  await fetchLogs()
+  try {
+    // Перевіряємо, чи props - це об'єкт пагінації або містить пагінацію
+    const paginationData = props.pagination || props
+
+    // Безпечно отримуємо значення з nullish coalescing
+    const page = paginationData.page ?? pagination.value.page
+    const rowsPerPage = paginationData.rowsPerPage ?? pagination.value.rowsPerPage
+    const sortBy = paginationData.sortBy ?? pagination.value.sortBy
+    const descending = paginationData.descending ?? pagination.value.descending
+
+    pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
+    await fetchLogs()
+  } catch (error) {
+    console.error('Error in pagination request:', error)
+    await fetchLogs()
+  }
 }
 
 // Watchers
