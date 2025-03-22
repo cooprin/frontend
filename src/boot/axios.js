@@ -14,9 +14,14 @@ export default boot(({ app, router }) => {
   // Додаємо інтерцептор запитів для додавання токена
   api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token')
+    console.log('Інтерцептор запитів: Перевірка токена =', !!token)
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
+    // НЕ перериваємо запит тут, дозволяємо запиту пройти далі навіть без токена
+    // Сервер сам вирішить, чи потрібна авторизація
     return config
   })
 
@@ -42,8 +47,10 @@ export default boot(({ app, router }) => {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
 
-        // Перенаправляємо на сторінку логування
-        router.push('/auth/login')
+        // Перенаправляємо на сторінку логування тільки якщо це не сторінка логіну
+        if (router.currentRoute.value.path !== '/auth/login') {
+          router.push('/auth/login')
+        }
       }
 
       return Promise.reject(error)
