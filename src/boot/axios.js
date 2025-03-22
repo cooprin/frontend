@@ -1,6 +1,7 @@
-// src/boot/axios.js
-import { boot } from 'quasar/wrappers'
+// src/boot/axios.js - мінімальна модифікація тільки для обробки 401 помилок
+
 import axios from 'axios'
+import { boot } from 'quasar/wrappers'
 
 // Створюємо екземпляр axios
 const api = axios.create({
@@ -10,47 +11,26 @@ const api = axios.create({
   },
 })
 
+// Додаємо інтерцептор запитів для додавання токена
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 export default boot(({ app, router }) => {
-  // Додаємо інтерцептор запитів для додавання токена
-  api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
-    console.log('Інтерцептор запитів: Перевірка токена =', !!token)
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-
-    // НЕ перериваємо запит тут, дозволяємо запиту пройти далі навіть без токена
-    // Сервер сам вирішить, чи потрібна авторизація
-    return config
-  })
-
-  // Додайте перехоплювачі для дебагу
-  api.interceptors.request.use((request) => {
-    console.log('Запит:', request)
-    return request
-  })
-
+  // Додаємо інтерцептор відповідей для обробки 401 помилок
   api.interceptors.response.use(
     (response) => {
-      console.log('Успішна відповідь:', response)
       return response
     },
     (error) => {
-      console.error('Помилка відповіді:', error)
-
       // Обробка помилки 401 (Unauthorized)
       if (error.response && error.response.status === 401) {
-        console.log('Токен недійсний або закінчився. Перенаправлення на логін.')
-
-        // Очищуємо дані автентифікації в localStorage
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-
-        // Перенаправляємо на сторінку логування тільки якщо це не сторінка логіну
-        if (router.currentRoute.value.path !== '/auth/login') {
-          router.push('/auth/login')
-        }
+        console.log('401 помилка: Перенаправлення на логін')
+        router.push('/auth/login')
       }
 
       return Promise.reject(error)
