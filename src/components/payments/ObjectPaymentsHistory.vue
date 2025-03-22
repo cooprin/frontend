@@ -360,13 +360,18 @@ const createPeriodPayment = async () => {
       throw new Error('Не вдалося отримати ID клієнта')
     }
 
-    if (!objectInfo.value.current_tariff_id) {
+    // Перевіряємо наявність ID тарифу в різних можливих полях
+    const tariffId = objectInfo.value.tariff_id || objectInfo.value.current_tariff_id
+
+    if (!tariffId) {
+      // Виведемо в консоль доступні поля для діагностики
+      console.error("Об'єкт objectInfo не містить tariff_id:", objectInfo.value)
       throw new Error('Не вдалося отримати ID тарифу')
     }
 
     const paymentData = {
       client_id: objectInfo.value.client_id,
-      amount: objectInfo.value.current_price || 0,
+      amount: objectInfo.value.current_price || objectInfo.value.tariff_price || 0,
       payment_date: new Date().toISOString().slice(0, 10),
       payment_type: 'regular',
       notes: paymentNotes.value,
@@ -374,8 +379,8 @@ const createPeriodPayment = async () => {
       object_payments: [
         {
           object_id: props.objectId,
-          tariff_id: objectInfo.value.current_tariff_id,
-          amount: objectInfo.value.current_price || 0,
+          tariff_id: tariffId,
+          amount: objectInfo.value.current_price || objectInfo.value.tariff_price || 0,
           billing_month: selectedPeriodForPayment.value.billing_month,
           billing_year: selectedPeriodForPayment.value.billing_year,
         },
