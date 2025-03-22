@@ -175,19 +175,6 @@ const filters = ref({
   isActive: null,
 })
 
-watch(
-  () => ({
-    ...filters.value,
-    page: pagination.value.page,
-    rowsPerPage: pagination.value.rowsPerPage,
-    sortBy: pagination.value.sortBy,
-    descending: pagination.value.descending,
-  }),
-  debounce(() => {
-    loadManufacturers()
-  }, 300),
-  { deep: true },
-)
 // Пагінація
 const pagination = ref({
   sortBy: 'name',
@@ -352,7 +339,19 @@ const deleteManufacturer = async () => {
     })
   }
 }
-
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadManufacturers()
+  }, 300),
+  { deep: true },
+)
 onMounted(() => {
   loadManufacturers()
 })

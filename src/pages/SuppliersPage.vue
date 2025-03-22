@@ -206,20 +206,6 @@ const filters = ref({
   search: '',
 })
 
-watch(
-  () => ({
-    ...filters.value,
-    page: pagination.value.page,
-    rowsPerPage: pagination.value.rowsPerPage,
-    sortBy: pagination.value.sortBy,
-    descending: pagination.value.descending,
-  }),
-  debounce(() => {
-    loadSuppliers()
-  }, 300),
-  { deep: true },
-)
-
 // Пагінація
 const pagination = ref({
   sortBy: 'name',
@@ -392,6 +378,20 @@ const deleteSupplier = async () => {
     })
   }
 }
+
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadSuppliers()
+  }, 300),
+  { deep: true },
+)
 
 onMounted(() => {
   loadSuppliers()

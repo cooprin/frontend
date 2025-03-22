@@ -618,9 +618,22 @@ const confirmDelete = async (user) => {
 }
 
 const onRequest = async (props) => {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination
-  pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
-  await fetchUsers()
+  try {
+    // Перевіряємо, чи props - це об'єкт пагінації або містить пагінацію
+    const paginationData = props.pagination || props
+
+    // Безпечно отримуємо значення з поточної пагінації якщо вони undefined
+    const page = paginationData.page ?? pagination.value.page
+    const rowsPerPage = paginationData.rowsPerPage ?? pagination.value.rowsPerPage
+    const sortBy = paginationData.sortBy ?? pagination.value.sortBy
+    const descending = paginationData.descending ?? pagination.value.descending
+
+    pagination.value = { ...pagination.value, page, rowsPerPage, sortBy, descending }
+    await fetchUsers()
+  } catch (error) {
+    console.error('Error in pagination request:', error)
+    await fetchUsers()
+  }
 }
 
 // Watch для пошуку
