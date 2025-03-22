@@ -816,6 +816,7 @@ import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 
 const scrolled = ref(false)
+let tokenCheckInterval
 
 const checkScroll = () => {
   scrolled.value = document.documentElement.scrollTop > 100
@@ -828,12 +829,38 @@ const scrollToTop = () => {
   })
 }
 
+// Оновлена функція onMounted
 onMounted(() => {
+  // Існуючий код onMounted для слухача події scroll
   window.addEventListener('scroll', checkScroll)
+
+  // Нова функція для перевірки валідності токена
+  const checkTokenValidity = () => {
+    // Проста перевірка - якщо токен є, але isAuthenticated повертає false,
+    // значить токен невалідний або закінчився його термін дії
+    if (localStorage.getItem('token') && !authStore.isAuthenticated) {
+      console.log('Токен став недійсним. Перенаправлення на сторінку логування.')
+      authStore.logout()
+      router.push('/auth/login')
+    }
+  }
+
+  // Запускаємо перевірку при монтуванні
+  checkTokenValidity()
+
+  // Встановлюємо інтервал перевірки (кожні 5 хвилин)
+  tokenCheckInterval = setInterval(checkTokenValidity, 5 * 60 * 1000)
 })
 
+// Оновлена функція onUnmounted
 onUnmounted(() => {
+  // Існуючий код onUnmounted для слухача події scroll
   window.removeEventListener('scroll', checkScroll)
+
+  // Нова частина - очищаємо інтервал перевірки токена
+  if (tokenCheckInterval) {
+    clearInterval(tokenCheckInterval)
+  }
 })
 
 const $q = useQuasar()

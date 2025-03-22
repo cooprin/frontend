@@ -157,7 +157,7 @@ const routes = [
 
       // Маршрути для платежів
       {
-        path: '',
+        path: '/payments',
         name: 'payments',
         component: () => import('pages/PaymentsPage.vue'),
         meta: {
@@ -166,7 +166,7 @@ const routes = [
         },
       },
       {
-        path: ':id',
+        path: '/payments/:id',
         name: 'payment-details',
         component: () => import('pages/PaymentDetailsPage.vue'),
         meta: {
