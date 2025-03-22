@@ -69,6 +69,31 @@
             :loading="loadingTariffs"
           />
 
+          <!-- Дата зміни тарифу -->
+          <q-input
+            v-if="form.tariff_id && isEdit"
+            v-model="form.tariff_effective_from"
+            :label="t('wialonObjects.tariffEffectiveFrom')"
+            :rules="[(val) => !!val || t('common.validation.required')]"
+            outlined
+            readonly
+          >
+            <template v-slot:hint>
+              {{ t('wialonObjects.tariffEffectiveHint') }}
+            </template>
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                  <q-date v-model="form.tariff_effective_from" mask="YYYY-MM-DD">
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="OK" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+
           <!-- Статус -->
           <q-select
             v-model="form.status"
@@ -141,6 +166,7 @@ const defaultForm = {
   description: '',
   client_id: null,
   tariff_id: null,
+  tariff_effective_from: date.formatDate(new Date(), 'YYYY-MM-DD'),
   status: 'active',
   operation_date: date.formatDate(new Date(), 'YYYY-MM-DD'),
 }
@@ -239,15 +265,52 @@ const onSubmit = async () => {
     emit('saved')
   } catch (error) {
     console.error('Error saving object:', error)
-    $q.notify({
-      color: 'negative',
-      message:
-        error.response?.data?.message ||
-        t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`),
-      icon: 'error',
-    })
+
+    // Спеціальна обробка помилки про оплачений період
+    const errorMessage =
+      error.response?.data?.message || t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`)
+
+    // Перевіряємо, чи це помилка про оплачений період
+    if (errorMessage.includes('вже оплачений')) {
+      $q.notify({
+        color: 'warning',
+        message: errorMessage,
+        icon: 'warning',
+        timeout: 10000, // Збільшуємо час показу
+        actions: [
+          {
+            label: t('common.understand'),
+            color: 'white',
+            handler: () => {
+              // Просто закриваємо повідомлення
+            },
+          },
+        ],
+      })
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: errorMessage,
+        icon: 'error',
+      })
+    }
   } finally {
     loading.value = false
+  }
+}
+const loadTariffDetails = async () => {
+  if (isEdit.value && form.value.tariff_id && props.editData) {
+    try {
+      const response = await TariffsApi.getOptimalChangeDate(props.editData.id)
+      const optimalDate = response.data.changeDate
+
+      // Встановлюємо оптимальну дату для початку дії тарифу
+      form.value.tariff_effective_from = date.formatDate(optimalDate, 'YYYY-MM-DD')
+    } catch (error) {
+      console.error('Error loading optimal tariff change date:', error)
+      // Якщо помилка, встановлюємо поточну дату
+      form.value.tariff_effective_from = date.formatDate(new Date(), 'YYYY-MM-DD')
+    }
   }
 }
 
@@ -266,6 +329,16 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// Відстеження зміни тарифу
+watch(
+  () => form.value.tariff_id,
+  (newValue, oldValue) => {
+    if (newValue && newValue !== oldValue) {
+      loadTariffDetails()
+    }
+  },
 )
 
 // Lifecycle
