@@ -324,22 +324,23 @@
 
           <!-- Вкладка з рахунками -->
           <q-tab-panel name="invoices">
-            <div class="row justify-between q-mb-md">
-              <div class="text-h6">{{ $t('clients.tabs.invoices') }}</div>
-              <q-btn
-                color="primary"
-                icon="add"
-                :label="$t('invoices.create')"
-                @click="openCreateInvoiceDialog"
-              />
-              <!-- Кнопка для розумної генерації рахунків -->
-              <q-btn
-                color="accent"
-                icon="auto_awesome"
-                :label="$t('invoices.smartGenerate')"
-                class="q-ml-sm"
-                @click="openGenerateSmartInvoiceDialog"
-              />
+            <div class="row q-mb-md">
+              <div class="text-h6 col">{{ $t('clients.tabs.invoices') }}</div>
+              <div class="col-auto">
+                <q-btn
+                  color="primary"
+                  icon="add"
+                  :label="$t('invoices.create')"
+                  @click="openCreateInvoiceDialog"
+                  class="q-mr-sm"
+                />
+                <q-btn
+                  color="accent"
+                  icon="auto_awesome"
+                  :label="$t('invoices.smartGenerate')"
+                  @click="openGenerateSmartInvoiceDialog"
+                />
+              </div>
             </div>
 
             <div v-if="loadingInvoices" class="text-center q-pa-md">
@@ -608,14 +609,19 @@
           </q-form>
         </q-card-section>
       </q-card>
-      <!-- Діалог розумної генерації рахунків -->
-      <invoice-generator-dialog
-        v-model="showGenerateSmartInvoiceDialog"
-        :client-id="client ? client.id : null"
-        :smart-only="true"
-        @generated="onSmartInvoicesGenerated"
-      />
     </q-dialog>
+    <!-- Діалог розумної генерації рахунків -->
+    <invoice-generator-dialog
+      v-model="showGenerateSmartInvoiceDialog"
+      :client-id="client ? client.id : null"
+      :smart-only="true"
+      @generated="onSmartInvoicesGenerated"
+    />
+    <invoice-dialog
+      v-model="showInvoiceDialog"
+      :client-id="client ? client.id : null"
+      @saved="loadClientInvoices"
+    />
   </q-page>
 </template>
 
@@ -628,6 +634,7 @@ import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { ServicesApi } from 'src/api/services'
 import { InvoicesApi } from 'src/api/invoices'
+import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 
 const $q = useQuasar()
