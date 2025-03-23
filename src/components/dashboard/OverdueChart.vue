@@ -1,13 +1,13 @@
 <template>
   <div class="chart-container">
-    <LineChart :chart-data="chartData" :chart-options="chartOptions" />
+    <BarChart :chart-data="chartData" :chart-options="chartOptions" />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { LineChart } from 'vue-chart-3'
+import { BarChart } from 'vue-chart-3'
 import { Chart, registerables } from 'chart.js'
 
 Chart.register(...registerables)
@@ -76,18 +76,16 @@ const chartData = computed(() => {
     {
       label: t('dashboard.overdueAmount'),
       data: props.data.map((item) => item.amount),
+      backgroundColor: 'rgba(244, 67, 54, 0.6)',
       borderColor: '#f44336',
-      backgroundColor: 'rgba(244, 67, 54, 0.2)',
-      tension: 0.4,
-      fill: true,
+      borderWidth: 1,
     },
     {
       label: t('dashboard.paidAmount'),
       data: props.data.map((item) => item.paidAmount),
+      backgroundColor: 'rgba(76, 175, 80, 0.6)',
       borderColor: '#4caf50',
-      backgroundColor: 'rgba(76, 175, 80, 0.2)',
-      tension: 0.4,
-      fill: true,
+      borderWidth: 1,
     },
   ]
 
@@ -102,8 +100,6 @@ const chartData = computed(() => {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 100%; /* Можливо, потрібно встановити фіксовану висоту */
-  min-height: 300px; /* Додай мінімальну висоту */
-  max-height: 500px; /* Додай максимальну висоту */
+  height: 300px; /* Встановлена фіксована висота */
 }
 </style>
