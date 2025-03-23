@@ -9,6 +9,8 @@ export default {
     clientsOverdue: 'Clients with Overdue',
     objectsOverdue: 'Objects with Overdue',
     periodsPaid: 'Payment Rate',
+    allPeriods: 'all periods',
+    thisYear: 'current year',
   },
   clientsWithOverduePayments: 'Clients with Overdue Payments',
   objectsWithOverduePayments: 'Objects with Overdue Payments',

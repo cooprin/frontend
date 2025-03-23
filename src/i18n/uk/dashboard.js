@@ -9,6 +9,8 @@ export default {
     clientsOverdue: 'Клієнтів з заборгованістю',
     objectsOverdue: "Об'єктів з заборгованістю",
     periodsPaid: 'Показник оплат',
+    allPeriods: 'за всі періоди',
+    thisYear: 'за поточний рік',
   },
   clientsWithOverduePayments: 'Клієнти з простроченими платежами',
   objectsWithOverduePayments: "Об'єкти з простроченими платежами",
