@@ -182,7 +182,7 @@
               </q-card-section>
               <q-card-section>
                 <div
-                  style="height: 300px"
+                  style="height: 400px; position: relative"
                   v-if="!loadingOverdueData && overdueByMonthData.length > 0"
                 >
                   <overdue-chart :data="overdueByMonthData" />

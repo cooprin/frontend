@@ -113,10 +113,10 @@ const chartData = computed(() => {
 
 <style scoped>
 .chart-container {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 350px; /* Збільшуємо висоту, щоб вмістити легенди */
-  padding-bottom: 20px; /* Додаємо відступ знизу */
-  margin-bottom: 30px; /* Додатковий відступ для запобігання накладанню */
+  height: 100%;
 }
 </style>
