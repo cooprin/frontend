@@ -102,6 +102,8 @@ const chartData = computed(() => {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 100%; /* Можливо, потрібно встановити фіксовану висоту */
+  min-height: 300px; /* Додай мінімальну висоту */
+  max-height: 500px; /* Додай максимальну висоту */
 }
 </style>

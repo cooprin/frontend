@@ -1,9 +1,6 @@
 <template>
   <q-page padding>
     <div class="row items-center q-mb-md">
-      <h5 class="q-my-none">
-        {{ $t('pages.DashboardPage.hello') }}, {{ authStore.currentUser?.full_name }}!
-      </h5>
       <q-space />
       <q-select
         v-model="selectedDashboard"
@@ -253,14 +250,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useAuthStore } from 'stores/auth'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import OverdueChart from 'components/dashboard/OverdueChart.vue'
 
-const authStore = useAuthStore()
 const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
