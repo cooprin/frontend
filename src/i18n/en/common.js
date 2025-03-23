@@ -24,6 +24,8 @@ export default {
   clearFilters: 'Clear Filters',
   export: 'Export',
   upload: 'Upload',
+  back: 'Back',
+  understand: 'I understand',
 
   validation: {
     required: 'This field is required',

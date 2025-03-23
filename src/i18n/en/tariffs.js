@@ -12,6 +12,11 @@ export default {
   price: 'Price',
   isActive: 'Active',
   objectsCount: 'Objects Count',
+  priceEditDisabled: 'Price cannot be changed for existing tariffs',
+  effectiveFrom: 'Effective From',
+  period: 'Period',
+  history: 'Tariff History',
+  noHistory: 'No tariff history',
 
   // Повідомлення
   createSuccess: 'Tariff created successfully',
@@ -36,6 +41,12 @@ export default {
     notes: 'Notes',
     assignSuccess: 'Tariff assigned successfully',
     alreadyAssigned: 'This tariff is already assigned to the object',
+    paidPeriodsWarning: 'Warning! There are paid periods with another tariff',
+    recommendedDate: 'Recommended date',
+    useRecommended: 'Use recommended',
+    dateInPaidPeriod: 'Date is in a paid period. Recommended to use {date}',
+    dateInPaidPeriodHint: 'Warning! This period already has an assigned and paid tariff',
+    nextMonth: 'next month',
   },
 
   // Об'єкти з тарифом

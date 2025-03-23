@@ -24,6 +24,8 @@ export default {
   clearFilters: 'Очистити фільтри',
   export: 'Експорт',
   upload: 'Завантажити',
+  back: 'Назад',
+  understand: 'Зрозуміло',
 
   validation: {
     required: "Це поле є обов'язковим",

@@ -18,6 +18,9 @@ export default {
   tariffName: 'Назва тарифу',
   tariffPrice: 'Ціна тарифу',
   operationDate: 'Дата операції',
+  tariffEffectiveFrom: 'Дата початку дії тарифу',
+  tariffEffectiveHint: 'Дата, з якої тариф почне діяти',
+  tariffMatchOperationDate: 'Відповідає даті операції',
 
   // Статуси
   statuses: {

@@ -18,6 +18,9 @@ export default {
   tariffName: 'Tariff Name',
   tariffPrice: 'Tariff Price',
   operationDate: 'Operation Date',
+  tariffEffectiveFrom: 'Tariff Effective From',
+  tariffEffectiveHint: 'Date from which the tariff will be effective',
+  tariffMatchOperationDate: 'Matches operation date',
 
   // Статуси
   statuses: {

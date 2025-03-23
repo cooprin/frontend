@@ -12,6 +12,11 @@ export default {
   price: 'Ціна',
   isActive: 'Активний',
   objectsCount: "Кількість об'єктів",
+  priceEditDisabled: 'Ціну не можна змінювати для існуючих тарифів',
+  effectiveFrom: 'Дата початку дії',
+  period: 'Період',
+  history: 'Історія тарифів',
+  noHistory: 'Немає історії тарифів',
 
   // Повідомлення
   createSuccess: 'Тариф успішно створено',
@@ -36,6 +41,12 @@ export default {
     notes: 'Примітки',
     assignSuccess: 'Тариф успішно призначено',
     alreadyAssigned: "Цей тариф вже призначено об'єкту",
+    paidPeriodsWarning: 'Увага! Існують оплачені періоди з іншим тарифом',
+    recommendedDate: 'Рекомендована дата',
+    useRecommended: 'Використати рекомендовану',
+    dateInPaidPeriod: 'Дата знаходиться в оплаченому періоді. Рекомендовано використати {date}',
+    dateInPaidPeriodHint: 'Увага! Цей період вже має призначений та оплачений тариф',
+    nextMonth: 'наступний місяць',
   },
 
   // Об'єкти з тарифом
