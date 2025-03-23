@@ -110,4 +110,18 @@ export default {
   month: 'Місяць',
   year: 'Рік',
   optional: "необов'язково",
+  smartGenerate: 'Швидка генерація',
+  paymentAmount: 'Сума оплати',
+  paymentType: 'Тип оплати',
+  paymentTypes: {
+    regular: 'Звичайний',
+    advance: 'Аванс',
+    debt: 'Борг',
+    adjustment: 'Коригування',
+  },
+  paymentSuccess: 'Платіж успішно збережено',
+  cancelSuccess: 'Рахунок скасовано',
+  cancellationReason: 'Причина скасування',
+  generatePdf: 'Згенерувати PDF',
+  smartGenerationSuccess: 'Рахунки успішно згенеровані',
 }

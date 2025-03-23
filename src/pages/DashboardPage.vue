@@ -150,9 +150,10 @@
                       </q-item>
                     </q-td>
                   </template>
-                  <template v-slot:body-cell-amount="props">
-                    <q-td :props="props" class="text-right">
-                      {{ formatCurrency(props.row.amount) }}
+                  <template v-slot:body-cell-billing_period="props">
+                    <q-td :props="props">
+                      {{ t(`payments.months.${props.row.billing_month}`) }}
+                      {{ props.row.billing_year }}
                     </q-td>
                   </template>
                   <template v-slot:body-cell-actions="props">

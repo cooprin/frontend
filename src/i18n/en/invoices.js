@@ -110,4 +110,18 @@ export default {
   month: 'Month',
   year: 'Year',
   optional: 'optional',
+  smartGenerate: 'Smart Generate',
+  paymentAmount: 'Payment Amount',
+  paymentType: 'Payment Type',
+  paymentTypes: {
+    regular: 'Regular',
+    advance: 'Advance',
+    debt: 'Debt',
+    adjustment: 'Adjustment',
+  },
+  paymentSuccess: 'Payment successfully saved',
+  cancelSuccess: 'Invoice cancelled',
+  cancellationReason: 'Cancellation reason',
+  generatePdf: 'Generate PDF',
+  smartGenerationSuccess: 'Invoices successfully generated',
 }
