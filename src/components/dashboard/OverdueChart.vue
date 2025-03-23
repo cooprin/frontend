@@ -96,8 +96,8 @@ const chartData = computed(() => {
       borderWidth: 1,
     },
     {
-      label: t('dashboard.paidAmount'),
-      data: props.data.map((item) => item.paidAmount),
+      label: t('dashboard.paidamount'),
+      data: props.data.map((item) => item.paidamount),
       backgroundColor: 'rgba(76, 175, 80, 0.6)',
       borderColor: '#4caf50',
       borderWidth: 1,

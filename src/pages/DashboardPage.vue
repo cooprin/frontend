@@ -20,7 +20,7 @@
       <!-- Дашборд для заборгованих оплат -->
       <div v-if="selectedDashboard.value === 'overdue'">
         <div class="row q-col-gutter-md">
-          <!-- Метрики карточки -->
+          <!-- Карточка заборгованості -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-negative text-white">
@@ -35,10 +35,13 @@
             </q-card>
           </div>
 
+          <!-- Карточка кількості клієнтів з заборгованістю -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-warning text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.clientsOverdue') }}</div>
+                <div class="text-caption">{{ $t('dashboard.metrics.allPeriods') }}</div>
+                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-warning" v-if="!loadingOverdueData">
@@ -49,10 +52,13 @@
             </q-card>
           </div>
 
+          <!-- Карточка кількості об'єктів з заборгованістю -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-info text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.objectsOverdue') }}</div>
+                <div class="text-caption">{{ $t('dashboard.metrics.allPeriods') }}</div>
+                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-info" v-if="!loadingOverdueData">
@@ -63,10 +69,13 @@
             </q-card>
           </div>
 
+          <!-- Карточка відсотка оплачених періодів -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-primary text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.periodsPaid') }}</div>
+                <div class="text-caption">{{ $t('dashboard.metrics.thisYear') }}</div>
+                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-primary" v-if="!loadingOverdueData">
@@ -154,6 +163,11 @@
                     <q-td :props="props">
                       {{ t(`payments.months.${props.row.billing_month}`) }}
                       {{ props.row.billing_year }}
+                    </q-td>
+                  </template>
+                  <template v-slot:body-cell-amount="props">
+                    <q-td :props="props" class="text-right">
+                      {{ formatCurrency(props.row.amount) }}
                     </q-td>
                   </template>
                   <template v-slot:body-cell-actions="props">
@@ -314,21 +328,34 @@ const loadOverdueData = async () => {
   loadingOverdueData.value = true
 
   try {
+    console.log('Завантаження даних заборгованості...')
+
     // API запит для отримання метрик заборгованості
     const metricsResponse = await PaymentsApi.getOverdueMetrics()
+    console.log('Отримані метрики заборгованості:', metricsResponse.data)
     overdueMetrics.value = metricsResponse.data.metrics
 
     // API запит для отримання клієнтів з заборгованістю
     const clientsResponse = await PaymentsApi.getOverdueClients()
-    overdueClients.value = clientsResponse.data.clients
+    console.log('Отримані клієнти з заборгованістю:', clientsResponse.data)
+    overdueClients.value = clientsResponse.data.clients || []
 
     // API запит для отримання об'єктів з заборгованими оплатами
     const objectsResponse = await PaymentsApi.getOverdueObjects()
-    overdueObjects.value = objectsResponse.data.objects
+    console.log("Отримані об'єкти з заборгованістю:", objectsResponse.data)
+    overdueObjects.value = objectsResponse.data.objects || []
 
     // API запит для отримання даних для графіка
     const chartResponse = await PaymentsApi.getOverdueByMonth()
-    overdueByMonthData.value = chartResponse.data.monthlyData
+    console.log('Отримані дані для графіка:', chartResponse.data)
+    overdueByMonthData.value = chartResponse.data.monthlyData || []
+
+    // Перевірка наявності даних для графіка
+    if (overdueByMonthData.value && overdueByMonthData.value.length > 0) {
+      console.log('Дані для графіка готові:', overdueByMonthData.value.length, 'записів')
+    } else {
+      console.warn('Немає даних для графіка!')
+    }
   } catch (error) {
     console.error('Error loading overdue data:', error)
     $q.notify({
