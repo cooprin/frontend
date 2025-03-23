@@ -136,14 +136,6 @@
               <q-card-section class="row items-center">
                 <div class="text-h6">{{ $t('dashboard.objectsWithOverduePayments') }}</div>
                 <q-space />
-                <q-btn
-                  color="primary"
-                  dense
-                  :label="$t('dashboard.createInvoices')"
-                  icon="receipt"
-                  @click="generateInvoices"
-                  :loading="generatingInvoices"
-                />
               </q-card-section>
               <q-card-section>
                 <q-table
@@ -283,7 +275,7 @@ const selectedDashboard = ref(dashboardOptions[0])
 
 // Для даних по заборгованості
 const loadingOverdueData = ref(false)
-const generatingInvoices = ref(false)
+
 const overdueMetrics = ref({
   totalAmount: 0,
   clientsCount: 0,
@@ -357,43 +349,6 @@ const loadOverdueData = async () => {
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
   return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
-}
-
-// Генерація рахунків для прострочених оплат
-const generateInvoices = async () => {
-  generatingInvoices.value = true
-
-  try {
-    // Поточний місяць та рік
-    const currentDate = new Date()
-    const currentMonth = currentDate.getMonth() + 1
-    const currentYear = currentDate.getFullYear()
-
-    // Виклик API для генерації рахунків
-    const response = await PaymentsApi.generateOverdueInvoices({
-      month: currentMonth,
-      year: currentYear,
-      use_smart_generation: true,
-    })
-
-    $q.notify({
-      color: 'positive',
-      message: t('dashboard.invoicesGenerated', { count: response.data.invoices.length }),
-      icon: 'check',
-    })
-
-    // Оновлюємо дані після генерації
-    loadOverdueData()
-  } catch (error) {
-    console.error('Error generating invoices:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.generating'),
-      icon: 'error',
-    })
-  } finally {
-    generatingInvoices.value = false
-  }
 }
 
 // Навігація до клієнта

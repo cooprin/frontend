@@ -88,8 +88,4 @@ export const PaymentsApi = {
   getOverdueByMonth: () => {
     return api.get('/billing/payments/overdue/monthly')
   },
-
-  generateOverdueInvoices: (params) => {
-    return api.post('/billing/invoices/generate/overdue', params)
-  },
 }
