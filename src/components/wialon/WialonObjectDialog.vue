@@ -71,7 +71,7 @@
 
           <!-- Дата зміни тарифу -->
           <q-input
-            v-if="form.tariff_id && isEdit"
+            v-if="form.tariff_id"
             v-model="form.tariff_effective_from"
             :label="t('wialonObjects.tariffEffectiveFrom')"
             :rules="[(val) => !!val || t('common.validation.required')]"
@@ -299,17 +299,22 @@ const onSubmit = async () => {
   }
 }
 const loadTariffDetails = async () => {
-  if (isEdit.value && form.value.tariff_id && props.editData) {
-    try {
-      const response = await TariffsApi.getOptimalChangeDate(props.editData.id)
-      const optimalDate = response.data.changeDate
+  if (form.value.tariff_id) {
+    if (isEdit.value && props.editData) {
+      try {
+        const response = await TariffsApi.getOptimalChangeDate(props.editData.id)
+        const optimalDate = response.data.changeDate
 
-      // Встановлюємо оптимальну дату для початку дії тарифу
-      form.value.tariff_effective_from = date.formatDate(optimalDate, 'YYYY-MM-DD')
-    } catch (error) {
-      console.error('Error loading optimal tariff change date:', error)
-      // Якщо помилка, встановлюємо поточну дату
-      form.value.tariff_effective_from = date.formatDate(new Date(), 'YYYY-MM-DD')
+        // Встановлюємо оптимальну дату для початку дії тарифу
+        form.value.tariff_effective_from = date.formatDate(optimalDate, 'YYYY-MM-DD')
+      } catch (error) {
+        console.error('Error loading optimal tariff change date:', error)
+        // Якщо помилка, встановлюємо поточну дату
+        form.value.tariff_effective_from = date.formatDate(new Date(), 'YYYY-MM-DD')
+      }
+    } else {
+      // Для нового об'єкта встановлюємо дату тарифу таку ж як і дата операції
+      form.value.tariff_effective_from = form.value.operation_date
     }
   }
 }
@@ -329,6 +334,15 @@ watch(
     }
   },
   { immediate: true },
+)
+// Відстеження зміни дати операції для нових об'єктів
+watch(
+  () => form.value.operation_date,
+  (newValue) => {
+    if (!isEdit.value) {
+      form.value.tariff_effective_from = newValue
+    }
+  },
 )
 
 // Відстеження зміни тарифу
