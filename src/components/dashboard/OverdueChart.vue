@@ -28,6 +28,7 @@ const chartOptions = {
   scales: {
     y: {
       beginAtZero: true,
+      grace: '5%', // Додаємо трохи простору зверху
       ticks: {
         callback: function (value) {
           return new Intl.NumberFormat('uk-UA', {
@@ -36,6 +37,12 @@ const chartOptions = {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
           }).format(value)
+        },
+      },
+      // Додаємо адаптивність
+      adapters: {
+        minmax: function (minmax) {
+          return { min: minmax.min, max: minmax.max * 1.1 } // Додаємо 10% запасу зверху
         },
       },
     },
