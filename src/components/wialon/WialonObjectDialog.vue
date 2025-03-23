@@ -69,9 +69,18 @@
             :loading="loadingTariffs"
           />
 
-          <!-- Дата зміни тарифу -->
+          <!-- Дата зміни тарифу (інформативне відображення) -->
+          <div v-if="form.tariff_id && !isEdit" class="q-mb-md">
+            <div class="text-subtitle2">{{ t('wialonObjects.tariffEffectiveFrom') }}</div>
+            <div>{{ formatDate(form.operation_date) }}</div>
+            <div class="text-caption text-grey">
+              {{ t('wialonObjects.tariffMatchOperationDate') }}
+            </div>
+          </div>
+
+          <!-- Дата зміни тарифу (для редагування) -->
           <q-input
-            v-if="form.tariff_id"
+            v-if="form.tariff_id && isEdit"
             v-model="form.tariff_effective_from"
             :label="t('wialonObjects.tariffEffectiveFrom')"
             :rules="[(val) => !!val || t('common.validation.required')]"
@@ -173,6 +182,11 @@ const defaultForm = {
 
 const form = ref({ ...defaultForm })
 
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return date.formatDate(dateString, 'DD.MM.YYYY')
+}
+
 // Computed
 const show = computed({
   get: () => props.modelValue,
@@ -246,6 +260,11 @@ const onSubmit = async () => {
   try {
     const data = { ...form.value }
 
+    // Для нових об'єктів встановлюємо дату тарифу рівною даті операції
+    if (!isEdit.value) {
+      data.tariff_effective_from = data.operation_date
+    }
+
     if (isEdit.value) {
       await WialonApi.updateObject(props.editData.id, data)
       $q.notify({
@@ -264,19 +283,18 @@ const onSubmit = async () => {
     show.value = false
     emit('saved')
   } catch (error) {
+    // Обробка помилок залишається без змін
     console.error('Error saving object:', error)
 
-    // Спеціальна обробка помилки про оплачений період
     const errorMessage =
       error.response?.data?.message || t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`)
 
-    // Перевіряємо, чи це помилка про оплачений період
     if (errorMessage.includes('вже оплачений')) {
       $q.notify({
         color: 'warning',
         message: errorMessage,
         icon: 'warning',
-        timeout: 10000, // Збільшуємо час показу
+        timeout: 10000,
         actions: [
           {
             label: t('common.understand'),
@@ -298,6 +316,7 @@ const onSubmit = async () => {
     loading.value = false
   }
 }
+
 const loadTariffDetails = async () => {
   if (form.value.tariff_id) {
     if (isEdit.value && props.editData) {
@@ -340,6 +359,7 @@ watch(
   () => form.value.operation_date,
   (newValue) => {
     if (!isEdit.value) {
+      // Оновлюємо дату тарифу для відображення, але не для редагування
       form.value.tariff_effective_from = newValue
     }
   },
