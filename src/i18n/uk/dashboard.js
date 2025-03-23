@@ -1,0 +1,27 @@
+export default {
+  types: {
+    overduePayments: 'Прострочені платежі',
+    activity: 'Активність та нові клієнти',
+    financial: 'Фінансова статистика',
+  },
+  metrics: {
+    totalOverdue: 'Загальна заборгованість',
+    clientsOverdue: 'Клієнтів з заборгованістю',
+    objectsOverdue: "Об'єктів з заборгованістю",
+    periodsPaid: 'Показник оплат',
+  },
+  clientsWithOverduePayments: 'Клієнти з простроченими платежами',
+  objectsWithOverduePayments: "Об'єкти з простроченими платежами",
+  overdueObjects: "Об'єктів з заборгованістю",
+  noOverdueClients: 'Немає клієнтів з простроченими платежами',
+  createInvoices: 'Згенерувати рахунки',
+  invoicesGenerated: 'Успішно згенеровано {count} рахунків',
+  overdueByMonth: 'Прострочені платежі по місяцях',
+  noDataForChart: 'Немає даних для відображення графіка',
+  overdueAmount: 'Сума заборгованості',
+  paidAmount: 'Сума оплат',
+  newClients: 'Нові клієнти',
+  recentActivity: 'Остання активність',
+  financialStatistics: 'Фінансова статистика',
+  comingSoon: 'Незабаром...',
+}

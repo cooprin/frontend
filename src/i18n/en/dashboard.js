@@ -1,0 +1,27 @@
+export default {
+  types: {
+    overduePayments: 'Overdue Payments',
+    activity: 'Activity and New Clients',
+    financial: 'Financial Statistics',
+  },
+  metrics: {
+    totalOverdue: 'Total Overdue',
+    clientsOverdue: 'Clients with Overdue',
+    objectsOverdue: 'Objects with Overdue',
+    periodsPaid: 'Payment Rate',
+  },
+  clientsWithOverduePayments: 'Clients with Overdue Payments',
+  objectsWithOverduePayments: 'Objects with Overdue Payments',
+  overdueObjects: 'Overdue Objects',
+  noOverdueClients: 'No clients with overdue payments',
+  createInvoices: 'Generate Invoices',
+  invoicesGenerated: 'Successfully generated {count} invoices',
+  overdueByMonth: 'Overdue Payments by Month',
+  noDataForChart: 'No data available for chart',
+  overdueAmount: 'Overdue Amount',
+  paidAmount: 'Paid Amount',
+  newClients: 'New Clients',
+  recentActivity: 'Recent Activity',
+  financialStatistics: 'Financial Statistics',
+  comingSoon: 'Coming soon...',
+}

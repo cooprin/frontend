@@ -71,4 +71,25 @@ export const PaymentsApi = {
   createPeriodPayment: (data) => {
     return api.post('/billing/payments/period-payment', data)
   },
+
+  // Доповнення до існуючого API
+  getOverdueMetrics: () => {
+    return api.get('/billing/payments/overdue/metrics')
+  },
+
+  getOverdueClients: () => {
+    return api.get('/billing/payments/overdue/clients')
+  },
+
+  getOverdueObjects: () => {
+    return api.get('/billing/payments/overdue/objects')
+  },
+
+  getOverdueByMonth: () => {
+    return api.get('/billing/payments/overdue/monthly')
+  },
+
+  generateOverdueInvoices: (params) => {
+    return api.post('/billing/invoices/generate/overdue', params)
+  },
 }

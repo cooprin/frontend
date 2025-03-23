@@ -14,6 +14,7 @@ import invoices from './invoices'
 import services from './services'
 import tariffs from './tariffs'
 import payments from './payments'
+import dashboard from './dashboard'
 
 export default {
   layouts,
@@ -32,4 +33,5 @@ export default {
   services,
   tariffs,
   payments,
+  dashboard,
 }
