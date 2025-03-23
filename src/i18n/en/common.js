@@ -26,6 +26,10 @@ export default {
   upload: 'Upload',
   back: 'Back',
   understand: 'I understand',
+  loading: 'Loading...',
+  optional: 'Optional',
+  generating: 'Generating...',
+  exporting: 'Exporting...',
 
   validation: {
     required: 'This field is required',
@@ -36,6 +40,7 @@ export default {
     minLength: 'Minimum {min} characters required',
     dateRange: 'Date must be between {min} and {max}',
     numberRange: 'Value must be between {min} and {max}',
+    minValue: 'Value must be at least {min}',
   },
   showFilters: 'Show filters',
   hideFilters: 'Hide filters',
@@ -51,6 +56,10 @@ export default {
     requiredFields: 'Please fill all required fields',
     validation: 'Validation error',
     saving: 'Error saving data',
+    generating: 'Error generating',
+    exporting: 'Error exporting',
+    invalidYear: 'Invalid year format',
+    invalidMonth: 'Invalid month format',
   },
   present: 'present',
 }

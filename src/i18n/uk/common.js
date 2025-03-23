@@ -26,6 +26,10 @@ export default {
   upload: 'Завантажити',
   back: 'Назад',
   understand: 'Зрозуміло',
+  loading: 'Завантаження...',
+  optional: "Необов'язково",
+  generating: 'Генерація...',
+  exporting: 'Експорт...',
 
   validation: {
     required: "Це поле є обов'язковим",
@@ -36,6 +40,7 @@ export default {
     minLength: 'Мінімально {min} символів необхідно',
     dateRange: 'Дата має бути між {min} і {max}',
     numberRange: 'Значення має бути між {min} і {max}',
+    minValue: 'Значення має бути не менше {min}',
   },
   showFilters: 'Показати фільтри',
   hideFilters: 'Приховати фільтри',
@@ -51,6 +56,10 @@ export default {
     requiredFields: "Будь ласка, заповніть всі обов'язкові поля",
     validation: 'Помилка валідації',
     saving: 'Помилка збереження даних',
+    generating: 'Помилка генерації',
+    exporting: 'Помилка експорту',
+    invalidYear: 'Невірний формат року',
+    invalidMonth: 'Невірний формат місяця',
   },
   present: 'зараз',
 }

@@ -41,6 +41,13 @@ export default {
   statusUpdateSuccess: 'Статус рахунку успішно оновлено',
   noInvoices: 'Рахунки не знайдено',
   noItems: 'В цьому рахунку немає позицій',
+  somePeriodsAlreadyPaid: 'Деякі періоди вже оплачені',
+  paid: 'Оплачено',
+  invoiceExists: 'Рахунок існує: {number}',
+  allPeriodsAlreadyPaid: 'Всі періоди вже оплачені',
+  pendingObjects: "Об'єкти для оплати",
+  allPeriodsHaveInvoices: 'Всі періоди вже мають виставлені рахунки',
+  noValidPayments: 'Немає валідних платежів',
 
   // Фільтри
   filters: {

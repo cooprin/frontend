@@ -41,6 +41,13 @@ export default {
   statusUpdateSuccess: 'Invoice status updated successfully',
   noInvoices: 'No invoices found',
   noItems: 'No items in this invoice',
+  somePeriodsAlreadyPaid: 'Some periods are already paid',
+  paid: 'Paid',
+  invoiceExists: 'Invoice exists: {number}',
+  allPeriodsAlreadyPaid: 'All periods are already paid',
+  pendingObjects: 'Objects for payment',
+  allPeriodsHaveInvoices: 'All periods already have invoices',
+  noValidPayments: 'No valid payments',
 
   // Фільтри
   filters: {

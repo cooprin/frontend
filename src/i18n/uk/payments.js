@@ -29,6 +29,12 @@ export default {
   showStatistics: 'Показати статистику',
   noPayments: 'Платежі не знайдено',
   notFound: 'Платіж не знайдено',
+  unpaidPeriods: 'Неоплачені періоди',
+  paidPeriods: 'Оплачені періоди',
+  nextUnpaidPeriod: 'Наступний неоплачений період',
+  invalidTariff: "Невалідний тариф для об'єкта {name}",
+  noPeriods: 'Немає доступних періодів',
+  allPeriodsHaveInvoices: 'Всі періоди вже мають виставлені рахунки',
 
   types: {
     regular: 'Звичайний',

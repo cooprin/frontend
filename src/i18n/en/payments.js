@@ -29,6 +29,12 @@ export default {
   showStatistics: 'Show Statistics',
   noPayments: 'No payments found',
   notFound: 'Payment not found',
+  unpaidPeriods: 'Unpaid Periods',
+  paidPeriods: 'Paid Periods',
+  nextUnpaidPeriod: 'Next Unpaid Period',
+  invalidTariff: 'Invalid tariff for object {name}',
+  noPeriods: 'No available periods',
+  allPeriodsHaveInvoices: 'All periods already have invoices',
 
   types: {
     regular: 'Regular',
