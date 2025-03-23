@@ -25,6 +25,11 @@ const { t } = useI18n()
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  layout: {
+    padding: {
+      bottom: 20, // Додаємо відступ знизу в макеті графіка
+    },
+  },
   scales: {
     y: {
       beginAtZero: true,
@@ -49,7 +54,11 @@ const chartOptions = {
   },
   plugins: {
     legend: {
-      position: 'top',
+      position: 'top', // Розміщуємо легенду вгорі замість внизу
+      labels: {
+        boxWidth: 15, // Зменшуємо розмір боксу легенди
+        padding: 10, // Відступ між елементами легенди
+      },
     },
     tooltip: {
       callbacks: {
@@ -60,6 +69,12 @@ const chartOptions = {
           }).format(context.raw)
         },
       },
+    },
+  },
+  datasets: {
+    bar: {
+      barPercentage: 0.7,
+      categoryPercentage: 0.8,
     },
   },
 }
@@ -100,6 +115,8 @@ const chartData = computed(() => {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 300px; /* Встановлена фіксована висота */
+  height: 350px; /* Збільшуємо висоту, щоб вмістити легенди */
+  padding-bottom: 20px; /* Додаємо відступ знизу */
+  margin-bottom: 30px; /* Додатковий відступ для запобігання накладанню */
 }
 </style>
