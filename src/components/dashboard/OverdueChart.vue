@@ -109,7 +109,8 @@ const chartOptions = computed(() => ({
   },
   elements: {
     line: {
-      tension: 0.6, // Значно більша гладкість ліній (між 0 і 1)
+      tension: 0.4, // Оптимальна плавність для бізнес-графіків (між 0 і 1)
+      capBezierPoints: true, // Забезпечує кращу поведінку кривих Безьє на краях
       borderWidth: 3, // Товстіші лінії
       fill: true, // Включаємо заливку
     },
@@ -129,6 +130,8 @@ const chartOptions = computed(() => ({
     duration: 1000, // Довша анімація
     easing: 'easeOutQuart', // Плавніша анімація
   },
+  bezierCurve: true, // Додаткове включення кривих Безьє
+  cubicInterpolationMode: 'monotone', // Забезпечує плавніші переходи без різких піків
 }))
 
 // Підготовка даних для графіка
@@ -166,6 +169,8 @@ const chartData = computed(() => {
       borderWidth: 3,
       pointBackgroundColor: '#f44336',
       fill: true,
+      tension: 0.4, // Плавність лінії для кожного набору даних
+      cubicInterpolationMode: 'monotone', // Режим інтерполяції для кожного набору даних
     },
     {
       label: t('dashboard.paidAmount'),
@@ -175,6 +180,8 @@ const chartData = computed(() => {
       borderWidth: 3,
       pointBackgroundColor: '#4caf50',
       fill: true,
+      tension: 0.4, // Плавність лінії для кожного набору даних
+      cubicInterpolationMode: 'monotone', // Режим інтерполяції для кожного набору даних
     },
   ]
 
