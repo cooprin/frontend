@@ -112,7 +112,13 @@
             outlined
             emit-value
             map-options
-          />
+          >
+            <template v-slot:hint>
+              <template v-if="form.status !== 'active'">
+                {{ t('wialonObjects.statusWarning') }}
+              </template>
+            </template>
+          </q-select>
 
           <!-- Опис -->
           <q-input
@@ -265,15 +271,37 @@ const onSubmit = async () => {
       data.tariff_effective_from = data.operation_date
     }
 
+    let response
     if (isEdit.value) {
-      await WialonApi.updateObject(props.editData.id, data)
+      response = await WialonApi.updateObject(props.editData.id, data)
+
+      // Перевіряємо наявність попереджень у відповіді
+      if (response.data.warnings && response.data.warnings.length > 0) {
+        // Відображаємо попередження користувачеві
+        $q.notify({
+          color: 'warning',
+          message: response.data.warnings.join(' '),
+          icon: 'warning',
+          timeout: 10000,
+          actions: [
+            {
+              label: t('common.understand'),
+              color: 'white',
+              handler: () => {
+                // Просто закриваємо повідомлення
+              },
+            },
+          ],
+        })
+      }
+
       $q.notify({
         color: 'positive',
         message: t('wialonObjects.updateSuccess'),
         icon: 'check',
       })
     } else {
-      await WialonApi.createObject(data)
+      response = await WialonApi.createObject(data)
       $q.notify({
         color: 'positive',
         message: t('wialonObjects.createSuccess'),
@@ -283,7 +311,6 @@ const onSubmit = async () => {
     show.value = false
     emit('saved')
   } catch (error) {
-    // Обробка помилок залишається без змін
     console.error('Error saving object:', error)
 
     const errorMessage =
