@@ -32,15 +32,16 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: false,
   layout: {
     padding: {
-      bottom: 20,
-      left: 15,
-      right: 15,
+      bottom: 30,
+      left: 20,
+      right: 20,
+      top: 20,
     },
   },
   scales: {
     y: {
       beginAtZero: true,
-      grace: '5%',
+      grace: '10%', // Збільшено відступ зверху
       ticks: {
         callback: function (value) {
           return new Intl.NumberFormat('uk-UA', {
@@ -50,11 +51,18 @@ const chartOptions = computed(() => ({
             maximumFractionDigits: 0,
           }).format(value)
         },
+        padding: 10, // Більший відступ для підписів
+      },
+      grid: {
+        color: 'rgba(200, 200, 200, 0.2)', // Світліша сітка
       },
     },
     x: {
       grid: {
         display: false, // Прибираємо вертикальні лінії сітки
+      },
+      ticks: {
+        padding: 10, // Більший відступ для підписів
       },
     },
   },
@@ -62,15 +70,26 @@ const chartOptions = computed(() => ({
     legend: {
       position: 'top',
       labels: {
-        boxWidth: 15,
-        padding: 10,
+        boxWidth: 18,
+        padding: 15,
         usePointStyle: true, // Використовуємо стиль точок для легенди
         pointStyle: 'circle', // Круглі точки
+        font: {
+          size: 13, // Більший шрифт для легенди
+        },
       },
     },
     tooltip: {
       mode: 'index',
       intersect: false, // Показувати підказку навіть без прямого перетину з точкою
+      backgroundColor: 'rgba(255, 255, 255, 0.9)', // Світліший фон
+      titleColor: '#333', // Темний колір для заголовка
+      bodyColor: '#333', // Темний колір для тексту
+      borderColor: 'rgba(200, 200, 200, 0.5)', // Додаємо рамку
+      borderWidth: 1,
+      padding: 12,
+      cornerRadius: 8,
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
       callbacks: {
         label: function (context) {
           let label = context.dataset.label || ''
@@ -90,18 +109,25 @@ const chartOptions = computed(() => ({
   },
   elements: {
     line: {
-      tension: 0.4, // Невелике згладжування ліній
+      tension: 0.6, // Значно більша гладкість ліній (між 0 і 1)
+      borderWidth: 3, // Товстіші лінії
+      fill: true, // Включаємо заливку
     },
     point: {
-      radius: 5, // Розмір точок
-      hoverRadius: 7, // Розмір точок при наведенні
-      hitRadius: 10, // Область для визначення наведення
+      radius: 4, // Розмір точок
+      hoverRadius: 8, // Розмір точок при наведенні
+      hitRadius: 12, // Область для визначення наведення
+      borderWidth: 2, // Ширина рамки точок
     },
   },
   interaction: {
     mode: 'nearest',
     axis: 'x',
     intersect: false,
+  },
+  animation: {
+    duration: 1000, // Довша анімація
+    easing: 'easeOutQuart', // Плавніша анімація
   },
 }))
 
@@ -135,18 +161,18 @@ const chartData = computed(() => {
     {
       label: t('dashboard.overdueAmount'),
       data: sortedData.map((item) => parseFloat(item.amount || 0)),
-      backgroundColor: 'rgba(244, 67, 54, 0.1)',
+      backgroundColor: 'rgba(244, 67, 54, 0.15)', // Більш прозора заливка
       borderColor: '#f44336',
-      borderWidth: 2,
+      borderWidth: 3,
       pointBackgroundColor: '#f44336',
       fill: true,
     },
     {
       label: t('dashboard.paidAmount'),
       data: sortedData.map((item) => parseFloat(item.paidamount || 0)),
-      backgroundColor: 'rgba(76, 175, 80, 0.1)',
+      backgroundColor: 'rgba(76, 175, 80, 0.15)', // Більш прозора заливка
       borderColor: '#4caf50',
-      borderWidth: 2,
+      borderWidth: 3,
       pointBackgroundColor: '#4caf50',
       fill: true,
     },
