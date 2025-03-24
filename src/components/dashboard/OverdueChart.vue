@@ -1,13 +1,13 @@
 <template>
   <div class="chart-container">
-    <BarChart :chart-data="chartData" :chart-options="chartOptions" />
+    <LineChart :chart-data="chartData" :chart-options="chartOptions" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { BarChart } from 'vue-chart-3'
+import { LineChart } from 'vue-chart-3'
 import { Chart, registerables } from 'chart.js'
 
 Chart.register(...registerables)
@@ -21,19 +21,26 @@ const props = defineProps({
 
 const { t } = useI18n()
 
+// Логування даних для відлагодження
+onMounted(() => {
+  console.log('OverdueChart data:', props.data)
+})
+
 // Налаштування для графіка
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   layout: {
     padding: {
-      bottom: 20, // Додаємо відступ знизу в макеті графіка
+      bottom: 20,
+      left: 15,
+      right: 15,
     },
   },
   scales: {
     y: {
       beginAtZero: true,
-      grace: '5%', // Додаємо трохи простору зверху
+      grace: '5%',
       ticks: {
         callback: function (value) {
           return new Intl.NumberFormat('uk-UA', {
@@ -44,63 +51,104 @@ const chartOptions = {
           }).format(value)
         },
       },
-      // Додаємо адаптивність
-      adapters: {
-        minmax: function (minmax) {
-          return { min: minmax.min, max: minmax.max * 1.1 } // Додаємо 10% запасу зверху
-        },
+    },
+    x: {
+      grid: {
+        display: false, // Прибираємо вертикальні лінії сітки
       },
     },
   },
   plugins: {
     legend: {
-      position: 'top', // Розміщуємо легенду вгорі замість внизу
+      position: 'top',
       labels: {
-        boxWidth: 15, // Зменшуємо розмір боксу легенди
-        padding: 10, // Відступ між елементами легенди
+        boxWidth: 15,
+        padding: 10,
+        usePointStyle: true, // Використовуємо стиль точок для легенди
+        pointStyle: 'circle', // Круглі точки
       },
     },
     tooltip: {
+      mode: 'index',
+      intersect: false, // Показувати підказку навіть без прямого перетину з точкою
       callbacks: {
         label: function (context) {
-          return new Intl.NumberFormat('uk-UA', {
-            style: 'currency',
-            currency: 'UAH',
-          }).format(context.raw)
+          let label = context.dataset.label || ''
+          if (label) {
+            label += ': '
+          }
+          return (
+            label +
+            new Intl.NumberFormat('uk-UA', {
+              style: 'currency',
+              currency: 'UAH',
+            }).format(context.raw)
+          )
         },
       },
     },
   },
-  datasets: {
-    bar: {
-      barPercentage: 0.7,
-      categoryPercentage: 0.8,
+  elements: {
+    line: {
+      tension: 0.4, // Невелике згладжування ліній
     },
+    point: {
+      radius: 5, // Розмір точок
+      hoverRadius: 7, // Розмір точок при наведенні
+      hitRadius: 10, // Область для визначення наведення
+    },
+  },
+  interaction: {
+    mode: 'nearest',
+    axis: 'x',
+    intersect: false,
   },
 }
 
 // Підготовка даних для графіка
 const chartData = computed(() => {
-  const labels = props.data.map((item) => {
-    // Формат "Місяць Рік"
-    const monthNames = Array.from({ length: 12 }, (_, i) => t(`payments.months.${i + 1}`))
-    return `${monthNames[item.month - 1]} ${item.year}`
+  // Перевірка наявності даних
+  if (!props.data || props.data.length === 0) {
+    console.warn('No data for chart')
+    return { labels: [], datasets: [] }
+  }
+
+  // Сортування даних за місяцем і роком
+  const sortedData = [...props.data].sort((a, b) => {
+    if (a.year !== b.year) {
+      return parseInt(a.year) - parseInt(b.year)
+    }
+    return parseInt(a.month) - parseInt(b.month)
   })
 
+  console.log('Sorted data for chart:', sortedData)
+
+  // Формування підписів для осі X
+  const labels = sortedData.map((item) => {
+    // Формат "Місяць Рік"
+    const monthNames = Array.from({ length: 12 }, (_, i) => t(`payments.months.${i + 1}`))
+    return `${monthNames[parseInt(item.month) - 1]} ${item.year}`
+  })
+
+  // Формування наборів даних
   const datasets = [
     {
       label: t('dashboard.overdueAmount'),
-      data: props.data.map((item) => item.amount),
-      backgroundColor: 'rgba(244, 67, 54, 0.6)',
+      data: sortedData.map((item) => parseFloat(item.amount || 0)),
+      backgroundColor: 'rgba(244, 67, 54, 0.1)',
       borderColor: '#f44336',
-      borderWidth: 1,
+      borderWidth: 2,
+      pointBackgroundColor: '#f44336',
+      fill: true,
     },
     {
-      label: t('dashboard.paidamount'),
-      data: props.data.map((item) => item.paidamount),
-      backgroundColor: 'rgba(76, 175, 80, 0.6)',
+      label: t('dashboard.paidAmount'),
+      data: sortedData.map((item) => parseFloat(item.paidamount || 0)),
+      backgroundColor: 'rgba(76, 175, 80, 0.1)',
       borderColor: '#4caf50',
-      borderWidth: 1,
+      borderWidth: 2,
+      pointBackgroundColor: '#4caf50',
+      fill: true,
     },
   ]
 
