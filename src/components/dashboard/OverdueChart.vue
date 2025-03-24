@@ -27,7 +27,7 @@ onMounted(() => {
 })
 
 // Налаштування для графіка
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   layout: {
@@ -103,7 +103,7 @@ const chartOptions = {
     axis: 'x',
     intersect: false,
   },
-}
+}))
 
 // Підготовка даних для графіка
 const chartData = computed(() => {

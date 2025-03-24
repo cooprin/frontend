@@ -264,7 +264,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -273,15 +273,30 @@ import OverdueChart from 'components/dashboard/OverdueChart.vue'
 
 const router = useRouter()
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
-// Для вибору дашборду
-const dashboardOptions = [
+// Для вибору дашборду - обчислюваний список, що оновлюється при зміні мови
+const dashboardOptions = computed(() => [
   { label: t('dashboard.types.overduePayments'), value: 'overdue' },
   { label: t('dashboard.types.activity'), value: 'activity' },
   { label: t('dashboard.types.financial'), value: 'financial' },
-]
-const selectedDashboard = ref(dashboardOptions[0])
+])
+const selectedDashboard = ref({ value: 'overdue' }) // Зберігаємо тільки value для початку
+
+// Оновлюємо повний об'єкт вибраного дашборду при зміні мови
+watch(
+  [locale, dashboardOptions],
+  () => {
+    // Знаходимо повний об'єкт в списку за значенням value
+    const currentOption = dashboardOptions.value.find(
+      (option) => option.value === selectedDashboard.value.value,
+    )
+    if (currentOption) {
+      selectedDashboard.value = currentOption
+    }
+  },
+  { immediate: true },
+)
 
 // Для даних по заборгованості
 const loadingOverdueData = ref(false)
@@ -296,8 +311,8 @@ const overdueClients = ref([])
 const overdueObjects = ref([])
 const overdueByMonthData = ref([])
 
-// Колонки для таблиці об'єктів з простроченими оплатами
-const overdueObjectsColumns = [
+// Колонки для таблиці об'єктів з простроченими оплатами - обчислювані для оновлення при зміні мови
+const overdueObjectsColumns = computed(() => [
   { name: 'name', align: 'left', label: t('wialonObjects.name'), field: 'name', sortable: true },
   {
     name: 'client_name',
@@ -321,7 +336,7 @@ const overdueObjectsColumns = [
     field: 'actions',
     sortable: false,
   },
-]
+])
 
 // Метод для завантаження даних заборгованості
 const loadOverdueData = async () => {
@@ -367,6 +382,11 @@ const loadOverdueData = async () => {
     loadingOverdueData.value = false
   }
 }
+
+// Спостерігаємо за зміною мови для оновлення заголовків
+watch(locale, () => {
+  console.log('Мова змінилася на:', locale.value)
+})
 
 // Форматування валюти
 const formatCurrency = (amount) => {
