@@ -58,51 +58,6 @@
             </template>
           </q-input>
 
-          <!-- Тариф -->
-          <q-select
-            v-model="form.tariff_id"
-            :options="tariffOptions"
-            :label="t('wialonObjects.tariff')"
-            outlined
-            emit-value
-            map-options
-            :loading="loadingTariffs"
-          />
-
-          <!-- Дата зміни тарифу (інформативне відображення) -->
-          <div v-if="form.tariff_id && !isEdit" class="q-mb-md">
-            <div class="text-subtitle2">{{ t('wialonObjects.tariffEffectiveFrom') }}</div>
-            <div>{{ formatDate(form.operation_date) }}</div>
-            <div class="text-caption text-grey">
-              {{ t('wialonObjects.tariffMatchOperationDate') }}
-            </div>
-          </div>
-
-          <!-- Дата зміни тарифу (для редагування) -->
-          <q-input
-            v-if="form.tariff_id && isEdit"
-            v-model="form.tariff_effective_from"
-            :label="t('wialonObjects.tariffEffectiveFrom')"
-            :rules="[(val) => !!val || t('common.validation.required')]"
-            outlined
-            readonly
-          >
-            <template v-slot:hint>
-              {{ t('wialonObjects.tariffEffectiveHint') }}
-            </template>
-            <template v-slot:append>
-              <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                  <q-date v-model="form.tariff_effective_from" mask="YYYY-MM-DD">
-                    <div class="row items-center justify-end">
-                      <q-btn v-close-popup label="OK" color="primary" flat />
-                    </div>
-                  </q-date>
-                </q-popup-proxy>
-              </q-icon>
-            </template>
-          </q-input>
-
           <!-- Статус -->
           <q-select
             v-model="form.status"
@@ -119,6 +74,53 @@
               </template>
             </template>
           </q-select>
+
+          <!-- Тариф - показується тільки коли статус "active" -->
+          <template v-if="form.status === 'active'">
+            <q-select
+              v-model="form.tariff_id"
+              :options="tariffOptions"
+              :label="t('wialonObjects.tariff')"
+              outlined
+              emit-value
+              map-options
+              :loading="loadingTariffs"
+            />
+
+            <!-- Дата зміни тарифу (інформативне відображення) -->
+            <div v-if="form.tariff_id && !isEdit" class="q-mb-md">
+              <div class="text-subtitle2">{{ t('wialonObjects.tariffEffectiveFrom') }}</div>
+              <div>{{ formatDate(form.operation_date) }}</div>
+              <div class="text-caption text-grey">
+                {{ t('wialonObjects.tariffMatchOperationDate') }}
+              </div>
+            </div>
+
+            <!-- Дата зміни тарифу (для редагування) -->
+            <q-input
+              v-if="form.tariff_id && isEdit"
+              v-model="form.tariff_effective_from"
+              :label="t('wialonObjects.tariffEffectiveFrom')"
+              :rules="[(val) => !!val || t('common.validation.required')]"
+              outlined
+              readonly
+            >
+              <template v-slot:hint>
+                {{ t('wialonObjects.tariffEffectiveHint') }}
+              </template>
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="form.tariff_effective_from" mask="YYYY-MM-DD">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="OK" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+          </template>
 
           <!-- Опис -->
           <q-input
@@ -267,8 +269,14 @@ const onSubmit = async () => {
     const data = { ...form.value }
 
     // Для нових об'єктів встановлюємо дату тарифу рівною даті операції
-    if (!isEdit.value) {
+    if (!isEdit.value && data.status === 'active' && data.tariff_id) {
       data.tariff_effective_from = data.operation_date
+    }
+
+    // Якщо статус не активний, не відправляємо дані про тариф
+    if (data.status !== 'active') {
+      delete data.tariff_id
+      delete data.tariff_effective_from
     }
 
     let response
@@ -345,7 +353,8 @@ const onSubmit = async () => {
 }
 
 const loadTariffDetails = async () => {
-  if (form.value.tariff_id) {
+  // Завантажуємо деталі тарифу тільки якщо об'єкт активний і вибрано тариф
+  if (form.value.tariff_id && form.value.status === 'active') {
     if (isEdit.value && props.editData) {
       try {
         const response = await TariffsApi.getOptimalChangeDate(props.editData.id)
@@ -381,11 +390,12 @@ watch(
   },
   { immediate: true },
 )
+
 // Відстеження зміни дати операції для нових об'єктів
 watch(
   () => form.value.operation_date,
   (newValue) => {
-    if (!isEdit.value) {
+    if (!isEdit.value && form.value.status === 'active') {
       // Оновлюємо дату тарифу для відображення, але не для редагування
       form.value.tariff_effective_from = newValue
     }
@@ -396,8 +406,25 @@ watch(
 watch(
   () => form.value.tariff_id,
   (newValue, oldValue) => {
-    if (newValue && newValue !== oldValue) {
+    if (newValue && newValue !== oldValue && form.value.status === 'active') {
       loadTariffDetails()
+    }
+  },
+)
+
+// Відстеження зміни статусу
+watch(
+  () => form.value.status,
+  (newValue, oldValue) => {
+    if (newValue !== 'active' && form.value.tariff_id) {
+      // Якщо статус змінено на неактивний і був вибраний тариф, скидаємо тариф
+      form.value.tariff_id = null
+      form.value.tariff_effective_from = null
+    } else if (newValue === 'active' && oldValue !== 'active') {
+      // Якщо статус змінено на активний, завантажуємо доступні тарифи
+      if (loadingTariffs.value === false && tariffOptions.value.length === 0) {
+        loadTariffs()
+      }
     }
   },
 )
@@ -405,6 +432,8 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadClients()
-  loadTariffs()
+  if (form.value.status === 'active') {
+    loadTariffs()
+  }
 })
 </script>
