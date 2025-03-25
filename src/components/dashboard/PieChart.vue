@@ -1,4 +1,3 @@
-// src/components/dashboard/PieChart.vue
 <template>
   <canvas ref="pieChartRef"></canvas>
 </template>
@@ -6,6 +5,7 @@
 <script setup>
 import { ref, onMounted, watch, toRefs } from 'vue'
 import Chart from 'chart.js/auto'
+import { useI18n } from 'vue-i18n' // Добавили импорт useI18n
 
 const props = defineProps({
   chartData: {
@@ -16,6 +16,7 @@ const props = defineProps({
 
 const { chartData } = toRefs(props)
 const pieChartRef = ref(null)
+const { locale } = useI18n() // Добавили получение locale
 let chart = null
 
 const createChart = () => {
@@ -60,6 +61,7 @@ onMounted(() => {
   }
 })
 
+// Наблюдаем за изменением данных
 watch(
   chartData,
   () => {
@@ -69,4 +71,11 @@ watch(
   },
   { deep: true },
 )
+
+// Добавляем наблюдение за изменением языка
+watch(locale, () => {
+  if (pieChartRef.value && chartData.value) {
+    createChart()
+  }
+})
 </script>

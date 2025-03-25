@@ -1,4 +1,3 @@
-// src/components/dashboard/OverdueChart.vue
 <template>
   <canvas ref="chartRef"></canvas>
 </template>
@@ -21,7 +20,7 @@ const props = defineProps({
 
 const { data, showSplit } = toRefs(props)
 const chartRef = ref(null)
-const { t } = useI18n()
+const { t, locale } = useI18n() // Добавили locale здесь
 let chart = null
 
 const createChart = () => {
@@ -90,7 +89,7 @@ const createChart = () => {
   }
 
   chart = new Chart(ctx, {
-    type: 'line', // Изменили тип с 'bar' на 'line'
+    type: 'line',
     data: {
       labels: labels,
       datasets: datasets,
@@ -143,6 +142,7 @@ onMounted(() => {
   }
 })
 
+// Наблюдаем за изменением данных
 watch(
   data,
   () => {
@@ -152,4 +152,11 @@ watch(
   },
   { deep: true },
 )
+
+// Добавляем наблюдение за изменением языка
+watch(locale, () => {
+  if (chartRef.value && data.value.length > 0) {
+    createChart()
+  }
+})
 </script>
