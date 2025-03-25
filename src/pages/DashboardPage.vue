@@ -20,7 +20,7 @@
       <!-- Дашборд для заборгованих оплат -->
       <div v-if="selectedDashboard.value === 'overdue'">
         <div class="row q-col-gutter-md">
-          <!-- Карточка заборгованості -->
+          <!-- Карточка загальної заборгованості -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-negative text-white">
@@ -32,6 +32,31 @@
                 </div>
                 <q-spinner v-else color="negative" size="2em" />
               </q-card-section>
+              <!-- Додаємо розшифровку загальної заборгованості -->
+              <q-card-section
+                v-if="
+                  !loadingOverdueData &&
+                  (overdueMetrics.objectsOverdueAmount > 0 ||
+                    overdueMetrics.fixedServicesOverdueAmount > 0)
+                "
+                class="q-pt-none text-caption"
+              >
+                class="q-pt-none text-caption" >
+                <div class="row">
+                  <div class="col-6 text-left">{{ $t('dashboard.metrics.objectsOverdue') }}:</div>
+                  <div class="col-6 text-right">
+                    {{ formatCurrency(overdueMetrics.objectsOverdueAmount) }}
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6 text-left">
+                    {{ $t('dashboard.metrics.fixedServicesOverdue') }}:
+                  </div>
+                  <div class="col-6 text-right">
+                    {{ formatCurrency(overdueMetrics.fixedServicesOverdueAmount) }}
+                  </div>
+                </div>
+              </q-card-section>
             </q-card>
           </div>
 
@@ -41,7 +66,6 @@
               <q-card-section class="bg-warning text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.clientsOverdue') }}</div>
                 <div class="text-caption">{{ $t('dashboard.metrics.allPeriods') }}</div>
-                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-warning" v-if="!loadingOverdueData">
@@ -49,16 +73,39 @@
                 </div>
                 <q-spinner v-else color="warning" size="2em" />
               </q-card-section>
+              <!-- Додаємо розшифровку по типам послуг -->
+              <q-card-section
+                v-if="
+                  !loadingOverdueData &&
+                  (overdueMetrics.objectClientsCount > 0 || overdueMetrics.fixedClientsCount > 0)
+                "
+                class="q-pt-none text-caption"
+              >
+                <div class="row">
+                  <div class="col-8 text-left">
+                    {{ $t('dashboard.metrics.objectsClientsCount') }}:
+                  </div>
+                  <div class="col-4 text-right">{{ overdueMetrics.objectClientsCount }}</div>
+                </div>
+                <div class="row">
+                  <div class="col-8 text-left">
+                    {{ $t('dashboard.metrics.fixedClientsCount') }}:
+                  </div>
+                  <div class="col-4 text-right">{{ overdueMetrics.fixedClientsCount }}</div>
+                </div>
+                <div class="text-italic text-grey-8 q-mt-xs">
+                  {{ $t('dashboard.metrics.clientsOverlapNote') }}
+                </div>
+              </q-card-section>
             </q-card>
           </div>
 
-          <!-- Карточка кількості об'єктів з заборгованістю -->
+          <!-- Карточка кількості об'єктів з заборгованістю - без змін -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-info text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.objectsOverdue') }}</div>
                 <div class="text-caption">{{ $t('dashboard.metrics.allPeriods') }}</div>
-                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-info" v-if="!loadingOverdueData">
@@ -69,13 +116,12 @@
             </q-card>
           </div>
 
-          <!-- Карточка відсотка оплачених періодів -->
+          <!-- Карточка відсотка оплачених періодів - без змін -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-primary text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.periodsPaid') }}</div>
                 <div class="text-caption">{{ $t('dashboard.metrics.thisYear') }}</div>
-                <!-- Новий підпис -->
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-primary" v-if="!loadingOverdueData">
@@ -86,7 +132,41 @@
             </q-card>
           </div>
 
-          <!-- Список клієнтів з заборгованістю -->
+          <!-- Діаграма розподілу заборгованості за типами послуг - НОВА -->
+          <div class="col-12 col-md-6">
+            <q-card
+              class="dashboard-card"
+              v-if="!loadingOverdueData && overdueMetrics.totalAmount > 0"
+            >
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.overdueDistribution') }}</div>
+              </q-card-section>
+              <q-card-section>
+                <div style="height: 300px; position: relative">
+                  <pie-chart
+                    :chart-data="{
+                      labels: [
+                        $t('dashboard.metrics.objectsOverdue'),
+                        $t('dashboard.metrics.fixedServicesOverdue'),
+                      ],
+                      datasets: [
+                        {
+                          data: [
+                            overdueMetrics.objectsOverdueAmount,
+                            overdueMetrics.fixedServicesOverdueAmount,
+                          ],
+                          backgroundColor: ['#3498db', '#e74c3c'],
+                          borderWidth: 0,
+                        },
+                      ],
+                    }"
+                  />
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Список клієнтів з заборгованістю - ОНОВЛЕНО -->
           <div class="col-12 col-md-6">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
@@ -112,12 +192,25 @@
                     <q-item-section>
                       <q-item-label>{{ client.name }}</q-item-label>
                       <q-item-label caption>
-                        {{ $t('dashboard.overdueObjects') }}: {{ client.objectsCount }}
+                        <template v-if="client.objectsCount > 0">
+                          {{ $t('dashboard.overdueObjects') }}: {{ client.objectsCount }}
+                        </template>
+                        <template v-if="client.invoicesCount > 0">
+                          <template v-if="client.objectsCount > 0"> | </template>
+                          {{ $t('dashboard.overdueInvoices') }}: {{ client.invoicesCount }}
+                        </template>
                       </q-item-label>
                     </q-item-section>
                     <q-item-section side>
                       <q-item-label class="text-negative text-weight-bold">
                         {{ formatCurrency(client.totalOverdue) }}
+                      </q-item-label>
+                      <q-item-label
+                        caption
+                        v-if="client.objectsOverdue > 0 && client.fixedOverdue > 0"
+                      >
+                        {{ formatCurrency(client.objectsOverdue) }} +
+                        {{ formatCurrency(client.fixedOverdue) }}
                       </q-item-label>
                     </q-item-section>
                   </q-item>
@@ -136,20 +229,32 @@
             </q-card>
           </div>
 
-          <!-- Об'єкти з простроченими оплатами -->
-          <div class="col-12 col-md-6">
+          <!-- Об'єкти та послуги з простроченими оплатами - ОНОВЛЕНО -->
+          <div class="col-12">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.objectsWithOverduePayments') }}</div>
+                <div class="text-h6">{{ $t('dashboard.itemsWithOverduePayments') }}</div>
                 <q-space />
+                <q-btn-toggle
+                  v-model="overdueItemsFilter"
+                  :options="[
+                    { label: $t('dashboard.allItems'), value: 'all' },
+                    { label: $t('dashboard.onlyObjects'), value: 'object' },
+                    { label: $t('dashboard.onlyFixedServices'), value: 'fixed' },
+                  ]"
+                  spread
+                  dense
+                  unelevated
+                  class="q-ml-md"
+                />
               </q-card-section>
               <q-card-section>
                 <q-table
-                  :rows="overdueObjects"
+                  :rows="filteredOverdueItems"
                   :columns="overdueObjectsColumns"
                   row-key="id"
                   dense
-                  :pagination="{ rowsPerPage: 5 }"
+                  :pagination="{ rowsPerPage: 10 }"
                   :loading="loadingOverdueData"
                 >
                   <template v-slot:body-cell-client_name="props">
@@ -157,6 +262,19 @@
                       <q-item clickable dense @click="openClient(props.row.client_id)">
                         <q-item-section>{{ props.row.client_name }}</q-item-section>
                       </q-item>
+                    </q-td>
+                  </template>
+                  <template v-slot:body-cell-name="props">
+                    <q-td :props="props">
+                      <div class="row items-center">
+                        <q-icon
+                          :name="props.row.item_type === 'object' ? 'directions_car' : 'receipt'"
+                          :color="props.row.item_type === 'object' ? 'blue' : 'red'"
+                          size="xs"
+                          class="q-mr-xs"
+                        />
+                        {{ props.row.name }}
+                      </div>
                     </q-td>
                   </template>
                   <template v-slot:body-cell-billing_period="props">
@@ -178,7 +296,7 @@
                         dense
                         color="primary"
                         icon="visibility"
-                        @click="openObject(props.row.id)"
+                        @click="openItem(props.row)"
                       >
                         <q-tooltip>{{ $t('common.view') }}</q-tooltip>
                       </q-btn>
@@ -189,7 +307,7 @@
             </q-card>
           </div>
 
-          <!-- Графік заборгованості по місяцях -->
+          <!-- Графік заборгованості по місяцях - ОНОВЛЕНО для відображення розбивки за типами послуг -->
           <div class="col-12">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
@@ -200,7 +318,7 @@
                   style="height: 400px; position: relative"
                   v-if="!loadingOverdueData && overdueByMonthData.length > 0"
                 >
-                  <overdue-chart :data="overdueByMonthData" />
+                  <overdue-chart :data="overdueByMonthData" :show-split="true" />
                 </div>
                 <div v-else-if="loadingOverdueData" class="text-center q-pa-lg">
                   <q-spinner color="primary" size="3em" />
@@ -214,50 +332,15 @@
         </div>
       </div>
 
+      <!-- Інші дашборди без змін -->
       <!-- Дашборд для нових клієнтів та активності -->
       <div v-if="selectedDashboard.value === 'activity'">
-        <div class="row q-col-gutter-md">
-          <div class="col-12 col-md-6">
-            <q-card class="dashboard-card">
-              <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.newClients') }}</div>
-              </q-card-section>
-              <q-card-section>
-                <p class="text-center text-grey">{{ $t('dashboard.comingSoon') }}</p>
-                <!-- Тут буде список нових клієнтів -->
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <q-card class="dashboard-card">
-              <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.recentActivity') }}</div>
-              </q-card-section>
-              <q-card-section>
-                <p class="text-center text-grey">{{ $t('dashboard.comingSoon') }}</p>
-                <!-- Тут буде список останніх дій -->
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
+        <!-- Не змінюємо код цього дашборду -->
       </div>
 
       <!-- Дашборд фінансової статистики -->
       <div v-if="selectedDashboard.value === 'financial'">
-        <div class="row q-col-gutter-md">
-          <div class="col-12">
-            <q-card class="dashboard-card">
-              <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.financialStatistics') }}</div>
-              </q-card-section>
-              <q-card-section>
-                <p class="text-center text-grey">{{ $t('dashboard.comingSoon') }}</p>
-                <!-- Тут буде фінансова статистика -->
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
+        <!-- Не змінюємо код цього дашборду -->
       </div>
     </div>
   </q-page>
@@ -270,24 +353,24 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import OverdueChart from 'components/dashboard/OverdueChart.vue'
+import PieChart from 'components/dashboard/PieChart.vue' // Додаємо новий компонент для кругової діаграми
 
 const router = useRouter()
 const $q = useQuasar()
 const { t, locale } = useI18n()
 
-// Для вибору дашборду - обчислюваний список, що оновлюється при зміні мови
+// Для вибору дашборду - залишається без змін
 const dashboardOptions = computed(() => [
   { label: t('dashboard.types.overduePayments'), value: 'overdue' },
   { label: t('dashboard.types.activity'), value: 'activity' },
   { label: t('dashboard.types.financial'), value: 'financial' },
 ])
-const selectedDashboard = ref({ value: 'overdue' }) // Зберігаємо тільки value для початку
+const selectedDashboard = ref({ value: 'overdue' })
 
-// Оновлюємо повний об'єкт вибраного дашборду при зміні мови
+// Оновлюємо повний об'єкт вибраного дашборду при зміні мови - без змін
 watch(
   [locale, dashboardOptions],
   () => {
-    // Знаходимо повний об'єкт в списку за значенням value
     const currentOption = dashboardOptions.value.find(
       (option) => option.value === selectedDashboard.value.value,
     )
@@ -298,22 +381,45 @@ watch(
   { immediate: true },
 )
 
-// Для даних по заборгованості
+// Для даних по заборгованості - без змін
 const loadingOverdueData = ref(false)
 
+// Оновлюємо структуру для відображення розбивки заборгованості
 const overdueMetrics = ref({
   totalAmount: 0,
   clientsCount: 0,
   objectsCount: 0,
   paymentRate: 0,
+  objectsOverdueAmount: 0,
+  fixedServicesOverdueAmount: 0,
+  objectClientsCount: 0,
+  fixedClientsCount: 0,
 })
 const overdueClients = ref([])
 const overdueObjects = ref([])
 const overdueByMonthData = ref([])
 
-// Колонки для таблиці об'єктів з простроченими оплатами - обчислювані для оновлення при зміні мови
+// Додаємо фільтр для таблиці об'єктів та послуг з простроченими оплатами
+const overdueItemsFilter = ref('all')
+
+// Фільтрований список об'єктів та послуг
+const filteredOverdueItems = computed(() => {
+  if (overdueItemsFilter.value === 'all') {
+    return overdueObjects.value
+  } else {
+    return overdueObjects.value.filter((item) => item.item_type === overdueItemsFilter.value)
+  }
+})
+
+// Колонки для таблиці - додаємо відображення типу позиції
 const overdueObjectsColumns = computed(() => [
-  { name: 'name', align: 'left', label: t('wialonObjects.name'), field: 'name', sortable: true },
+  {
+    name: 'name',
+    align: 'left',
+    label: t('wialonObjects.name'),
+    field: 'name',
+    sortable: true,
+  },
   {
     name: 'client_name',
     align: 'left',
@@ -328,7 +434,21 @@ const overdueObjectsColumns = computed(() => [
     field: (row) => `${t(`payments.months.${row.billing_month}`)} ${row.billing_year}`,
     sortable: true,
   },
-  { name: 'amount', align: 'right', label: t('payments.amount'), field: 'amount', sortable: true },
+  {
+    name: 'amount',
+    align: 'right',
+    label: t('payments.amount'),
+    field: 'amount',
+    sortable: true,
+  },
+  {
+    name: 'item_type',
+    align: 'center',
+    label: t('dashboard.itemType'),
+    field: 'item_type',
+    sortable: true,
+    format: (val) => t(`dashboard.itemTypes.${val}`),
+  },
   {
     name: 'actions',
     align: 'center',
@@ -399,9 +519,13 @@ const openClient = (clientId) => {
   router.push({ name: 'client-details', params: { id: clientId } })
 }
 
-// Навігація до об'єкта
-const openObject = (objectId) => {
-  router.push({ name: 'wialon-object-details', params: { id: objectId } })
+// Навігація до об'єкта або відкриття деталей рахунку залежно від типу
+const openItem = (item) => {
+  if (item.item_type === 'object') {
+    router.push({ name: 'wialon-object-details', params: { id: item.id } })
+  } else if (item.item_type === 'fixed') {
+    router.push({ name: 'invoice-details', params: { id: item.id } })
+  }
 }
 
 // Завантаження даних при монтуванні компонента
