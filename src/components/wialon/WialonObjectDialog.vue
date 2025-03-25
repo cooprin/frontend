@@ -364,8 +364,8 @@ const loadTariffDetails = async () => {
         form.value.tariff_effective_from = date.formatDate(optimalDate, 'YYYY-MM-DD')
       } catch (error) {
         console.error('Error loading optimal tariff change date:', error)
-        // Якщо помилка, встановлюємо поточну дату
-        form.value.tariff_effective_from = date.formatDate(new Date(), 'YYYY-MM-DD')
+        // Якщо помилка, встановлюємо дату операції
+        form.value.tariff_effective_from = form.value.operation_date
       }
     } else {
       // Для нового об'єкта встановлюємо дату тарифу таку ж як і дата операції
@@ -425,6 +425,9 @@ watch(
       if (loadingTariffs.value === false && tariffOptions.value.length === 0) {
         loadTariffs()
       }
+
+      // Автоматично встановлюємо дату тарифу такою ж, як дата операції
+      form.value.tariff_effective_from = form.value.operation_date
     }
   },
 )
