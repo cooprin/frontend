@@ -40,51 +40,57 @@ const createChart = () => {
     datasets.push({
       label: t('dashboard.metrics.objectsOverdue'),
       data: data.value.map((item) => parseFloat(item.objectamount || 0)),
-      backgroundColor: 'rgba(52, 152, 219, 0.5)',
+      backgroundColor: 'rgba(52, 152, 219, 0.2)',
       borderColor: 'rgba(52, 152, 219, 1)',
-      borderWidth: 1,
-      stack: 'Stack 0',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
     })
 
     datasets.push({
       label: t('dashboard.metrics.fixedServicesOverdue'),
       data: data.value.map((item) => parseFloat(item.fixedamount || 0)),
-      backgroundColor: 'rgba(231, 76, 60, 0.5)',
+      backgroundColor: 'rgba(231, 76, 60, 0.2)',
       borderColor: 'rgba(231, 76, 60, 1)',
-      borderWidth: 1,
-      stack: 'Stack 0',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
     })
 
     datasets.push({
       label: t('dashboard.metrics.paidAmount'),
       data: data.value.map((item) => parseFloat(item.paidamount || 0)),
-      backgroundColor: 'rgba(46, 204, 113, 0.5)',
+      backgroundColor: 'rgba(46, 204, 113, 0.2)',
       borderColor: 'rgba(46, 204, 113, 1)',
-      borderWidth: 1,
-      type: 'line',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
     })
   } else {
     // Стандартний варіант, як раніше
     datasets.push({
       label: t('dashboard.metrics.overdueAmount'),
       data: data.value.map((item) => parseFloat(item.amount || 0)),
-      backgroundColor: 'rgba(231, 76, 60, 0.5)',
+      backgroundColor: 'rgba(231, 76, 60, 0.2)',
       borderColor: 'rgba(231, 76, 60, 1)',
-      borderWidth: 1,
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
     })
 
     datasets.push({
       label: t('dashboard.metrics.paidAmount'),
       data: data.value.map((item) => parseFloat(item.paidamount || 0)),
-      backgroundColor: 'rgba(46, 204, 113, 0.5)',
+      backgroundColor: 'rgba(46, 204, 113, 0.2)',
       borderColor: 'rgba(46, 204, 113, 1)',
-      borderWidth: 1,
-      type: 'line',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
     })
   }
 
   chart = new Chart(ctx, {
-    type: 'bar',
+    type: 'line', // Изменили тип с 'bar' на 'line'
     data: {
       labels: labels,
       datasets: datasets,
