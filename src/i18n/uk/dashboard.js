@@ -15,6 +15,7 @@ export default {
     periodsPaid: 'Показник оплат',
     allPeriods: 'за всі періоди',
     thisYear: 'за поточний рік',
+    paidAmount: 'Сума оплат',
   },
   clientsWithOverduePayments: 'Клієнти з простроченими платежами',
   objectsWithOverduePayments: "Об'єкти з простроченими платежами",
@@ -28,7 +29,7 @@ export default {
   overdueDistribution: 'Розподіл заборгованості',
   noDataForChart: 'Немає даних для відображення графіка',
   overdueAmount: 'Сума заборгованості',
-  paidAmount: 'Сума оплат',
+
   newClients: 'Нові клієнти',
   recentActivity: 'Остання активність',
   financialStatistics: 'Фінансова статистика',

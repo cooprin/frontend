@@ -15,6 +15,7 @@ export default {
     periodsPaid: 'Payment Rate',
     allPeriods: 'all periods',
     thisYear: 'current year',
+    paidAmount: 'Paid Amount',
   },
   clientsWithOverduePayments: 'Clients with Overdue Payments',
   objectsWithOverduePayments: 'Objects with Overdue Payments',
@@ -28,7 +29,7 @@ export default {
   overdueDistribution: 'Overdue Distribution',
   noDataForChart: 'No data available for chart',
   overdueAmount: 'Overdue Amount',
-  paidAmount: 'Paid Amount',
+
   newClients: 'New Clients',
   recentActivity: 'Recent Activity',
   financialStatistics: 'Financial Statistics',
