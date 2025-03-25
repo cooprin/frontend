@@ -39,7 +39,7 @@ const createChart = () => {
     // Якщо потрібно показувати розбивку за типами послуг
     datasets.push({
       label: t('dashboard.metrics.objectsOverdue'),
-      data: data.value.map((item) => item.objectAmount),
+      data: data.value.map((item) => parseFloat(item.objectamount || 0)),
       backgroundColor: 'rgba(52, 152, 219, 0.5)',
       borderColor: 'rgba(52, 152, 219, 1)',
       borderWidth: 1,
@@ -48,7 +48,7 @@ const createChart = () => {
 
     datasets.push({
       label: t('dashboard.metrics.fixedServicesOverdue'),
-      data: data.value.map((item) => item.fixedAmount),
+      data: data.value.map((item) => parseFloat(item.fixedamount || 0)),
       backgroundColor: 'rgba(231, 76, 60, 0.5)',
       borderColor: 'rgba(231, 76, 60, 1)',
       borderWidth: 1,
@@ -57,7 +57,7 @@ const createChart = () => {
 
     datasets.push({
       label: t('dashboard.metrics.paidAmount'),
-      data: data.value.map((item) => item.paidAmount),
+      data: data.value.map((item) => parseFloat(item.paidamount || 0)),
       backgroundColor: 'rgba(46, 204, 113, 0.5)',
       borderColor: 'rgba(46, 204, 113, 1)',
       borderWidth: 1,
@@ -67,7 +67,7 @@ const createChart = () => {
     // Стандартний варіант, як раніше
     datasets.push({
       label: t('dashboard.metrics.overdueAmount'),
-      data: data.value.map((item) => item.amount),
+      data: data.value.map((item) => parseFloat(item.amount || 0)),
       backgroundColor: 'rgba(231, 76, 60, 0.5)',
       borderColor: 'rgba(231, 76, 60, 1)',
       borderWidth: 1,
@@ -75,7 +75,7 @@ const createChart = () => {
 
     datasets.push({
       label: t('dashboard.metrics.paidAmount'),
-      data: data.value.map((item) => item.paidAmount),
+      data: data.value.map((item) => parseFloat(item.paidamount || 0)),
       backgroundColor: 'rgba(46, 204, 113, 0.5)',
       borderColor: 'rgba(46, 204, 113, 1)',
       borderWidth: 1,

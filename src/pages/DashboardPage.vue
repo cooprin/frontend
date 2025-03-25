@@ -41,7 +41,6 @@
                 "
                 class="q-pt-none text-caption"
               >
-                class="q-pt-none text-caption" >
                 <div class="row">
                   <div class="col-6 text-left">{{ $t('dashboard.metrics.objectsOverdue') }}:</div>
                   <div class="col-6 text-right">
