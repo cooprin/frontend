@@ -5,11 +5,7 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
         <q-toolbar-title class="cursor-pointer" @click="router.push('/')">
-          {{
-            companyStore.organization?.short_name ||
-            companyStore.organization?.legal_name ||
-            $t('layouts.mainLayout.hello')
-          }}
+          {{ companyName || $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
         <q-btn flat>
@@ -846,9 +842,23 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
-import { useCompanyStore } from 'src/api/company'
+import { CompanyApi } from 'src/api/company'
 
-const companyStore = useCompanyStore()
+const companyName = ref('')
+
+const fetchCompanyData = async () => {
+  try {
+    if (authStore.isAuthenticated) {
+      const response = await CompanyApi.getCompanyDetails()
+      if (response.data && response.data.success) {
+        companyName.value =
+          response.data.organization?.short_name || response.data.organization?.legal_name
+      }
+    }
+  } catch (error) {
+    console.error('Помилка завантаження даних компанії:', error)
+  }
+}
 
 const scrolled = ref(false)
 let tokenCheckInterval
