@@ -846,7 +846,7 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
-import { useCompanyStore } from 'api/company'
+import { useCompanyStore } from 'src/api/company'
 
 const companyStore = useCompanyStore()
 
