@@ -4,8 +4,12 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
-        <q-toolbar-title>
-          {{ $t('layouts.mainLayout.hello') }}
+        <q-toolbar-title class="cursor-pointer" @click="router.push('/')">
+          {{
+            companyStore.organization?.short_name ||
+            companyStore.organization?.legal_name ||
+            $t('layouts.mainLayout.hello')
+          }}
         </q-toolbar-title>
 
         <q-btn flat>
@@ -842,6 +846,9 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
+import { useCompanyStore } from 'stores/company'
+
+const companyStore = useCompanyStore()
 
 const scrolled = ref(false)
 let tokenCheckInterval
