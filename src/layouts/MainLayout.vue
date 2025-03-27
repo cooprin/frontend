@@ -836,7 +836,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
@@ -958,6 +958,15 @@ const logout = async () => {
   await authStore.logout()
   router.push({ name: 'login' })
 }
+watch(
+  () => authStore.isAuthenticated,
+  (newValue) => {
+    if (newValue) {
+      fetchCompanyData()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style>
