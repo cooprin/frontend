@@ -15,6 +15,7 @@ import services from './services'
 import tariffs from './tariffs'
 import payments from './payments'
 import dashboard from './dashboard'
+import company from './company'
 
 export default {
   layouts,
@@ -34,4 +35,5 @@ export default {
   tariffs,
   payments,
   dashboard,
+  company,
 }

@@ -31,5 +31,6 @@ export default {
     wialon: 'GPS Tracking',
     wialonObjects: 'Tracking Objects',
     payments: 'Payments',
+    companySettings: 'Company Settings',
   },
 }

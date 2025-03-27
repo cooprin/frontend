@@ -62,4 +62,5 @@ export default {
     invalidMonth: 'Невірний формат місяця',
   },
   present: 'зараз',
+  comingSoon: 'Незабаром',
 }

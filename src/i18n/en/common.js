@@ -62,4 +62,5 @@ export default {
     invalidMonth: 'Invalid month format',
   },
   present: 'present',
+  comingSoon: 'Coming soon',
 }

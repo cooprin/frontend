@@ -31,5 +31,6 @@ export default {
     wialon: 'GPS Моніторинг',
     wialonObjects: "Об'єкти моніторингу",
     payments: 'Платежі',
+    companySettings: 'Налаштування компанії',
   },
 }

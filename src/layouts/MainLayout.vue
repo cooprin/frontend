@@ -366,6 +366,21 @@
               expand-separator
             >
               <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.COMPANY.READ])"
+                clickable
+                v-ripple
+                :to="{ name: 'company-settings' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="business" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.companySettings') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
                 v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.USERS.LIST])"
                 clickable
                 v-ripple
@@ -710,6 +725,19 @@
                 <q-icon name="settings">
                   <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
                     <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.COMPANY.READ])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'company-settings' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="business" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.companySettings') }}
+                        </q-item-section>
+                      </q-item>
                       <q-item
                         v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SETTINGS.USERS.LIST])"
                         clickable

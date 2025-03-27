@@ -137,6 +137,12 @@ export const MENU_PERMISSIONS = {
     AUDIT_LOGS: {
       LIST: 'logs.read',
     },
+    COMPANY: {
+      READ: 'company_profile.read',
+      CREATE: 'company_profile.create',
+      UPDATE: 'company_profile.update',
+      DELETE: 'company_profile.delete',
+    },
   },
 }
 

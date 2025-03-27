@@ -255,6 +255,15 @@ const routes = [
         },
       },
       {
+        path: '/settings/company',
+        name: 'company-settings',
+        component: () => import('pages/CompanySettingsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permissions: ['company_profile.read'],
+        },
+      },
+      {
         path: '/:catchAll(.*)*',
         component: () => import('pages/ErrorNotFound.vue'),
       },
