@@ -60,8 +60,8 @@
 
     <!-- Діалогове вікно для додавання/редагування банківського рахунку -->
     <q-dialog v-model="showDialog" persistent>
-      <q-card style="min-width: 500px">
-        <q-card-section class="row items-center">
+      <q-card style="min-width: 500px; max-width: 600px">
+        <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">
             {{
               editMode
@@ -73,7 +73,7 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="q-pt-md">
           <q-form @submit="saveAccount" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <!-- Назва банку -->
@@ -84,6 +84,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
@@ -95,40 +96,42 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
-              <!-- IBAN -->
+              <!-- IBAN і МФО -->
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="form.iban"
                   :label="$t('company.bankAccounts.iban')"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
-              <!-- МФО -->
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="form.mfo"
                   :label="$t('company.bankAccounts.mfo')"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
-              <!-- SWIFT -->
+              <!-- SWIFT і Валюта -->
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="form.swift_code"
                   :label="$t('company.bankAccounts.swift')"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
-              <!-- Валюта -->
               <div class="col-12 col-md-6">
                 <q-select
                   v-model="form.currency"
@@ -136,6 +139,7 @@
                   :label="$t('company.bankAccounts.currency')"
                   outlined
                   dense
+                  class="q-mb-sm"
                 />
               </div>
 
@@ -147,12 +151,14 @@
                   type="textarea"
                   outlined
                   dense
+                  autogrow
+                  class="q-mb-md"
                 />
               </div>
 
               <!-- Активний та основний рахунок -->
               <div class="col-12">
-                <div class="row q-col-gutter-md">
+                <div class="row q-col-gutter-md q-mb-md">
                   <div class="col-6">
                     <q-checkbox
                       v-model="form.is_active"
@@ -168,6 +174,8 @@
                 </div>
               </div>
             </div>
+
+            <q-separator class="q-my-md" />
 
             <div class="row justify-end q-gutter-sm">
               <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />

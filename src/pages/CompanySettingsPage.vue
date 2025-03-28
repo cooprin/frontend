@@ -33,8 +33,7 @@
         </q-tab-panel>
 
         <q-tab-panel name="documents">
-          <div class="text-h6 q-mb-md">{{ $t('company.documents.title') }}</div>
-          <p class="text-grey">{{ $t('common.comingSoon') }}</p>
+          <legal-documents-card />
         </q-tab-panel>
 
         <q-tab-panel name="wialonIntegration">
@@ -55,6 +54,7 @@
 import { ref } from 'vue'
 import CompanyDetailsCard from 'components/company/CompanyDetailsCard.vue'
 import BankAccountsCard from 'components/company/BankAccountsCard.vue'
+import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
 
 // Стани
 const tab = ref('details')
