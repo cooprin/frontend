@@ -57,3 +57,27 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
   }
 }
+/* Dialog styles */
+.q-dialog {
+  .q-card {
+    .q-card-section {
+      padding: 16px 24px;
+
+      &.form-section {
+        padding: 24px;
+      }
+    }
+
+    .q-form {
+      .q-input,
+      .q-select,
+      .q-file {
+        margin-bottom: 16px;
+      }
+    }
+
+    .q-card-actions {
+      padding: 16px 24px;
+    }
+  }
+}

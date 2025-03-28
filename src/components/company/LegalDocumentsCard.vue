@@ -64,6 +64,7 @@
     </q-table>
 
     <!-- Діалогове вікно для завантаження документа -->
+    <!-- Діалогове вікно для завантаження документа -->
     <q-dialog v-model="showUploadDialog" persistent>
       <q-card style="min-width: 500px; max-width: 600px">
         <q-card-section class="row items-center q-pb-none">
@@ -74,8 +75,8 @@
 
         <q-separator />
 
-        <q-card-section class="q-pt-md q-pa-md">
-          <q-form @submit="uploadDocument" class="q-gutter-md q-px-sm">
+        <q-card-section class="form-section q-pa-lg">
+          <q-form @submit="uploadDocument">
             <div class="row q-col-gutter-md">
               <!-- Назва документа -->
               <div class="col-12">
@@ -85,7 +86,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -108,7 +109,7 @@
                   :label="$t('company.documents.effectiveDate')"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -135,7 +136,7 @@
                   :label="$t('company.documents.expiryDate')"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -165,7 +166,7 @@
                   outlined
                   dense
                   autogrow
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -211,6 +212,31 @@
             @click="uploadDocument"
             :loading="uploading"
             :disable="!fileInput"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог підтвердження видалення -->
+    <q-dialog v-model="showDeleteDialog" persistent>
+      <q-card>
+        <q-card-section class="q-pa-md">
+          <div class="text-h6">{{ $t('company.documents.confirmDelete') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          {{ $t('company.documents.deleteWarning') }}
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+          <q-btn
+            :label="$t('common.delete')"
+            color="negative"
+            @click="deleteDocument"
+            :loading="deleting"
           />
         </q-card-actions>
       </q-card>

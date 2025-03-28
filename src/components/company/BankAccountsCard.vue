@@ -59,6 +59,7 @@
     </q-table>
 
     <!-- Діалогове вікно для додавання/редагування банківського рахунку -->
+    <!-- Діалогове вікно для додавання/редагування банківського рахунку -->
     <q-dialog v-model="showDialog" persistent>
       <q-card style="min-width: 500px; max-width: 600px">
         <q-card-section class="row items-center q-pb-none">
@@ -75,8 +76,8 @@
 
         <q-separator />
 
-        <q-card-section class="q-pt-md q-pa-md">
-          <q-form @submit="saveAccount" class="q-gutter-md q-px-sm">
+        <q-card-section class="form-section q-pa-lg">
+          <q-form @submit="saveAccount">
             <div class="row q-col-gutter-md">
               <!-- Назва банку -->
               <div class="col-12">
@@ -86,7 +87,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -98,7 +99,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -109,7 +110,7 @@
                   :label="$t('company.bankAccounts.iban')"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -119,7 +120,7 @@
                   :label="$t('company.bankAccounts.mfo')"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -130,7 +131,7 @@
                   :label="$t('company.bankAccounts.swift')"
                   outlined
                   dense
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -154,7 +155,7 @@
                   outlined
                   dense
                   autogrow
-                  class="q-mb-md q-my-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -188,6 +189,31 @@
             color="primary"
             @click="saveAccount"
             :loading="saving"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Діалог підтвердження видалення -->
+    <q-dialog v-model="showDeleteDialog" persistent>
+      <q-card>
+        <q-card-section class="q-pa-md">
+          <div class="text-h6">{{ $t('company.bankAccounts.confirmDelete') }}</div>
+        </q-card-section>
+
+        <q-card-section class="q-pa-md">
+          {{ $t('company.bankAccounts.deleteWarning') }}
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+          <q-btn
+            :label="$t('common.delete')"
+            color="negative"
+            @click="deleteAccount"
+            :loading="deleting"
           />
         </q-card-actions>
       </q-card>
