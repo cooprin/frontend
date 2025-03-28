@@ -74,8 +74,8 @@
 
         <q-separator />
 
-        <q-card-section class="q-pt-md q-px-md">
-          <q-form @submit="uploadDocument" class="q-gutter-md">
+        <q-card-section class="q-pt-md q-pa-md">
+          <q-form @submit="uploadDocument" class="q-gutter-md q-px-sm">
             <div class="row q-col-gutter-md">
               <!-- Назва документа -->
               <div class="col-12">
@@ -85,7 +85,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -108,7 +108,7 @@
                   :label="$t('company.documents.effectiveDate')"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -135,7 +135,7 @@
                   :label="$t('company.documents.expiryDate')"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -165,7 +165,7 @@
                   outlined
                   dense
                   autogrow
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -219,7 +219,7 @@
     <!-- Діалог підтвердження видалення -->
     <q-dialog v-model="showDeleteDialog" persistent>
       <q-card>
-        <q-card-section class="row items-center">
+        <q-card-section class="row items-center q-pa-md">
           <div class="text-h6">{{ $t('company.documents.confirmDelete') }}</div>
         </q-card-section>
 

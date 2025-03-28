@@ -75,8 +75,8 @@
 
         <q-separator />
 
-        <q-card-section class="q-pt-md q-px-md">
-          <q-form @submit="saveAccount" class="q-gutter-md">
+        <q-card-section class="q-pt-md q-pa-md">
+          <q-form @submit="saveAccount" class="q-gutter-md q-px-sm">
             <div class="row q-col-gutter-md">
               <!-- Назва банку -->
               <div class="col-12">
@@ -86,7 +86,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -98,7 +98,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -109,7 +109,7 @@
                   :label="$t('company.bankAccounts.iban')"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -119,7 +119,7 @@
                   :label="$t('company.bankAccounts.mfo')"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -130,7 +130,7 @@
                   :label="$t('company.bankAccounts.swift')"
                   outlined
                   dense
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 
@@ -154,7 +154,7 @@
                   outlined
                   dense
                   autogrow
-                  class="q-mb-md"
+                  class="q-mb-md q-my-sm"
                 />
               </div>
 

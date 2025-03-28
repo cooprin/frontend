@@ -4,8 +4,8 @@
       <div class="text-h6">{{ $t('company.details.title') }}</div>
     </q-card-section>
 
-    <q-card-section>
-      <q-form @submit="saveCompanyDetails" class="q-gutter-md">
+    <q-card-section class="q-pa-md">
+      <q-form @submit="saveCompanyDetails" class="q-gutter-md q-px-sm">
         <div class="row q-col-gutter-md">
           <!-- Логотип компанії -->
           <div class="col-12 col-md-4 flex flex-center column">
