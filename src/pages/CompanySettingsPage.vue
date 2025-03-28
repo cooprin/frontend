@@ -17,6 +17,7 @@
         <q-tab name="details" :label="$t('company.tabs.details')" />
         <q-tab name="bankAccounts" :label="$t('company.tabs.bankAccounts')" />
         <q-tab name="documents" :label="$t('company.tabs.documents')" />
+        <q-tab name="invoiceTemplates" :label="$t('company.tabs.invoiceTemplates')" />
         <q-tab name="wialonIntegration" :label="$t('company.tabs.wialonIntegration')" />
         <q-tab name="settings" :label="$t('company.tabs.settings')" />
       </q-tabs>
@@ -34,6 +35,9 @@
 
         <q-tab-panel name="documents">
           <legal-documents-card />
+        </q-tab-panel>
+        <q-tab-panel name="invoiceTemplates">
+          <invoice-templates-card />
         </q-tab-panel>
 
         <q-tab-panel name="wialonIntegration">
@@ -55,6 +59,7 @@ import { ref } from 'vue'
 import CompanyDetailsCard from 'components/company/CompanyDetailsCard.vue'
 import BankAccountsCard from 'components/company/BankAccountsCard.vue'
 import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
+import InvoiceTemplatesCard from 'components/company/InvoiceTemplatesCard.vue'
 
 // Стани
 const tab = ref('details')

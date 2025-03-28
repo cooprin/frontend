@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>{{invoice.invoice_number}}</title>
+  </head>
+  <body>
+    <div class="invoice">
+      <div class="header">
+        <div class="logo-container">
+          {{#if company.logo_path}}
+          <img src="{{company.logo_path}}" alt="{{company.short_name}}" class="logo" />
+          {{/if}}
+        </div>
+        <div class="company-info">
+          <h1>{{company.legal_name}}</h1>
+          <p>ЄДРПОУ: {{company.edrpou}}</p>
+          <p>{{company.legal_address}}</p>
+          <p>{{company.phone}}</p>
+          <p>{{company.email}}</p>
+        </div>
+      </div>
+
+      <div class="invoice-title">
+        <h2>РАХУНОК-ФАКТУРА № {{invoice.invoice_number}}</h2>
+        <p>від {{formattedDate}}</p>
+      </div>
+
+      <div class="client-info">
+        <div class="label">Отримувач:</div>
+        <div class="value">{{invoice.client_name}}</div>
+
+        <div class="label">Адреса:</div>
+        <div class="value">{{invoice.client_address}}</div>
+
+        <div class="label">Розрахунковий період:</div>
+        <div class="value">
+          {{#if
+          invoice.billing_month}}{{invoice.billing_month}}/{{invoice.billing_year}}{{else}}—{{/if}}
+        </div>
+      </div>
+
+      <div class="invoice-items">
+        <table>
+          <thead>
+            <tr>
+              <th class="number">№</th>
+              <th class="description">Послуга</th>
+              <th class="quantity">Кількість</th>
+              <th class="price">Ціна за од.</th>
+              <th class="amount">Сума</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each invoice.items}}
+            <tr>
+              <td class="number">{{@index+1}}</td>
+              <td class="description">{{description}}</td>
+              <td class="quantity">{{quantity}}</td>
+              <td class="price">{{formatCurrency unit_price}}</td>
+              <td class="amount">{{formatCurrency total_price}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" class="total-label">Разом до сплати:</td>
+              <td class="total-amount">{{formattedTotal}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {{#if invoice.notes}}
+      <div class="notes">
+        <h3>Примітки:</h3>
+        <p>{{invoice.notes}}</p>
+      </div>
+      {{/if}}
+
+      <div class="payment-info">
+        <h3>Платіжні реквізити:</h3>
+        <table class="bank-details">
+          <tr>
+            <td class="label">Отримувач:</td>
+            <td>{{company.legal_name}}</td>
+          </tr>
+          <tr>
+            <td class="label">ЄДРПОУ:</td>
+            <td>{{company.edrpou}}</td>
+          </tr>
+          <tr>
+            <td class="label">Банк:</td>
+            <td>{{company.bank_accounts.[0].bank_name}}</td>
+          </tr>
+          <tr>
+            <td class="label">IBAN:</td>
+            <td>{{company.bank_accounts.[0].iban}}</td>
+          </tr>
+          <tr>
+            <td class="label">МФО:</td>
+            <td>{{company.bank_accounts.[0].mfo}}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="signatures">
+        <div class="signature-box">
+          <p class="position">Директор</p>
+          <div class="sign-line"></div>
+          <p class="name">{{company.director_name}}</p>
+        </div>
+
+        {{#if company.accountant_name}}
+        <div class="signature-box">
+          <p class="position">Головний бухгалтер</p>
+          <div class="sign-line"></div>
+          <p class="name">{{company.accountant_name}}</p>
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="stamp-place">М.П.</div>
+
+      <div class="footer">
+        <p>Дата формування: {{currentDate}}</p>
+      </div>
+    </div>
+  </body>
+</html>

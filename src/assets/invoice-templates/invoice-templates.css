@@ -1,0 +1,244 @@
+/* Загальні стилі документа */
+@page {
+  margin: 15mm;
+}
+
+body {
+  font-family: 'Arial', 'Helvetica', sans-serif;
+  font-size: 12pt;
+  line-height: 1.4;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.invoice {
+  max-width: 21cm;
+  margin: 0 auto;
+  padding: 10mm;
+  background: #fff;
+}
+
+/* Шапка */
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.logo-container {
+  flex: 0 0 30%;
+}
+
+.logo {
+  max-width: 150px;
+  max-height: 100px;
+}
+
+.company-info {
+  flex: 0 0 65%;
+  text-align: right;
+}
+
+.company-info h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+}
+
+.company-info p {
+  margin: 3px 0;
+  font-size: 10pt;
+}
+
+/* Заголовок рахунку */
+.invoice-title {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.invoice-title h2 {
+  font-size: 16pt;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.invoice-title p {
+  margin: 5px 0 0 0;
+  font-size: 11pt;
+}
+
+/* Інформація про клієнта */
+.client-info {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  grid-gap: 5px 10px;
+  margin-bottom: 20px;
+}
+
+.client-info .label {
+  font-weight: bold;
+  text-align: right;
+}
+
+.client-info .value {
+  text-align: left;
+}
+
+/* Таблиця товарів/послуг */
+.invoice-items {
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+thead {
+  background-color: #f5f5f5;
+}
+
+th {
+  font-weight: bold;
+}
+
+.number {
+  width: 5%;
+  text-align: center;
+}
+
+.description {
+  width: 50%;
+}
+
+.quantity,
+.price,
+.amount {
+  width: 15%;
+  text-align: right;
+}
+
+tfoot {
+  font-weight: bold;
+}
+
+.total-label {
+  text-align: right;
+}
+
+.total-amount {
+  text-align: right;
+}
+
+/* Примітки */
+.notes {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.notes h3 {
+  font-size: 12pt;
+  margin-top: 0;
+}
+
+/* Платіжні реквізити */
+.payment-info {
+  margin-bottom: 20px;
+}
+
+.payment-info h3 {
+  font-size: 12pt;
+  margin-bottom: 10px;
+}
+
+.bank-details {
+  border: none;
+  margin-bottom: 20px;
+}
+
+.bank-details td {
+  padding: 3px 10px 3px 0;
+  border: none;
+}
+
+.bank-details .label {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* Підписи */
+.signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.signature-box {
+  flex: 0 0 45%;
+}
+
+.position {
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+.sign-line {
+  border-bottom: 1px solid #000;
+  margin-bottom: 5px;
+}
+
+.name {
+  text-align: center;
+}
+
+/* Місце для печатки */
+.stamp-place {
+  margin-top: 30px;
+  width: 100px;
+  height: 100px;
+  border: 1px dashed #999;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Підвал */
+.footer {
+  margin-top: 30px;
+  font-size: 9pt;
+  color: #999;
+  text-align: center;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+/* Для друку */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .invoice {
+    padding: 0;
+    max-width: none;
+  }
+}
