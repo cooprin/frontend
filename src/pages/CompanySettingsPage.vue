@@ -29,8 +29,7 @@
         </q-tab-panel>
 
         <q-tab-panel name="bankAccounts">
-          <div class="text-h6 q-mb-md">{{ $t('company.bankAccounts.title') }}</div>
-          <p class="text-grey">{{ $t('common.comingSoon') }}</p>
+          <bank-accounts-card />
         </q-tab-panel>
 
         <q-tab-panel name="documents">
@@ -55,6 +54,7 @@
 <script setup>
 import { ref } from 'vue'
 import CompanyDetailsCard from 'components/company/CompanyDetailsCard.vue'
+import BankAccountsCard from 'components/company/BankAccountsCard.vue'
 
 // Стани
 const tab = ref('details')
