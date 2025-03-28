@@ -73,7 +73,9 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
 
-        <q-card-section class="q-pt-md">
+        <q-separator />
+
+        <q-card-section class="q-pt-md q-px-md">
           <q-form @submit="saveAccount" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <!-- Назва банку -->
@@ -84,7 +86,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -96,7 +98,7 @@
                   :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -107,7 +109,7 @@
                   :label="$t('company.bankAccounts.iban')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -117,7 +119,7 @@
                   :label="$t('company.bankAccounts.mfo')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -128,7 +130,7 @@
                   :label="$t('company.bankAccounts.swift')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -139,7 +141,7 @@
                   :label="$t('company.bankAccounts.currency')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -174,15 +176,20 @@
                 </div>
               </div>
             </div>
-
-            <q-separator class="q-my-md" />
-
-            <div class="row justify-end q-gutter-sm">
-              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
-              <q-btn :label="$t('common.save')" color="primary" type="submit" :loading="saving" />
-            </div>
           </q-form>
         </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+          <q-btn
+            :label="$t('common.save')"
+            color="primary"
+            @click="saveAccount"
+            :loading="saving"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
 

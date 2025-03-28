@@ -72,7 +72,9 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
 
-        <q-card-section class="q-pt-md">
+        <q-separator />
+
+        <q-card-section class="q-pt-md q-px-md">
           <q-form @submit="uploadDocument" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <!-- Назва документа -->
@@ -80,9 +82,10 @@
                 <q-input
                   v-model="form.document_name"
                   :label="$t('company.documents.documentName')"
+                  :rules="[(val) => !!val || $t('common.validation.required')]"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
@@ -94,18 +97,18 @@
                   :label="$t('company.documents.documentType')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 />
               </div>
 
-              <!-- Дата введення в дію -->
+              <!-- Дати в одному рядку -->
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="form.effective_date"
                   :label="$t('company.documents.effectiveDate')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -126,14 +129,13 @@
                 </q-input>
               </div>
 
-              <!-- Дата закінчення терміну дії -->
               <div class="col-12 col-md-6">
                 <q-input
                   v-model="form.expiry_date"
                   :label="$t('company.documents.expiryDate')"
                   outlined
                   dense
-                  class="q-mb-sm"
+                  class="q-mb-md"
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer">
@@ -196,21 +198,21 @@
                 </q-file>
               </div>
             </div>
-
-            <q-separator class="q-my-md" />
-
-            <div class="row justify-end q-gutter-sm">
-              <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
-              <q-btn
-                :label="$t('company.documents.upload')"
-                color="primary"
-                type="submit"
-                :loading="uploading"
-                :disable="!fileInput"
-              />
-            </div>
           </q-form>
         </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
+          <q-btn
+            :label="$t('company.documents.upload')"
+            color="primary"
+            @click="uploadDocument"
+            :loading="uploading"
+            :disable="!fileInput"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
 
