@@ -213,7 +213,7 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ProductsApi } from 'src/api/products'
-//import ProductDialog from 'components/products/ProductDialog.vue'
+import ProductDialog from 'components/products/ProductDialog.vue'
 import { date } from 'quasar'
 import { ModelsApi } from 'src/api/models'
 
