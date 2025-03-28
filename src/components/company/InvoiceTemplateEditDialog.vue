@@ -354,8 +354,8 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoiceTemplatesApi } from 'src/api/invoice-templates'
-import defaultTemplate from 'src/assets/invoice-templates/default-template.html?raw'
-import defaultCss from 'src/assets/invoice-templates/default-template.css?raw'
+import defaultTemplate from 'assets/invoice-templates/default-template.html?raw'
+import defaultCss from 'assets/invoice-templates/default-template.css?raw'
 
 const props = defineProps({
   modelValue: {
