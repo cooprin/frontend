@@ -16,7 +16,6 @@
       :loading="loading"
       row-key="id"
       :pagination="{ rowsPerPage: 10 }"
-      :no-data-label="$t('company.documents.noDocuments')"
     >
       <template v-slot:body="props">
         <q-tr :props="props">

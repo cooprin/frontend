@@ -16,7 +16,6 @@
       :loading="loading"
       row-key="id"
       :pagination="{ rowsPerPage: 10 }"
-      no-data-label="Немає банківських рахунків"
     >
       <template v-slot:body="props">
         <q-tr :props="props">
