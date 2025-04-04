@@ -23,6 +23,14 @@
         </q-chip>
         <q-space />
 
+        <q-btn
+          color="secondary"
+          icon="print"
+          :label="$t('invoices.print')"
+          class="q-ml-sm"
+          @click="printInvoice"
+        />
+
         <q-btn-dropdown
           v-if="invoice.status === 'issued'"
           color="primary"
@@ -393,6 +401,11 @@ const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+
+const printInvoice = () => {
+  const url = `${process.env.API_URL}/services/invoices/${invoice.value.id}/pdf`
+  window.open(url, '_blank')
+}
 
 // State
 const invoice = ref(null)
