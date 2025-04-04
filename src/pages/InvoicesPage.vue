@@ -155,6 +155,16 @@
               >
                 <q-tooltip>{{ $t('common.view') }}</q-tooltip>
               </q-btn>
+              <q-btn
+                flat
+                round
+                dense
+                color="secondary"
+                icon="print"
+                @click="printInvoice(props.row)"
+              >
+                <q-tooltip>{{ $t('invoices.print') }}</q-tooltip>
+              </q-btn>
             </q-td>
           </template>
         </q-table>
@@ -179,6 +189,32 @@ import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.v
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
+
+const printInvoice = async (invoice) => {
+  try {
+    // Встановлюємо responseType: 'blob' для отримання PDF
+    const response = await InvoicesApi.getPdfInvoice(invoice.id)
+
+    // Створюємо Blob з отриманих даних
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+
+    // Створюємо URL для Blob
+    const url = URL.createObjectURL(blob)
+
+    // Відкриваємо PDF в новому вікні
+    window.open(url, '_blank')
+
+    // Звільняємо URL об'єкт після використання
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (error) {
+    console.error('Error printing invoice:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.printing'),
+      icon: 'error',
+    })
+  }
+}
 
 // State
 const loading = ref(false)

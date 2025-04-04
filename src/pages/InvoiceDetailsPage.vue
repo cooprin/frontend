@@ -402,9 +402,30 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const printInvoice = () => {
-  const url = `${process.env.API_URL}/services/invoices/${invoice.value.id}/pdf`
-  window.open(url, '_blank')
+const printInvoice = async (invoice) => {
+  try {
+    // Встановлюємо responseType: 'blob' для отримання PDF
+    const response = await InvoicesApi.getPdfInvoice(invoice.id)
+
+    // Створюємо Blob з отриманих даних
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+
+    // Створюємо URL для Blob
+    const url = URL.createObjectURL(blob)
+
+    // Відкриваємо PDF в новому вікні
+    window.open(url, '_blank')
+
+    // Звільняємо URL об'єкт після використання
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch (error) {
+    console.error('Error printing invoice:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.printing'),
+      icon: 'error',
+    })
+  }
 }
 
 // State
