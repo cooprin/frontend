@@ -54,7 +54,7 @@
           <tbody>
             {{#each invoice.items}}
             <tr>
-              <td class="number">{{@index+1}}</td>
+              <td class="number">{{inc @index}}</td>
               <td class="description">{{description}}</td>
               <td class="quantity">{{quantity}}</td>
               <td class="price">{{formatCurrency unit_price}}</td>
