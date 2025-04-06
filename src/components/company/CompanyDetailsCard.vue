@@ -136,14 +136,62 @@
                 />
               </div>
 
-              <!-- Телефон -->
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.phone" :label="$t('company.details.phone')" outlined dense />
+              <!-- Телефон (модифікований) -->
+              <div class="col-12">
+                <div class="row q-col-gutter-sm">
+                  <div class="col-4">
+                    <q-select
+                      v-model="selectedCountryCode"
+                      :options="countryCodes"
+                      option-label="country"
+                      option-value="code"
+                      :label="$t('company.details.countryCode')"
+                      outlined
+                      dense
+                      emit-value
+                      map-options
+                      class="country-select"
+                    >
+                      <template v-slot:option="{ opt }">
+                        <q-item>
+                          <q-item-section>
+                            <q-item-label>{{ opt.country }}</q-item-label>
+                            <q-item-label caption>{{ opt.code }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </template>
+
+                      <template v-slot:selected>
+                        <div class="row no-wrap">
+                          <div class="text-subtitle2">{{ selectedCountryCode }}</div>
+                        </div>
+                      </template>
+                    </q-select>
+                  </div>
+                  <div class="col-8">
+                    <q-input
+                      v-model="phoneNumber"
+                      :label="$t('company.details.phone')"
+                      outlined
+                      dense
+                      :mask="selectedCountryMask"
+                      unmasked-value
+                    >
+                      <template v-slot:prepend>
+                        <q-icon name="phone" />
+                      </template>
+                    </q-input>
+                  </div>
+                </div>
               </div>
 
               <!-- Email -->
-              <div class="col-12 col-md-6">
-                <q-input v-model="form.email" :label="$t('company.details.email')" outlined dense />
+              <div class="col-12">
+                <q-input v-model="form.email" :label="$t('company.details.email')" outlined dense>
+                  <template v-slot:prepend>
+                    <q-icon name="email" />
+                  </template>
+                </q-input>
               </div>
 
               <!-- Веб-сайт -->
@@ -153,7 +201,11 @@
                   :label="$t('company.details.website')"
                   outlined
                   dense
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="language" />
+                  </template>
+                </q-input>
               </div>
 
               <!-- Директор -->
@@ -163,7 +215,11 @@
                   :label="$t('company.details.director')"
                   outlined
                   dense
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="person" />
+                  </template>
+                </q-input>
               </div>
 
               <!-- Посада директора -->
@@ -173,7 +229,11 @@
                   :label="$t('company.details.directorPosition')"
                   outlined
                   dense
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="work" />
+                  </template>
+                </q-input>
               </div>
 
               <!-- Головний бухгалтер -->
@@ -183,7 +243,11 @@
                   :label="$t('company.details.accountant')"
                   outlined
                   dense
-                />
+                >
+                  <template v-slot:prepend>
+                    <q-icon name="person" />
+                  </template>
+                </q-input>
               </div>
             </div>
           </div>
@@ -202,6 +266,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { CompanyApi } from 'src/api/company'
+import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -222,6 +287,15 @@ const form = ref({
   director_position: '',
   accountant_name: '',
   logo_path: null,
+})
+
+// Змінні для телефону
+const selectedCountryCode = ref('+380')
+const phoneNumber = ref('')
+
+const selectedCountryMask = computed(() => {
+  const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
+  return country ? country.mask : ''
 })
 
 const saving = ref(false)
@@ -251,6 +325,12 @@ const loadCompanyDetails = async () => {
         ...form.value,
         ...response.data.organization,
       }
+
+      // Розбираємо номер телефону на код країни та номер
+      const phone = form.value.phone || ''
+      const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+      selectedCountryCode.value = countryCode?.code || '+380'
+      phoneNumber.value = getPhoneWithoutCode(phone)
     }
   } catch (error) {
     console.error('Error loading company details:', error)
@@ -260,7 +340,13 @@ const loadCompanyDetails = async () => {
 const saveCompanyDetails = async () => {
   saving.value = true
   try {
-    await CompanyApi.saveCompanyDetails(form.value)
+    // Формуємо повний телефонний номер з кодом країни
+    const formData = {
+      ...form.value,
+      phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
+    }
+
+    await CompanyApi.saveCompanyDetails(formData)
     $q.notify({
       color: 'positive',
       message: t('company.details.saveSuccess'),
@@ -334,3 +420,22 @@ onMounted(() => {
   loadCompanyDetails()
 })
 </script>
+
+<style scoped>
+/* Стилі для поля вибору країни */
+.country-select {
+  min-width: 120px;
+}
+
+:deep(.q-field__native > span) {
+  opacity: 1 !important;
+}
+
+:deep(.q-select__dropdown-icon) {
+  margin-left: 4px;
+}
+
+:deep(.q-field__prefix) {
+  padding-right: 6px;
+}
+</style>
