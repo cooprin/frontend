@@ -23,20 +23,20 @@
         </q-chip>
         <q-space />
 
-        <q-btn
-          color="secondary"
-          icon="print"
-          :label="$t('invoices.print')"
-          class="q-ml-sm"
-          @click="printInvoice"
-        />
-
         <q-btn-dropdown
           v-if="invoice.status === 'issued'"
           color="primary"
           :label="$t('common.actions')"
         >
           <q-list>
+            <q-item clickable v-close-popup @click="printInvoice">
+              <q-item-section avatar>
+                <q-icon name="print" color="secondary" />
+              </q-item-section>
+              <q-item-section>
+                {{ $t('invoices.print') }}
+              </q-item-section>
+            </q-item>
             <q-item clickable v-close-popup @click="markAsPaid">
               <q-item-section avatar>
                 <q-icon name="payment" color="positive" />
@@ -402,10 +402,21 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
-const printInvoice = async (invoice) => {
+const printInvoice = async () => {
   try {
+    // Переконуємось, що є ID рахунку
+    if (!invoice.value || !invoice.value.id) {
+      console.error('Invoice ID is missing')
+      $q.notify({
+        color: 'negative',
+        message: t('common.errors.idNotFound'),
+        icon: 'error',
+      })
+      return
+    }
+
     // Встановлюємо responseType: 'blob' для отримання PDF
-    const response = await InvoicesApi.getPdfInvoice(invoice.id)
+    const response = await InvoicesApi.getPdfInvoice(invoice.value.id)
 
     // Створюємо Blob з отриманих даних
     const blob = new Blob([response.data], { type: 'application/pdf' })
