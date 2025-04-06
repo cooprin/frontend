@@ -45,8 +45,52 @@
                     outlined
                   />
 
-                  <!-- Телефон -->
-                  <q-input v-model="form.phone" :label="t('clients.phone')" outlined />
+                  <!-- Телефон (модифікований) -->
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-4">
+                      <q-select
+                        v-model="selectedCountryCode"
+                        :options="countryCodes"
+                        option-label="country"
+                        option-value="code"
+                        :label="$t('clients.countryCode')"
+                        outlined
+                        dense
+                        emit-value
+                        map-options
+                        class="country-select"
+                      >
+                        <template v-slot:option="{ opt }">
+                          <q-item>
+                            <q-item-section>
+                              <q-item-label>{{ opt.country }}</q-item-label>
+                              <q-item-label caption>{{ opt.code }}</q-item-label>
+                            </q-item-section>
+                          </q-item>
+                        </template>
+
+                        <template v-slot:selected>
+                          <div class="row no-wrap">
+                            <div class="text-subtitle2">{{ selectedCountryCode }}</div>
+                          </div>
+                        </template>
+                      </q-select>
+                    </div>
+                    <div class="col-8">
+                      <q-input
+                        v-model="phoneNumber"
+                        :label="t('clients.phone')"
+                        outlined
+                        dense
+                        :mask="selectedCountryMask"
+                        unmasked-value
+                      >
+                        <template v-slot:prepend>
+                          <q-icon name="phone" />
+                        </template>
+                      </q-input>
+                    </div>
+                  </div>
 
                   <!-- Email -->
                   <q-input
@@ -61,7 +105,11 @@
                         t('common.validation.pattern'),
                     ]"
                     outlined
-                  />
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="email" />
+                    </template>
+                  </q-input>
 
                   <!-- Адреса -->
                   <q-input
@@ -70,7 +118,11 @@
                     type="textarea"
                     outlined
                     autogrow
-                  />
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="place" />
+                    </template>
+                  </q-input>
 
                   <!-- Опис -->
                   <q-input
@@ -79,7 +131,11 @@
                     type="textarea"
                     outlined
                     autogrow
-                  />
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="description" />
+                    </template>
+                  </q-input>
 
                   <!-- Активний -->
                   <q-toggle v-model="form.is_active" :label="t('clients.isActive')" />
@@ -124,6 +180,7 @@ import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
+import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const props = defineProps({
   modelValue: {
@@ -143,6 +200,15 @@ const { t } = useI18n()
 
 // State
 const loading = ref(false)
+
+// Phone variables
+const selectedCountryCode = ref('+380')
+const phoneNumber = ref('')
+
+const selectedCountryMask = computed(() => {
+  const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
+  return country ? country.mask : ''
+})
 
 // Default form
 const defaultForm = {
@@ -172,15 +238,21 @@ const isEdit = computed(() => !!props.editData)
 const onSubmit = async () => {
   loading.value = true
   try {
+    // Збираємо номер телефону з коду країни та номера
+    const formData = {
+      ...form.value,
+      phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
+    }
+
     if (isEdit.value) {
-      await ClientsApi.updateClient(props.editData.id, form.value)
+      await ClientsApi.updateClient(props.editData.id, formData)
       $q.notify({
         color: 'positive',
         message: t('clients.updateSuccess'),
         icon: 'check',
       })
     } else {
-      await ClientsApi.createClient(form.value)
+      await ClientsApi.createClient(formData)
       $q.notify({
         color: 'positive',
         message: t('clients.createSuccess'),
@@ -209,10 +281,36 @@ watch(
   (newValue) => {
     if (newValue) {
       form.value = { ...defaultForm, ...newValue }
+
+      // Розбираємо номер телефону на код країни та номер
+      const phone = newValue.phone || ''
+      const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+      selectedCountryCode.value = countryCode?.code || '+380'
+      phoneNumber.value = getPhoneWithoutCode(phone)
     } else {
       form.value = { ...defaultForm }
+      selectedCountryCode.value = '+380'
+      phoneNumber.value = ''
     }
   },
   { immediate: true },
 )
 </script>
+
+<style scoped>
+.country-select {
+  min-width: 120px;
+}
+
+:deep(.q-field__native > span) {
+  opacity: 1 !important;
+}
+
+:deep(.q-select__dropdown-icon) {
+  margin-left: 4px;
+}
+
+:deep(.q-field__prefix) {
+  padding-right: 6px;
+}
+</style>

@@ -121,8 +121,48 @@
               outlined
             />
 
-            <!-- Телефон -->
-            <q-input v-model="form.phone" :label="$t('suppliers.phone')" outlined />
+            <!-- Телефон (модифікований) -->
+            <div class="row q-col-gutter-sm">
+              <div class="col-4">
+                <q-select
+                  v-model="selectedCountryCode"
+                  :options="countryCodes"
+                  option-label="country"
+                  option-value="code"
+                  :label="$t('suppliers.countryCode')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                  class="country-select"
+                >
+                  <template v-slot:option="{ opt }">
+                    <q-item>
+                      <q-item-section>
+                        <q-item-label>{{ opt.country }}</q-item-label>
+                        <q-item-label caption>{{ opt.code }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+
+                  <template v-slot:selected>
+                    <div class="row no-wrap">
+                      <div class="text-subtitle2">{{ selectedCountryCode }}</div>
+                    </div>
+                  </template>
+                </q-select>
+              </div>
+              <div class="col-8">
+                <q-input
+                  v-model="phoneNumber"
+                  :label="$t('suppliers.phone')"
+                  outlined
+                  dense
+                  :mask="selectedCountryMask"
+                  unmasked-value
+                />
+              </div>
+            </div>
 
             <!-- Email -->
             <q-input v-model="form.email" :label="$t('suppliers.email')" type="email" outlined />
@@ -176,6 +216,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { SuppliersApi } from 'src/api/suppliers'
 import { debounce } from 'lodash'
+import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -188,6 +229,15 @@ const showDialog = ref(false)
 const deleteDialog = ref(false)
 const supplierToDelete = ref(null)
 const isEdit = ref(false)
+
+// Phone variables
+const selectedCountryCode = ref('+380')
+const phoneNumber = ref('')
+
+const selectedCountryMask = computed(() => {
+  const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
+  return country ? country.mask : ''
+})
 
 // Form
 const defaultForm = {
@@ -219,7 +269,6 @@ const pagination = ref({
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
-// Колонки таблиці
 // Колонки таблиці
 const columns = computed(() => [
   {
@@ -316,27 +365,42 @@ const onRequest = async (props) => {
 const openCreateDialog = () => {
   isEdit.value = false
   form.value = { ...defaultForm }
+  selectedCountryCode.value = '+380'
+  phoneNumber.value = ''
   showDialog.value = true
 }
 
 const openEditDialog = (supplier) => {
   isEdit.value = true
   form.value = { ...supplier }
+
+  // Розбираємо номер телефону на код країни та номер
+  const phone = supplier.phone || ''
+  const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+  selectedCountryCode.value = countryCode?.code || '+380'
+  phoneNumber.value = getPhoneWithoutCode(phone)
+
   showDialog.value = true
 }
 
 const onSubmit = async () => {
   saving.value = true
   try {
+    // Збираємо номер телефону з коду країни та номера
+    const formData = {
+      ...form.value,
+      phone: formatPhoneWithCode(phoneNumber.value, selectedCountryCode.value),
+    }
+
     if (isEdit.value) {
-      await SuppliersApi.updateSupplier(form.value.id, form.value)
+      await SuppliersApi.updateSupplier(form.value.id, formData)
       $q.notify({
         color: 'positive',
         message: t('suppliers.updateSuccess'),
         icon: 'check',
       })
     } else {
-      await SuppliersApi.createSupplier(form.value)
+      await SuppliersApi.createSupplier(formData)
       $q.notify({
         color: 'positive',
         message: t('suppliers.createSuccess'),
@@ -455,5 +519,22 @@ onMounted(() => {
 .body--dark :deep(.q-table) th,
 .body--dark :deep(.q-table) td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Додані стилі для поля вибору країни */
+.country-select {
+  min-width: 120px;
+}
+
+:deep(.q-field__native > span) {
+  opacity: 1 !important;
+}
+
+:deep(.q-select__dropdown-icon) {
+  margin-left: 4px;
+}
+
+:deep(.q-field__prefix) {
+  padding-right: 6px;
 }
 </style>
