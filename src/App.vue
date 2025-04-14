@@ -10,7 +10,7 @@ const route = useRoute()
 
 // Функція для оновлення назви вкладки
 const updateTitle = (to) => {
-  document.title = to.meta.title || 'Cooprins CRM'
+  document.title = to.meta.title || 'Cooprin ERP'
 }
 
 // Встановлюємо назву при першому завантаженні

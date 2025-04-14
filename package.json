@@ -1,8 +1,8 @@
 {
   "name": "frontend",
   "version": "0.0.1",
-  "description": "Cooprins CRM",
-  "productName": "Cooprins CRM",
+  "description": "Cooprin ERP",
+  "productName": "Cooprin ERP",
   "author": "cooprin",
   "type": "module",
   "private": true,
