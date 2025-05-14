@@ -51,4 +51,23 @@ export const StockApi = {
       responseType: 'blob',
     })
   },
+  getStockMetrics: () => {
+    return api.get('/stock/metrics')
+  },
+
+  getStockByWarehouse: () => {
+    return api.get('/stock/by-warehouse')
+  },
+
+  getStockByType: () => {
+    return api.get('/stock/by-type')
+  },
+
+  getLowStockItems: (params) => {
+    return api.get('/stock/low-stock', { params })
+  },
+
+  getCriticalStock: () => {
+    return api.get('/stock/critical')
+  },
 }
