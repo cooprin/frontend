@@ -50,6 +50,7 @@ export default {
   onlyFixedServices: 'Тільки фікс. послуги',
   inventoryByWarehouse: 'Залишки по складах',
   inventoryByType: 'Залишки за типом товару',
+  inventoryByModel: 'Залишки за моделями',
   criticalStock: 'Товари з малим залишком',
   noStockData: 'Немає даних про залишки',
   stockStatus: 'Статус залишків',

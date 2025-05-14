@@ -70,4 +70,7 @@ export const StockApi = {
   getCriticalStock: () => {
     return api.get('/stock/critical')
   },
+  getStockByModel: (params) => {
+    return api.get('/stock/by-model', { params })
+  },
 }

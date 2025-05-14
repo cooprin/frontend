@@ -50,6 +50,7 @@ export default {
   onlyFixedServices: 'Only Fixed Services',
   inventoryByWarehouse: 'Inventory by Warehouse',
   inventoryByType: 'Inventory by Product Type',
+  inventoryByModel: 'Inventory by Model',
   criticalStock: 'Critical Stock Items',
   noStockData: 'No stock data available',
   stockStatus: 'Stock Status',

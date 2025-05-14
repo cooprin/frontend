@@ -448,6 +448,29 @@
             </q-card>
           </div>
 
+          <!-- Графік розподілу за моделями -->
+          <div class="col-12">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.inventoryByModel') }}</div>
+              </q-card-section>
+              <q-card-section>
+                <div
+                  style="height: 500px; position: relative"
+                  v-if="!loadingInventoryData && stockByModel.length > 0"
+                >
+                  <inventory-model-chart :data="stockByModel" />
+                </div>
+                <div v-else-if="loadingInventoryData" class="text-center q-pa-lg">
+                  <q-spinner color="primary" size="3em" />
+                </div>
+                <div v-else class="text-center text-grey q-pa-lg">
+                  {{ $t('dashboard.noDataForChart') }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
           <!-- Таблиця товарів з критично малим залишком -->
           <div class="col-12">
             <q-card class="dashboard-card">
@@ -524,6 +547,7 @@ import OverdueChart from 'components/dashboard/OverdueChart.vue'
 import PieChart from 'components/dashboard/PieChart.vue' // Додаємо новий компонент для кругової діаграми
 import InventoryBarChart from 'components/dashboard/InventoryBarChart.vue'
 import InventoryTypeChart from 'components/dashboard/InventoryTypeChart.vue'
+import InventoryModelChart from 'components/dashboard/InventoryModelChart.vue'
 import { StockApi } from 'src/api/stock'
 
 const router = useRouter()
@@ -550,6 +574,7 @@ const inventoryMetrics = ref({
 })
 const stockByWarehouse = ref([])
 const stockByType = ref([])
+const stockByModel = ref([])
 const criticalStockItems = ref([])
 
 // Метод для завантаження даних про залишки
@@ -573,6 +598,11 @@ const loadInventoryData = async () => {
     const typeResponse = await StockApi.getStockByType()
     console.log('Отримані дані по типах:', typeResponse.data)
     stockByType.value = typeResponse.data.types || []
+
+    // API запит для отримання даних по моделях
+    const modelResponse = await StockApi.getStockByModel()
+    console.log('Отримані дані по моделях:', modelResponse.data)
+    stockByModel.value = modelResponse.data.models || []
 
     // API запит для отримання критичних залишків
     const criticalResponse = await StockApi.getCriticalStock()
