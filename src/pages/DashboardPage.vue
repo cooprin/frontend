@@ -332,81 +332,353 @@
       </div>
       <!-- Дашборд для залишків товарів -->
       <div v-if="selectedDashboard.value === 'inventory'">
-        <div class="row q-col-gutter-md">
-          <!-- Карточка загальної кількості -->
-          <div class="col-12 col-md-3">
+        <div class="row q-col-gutter-md q-mb-md">
+          <!-- Фільтри -->
+          <div class="col-12">
             <q-card class="dashboard-card">
-              <q-card-section class="bg-primary text-white">
-                <div class="text-subtitle2">{{ $t('dashboard.metrics.totalItems') }}</div>
-              </q-card-section>
-              <q-card-section class="text-center">
-                <div class="text-h4 text-primary" v-if="!loadingInventoryData">
-                  {{ inventoryMetrics.totalItems }}
+              <q-card-section>
+                <div class="row items-center q-col-gutter-md">
+                  <div class="col-md-3 col-sm-6 col-12">
+                    <q-select
+                      v-model="inventoryFilters.warehouse"
+                      :options="warehouseOptions"
+                      label="Склад"
+                      dense
+                      outlined
+                      clearable
+                      emit-value
+                      map-options
+                      @update:model-value="loadInventoryData"
+                    />
+                  </div>
+                  <div class="col-md-3 col-sm-6 col-12">
+                    <q-select
+                      v-model="inventoryFilters.productType"
+                      :options="productTypeOptions"
+                      label="Тип товару"
+                      dense
+                      outlined
+                      clearable
+                      emit-value
+                      map-options
+                      @update:model-value="loadInventoryData"
+                    />
+                  </div>
+                  <div class="col-md-3 col-sm-6 col-12">
+                    <q-select
+                      v-model="inventoryFilters.manufacturer"
+                      :options="manufacturerOptions"
+                      label="Виробник"
+                      dense
+                      outlined
+                      clearable
+                      emit-value
+                      map-options
+                      @update:model-value="loadInventoryData"
+                    />
+                  </div>
+                  <div class="col-md-3 col-sm-6 col-12">
+                    <q-input
+                      v-model="inventoryFilters.search"
+                      label="Пошук"
+                      dense
+                      outlined
+                      clearable
+                      @update:model-value="loadInventoryData"
+                    >
+                      <template v-slot:append>
+                        <q-icon name="search" />
+                      </template>
+                    </q-input>
+                  </div>
                 </div>
-                <q-spinner v-else color="primary" size="2em" />
               </q-card-section>
             </q-card>
           </div>
 
-          <!-- Карточка кількості найменувань товарів -->
+          <!-- Повідомлення про необхідність дій -->
+          <div class="col-12" v-if="inventoryMetrics.lowStockCount > 0">
+            <q-banner class="bg-orange-1 text-dark" rounded>
+              <template v-slot:avatar>
+                <q-icon name="warning" color="warning" />
+              </template>
+              <div class="text-body1">
+                У вас {{ inventoryMetrics.lowStockCount }}
+                {{ getNounCase(inventoryMetrics.lowStockCount, 'товар', 'товари', 'товарів') }} з
+                критично низьким рівнем запасу!
+                <q-btn
+                  color="warning"
+                  label="Створити заявку на закупівлю"
+                  flat
+                  dense
+                  class="q-ml-sm"
+                  @click="createPurchaseOrder"
+                />
+              </div>
+            </q-banner>
+          </div>
+
+          <!-- Метрики -->
+          <div class="col-12 col-md-3">
+            <q-card class="dashboard-card">
+              <q-card-section class="bg-green-8 text-white">
+                <div class="text-subtitle2">{{ $t('dashboard.metrics.totalItems') }}</div>
+              </q-card-section>
+              <q-card-section class="text-center">
+                <div v-if="!loadingInventoryData" class="row items-center justify-center">
+                  <div class="text-h4 text-green-8">{{ inventoryMetrics.totalItems }}</div>
+                  <q-badge color="green" class="q-ml-sm" v-if="inventoryMetrics.totalItemsTrend">
+                    <q-icon
+                      :name="
+                        inventoryMetrics.totalItemsTrend > 0 ? 'arrow_upward' : 'arrow_downward'
+                      "
+                      size="xs"
+                    />
+                    {{ Math.abs(inventoryMetrics.totalItemsTrend) }}%
+                  </q-badge>
+                </div>
+                <q-spinner v-else color="green-8" size="2em" />
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <q-linear-progress
+                  :value="inventoryMetrics.totalItemsUtilization || 0"
+                  color="green-8"
+                />
+                <div class="row justify-between q-mt-xs">
+                  <div class="text-caption">Використання складу</div>
+                  <div class="text-caption">
+                    {{ Math.round((inventoryMetrics.totalItemsUtilization || 0) * 100) }}%
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-info text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.totalProducts') }}</div>
               </q-card-section>
               <q-card-section class="text-center">
-                <div class="text-h4 text-info" v-if="!loadingInventoryData">
-                  {{ inventoryMetrics.totalProducts }}
+                <div v-if="!loadingInventoryData" class="row items-center justify-center">
+                  <div class="text-h4 text-info">{{ inventoryMetrics.totalProducts }}</div>
+                  <q-badge color="info" class="q-ml-sm" v-if="inventoryMetrics.totalProductsTrend">
+                    <q-icon
+                      :name="
+                        inventoryMetrics.totalProductsTrend > 0 ? 'arrow_upward' : 'arrow_downward'
+                      "
+                      size="xs"
+                    />
+                    {{ Math.abs(inventoryMetrics.totalProductsTrend) }}%
+                  </q-badge>
                 </div>
                 <q-spinner v-else color="info" size="2em" />
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <div class="row q-col-gutter-xs">
+                  <div
+                    v-for="(count, status) in inventoryMetrics.statusCounts"
+                    :key="status"
+                    class="col-4"
+                  >
+                    <div class="text-caption text-center">{{ getStatusLabel(status) }}</div>
+                    <div class="text-subtitle2 text-center">{{ count }}</div>
+                  </div>
+                </div>
               </q-card-section>
             </q-card>
           </div>
 
-          <!-- Карточка товарів з критично малою кількістю -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-negative text-white">
                 <div class="text-subtitle2">{{ $t('dashboard.metrics.lowStockItems') }}</div>
               </q-card-section>
               <q-card-section class="text-center">
-                <div class="text-h4 text-negative" v-if="!loadingInventoryData">
-                  {{ inventoryMetrics.lowStockCount }}
+                <div v-if="!loadingInventoryData" class="row items-center justify-center">
+                  <div class="text-h4 text-negative">{{ inventoryMetrics.lowStockCount }}</div>
+                  <q-badge color="negative" class="q-ml-sm" v-if="inventoryMetrics.lowStockTrend">
+                    <q-icon
+                      :name="inventoryMetrics.lowStockTrend > 0 ? 'arrow_upward' : 'arrow_downward'"
+                      size="xs"
+                    />
+                    {{ Math.abs(inventoryMetrics.lowStockTrend) }}%
+                  </q-badge>
                 </div>
                 <q-spinner v-else color="negative" size="2em" />
               </q-card-section>
+              <q-card-section class="q-pt-none">
+                <div class="row q-col-gutter-xs">
+                  <div class="col-6">
+                    <div class="text-caption text-center">Критичні типи</div>
+                    <div class="text-subtitle2 text-center">
+                      {{ inventoryMetrics.criticalTypeCount || 0 }}
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-caption text-center">Термінові закупівлі</div>
+                    <div class="text-subtitle2 text-center">
+                      {{ inventoryMetrics.urgentCount || 0 }}
+                    </div>
+                  </div>
+                </div>
+              </q-card-section>
             </q-card>
           </div>
 
-          <!-- Карточка товарів із середньою кількістю -->
           <div class="col-12 col-md-3">
             <q-card class="dashboard-card">
               <q-card-section class="bg-warning text-white">
-                <div class="text-subtitle2">{{ $t('dashboard.metrics.mediumStockItems') }}</div>
+                <div class="text-subtitle2">Коефіцієнт оборотності</div>
               </q-card-section>
               <q-card-section class="text-center">
-                <div class="text-h4 text-warning" v-if="!loadingInventoryData">
-                  {{ inventoryMetrics.mediumStockCount }}
+                <div v-if="!loadingInventoryData" class="row items-center justify-center">
+                  <div class="text-h4 text-warning">
+                    {{ formatNumber(inventoryMetrics.turnoverRate || 0) }}
+                  </div>
+                  <q-badge
+                    :color="inventoryMetrics.turnoverRateTrend > 0 ? 'positive' : 'negative'"
+                    class="q-ml-sm"
+                    v-if="inventoryMetrics.turnoverRateTrend"
+                  >
+                    <q-icon
+                      :name="
+                        inventoryMetrics.turnoverRateTrend > 0 ? 'arrow_upward' : 'arrow_downward'
+                      "
+                      size="xs"
+                    />
+                    {{ Math.abs(inventoryMetrics.turnoverRateTrend) }}%
+                  </q-badge>
                 </div>
                 <q-spinner v-else color="warning" size="2em" />
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <div class="row q-col-gutter-xs">
+                  <div class="col-6">
+                    <div class="text-caption text-center">Днів у запасі</div>
+                    <div class="text-subtitle2 text-center">
+                      {{ inventoryMetrics.daysInStock || 0 }}
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="text-caption text-center">Неліквідні</div>
+                    <div class="text-subtitle2 text-center">
+                      {{ inventoryMetrics.nonLiquidCount || 0 }}
+                    </div>
+                  </div>
+                </div>
               </q-card-section>
             </q-card>
           </div>
 
-          <!-- Графік розподілу залишків по складах -->
-          <div class="col-12 col-md-6">
+          <!-- Критичні залишки і графік по складах -->
+          <div class="col-12 col-md-8">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.inventoryByWarehouse') }}</div>
+                <div class="text-h6">{{ $t('dashboard.criticalStock') }}</div>
                 <q-space />
                 <q-btn
-                  icon="refresh"
                   flat
                   round
                   dense
+                  color="primary"
+                  icon="refresh"
                   :loading="loadingInventoryData"
                   @click="loadInventoryData"
                 />
+              </q-card-section>
+              <q-card-section class="q-pa-none">
+                <q-table
+                  :rows="criticalStockItems"
+                  :columns="criticalStockColumns"
+                  row-key="id"
+                  dense
+                  :pagination="{ rowsPerPage: 5 }"
+                  :loading="loadingInventoryData"
+                  :style="criticalStockItems.length > 0 ? 'height: 300px' : ''"
+                  class="critical-stock-table"
+                  virtual-scroll
+                >
+                  <template v-slot:header="props">
+                    <q-tr :props="props">
+                      <q-th
+                        v-for="col in props.cols"
+                        :key="col.name"
+                        :props="props"
+                        :class="col.classes"
+                      >
+                        {{ col.label }}
+                      </q-th>
+                      <q-th auto-width>Дії</q-th>
+                    </q-tr>
+                  </template>
+                  <template v-slot:body="props">
+                    <q-tr
+                      :props="props"
+                      :class="
+                        props.row.quantity < 3
+                          ? 'bg-red-1'
+                          : props.row.quantity < 5
+                            ? 'bg-orange-1'
+                            : ''
+                      "
+                    >
+                      <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                        <div
+                          v-if="col.name === 'quantity'"
+                          :class="getQuantityClass(props.row.quantity)"
+                        >
+                          {{ props.row.quantity }}
+                        </div>
+                        <div v-else>{{ col.value }}</div>
+                      </q-td>
+                      <q-td auto-width>
+                        <div class="row q-gutter-xs">
+                          <q-btn
+                            flat
+                            round
+                            dense
+                            color="info"
+                            icon="visibility"
+                            @click="openProduct(props.row.product_id)"
+                          >
+                            <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+                          </q-btn>
+                          <q-btn
+                            flat
+                            round
+                            dense
+                            color="positive"
+                            icon="add_shopping_cart"
+                            @click="addToOrder(props.row)"
+                          >
+                            <q-tooltip>Додати до закупівлі</q-tooltip>
+                          </q-btn>
+                        </div>
+                      </q-td>
+                    </q-tr>
+                  </template>
+                  <template v-slot:no-data>
+                    <div class="full-width row flex-center q-pa-md">
+                      <div class="text-grey-8">
+                        {{
+                          loadingInventoryData
+                            ? 'Завантаження...'
+                            : 'Немає товарів з критично малим залишком'
+                        }}
+                      </div>
+                    </div>
+                  </template>
+                </q-table>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Графік по складах -->
+          <div class="col-12 col-md-4">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.inventoryByWarehouse') }}</div>
               </q-card-section>
               <q-card-section>
                 <div
@@ -425,18 +697,18 @@
             </q-card>
           </div>
 
-          <!-- Графік розподілу товарів за типами -->
+          <!-- Теплова карта типів товарів -->
           <div class="col-12 col-md-6">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.inventoryByType') }}</div>
+                <div class="text-h6">Теплова карта запасів за типами</div>
               </q-card-section>
               <q-card-section>
                 <div
                   style="height: 300px; position: relative"
                   v-if="!loadingInventoryData && stockByType.length > 0"
                 >
-                  <inventory-type-chart :data="stockByType" />
+                  <inventory-heat-chart :data="stockByType" />
                 </div>
                 <div v-else-if="loadingInventoryData" class="text-center q-pa-lg">
                   <q-spinner color="primary" size="3em" />
@@ -448,15 +720,15 @@
             </q-card>
           </div>
 
-          <!-- Графік розподілу за моделями -->
-          <div class="col-12">
+          <!-- Графік за моделями -->
+          <div class="col-12 col-md-6">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
                 <div class="text-h6">{{ $t('dashboard.inventoryByModel') }}</div>
               </q-card-section>
               <q-card-section>
                 <div
-                  style="height: 500px; position: relative"
+                  style="height: 300px; position: relative"
                   v-if="!loadingInventoryData && stockByModel.length > 0"
                 >
                   <inventory-model-chart :data="stockByModel" />
@@ -471,52 +743,134 @@
             </q-card>
           </div>
 
-          <!-- Таблиця товарів з критично малим залишком -->
+          <!-- Неліквідні товари -->
           <div class="col-12">
             <q-card class="dashboard-card">
               <q-card-section class="row items-center">
-                <div class="text-h6">{{ $t('dashboard.criticalStock') }}</div>
+                <div class="text-h6">Неліквідні товари (без руху > 30 днів)</div>
                 <q-space />
                 <q-btn
-                  icon="refresh"
+                  color="negative"
                   flat
-                  round
                   dense
-                  :loading="loadingInventoryData"
-                  @click="loadInventoryData"
+                  label="Пропозиції щодо списання"
+                  icon="auto_delete"
+                  @click="suggestWriteOff"
                 />
               </q-card-section>
-              <q-card-section>
+              <q-card-section class="q-pa-none">
                 <q-table
-                  :rows="criticalStockItems"
-                  :columns="criticalStockColumns"
+                  :rows="nonLiquidItems"
+                  :columns="nonLiquidColumns"
                   row-key="id"
                   dense
-                  :pagination="{ rowsPerPage: 10 }"
-                  :loading="loadingInventoryData"
+                  :pagination="{ rowsPerPage: 5 }"
+                  :loading="loadingNonLiquidData"
+                  :style="nonLiquidItems.length > 0 ? 'height: 300px' : ''"
+                  virtual-scroll
                 >
-                  <template v-slot:body-cell-quantity="props">
+                  <template v-slot:body-cell-days_without_movement="props">
                     <q-td :props="props">
-                      <div :class="props.row.quantity < 5 ? 'text-negative' : 'text-warning'">
-                        {{ props.row.quantity }}
+                      <div
+                        :class="
+                          props.row.days_without_movement > 60 ? 'text-negative' : 'text-orange'
+                        "
+                      >
+                        {{ props.row.days_without_movement }} днів
                       </div>
                     </q-td>
                   </template>
                   <template v-slot:body-cell-actions="props">
                     <q-td :props="props" class="text-center">
-                      <q-btn
-                        flat
-                        round
-                        dense
-                        color="primary"
-                        icon="visibility"
-                        @click="openProduct(props.row.product_id)"
-                      >
-                        <q-tooltip>{{ $t('common.view') }}</q-tooltip>
-                      </q-btn>
+                      <div class="row q-gutter-xs">
+                        <q-btn
+                          flat
+                          round
+                          dense
+                          color="info"
+                          icon="visibility"
+                          @click="openProduct(props.row.product_id)"
+                        >
+                          <q-tooltip>{{ $t('common.view') }}</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          flat
+                          round
+                          dense
+                          color="negative"
+                          icon="delete"
+                          @click="writeOffProduct(props.row)"
+                        >
+                          <q-tooltip>Списати</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          flat
+                          round
+                          dense
+                          color="primary"
+                          icon="swap_horiz"
+                          @click="transferProduct(props.row)"
+                        >
+                          <q-tooltip>Перемістити</q-tooltip>
+                        </q-btn>
+                      </div>
                     </q-td>
                   </template>
+                  <template v-slot:no-data>
+                    <div class="full-width row flex-center q-pa-md">
+                      <div class="text-positive">
+                        Немає неліквідних товарів! Ваші запаси в хорошому стані.
+                      </div>
+                    </div>
+                  </template>
                 </q-table>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Тенденції та прогнози -->
+          <div class="col-12">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">Тенденції та прогнози</div>
+                <q-space />
+                <q-btn-group flat>
+                  <q-btn
+                    color="primary"
+                    flat
+                    label="30 днів"
+                    @click="setForecastPeriod(30)"
+                    :class="forecastPeriod === 30 ? 'bg-blue-1' : ''"
+                  />
+                  <q-btn
+                    color="primary"
+                    flat
+                    label="90 днів"
+                    @click="setForecastPeriod(90)"
+                    :class="forecastPeriod === 90 ? 'bg-blue-1' : ''"
+                  />
+                  <q-btn
+                    color="primary"
+                    flat
+                    label="180 днів"
+                    @click="setForecastPeriod(180)"
+                    :class="forecastPeriod === 180 ? 'bg-blue-1' : ''"
+                  />
+                </q-btn-group>
+              </q-card-section>
+              <q-card-section>
+                <div
+                  style="height: 300px; position: relative"
+                  v-if="!loadingForecastData && forecastData.length > 0"
+                >
+                  <inventory-forecast-chart :data="forecastData" :period="forecastPeriod" />
+                </div>
+                <div v-else-if="loadingForecastData" class="text-center q-pa-lg">
+                  <q-spinner color="primary" size="3em" />
+                </div>
+                <div v-else class="text-center text-grey q-pa-lg">
+                  Недостатньо даних для побудови прогнозу. Спробуйте пізніше або змініть фільтри.
+                </div>
               </q-card-section>
             </q-card>
           </div>
@@ -546,7 +900,6 @@ import { PaymentsApi } from 'src/api/payments'
 import OverdueChart from 'components/dashboard/OverdueChart.vue'
 import PieChart from 'components/dashboard/PieChart.vue' // Додаємо новий компонент для кругової діаграми
 import InventoryBarChart from 'components/dashboard/InventoryBarChart.vue'
-import InventoryTypeChart from 'components/dashboard/InventoryTypeChart.vue'
 import InventoryModelChart from 'components/dashboard/InventoryModelChart.vue'
 import { StockApi } from 'src/api/stock'
 
@@ -577,37 +930,268 @@ const stockByType = ref([])
 const stockByModel = ref([])
 const criticalStockItems = ref([])
 
-// Метод для завантаження даних про залишки
+// Метод для форматування чисел
+const formatNumber = (number) => {
+  return Number(number).toFixed(2)
+}
+
+// Метод для визначення класу кількості
+const getQuantityClass = (quantity) => {
+  if (quantity < 3) return 'text-negative text-weight-bold'
+  if (quantity < 5) return 'text-orange text-weight-bold'
+  if (quantity <= 10) return 'text-warning'
+  return 'text-positive'
+}
+
+// Метод для отримання назви статусу
+const getStatusLabel = (status) => {
+  const statusMap = {
+    in_stock: 'На складі',
+    installed: 'Встановлено',
+    in_repair: 'В ремонті',
+    written_off: 'Списано',
+  }
+  return statusMap[status] || status
+}
+
+// Метод для відміни слів залежно від числа
+const getNounCase = (number, one, few, many) => {
+  const lastDigit = number % 10
+  const lastTwoDigits = number % 100
+
+  if (lastDigit === 1 && lastTwoDigits !== 11) {
+    return one
+  }
+
+  if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+    return few
+  }
+
+  return many
+}
+
+// Додаткові методи для дій
+const createPurchaseOrder = () => {
+  // Реалізація створення заявки на закупівлю
+  $q.dialog({
+    title: 'Створення заявки на закупівлю',
+    message: 'Створити заявку на закупівлю критичних товарів?',
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    // Логіка створення заявки
+    $q.notify({
+      color: 'positive',
+      message: 'Заявка на закупівлю критичних товарів створена',
+      icon: 'check',
+    })
+  })
+}
+
+const addToOrder = (product) => {
+  // Реалізація додавання товару до закупівлі
+  $q.notify({
+    color: 'positive',
+    message: `Товар ${product.sku} додано до закупівлі`,
+    icon: 'check',
+  })
+}
+
+const writeOffProduct = (product) => {
+  // Реалізація списання товару
+  $q.dialog({
+    title: 'Списання товару',
+    message: `Ви впевнені, що хочете списати товар ${product.sku}?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    // Логіка списання
+    $q.notify({
+      color: 'positive',
+      message: `Товар ${product.sku} відправлено на списання`,
+      icon: 'check',
+    })
+  })
+}
+
+const transferProduct = (product) => {
+  // Реалізація переміщення товару
+  $q.dialog({
+    title: 'Переміщення товару',
+    message: `Виберіть склад для переміщення товару ${product.sku}`,
+    options: {
+      type: 'radio',
+      model: '',
+      items: warehouseOptions.value,
+    },
+    cancel: true,
+    persistent: true,
+  }).onOk((targetWarehouse) => {
+    // Логіка переміщення
+    $q.notify({
+      color: 'positive',
+      message: `Створено заявку на переміщення товару ${product.sku} на склад ${targetWarehouse.label}`,
+      icon: 'check',
+    })
+  })
+}
+
+const suggestWriteOff = () => {
+  // Реалізація пропозицій щодо списання
+  $q.dialog({
+    title: 'Пропозиції щодо списання',
+    message: 'Запустити аналіз для пошуку товарів, рекомендованих до списання?',
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    // Логіка аналізу
+    $q.notify({
+      color: 'positive',
+      message: 'Аналіз запущено. Результати будуть доступні через кілька хвилин.',
+      icon: 'check',
+    })
+  })
+}
+
+const setForecastPeriod = (period) => {
+  forecastPeriod.value = period
+  loadForecastData()
+}
+
+// Додаткові змінні стану
+const inventoryFilters = ref({
+  warehouse: null,
+  productType: null,
+  manufacturer: null,
+  search: '',
+})
+
+const warehouseOptions = ref([])
+const productTypeOptions = ref([])
+const manufacturerOptions = ref([])
+const nonLiquidItems = ref([])
+const loadingNonLiquidData = ref(false)
+const forecastPeriod = ref(90)
+const forecastData = ref([])
+const loadingForecastData = ref(false)
+
+// Колонки для неліквідних товарів
+const nonLiquidColumns = computed(() => [
+  {
+    name: 'sku',
+    align: 'left',
+    label: 'SKU',
+    field: 'sku',
+    sortable: true,
+  },
+  {
+    name: 'model_name',
+    align: 'left',
+    label: t('products.model'),
+    field: 'model_name',
+    sortable: true,
+  },
+  {
+    name: 'warehouse_name',
+    align: 'left',
+    label: t('warehouses.warehouse'),
+    field: 'warehouse_name',
+    sortable: true,
+  },
+  {
+    name: 'quantity',
+    align: 'center',
+    label: t('warehouses.quantity'),
+    field: 'quantity',
+    sortable: true,
+  },
+  {
+    name: 'days_without_movement',
+    align: 'center',
+    label: 'Без руху',
+    field: 'days_without_movement',
+    sortable: true,
+  },
+])
+
+// Розширення функції завантаження даних про залишки
 const loadInventoryData = async () => {
   loadingInventoryData.value = true
 
   try {
-    console.log('Завантаження даних про залишки...')
-
-    // API запит для отримання метрик залишків
-    const metricsResponse = await StockApi.getStockMetrics()
+    // API запит для отримання метрик залишків з розширеними даними
+    const metricsResponse = await StockApi.getStockMetrics(inventoryFilters.value)
     console.log('Отримані метрики залишків:', metricsResponse.data)
-    inventoryMetrics.value = metricsResponse.data.metrics
+    inventoryMetrics.value = {
+      ...metricsResponse.data.metrics,
+      // Додаткові обчислювані поля
+      totalItemsUtilization: metricsResponse.data.metrics.totalItems / 1000, // Припускаємо максимальну місткість 1000
+      statusCounts: metricsResponse.data.statusCounts || {},
+      totalItemsTrend: metricsResponse.data.metrics.totalItemsTrend || 0,
+      totalProductsTrend: metricsResponse.data.metrics.totalProductsTrend || 0,
+      lowStockTrend: metricsResponse.data.metrics.lowStockTrend || 0,
+      turnoverRate: metricsResponse.data.metrics.turnoverRate || 0,
+      turnoverRateTrend: metricsResponse.data.metrics.turnoverRateTrend || 0,
+      daysInStock: metricsResponse.data.metrics.daysInStock || 0,
+      nonLiquidCount: metricsResponse.data.metrics.nonLiquidCount || 0,
+      criticalTypeCount: metricsResponse.data.metrics.criticalTypeCount || 0,
+      urgentCount: metricsResponse.data.metrics.urgentCount || 0,
+    }
+
+    // Отримання опцій для фільтрів
+    if (!warehouseOptions.value.length) {
+      const warehousesResponse = await StockApi.getWarehousesOptions()
+      warehouseOptions.value = warehousesResponse.data.warehouses.map((w) => ({
+        label: w.name,
+        value: w.id,
+      }))
+    }
+
+    if (!productTypeOptions.value.length) {
+      const typesResponse = await StockApi.getProductTypesOptions()
+      productTypeOptions.value = typesResponse.data.types.map((t) => ({
+        label: t.name,
+        value: t.id,
+      }))
+    }
+
+    if (!manufacturerOptions.value.length) {
+      const manufacturersResponse = await StockApi.getManufacturersOptions()
+      manufacturerOptions.value = manufacturersResponse.data.manufacturers.map((m) => ({
+        label: m.name,
+        value: m.id,
+      }))
+    }
 
     // API запит для отримання даних по складах
-    const warehouseResponse = await StockApi.getStockByWarehouse()
+    const warehouseResponse = await StockApi.getStockByWarehouse(inventoryFilters.value)
     console.log('Отримані дані по складах:', warehouseResponse.data)
     stockByWarehouse.value = warehouseResponse.data.warehouses || []
 
     // API запит для отримання даних по типах
-    const typeResponse = await StockApi.getStockByType()
+    const typeResponse = await StockApi.getStockByType(inventoryFilters.value)
     console.log('Отримані дані по типах:', typeResponse.data)
     stockByType.value = typeResponse.data.types || []
 
     // API запит для отримання даних по моделях
-    const modelResponse = await StockApi.getStockByModel()
+    const modelResponse = await StockApi.getStockByModel(inventoryFilters.value)
     console.log('Отримані дані по моделях:', modelResponse.data)
     stockByModel.value = modelResponse.data.models || []
 
     // API запит для отримання критичних залишків
-    const criticalResponse = await StockApi.getCriticalStock()
+    const criticalResponse = await StockApi.getCriticalStock(inventoryFilters.value)
     console.log('Отримані дані по критичних залишках:', criticalResponse.data)
     criticalStockItems.value = criticalResponse.data.items || []
+
+    // API запит для отримання неліквідних товарів
+    loadingNonLiquidData.value = true
+    const nonLiquidResponse = await StockApi.getNonLiquidStock(inventoryFilters.value)
+    console.log('Отримані дані по неліквідних товарах:', nonLiquidResponse.data)
+    nonLiquidItems.value = nonLiquidResponse.data.items || []
+    loadingNonLiquidData.value = false
+
+    // Завантажуємо прогнози
+    loadForecastData()
   } catch (error) {
     console.error('Error loading inventory data:', error)
     $q.notify({
@@ -617,6 +1201,22 @@ const loadInventoryData = async () => {
     })
   } finally {
     loadingInventoryData.value = false
+  }
+}
+// Функція для завантаження даних прогнозу
+const loadForecastData = async () => {
+  loadingForecastData.value = true
+  try {
+    const forecastResponse = await StockApi.getStockForecast({
+      ...inventoryFilters.value,
+      period: forecastPeriod.value,
+    })
+    console.log('Отримані дані прогнозу:', forecastResponse.data)
+    forecastData.value = forecastResponse.data.forecast || []
+  } catch (error) {
+    console.error('Error loading forecast data:', error)
+  } finally {
+    loadingForecastData.value = false
   }
 }
 

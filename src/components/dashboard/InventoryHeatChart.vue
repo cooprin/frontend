@@ -26,27 +26,35 @@ const createChart = () => {
 
   const ctx = chartRef.value.getContext('2d')
 
+  // Обробляємо дані для теплової карти
   const labels = data.value.map((item) => item.product_type_name)
-  const quantities = data.value.map((item) => item.quantity)
+  const totalQuantity = data.value.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Генеруємо різні кольори для кожного типу продукту
-  const backgroundColors = data.value.map((_, index) => {
-    const hue = (index * 137) % 360 // Золотий перетин для різноманітності кольорів
-    return `hsla(${hue}, 70%, 60%, 0.7)`
-  })
+  // Обчислюємо відсоток від загальної кількості
+  const percentages = data.value.map((item) => ({
+    value: item.quantity,
+    percentage: (item.quantity / totalQuantity) * 100,
+  }))
 
-  const borderColors = data.value.map((_, index) => {
-    const hue = (index * 137) % 360
-    return `hsla(${hue}, 70%, 60%, 1)`
-  })
+  // Визначаємо кольори залежно від відсотка
+  const getColorForPercentage = (percentage) => {
+    // Зелений для низького відсотка, жовтий для середнього, червоний для високого
+    const r = percentage < 30 ? 46 : percentage < 70 ? 241 : 231
+    const g = percentage < 30 ? 204 : percentage < 70 ? 196 : 76
+    const b = percentage < 30 ? 113 : percentage < 70 ? 15 : 60
+    return `rgba(${r}, ${g}, ${b}, 0.7)`
+  }
+
+  const backgroundColors = percentages.map((item) => getColorForPercentage(item.percentage))
+  const borderColors = backgroundColors.map((color) => color.replace('0.7', '1'))
 
   chart = new Chart(ctx, {
-    type: 'pie',
+    type: 'polarArea',
     data: {
       labels: labels,
       datasets: [
         {
-          data: quantities,
+          data: percentages.map((item) => item.value),
           backgroundColor: backgroundColors,
           borderColor: borderColors,
           borderWidth: 1,
@@ -63,11 +71,9 @@ const createChart = () => {
         tooltip: {
           callbacks: {
             label: function (context) {
-              const label = context.label || ''
               const value = context.raw
-              const total = context.dataset.data.reduce((acc, val) => acc + val, 0)
-              const percentage = Math.round((value / total) * 100)
-              return `${label}: ${value} (${percentage}%)`
+              const item = percentages[context.dataIndex]
+              return [`Кількість: ${value}`, `Частка: ${item.percentage.toFixed(1)}%`]
             },
           },
         },
@@ -82,7 +88,7 @@ onMounted(() => {
   }
 })
 
-// Наблюдаем за изменением данных
+// Спостерігаємо за зміною даних
 watch(
   data,
   () => {
@@ -93,7 +99,7 @@ watch(
   { deep: true },
 )
 
-// Добавляем наблюдение за изменением языка
+// Додаємо спостереження за зміною мови
 watch(locale, () => {
   if (chartRef.value && data.value.length > 0) {
     createChart()

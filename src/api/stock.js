@@ -51,26 +51,50 @@ export const StockApi = {
       responseType: 'blob',
     })
   },
-  getStockMetrics: () => {
-    return api.get('/stock/metrics')
-  },
-
-  getStockByWarehouse: () => {
-    return api.get('/stock/by-warehouse')
-  },
-
-  getStockByType: () => {
-    return api.get('/stock/by-type')
-  },
 
   getLowStockItems: (params) => {
     return api.get('/stock/low-stock', { params })
   },
 
-  getCriticalStock: () => {
-    return api.get('/stock/critical')
+  // Додати нові методи в StockApi
+
+  getStockMetrics: (params) => {
+    return api.get('/stock/metrics', { params })
   },
+
+  getStockByWarehouse: (params) => {
+    return api.get('/stock/by-warehouse', { params })
+  },
+
+  getStockByType: (params) => {
+    return api.get('/stock/by-type', { params })
+  },
+
   getStockByModel: (params) => {
     return api.get('/stock/by-model', { params })
+  },
+
+  getCriticalStock: (params) => {
+    return api.get('/stock/critical', { params })
+  },
+
+  getNonLiquidStock: (params) => {
+    return api.get('/stock/non-liquid', { params })
+  },
+
+  getStockForecast: (params) => {
+    return api.get('/stock/forecast', { params })
+  },
+
+  getWarehousesOptions: () => {
+    return api.get('/warehouses', { params: { perPage: 'All', isActive: true } })
+  },
+
+  getProductTypesOptions: () => {
+    return api.get('/product-types', { params: { perPage: 'All', isActive: true } })
+  },
+
+  getManufacturersOptions: () => {
+    return api.get('/manufacturers', { params: { perPage: 'All', isActive: true } })
   },
 }
