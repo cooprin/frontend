@@ -109,6 +109,7 @@ export default {
     saveSuccess: 'Wialon integration settings have been saved successfully',
     syncSuccess: 'Objects synchronized successfully',
     syncSuccessDetails: 'Created: {created}, Updated: {updated}, Skipped: {skipped}',
+    tokenSavedHint: 'Token is saved. Leave empty to keep unchanged.',
 
     // Error messages
     connectionError: 'Connection error',

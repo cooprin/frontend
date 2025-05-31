@@ -109,6 +109,7 @@ export default {
     saveSuccess: 'Налаштування інтеграції Wialon збережено успішно',
     syncSuccess: "Об'єкти синхронізовано успішно",
     syncSuccessDetails: 'Створено: {created}, Оновлено: {updated}, Пропущено: {skipped}',
+    tokenSavedHint: 'Токен збережено. Залиште порожнім щоб не змінювати.',
 
     // Повідомлення про помилки
     connectionError: 'Помилка підключення',
