@@ -54,7 +54,7 @@ export const CompanyApi = {
     return api.delete(`/company/legal-documents/${id}`)
   },
 
-  // Інтеграція з Wialon
+  // Інтеграція з Wialon - РОЗШИРЕНО
   getWialonIntegration: () => {
     return api.get('/wialon-integration')
   },
@@ -63,8 +63,8 @@ export const CompanyApi = {
     return api.post('/wialon-integration', data)
   },
 
-  testWialonConnection: (data) => {
-    return api.post('/wialon-integration/test-connection', data)
+  testWialonConnection: () => {
+    return api.post('/wialon-integration/test-connection')
   },
 
   syncWialonObjects: () => {

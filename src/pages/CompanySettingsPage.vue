@@ -36,13 +36,13 @@
         <q-tab-panel name="documents">
           <legal-documents-card />
         </q-tab-panel>
+
         <q-tab-panel name="invoiceTemplates">
           <invoice-templates-card />
         </q-tab-panel>
 
         <q-tab-panel name="wialonIntegration">
-          <div class="text-h6 q-mb-md">{{ $t('company.wialonIntegration.title') }}</div>
-          <p class="text-grey">{{ $t('common.comingSoon') }}</p>
+          <wialon-integration-card />
         </q-tab-panel>
 
         <q-tab-panel name="settings">
@@ -60,6 +60,7 @@ import CompanyDetailsCard from 'components/company/CompanyDetailsCard.vue'
 import BankAccountsCard from 'components/company/BankAccountsCard.vue'
 import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
 import InvoiceTemplatesCard from 'components/company/InvoiceTemplatesCard.vue'
+import WialonIntegrationCard from 'components/company/WialonIntegrationCard.vue'
 
 // Стани
 const tab = ref('details')
