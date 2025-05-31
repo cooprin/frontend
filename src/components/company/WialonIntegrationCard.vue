@@ -64,8 +64,17 @@
               <q-input
                 v-model="form.token_value"
                 :label="$t('company.wialonIntegration.tokenValue')"
-                :hint="$t('company.wialonIntegration.tokenValueHint')"
-                :rules="[(val) => !!val || $t('company.wialonIntegration.tokenRequired')]"
+                :hint="
+                  integrationData?.has_token
+                    ? $t('company.wialonIntegration.tokenSavedHint')
+                    : $t('company.wialonIntegration.tokenValueHint')
+                "
+                :rules="[
+                  (val) =>
+                    !!val ||
+                    integrationData?.has_token ||
+                    $t('company.wialonIntegration.tokenRequired'),
+                ]"
                 :type="showToken ? 'text' : 'password'"
                 outlined
                 dense
@@ -144,7 +153,7 @@
               color="secondary"
               icon="wifi_protected_setup"
               :loading="testing"
-              :disable="!form.api_url || !form.token_value"
+              :disable="!form.api_url || (!form.token_value && !integrationData?.has_token)"
               @click="testConnection"
             />
 
