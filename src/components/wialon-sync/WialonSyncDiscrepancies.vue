@@ -359,6 +359,7 @@ import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeO
 const $q = useQuasar()
 const route = useRoute()
 const { t } = useI18n()
+const wialonInitialData = ref(null)
 
 // State
 const loading = ref(false)
@@ -545,15 +546,17 @@ const openInteractiveDialog = (discrepancy) => {
 const openNewClientDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
-  // Для нового клієнта editData = null (режим створення)
-  dialogEditData.value = {
+  // Для створення editData має бути null
+  dialogEditData.value = null
+
+  // Зберігаємо дані Wialon в окремій змінній для передачі в діалог
+  wialonInitialData.value = {
     name: wialonData.name,
     full_name: wialonData.full_name || wialonData.name,
     description: wialonData.description,
     wialon_id: wialonData.wialon_id,
     wialon_username: wialonData.name,
     is_active: true,
-    // НЕ передаємо id - діалог зрозуміє що це створення
   }
 
   showClientDialog.value = true
@@ -575,14 +578,16 @@ const openEditClientDialog = (discrepancy) => {
 const openNewObjectDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
-  // Для нового об'єкта editData = null (режим створення)
-  dialogEditData.value = {
+  // Для створення editData має бути null
+  dialogEditData.value = null
+
+  // Зберігаємо дані Wialon в окремій змінній
+  wialonInitialData.value = {
     name: wialonData.name,
     wialon_id: wialonData.wialon_id,
     description: wialonData.description,
     client_id: discrepancy.suggested_client_id,
     status: 'active',
-    // НЕ передаємо id - діалог зрозуміє що це створення
   }
 
   showObjectDialog.value = true
