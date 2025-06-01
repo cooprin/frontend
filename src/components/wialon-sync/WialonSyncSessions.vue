@@ -23,11 +23,12 @@
 
       <!-- Пошук -->
       <q-input
-        v-model="filter"
+        v-model="filters.search"
         :placeholder="$t('wialonSync.common.search')"
         dense
         outlined
         style="min-width: 250px"
+        debounce="300"
       >
         <template v-slot:append>
           <q-icon name="search" />
@@ -72,11 +73,12 @@
       :columns="columns"
       :loading="loading"
       row-key="id"
-      :pagination="pagination"
+      v-model:pagination="pagination"
       @request="onRequest"
       binary-state-sort
       flat
       bordered
+      :rows-per-page-options="[10, 20, 50]"
     >
       <!-- Статус -->
       <template v-slot:body-cell-status="props">
@@ -95,32 +97,41 @@
       <!-- Тривалість -->
       <template v-slot:body-cell-duration="props">
         <q-td :props="props">
-          {{ formatDuration(props.value) }}
+          {{ formatDuration(props.row.duration_seconds) }}
         </q-td>
       </template>
 
       <!-- Дії -->
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
-          <q-btn flat round dense icon="visibility" @click="showSessionDetails(props.row)">
-            <q-tooltip>{{ $t('wialonSync.sessions.details') }}</q-tooltip>
-          </q-btn>
-
-          <q-btn
-            v-if="props.row.discrepancies_found > 0"
-            flat
-            round
-            dense
-            icon="list_alt"
-            color="orange"
-            @click="showDiscrepancies(props.row.id)"
-          >
-            <q-tooltip
-              >{{ $t('wialonSync.discrepancies.title') }} ({{
-                props.row.discrepancies_found
-              }})</q-tooltip
+          <q-btn-group flat>
+            <q-btn
+              flat
+              round
+              dense
+              icon="visibility"
+              color="primary"
+              @click="showSessionDetails(props.row)"
             >
-          </q-btn>
+              <q-tooltip>{{ $t('wialonSync.sessions.details') }}</q-tooltip>
+            </q-btn>
+
+            <q-btn
+              v-if="props.row.discrepancies_found > 0"
+              flat
+              round
+              dense
+              icon="list_alt"
+              color="orange"
+              @click="showDiscrepancies(props.row.id)"
+            >
+              <q-tooltip
+                >{{ $t('wialonSync.discrepancies.title') }} ({{
+                  props.row.discrepancies_found
+                }})</q-tooltip
+              >
+            </q-btn>
+          </q-btn-group>
         </q-td>
       </template>
 
@@ -219,7 +230,7 @@
             <q-card-section>
               <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.sessions.logs') }}</div>
 
-              <q-list bordered separator>
+              <q-list bordered separator v-if="sessionLogs.length > 0">
                 <q-item v-for="log in sessionLogs" :key="log.id">
                   <q-item-section avatar>
                     <q-icon :name="getLogIcon(log.log_level)" :color="getLogColor(log.log_level)" />
@@ -233,6 +244,9 @@
                   </q-item-section>
                 </q-item>
               </q-list>
+              <div v-else class="text-center text-grey q-pa-md">
+                {{ $t('wialonSync.logs.noLogs') }}
+              </div>
             </q-card-section>
           </q-card>
         </q-card-section>
@@ -242,24 +256,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, getCurrentInstance } from 'vue'
 import { useQuasar, date } from 'quasar'
-import { useRouter } from 'vue-router'
-import { WialonSyncApi } from 'src/api/wialon-sync'
 import { useI18n } from 'vue-i18n'
+import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
-const router = useRouter()
 const { t } = useI18n()
 
 // State
 const loading = ref(false)
 const starting = ref(false)
 const sessions = ref([])
-const filter = ref('')
 const showDetailsDialog = ref(false)
 const selectedSession = ref(null)
 const sessionLogs = ref([])
+
+// Фільтри
+const filters = ref({
+  search: '',
+})
 
 // Статистика
 const stats = ref({
@@ -279,7 +295,7 @@ const pagination = ref({
 })
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'start_time',
     required: true,
@@ -329,13 +345,13 @@ const columns = [
     label: t('wialonSync.common.actions'),
     align: 'center',
   },
-]
+])
 
 // Computed
 const filteredSessions = computed(() => {
-  if (!filter.value) return sessions.value
+  if (!filters.value.search) return sessions.value
 
-  const searchLower = filter.value.toLowerCase()
+  const searchLower = filters.value.search.toLowerCase()
   return sessions.value.filter(
     (session) =>
       session.id.toLowerCase().includes(searchLower) ||
@@ -348,10 +364,22 @@ const filteredSessions = computed(() => {
 const loadSessions = async () => {
   loading.value = true
   try {
-    const response = await WialonSyncApi.getSessions({
+    const params = {
       limit: pagination.value.rowsPerPage,
       offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      search: filters.value.search || undefined,
+    }
+
+    // Видаляємо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await WialonSyncApi.getSessions(params)
 
     sessions.value = response.data.sessions || []
     pagination.value.rowsNumber = response.data.pagination?.total || 0
@@ -401,7 +429,7 @@ const showSessionDetails = async (session) => {
 
   // Завантажити логи сесії
   try {
-    const response = await WialonSyncApi.getSessionLogs(session.id)
+    const response = await WialonSyncApi.getSession(session.id)
     sessionLogs.value = response.data.logs || []
   } catch (error) {
     console.error('Error loading session logs:', error)
@@ -410,16 +438,34 @@ const showSessionDetails = async (session) => {
 }
 
 const showDiscrepancies = (sessionId) => {
-  router.push({
-    name: 'wialon-sync',
-    hash: '#discrepancies',
-    query: { sessionId },
-  })
+  // Переключаємося на вкладку розбіжностей і передаємо sessionId як параметр
+  const parent = getCurrentInstance().parent
+  if (parent && parent.setupState && parent.setupState.tab) {
+    parent.setupState.tab.value = 'discrepancies'
+
+    // Встановлюємо фільтр по сесії в компоненті розбіжностей
+    setTimeout(() => {
+      // Шукаємо компонент розбіжностей і передаємо йому sessionId
+      const discrepanciesComponent = parent.refs?.discrepanciesComponent
+      if (discrepanciesComponent && discrepanciesComponent.setSessionFilter) {
+        discrepanciesComponent.setSessionFilter(sessionId)
+      }
+    }, 100)
+  }
 }
 
-const onRequest = (props) => {
-  pagination.value = props.pagination
-  loadSessions()
+const onRequest = async (props) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  await loadSessions()
 }
 
 const updateStats = () => {
@@ -505,8 +551,22 @@ const showLogDetails = (log) => {
   })
 }
 
+// Watchers
+watch(
+  () => filters.value.search,
+  () => {
+    pagination.value.page = 1
+    loadSessions()
+  },
+)
+
 // Lifecycle
 onMounted(() => {
   loadSessions()
+})
+
+// Expose для доступу з батьківського компонента
+defineExpose({
+  loadSessions,
 })
 </script>
