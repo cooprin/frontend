@@ -353,6 +353,20 @@
                   {{ $t('layouts.mainLayout.wialonObjects') }}
                 </q-item-section>
               </q-item>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WIALON.SYNC.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'wialon-sync' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="sync" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.wialonSync') }}
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </template>
 
@@ -711,6 +725,19 @@
                         </q-item-section>
                         <q-item-section>
                           {{ $t('layouts.mainLayout.wialonObjects') }}
+                        </q-item-section>
+                      </q-item>
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.WIALON.SYNC.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'wialon-sync' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="sync" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.wialonSync') }}
                         </q-item-section>
                       </q-item>
                     </q-list>

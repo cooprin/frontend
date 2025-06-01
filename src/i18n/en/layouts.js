@@ -32,5 +32,6 @@ export default {
     wialonObjects: 'Tracking Objects',
     payments: 'Payments',
     companySettings: 'Company Settings',
+    wialonSync: 'Synchronization',
   },
 }

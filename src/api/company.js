@@ -54,7 +54,7 @@ export const CompanyApi = {
     return api.delete(`/company/legal-documents/${id}`)
   },
 
-  // Інтеграція з Wialon - РОЗШИРЕНО
+  // Інтеграція з Wialon - ОНОВЛЕНО
   getWialonIntegration: () => {
     return api.get('/wialon-integration')
   },
@@ -67,8 +67,9 @@ export const CompanyApi = {
     return api.post('/wialon-integration/test-connection')
   },
 
+  // ЗАМІНЕНО: тепер використовуємо правильний ендпоінт для синхронізації
   syncWialonObjects: () => {
-    return api.post('/wialon-integration/sync')
+    return api.post('/wialon-sync/start')
   },
 
   // Системні налаштування

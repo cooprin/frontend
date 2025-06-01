@@ -106,6 +106,12 @@ export const MENU_PERMISSIONS = {
       UPDATE: 'wialon_objects.update',
       DELETE: 'wialon_objects.delete',
     },
+    SYNC: {
+      LIST: 'wialon_sync.read',
+      CREATE: 'wialon_sync.create',
+      UPDATE: 'wialon_sync.update',
+      DELETE: 'wialon_sync.delete',
+    },
   },
 
   // Адміністративне меню

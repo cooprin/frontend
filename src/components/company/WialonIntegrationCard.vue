@@ -157,7 +157,7 @@
               @click="testConnection"
             />
 
-            <!-- Синхронізація об'єктів -->
+            <!-- Синхронізація об'єктів - ОНОВЛЕНО -->
             <q-btn
               :label="$t('company.wialonIntegration.syncObjects')"
               color="primary"
@@ -197,6 +197,44 @@
         </div>
       </q-card-section>
     </q-card>
+
+    <!-- НОВИЙ БЛОК: Останні результати синхронізації -->
+    <q-card flat bordered class="q-mt-md" v-if="lastSyncResults">
+      <q-card-section>
+        <div class="text-subtitle2 q-mb-sm">
+          <q-icon name="sync" class="q-mr-sm" />
+          Результати останньої синхронізації
+        </div>
+
+        <div class="row q-gutter-md">
+          <div class="col">
+            <q-chip color="blue" text-color="white" icon="download">
+              Клієнтів завантажено: {{ lastSyncResults.clientsLoaded || 0 }}
+            </q-chip>
+          </div>
+          <div class="col">
+            <q-chip color="blue" text-color="white" icon="download">
+              Об'єктів завантажено: {{ lastSyncResults.objectsLoaded || 0 }}
+            </q-chip>
+          </div>
+          <div class="col">
+            <q-chip color="orange" text-color="white" icon="warning">
+              Розбіжностей знайдено: {{ lastSyncResults.discrepanciesFound || 0 }}
+            </q-chip>
+          </div>
+        </div>
+
+        <div v-if="lastSyncResults.discrepanciesFound > 0" class="q-mt-md">
+          <q-btn
+            label="Переглянути розбіжності"
+            color="orange"
+            icon="list_alt"
+            @click="goToDiscrepancies"
+            outline
+          />
+        </div>
+      </q-card-section>
+    </q-card>
   </div>
 </template>
 
@@ -204,10 +242,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { CompanyApi } from 'src/api/company'
 
 const $q = useQuasar()
 const { t } = useI18n()
+const router = useRouter()
 
 // State
 const loading = ref(false)
@@ -217,6 +257,7 @@ const syncing = ref(false)
 const showToken = ref(false)
 const connectionStatus = ref(false)
 const integrationData = ref(null)
+const lastSyncResults = ref(null) // НОВИЙ СТЕЙТ
 
 // Form
 const form = ref({
@@ -365,16 +406,25 @@ const testConnection = async (silent = false) => {
   }
 }
 
+// ОНОВЛЕНИЙ МЕТОД: syncObjects - тепер використовує правильний ендпоінт
 const syncObjects = async () => {
   syncing.value = true
   try {
     const response = await CompanyApi.syncWialonObjects()
 
     if (response.data.success) {
+      // Зберігаємо результати синхронізації
+      lastSyncResults.value = {
+        clientsLoaded: response.data.stats?.clientsLoaded || 0,
+        objectsLoaded: response.data.stats?.objectsLoaded || 0,
+        discrepanciesFound: response.data.stats?.discrepanciesFound || 0,
+        sessionId: response.data.session?.id,
+      }
+
       const details = t('company.wialonIntegration.syncSuccessDetails', {
-        created: response.data.created || 0,
-        updated: response.data.updated || 0,
-        skipped: response.data.skipped || 0,
+        clientsLoaded: lastSyncResults.value.clientsLoaded,
+        objectsLoaded: lastSyncResults.value.objectsLoaded,
+        discrepanciesFound: lastSyncResults.value.discrepanciesFound,
       })
 
       $q.notify({
@@ -384,6 +434,24 @@ const syncObjects = async () => {
         icon: 'sync',
         timeout: 5000,
       })
+
+      // Якщо є розбіжності - показуємо додаткове повідомлення
+      if (lastSyncResults.value.discrepanciesFound > 0) {
+        $q.notify({
+          color: 'orange',
+          message: `Знайдено ${lastSyncResults.value.discrepanciesFound} розбіжностей`,
+          caption: 'Перегляньте та схваліть зміни для синхронізації',
+          icon: 'warning',
+          timeout: 7000,
+          actions: [
+            {
+              label: 'Переглянути',
+              color: 'white',
+              handler: () => goToDiscrepancies(),
+            },
+          ],
+        })
+      }
 
       // Оновлюємо дані про останню синхронізацію
       await loadIntegrationSettings()
@@ -399,6 +467,15 @@ const syncObjects = async () => {
   } finally {
     syncing.value = false
   }
+}
+
+// НОВИЙ МЕТОД: перехід до розбіжностей
+const goToDiscrepancies = () => {
+  // Тут потрібно буде створити роут для розбіжностей
+  router.push({
+    name: 'wialon-sync-discrepancies',
+    query: lastSyncResults.value?.sessionId ? { sessionId: lastSyncResults.value.sessionId } : {},
+  })
 }
 
 const formatDateTime = (dateString) => {

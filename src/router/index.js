@@ -246,6 +246,15 @@ const routes = [
         },
       },
       {
+        path: '/wialon-sync',
+        name: 'wialon-sync',
+        component: () => import('pages/WialonSyncPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'wialon_sync.read',
+        },
+      },
+      {
         path: '/settings/company',
         name: 'company-settings',
         component: () => import('pages/CompanySettingsPage.vue'),

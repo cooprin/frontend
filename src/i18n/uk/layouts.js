@@ -32,5 +32,6 @@ export default {
     wialonObjects: "Об'єкти моніторингу",
     payments: 'Платежі',
     companySettings: 'Налаштування компанії',
+    wialonSync: 'Синхронізація',
   },
 }

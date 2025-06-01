@@ -1,0 +1,137 @@
+export default {
+  wialonSync: {
+    title: 'Wialon Synchronization',
+    description: 'Manage data synchronization between system and Wialon',
+
+    tabs: {
+      sessions: 'Sessions',
+      discrepancies: 'Discrepancies',
+      rules: 'Rules',
+      logs: 'Logs',
+    },
+
+    sessions: {
+      title: 'Synchronization Sessions',
+      startNew: 'Start Synchronization',
+      status: {
+        running: 'Running',
+        completed: 'Completed',
+        failed: 'Failed',
+        cancelled: 'Cancelled',
+      },
+      columns: {
+        startTime: 'Start Time',
+        endTime: 'End Time',
+        status: 'Status',
+        clientsChecked: 'Clients Checked',
+        objectsChecked: 'Objects Checked',
+        discrepanciesFound: 'Discrepancies Found',
+        duration: 'Duration',
+      },
+      details: 'Session Details',
+      logs: 'Session Logs',
+      noSessions: 'No synchronization sessions found',
+    },
+
+    discrepancies: {
+      title: 'Discrepancies',
+      pending: 'Pending Resolution',
+      resolved: 'Resolved',
+      types: {
+        new_client: 'New Client',
+        new_object: 'New Object',
+        new_object_with_known_client: 'New Object (Known Client)',
+        client_name_changed: 'Client Name Changed',
+        object_name_changed: 'Object Name Changed',
+        owner_changed: 'Owner Changed',
+        client_deleted: 'Client Deleted',
+        object_deleted: 'Object Deleted',
+      },
+      status: {
+        pending: 'Pending',
+        approved: 'Approved',
+        added: 'Added',
+        ignored: 'Ignored',
+        rejected: 'Rejected',
+      },
+      actions: {
+        approve: 'Approve',
+        ignore: 'Ignore',
+        reject: 'Reject',
+        approveSelected: 'Approve Selected',
+        bulkAction: 'Bulk Action',
+      },
+      columns: {
+        type: 'Type',
+        entity: 'Entity',
+        wialonData: 'Wialon Data',
+        systemData: 'System Data',
+        suggestedAction: 'Suggested Action',
+        status: 'Status',
+        resolvedAt: 'Resolved At',
+      },
+      noDiscrepancies: 'No discrepancies found',
+      resolveSuccess: 'Discrepancies resolved successfully',
+      resolveError: 'Error resolving discrepancies',
+    },
+
+    rules: {
+      title: 'Synchronization Rules',
+      create: 'Create Rule',
+      edit: 'Edit Rule',
+      types: {
+        client_mapping: 'Client Mapping',
+        object_mapping: 'Object Mapping',
+        equipment_check: 'Equipment Check',
+        name_comparison: 'Name Comparison',
+        owner_validation: 'Owner Validation',
+        custom: 'Custom Rule',
+      },
+      columns: {
+        name: 'Name',
+        type: 'Type',
+        executionOrder: 'Execution Order',
+        isActive: 'Active',
+        lastExecution: 'Last Execution',
+      },
+      form: {
+        name: 'Rule Name',
+        description: 'Description',
+        type: 'Rule Type',
+        sqlQuery: 'SQL Query',
+        parameters: 'Parameters',
+        executionOrder: 'Execution Order',
+        isActive: 'Active Rule',
+      },
+    },
+
+    logs: {
+      title: 'Synchronization Logs',
+      levels: {
+        info: 'Information',
+        warning: 'Warning',
+        error: 'Error',
+        debug: 'Debug',
+      },
+      columns: {
+        time: 'Time',
+        level: 'Level',
+        message: 'Message',
+        details: 'Details',
+      },
+      noLogs: 'No logs found',
+    },
+
+    common: {
+      search: 'Search...',
+      filter: 'Filter',
+      refresh: 'Refresh',
+      loading: 'Loading...',
+      noData: 'No data',
+      selectAll: 'Select All',
+      selected: 'Selected',
+      showDetails: 'Show Details',
+      hideDetails: 'Hide Details',
+    },
+  },
+}

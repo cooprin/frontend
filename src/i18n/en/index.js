@@ -16,6 +16,7 @@ import tariffs from './tariffs'
 import payments from './payments'
 import dashboard from './dashboard'
 import company from './company'
+import wialonSync from './wialonSync'
 
 export default {
   layouts,
@@ -36,4 +37,5 @@ export default {
   payments,
   dashboard,
   company,
+  wialonSync,
 }

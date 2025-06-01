@@ -1,0 +1,137 @@
+export default {
+  wialonSync: {
+    title: 'Синхронізація Wialon',
+    description: 'Управління синхронізацією даних між системою та Wialon',
+
+    tabs: {
+      sessions: 'Сесії',
+      discrepancies: 'Розбіжності',
+      rules: 'Правила',
+      logs: 'Логи',
+    },
+
+    sessions: {
+      title: 'Сесії синхронізації',
+      startNew: 'Запустити синхронізацію',
+      status: {
+        running: 'Виконується',
+        completed: 'Завершено',
+        failed: 'Помилка',
+        cancelled: 'Скасовано',
+      },
+      columns: {
+        startTime: 'Час початку',
+        endTime: 'Час завершення',
+        status: 'Статус',
+        clientsChecked: 'Клієнтів перевірено',
+        objectsChecked: "Об'єктів перевірено",
+        discrepanciesFound: 'Розбіжностей знайдено',
+        duration: 'Тривалість',
+      },
+      details: 'Деталі сесії',
+      logs: 'Логи сесії',
+      noSessions: 'Сесії синхронізації не знайдені',
+    },
+
+    discrepancies: {
+      title: 'Розбіжності',
+      pending: 'Очікують рішення',
+      resolved: 'Вирішені',
+      types: {
+        new_client: 'Новий клієнт',
+        new_object: "Новий об'єкт",
+        new_object_with_known_client: "Новий об'єкт (відомий клієнт)",
+        client_name_changed: 'Зміна назви клієнта',
+        object_name_changed: "Зміна назви об'єкта",
+        owner_changed: 'Зміна власника',
+        client_deleted: 'Клієнт видалений',
+        object_deleted: "Об'єкт видалений",
+      },
+      status: {
+        pending: 'Очікує',
+        approved: 'Схвалено',
+        added: 'Додано',
+        ignored: 'Проігноровано',
+        rejected: 'Відхилено',
+      },
+      actions: {
+        approve: 'Схвалити',
+        ignore: 'Проігнорувати',
+        reject: 'Відхилити',
+        approveSelected: 'Схвалити вибрані',
+        bulkAction: 'Масова дія',
+      },
+      columns: {
+        type: 'Тип',
+        entity: 'Сутність',
+        wialonData: 'Дані з Wialon',
+        systemData: 'Дані в системі',
+        suggestedAction: 'Запропонована дія',
+        status: 'Статус',
+        resolvedAt: 'Вирішено',
+      },
+      noDiscrepancies: 'Розбіжності не знайдені',
+      resolveSuccess: 'Розбіжності успішно вирішено',
+      resolveError: 'Помилка при вирішенні розбіжностей',
+    },
+
+    rules: {
+      title: 'Правила синхронізації',
+      create: 'Створити правило',
+      edit: 'Редагувати правило',
+      types: {
+        client_mapping: 'Зіставлення клієнтів',
+        object_mapping: "Зіставлення об'єктів",
+        equipment_check: 'Перевірка обладнання',
+        name_comparison: 'Порівняння назв',
+        owner_validation: 'Перевірка власників',
+        custom: 'Власне правило',
+      },
+      columns: {
+        name: 'Назва',
+        type: 'Тип',
+        executionOrder: 'Порядок виконання',
+        isActive: 'Активне',
+        lastExecution: 'Останнє виконання',
+      },
+      form: {
+        name: 'Назва правила',
+        description: 'Опис',
+        type: 'Тип правила',
+        sqlQuery: 'SQL запит',
+        parameters: 'Параметри',
+        executionOrder: 'Порядок виконання',
+        isActive: 'Активне правило',
+      },
+    },
+
+    logs: {
+      title: 'Логи синхронізації',
+      levels: {
+        info: 'Інформація',
+        warning: 'Попередження',
+        error: 'Помилка',
+        debug: 'Налагодження',
+      },
+      columns: {
+        time: 'Час',
+        level: 'Рівень',
+        message: 'Повідомлення',
+        details: 'Деталі',
+      },
+      noLogs: 'Логи не знайдені',
+    },
+
+    common: {
+      search: 'Пошук...',
+      filter: 'Фільтр',
+      refresh: 'Оновити',
+      loading: 'Завантаження...',
+      noData: 'Немає даних',
+      selectAll: 'Вибрати всі',
+      selected: 'Вибрано',
+      showDetails: 'Показати деталі',
+      hideDetails: 'Приховати деталі',
+    },
+  },
+}
