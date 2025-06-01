@@ -1,4 +1,4 @@
-import { api } from './index'
+import { api } from 'boot/axios'
 
 export const WialonSyncApi = {
   // Сесії синхронізації
