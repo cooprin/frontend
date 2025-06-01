@@ -90,12 +90,12 @@
     <!-- Таблиця розбіжностей -->
     <q-table
       v-model:selected="selected"
-      :rows="filteredDiscrepancies"
+      :rows="discrepancies"
       :columns="columns"
       :loading="loading"
       row-key="id"
       selection="multiple"
-      :pagination="pagination"
+      v-model:pagination="pagination"
       @request="onRequest"
       binary-state-sort
       flat
@@ -446,34 +446,6 @@ const columns = [
 ]
 
 // Computed
-const filteredDiscrepancies = computed(() => {
-  let result = discrepancies.value
-
-  // Фільтр по типу
-  if (filters.value.type) {
-    result = result.filter((d) => d.discrepancy_type === filters.value.type)
-  }
-
-  // Фільтр по статусу
-  if (filters.value.status) {
-    result = result.filter((d) => d.status === filters.value.status)
-  }
-
-  // Пошук
-  if (filter.value) {
-    const searchLower = filter.value.toLowerCase()
-    result = result.filter(
-      (d) =>
-        d.discrepancy_type.toLowerCase().includes(searchLower) ||
-        (d.wialon_entity_data?.name &&
-          d.wialon_entity_data.name.toLowerCase().includes(searchLower)) ||
-        (d.system_entity_data?.name &&
-          d.system_entity_data.name.toLowerCase().includes(searchLower)),
-    )
-  }
-
-  return result
-})
 
 const hasSelected = computed(() => selected.value.length > 0)
 
@@ -481,16 +453,28 @@ const hasSelected = computed(() => selected.value.length > 0)
 const loadDiscrepancies = async () => {
   loading.value = true
   try {
-    const response = await WialonSyncApi.getDiscrepancies({
+    const params = {
       limit: pagination.value.rowsPerPage,
       offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
       sessionId: filters.value.sessionId,
       type: filters.value.type,
       status: filters.value.status,
+      search: filter.value || undefined,
+    }
+
+    // Видаляємо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
 
+    const response = await WialonSyncApi.getDiscrepancies(params)
+
     discrepancies.value = response.data.discrepancies || []
-    pagination.value.rowsNumber = response.data.pagination?.total || 0
+    pagination.value.rowsNumber = response.data.total || 0
     updateStats()
   } catch (error) {
     console.error('Error loading discrepancies:', error)
@@ -568,9 +552,18 @@ const showDiscrepancyDetails = (discrepancy) => {
   showDetailsDialog.value = true
 }
 
-const onRequest = (props) => {
-  pagination.value = props.pagination
-  loadDiscrepancies()
+const onRequest = async (props) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  await loadDiscrepancies()
 }
 
 const updateStats = () => {
@@ -642,6 +635,23 @@ watch(
     }
   },
   { immediate: true },
+)
+// Watchers
+watch(
+  () => filters.value,
+  () => {
+    pagination.value.page = 1
+    loadDiscrepancies()
+  },
+  { deep: true },
+)
+
+watch(
+  () => filter.value,
+  () => {
+    pagination.value.page = 1
+    loadDiscrepancies()
+  },
 )
 
 // Lifecycle

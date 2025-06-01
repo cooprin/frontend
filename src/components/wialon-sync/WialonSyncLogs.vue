@@ -109,11 +109,11 @@
 
     <!-- Таблиця логів -->
     <q-table
-      :rows="filteredLogs"
+      :rows="logs"
       :columns="columns"
       :loading="loading"
       row-key="id"
-      :pagination="pagination"
+      v-model:pagination="pagination"
       @request="onRequest"
       binary-state-sort
       flat
@@ -331,7 +331,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar, date, copyToClipboard } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
@@ -423,59 +423,34 @@ const columns = [
 ]
 
 // Computed
-const filteredLogs = computed(() => {
-  let result = logs.value
-
-  // Фільтр по сесії
-  if (filters.value.sessionId) {
-    result = result.filter((log) => log.session_id === filters.value.sessionId)
-  }
-
-  // Фільтр по рівню
-  if (filters.value.level) {
-    result = result.filter((log) => log.log_level === filters.value.level)
-  }
-
-  // Фільтр по даті від
-  if (filters.value.dateFrom) {
-    const fromDate = new Date(filters.value.dateFrom)
-    result = result.filter((log) => new Date(log.created_at) >= fromDate)
-  }
-
-  // Фільтр по даті до
-  if (filters.value.dateTo) {
-    const toDate = new Date(filters.value.dateTo + 'T23:59:59')
-    result = result.filter((log) => new Date(log.created_at) <= toDate)
-  }
-
-  // Пошук в повідомленні
-  if (filter.value) {
-    const searchLower = filter.value.toLowerCase()
-    result = result.filter(
-      (log) =>
-        log.message.toLowerCase().includes(searchLower) ||
-        log.log_level.toLowerCase().includes(searchLower),
-    )
-  }
-
-  return result
-})
 
 // Methods
 const loadLogs = async () => {
   loading.value = true
   try {
-    const response = await WialonSyncApi.getLogs({
+    const params = {
       limit: pagination.value.rowsPerPage,
       offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
       sessionId: filters.value.sessionId,
       level: filters.value.level,
       dateFrom: filters.value.dateFrom,
       dateTo: filters.value.dateTo,
+      search: filter.value || undefined,
+    }
+
+    // Видаляємо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
 
+    const response = await WialonSyncApi.getLogs(params)
+
     logs.value = response.data.logs || []
-    pagination.value.rowsNumber = response.data.pagination?.total || 0
+    pagination.value.rowsNumber = response.data.total || 0
     updateStats()
   } catch (error) {
     console.error('Error loading logs:', error)
@@ -567,14 +542,23 @@ const copyJson = async (details) => {
   }
 }
 
-const onRequest = (props) => {
-  pagination.value = props.pagination
-  loadLogs()
+const onRequest = async (props) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  await loadLogs()
 }
 
 const updateStats = () => {
   stats.value = {
-    total: logs.value.length,
+    total: pagination.value.rowsNumber,
     info: logs.value.filter((log) => log.log_level === 'info').length,
     warning: logs.value.filter((log) => log.log_level === 'warning').length,
     error: logs.value.filter((log) => log.log_level === 'error').length,
@@ -607,6 +591,23 @@ const formatDateTime = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm:ss')
 }
 
+// Watchers
+watch(
+  () => filters.value,
+  () => {
+    pagination.value.page = 1
+    loadLogs()
+  },
+  { deep: true },
+)
+
+watch(
+  () => filter.value,
+  () => {
+    pagination.value.page = 1
+    loadLogs()
+  },
+)
 // Lifecycle
 onMounted(() => {
   loadSessions()

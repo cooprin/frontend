@@ -69,7 +69,7 @@
 
     <!-- Таблиця сесій -->
     <q-table
-      :rows="filteredSessions"
+      :rows="sessions"
       :columns="columns"
       :loading="loading"
       row-key="id"
@@ -348,17 +348,6 @@ const columns = computed(() => [
 ])
 
 // Computed
-const filteredSessions = computed(() => {
-  if (!filters.value.search) return sessions.value
-
-  const searchLower = filters.value.search.toLowerCase()
-  return sessions.value.filter(
-    (session) =>
-      session.id.toLowerCase().includes(searchLower) ||
-      session.status.toLowerCase().includes(searchLower) ||
-      (session.created_by_name && session.created_by_name.toLowerCase().includes(searchLower)),
-  )
-})
 
 // Methods
 const loadSessions = async () => {
@@ -382,7 +371,7 @@ const loadSessions = async () => {
     const response = await WialonSyncApi.getSessions(params)
 
     sessions.value = response.data.sessions || []
-    pagination.value.rowsNumber = response.data.pagination?.total || 0
+    pagination.value.rowsNumber = response.data.total || 0
     updateStats()
   } catch (error) {
     console.error('Error loading sessions:', error)
@@ -470,7 +459,7 @@ const onRequest = async (props) => {
 
 const updateStats = () => {
   stats.value = {
-    total: sessions.value.length,
+    total: pagination.value.rowsNumber,
     completed: sessions.value.filter((s) => s.status === 'completed').length,
     failed: sessions.value.filter((s) => s.status === 'failed').length,
     pendingDiscrepancies: sessions.value.reduce(

@@ -84,11 +84,11 @@
 
     <!-- Таблиця правил -->
     <q-table
-      :rows="filteredRules"
+      :rows="rules"
       :columns="columns"
       :loading="loading"
       row-key="id"
-      :pagination="pagination"
+      v-model:pagination="pagination"
       @request="onRequest"
       binary-state-sort
       flat
@@ -387,7 +387,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
@@ -505,44 +505,32 @@ const columns = [
 ]
 
 // Computed
-const filteredRules = computed(() => {
-  let result = rules.value
-
-  // Фільтр по типу
-  if (filters.value.type) {
-    result = result.filter((r) => r.rule_type === filters.value.type)
-  }
-
-  // Фільтр тільки активні
-  if (filters.value.activeOnly) {
-    result = result.filter((r) => r.is_active)
-  }
-
-  // Пошук
-  if (filter.value) {
-    const searchLower = filter.value.toLowerCase()
-    result = result.filter(
-      (r) =>
-        r.name.toLowerCase().includes(searchLower) ||
-        r.description?.toLowerCase().includes(searchLower) ||
-        r.rule_type.toLowerCase().includes(searchLower),
-    )
-  }
-
-  return result
-})
 
 // Methods
 const loadRules = async () => {
   loading.value = true
   try {
-    const response = await WialonSyncApi.getRules({
+    const params = {
       limit: pagination.value.rowsPerPage,
       offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy,
+      descending: pagination.value.descending,
+      type: filters.value.type,
+      activeOnly: filters.value.activeOnly,
+      search: filter.value || undefined,
+    }
+
+    // Видаляємо undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
 
+    const response = await WialonSyncApi.getRules(params)
+
     rules.value = response.data.rules || []
-    pagination.value.rowsNumber = response.data.pagination?.total || 0
+    pagination.value.rowsNumber = response.data.total || 0
     updateStats()
   } catch (error) {
     console.error('Error loading rules:', error)
@@ -694,17 +682,26 @@ const showRuleDetails = (rule) => {
   showDetailsDialog.value = true
 }
 
-const onRequest = (props) => {
-  pagination.value = props.pagination
-  loadRules()
+const onRequest = async (props) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  await loadRules()
 }
 
 const updateStats = () => {
   stats.value = {
-    total: rules.value.length,
+    total: pagination.value.rowsNumber,
     active: rules.value.filter((r) => r.is_active).length,
     inactive: rules.value.filter((r) => !r.is_active).length,
-    executions: 0, // TODO: calculate today's executions
+    executions: rules.value.reduce((sum, r) => sum + (r.total_executions || 0), 0),
   }
 }
 
@@ -737,6 +734,23 @@ const formatDateTime = (dateString) => {
   if (!dateString) return ''
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm')
 }
+// Watchers
+watch(
+  () => filters.value,
+  () => {
+    pagination.value.page = 1
+    loadRules()
+  },
+  { deep: true },
+)
+
+watch(
+  () => filter.value,
+  () => {
+    pagination.value.page = 1
+    loadRules()
+  },
+)
 
 // Lifecycle
 onMounted(() => {
