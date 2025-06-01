@@ -159,8 +159,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  initialData: {
+    type: Object,
+    default: null,
+  },
 })
-
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
@@ -376,19 +379,28 @@ const loadTariffDetails = async () => {
 
 // Відстеження змін
 watch(
-  () => props.editData,
-  (newValue) => {
-    if (newValue) {
+  () => [props.editData, props.initialData],
+  ([newEditData, newInitialData]) => {
+    if (newEditData) {
+      // Режим редагування
       form.value = {
         ...defaultForm,
-        ...newValue,
-        operation_date: newValue.operation_date || date.formatDate(new Date(), 'YYYY-MM-DD'),
+        ...newEditData,
+        operation_date: newEditData.operation_date || date.formatDate(new Date(), 'YYYY-MM-DD'),
+      }
+    } else if (newInitialData) {
+      // Режим створення з початковими даними
+      form.value = {
+        ...defaultForm,
+        ...newInitialData,
+        operation_date: date.formatDate(new Date(), 'YYYY-MM-DD'),
       }
     } else {
+      // Режим створення без даних
       form.value = { ...defaultForm }
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 
 // Відстеження зміни дати операції для нових об'єктів

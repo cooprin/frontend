@@ -191,8 +191,11 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  initialData: {
+    type: Object,
+    default: null,
+  },
 })
-
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
@@ -277,23 +280,32 @@ const onSubmit = async () => {
 
 // Відстеження змін
 watch(
-  () => props.editData,
-  (newValue) => {
-    if (newValue) {
-      form.value = { ...defaultForm, ...newValue }
+  () => [props.editData, props.initialData],
+  ([newEditData, newInitialData]) => {
+    if (newEditData) {
+      // Режим редагування
+      form.value = { ...defaultForm, ...newEditData }
 
-      // Розбираємо номер телефону на код країни та номер
-      const phone = newValue.phone || ''
+      const phone = newEditData.phone || ''
+      const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
+      selectedCountryCode.value = countryCode?.code || '+380'
+      phoneNumber.value = getPhoneWithoutCode(phone)
+    } else if (newInitialData) {
+      // Режим створення з початковими даними
+      form.value = { ...defaultForm, ...newInitialData }
+
+      const phone = newInitialData.phone || ''
       const countryCode = countryCodes.find((c) => phone.startsWith(c.code))
       selectedCountryCode.value = countryCode?.code || '+380'
       phoneNumber.value = getPhoneWithoutCode(phone)
     } else {
+      // Режим створення без даних
       form.value = { ...defaultForm }
       selectedCountryCode.value = '+380'
       phoneNumber.value = ''
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 </script>
 

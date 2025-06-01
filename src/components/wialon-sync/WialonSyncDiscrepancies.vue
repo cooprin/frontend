@@ -328,12 +328,18 @@
     <!-- Діалоги для інтерактивного вирішення розбіжностей -->
 
     <!-- Діалог клієнта -->
-    <client-dialog v-model="showClientDialog" :edit-data="dialogEditData" @saved="onClientSaved" />
+    <client-dialog
+      v-model="showClientDialog"
+      :edit-data="dialogEditData"
+      :initial-data="dialogInitialData"
+      @saved="onClientSaved"
+    />
 
     <!-- Діалог об'єкта -->
     <wialon-object-dialog
       v-model="showObjectDialog"
       :edit-data="dialogEditData"
+      :initial-data="dialogInitialData"
       @saved="onObjectSaved"
     />
 
@@ -359,7 +365,7 @@ import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeO
 const $q = useQuasar()
 const route = useRoute()
 const { t } = useI18n()
-const wialonInitialData = ref(null)
+const dialogInitialData = ref(null)
 
 // State
 const loading = ref(false)
@@ -546,11 +552,9 @@ const openInteractiveDialog = (discrepancy) => {
 const openNewClientDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
-  // Для створення editData має бути null
+  // Для створення editData = null, initialData = дані з Wialon
   dialogEditData.value = null
-
-  // Зберігаємо дані Wialon в окремій змінній для передачі в діалог
-  wialonInitialData.value = {
+  dialogInitialData.value = {
     name: wialonData.name,
     full_name: wialonData.full_name || wialonData.name,
     description: wialonData.description,
@@ -578,11 +582,9 @@ const openEditClientDialog = (discrepancy) => {
 const openNewObjectDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
-  // Для створення editData має бути null
+  // Для створення editData = null, initialData = дані з Wialon
   dialogEditData.value = null
-
-  // Зберігаємо дані Wialon в окремій змінній
-  wialonInitialData.value = {
+  dialogInitialData.value = {
     name: wialonData.name,
     wialon_id: wialonData.wialon_id,
     description: wialonData.description,
