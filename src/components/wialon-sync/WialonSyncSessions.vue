@@ -40,28 +40,28 @@
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-primary">{{ stats.total }}</div>
-          <div class="text-caption">Всього сесій</div>
+          <div class="text-caption">{{ $t('wialonSync.sessions.stats.total') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-positive">{{ stats.completed }}</div>
-          <div class="text-caption">Завершено</div>
+          <div class="text-caption">{{ $t('wialonSync.sessions.stats.completed') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-negative">{{ stats.failed }}</div>
-          <div class="text-caption">Помилок</div>
+          <div class="text-caption">{{ $t('wialonSync.sessions.stats.failed') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-orange">{{ stats.pendingDiscrepancies }}</div>
-          <div class="text-caption">Очікує розв'язання</div>
+          <div class="text-caption">{{ $t('wialonSync.sessions.stats.pending') }}</div>
         </q-card-section>
       </q-card>
     </div>
@@ -115,7 +115,11 @@
             color="orange"
             @click="showDiscrepancies(props.row.id)"
           >
-            <q-tooltip>Розбіжності ({{ props.row.discrepancies_found }})</q-tooltip>
+            <q-tooltip
+              >{{ $t('wialonSync.discrepancies.title') }} ({{
+                props.row.discrepancies_found
+              }})</q-tooltip
+            >
           </q-btn>
         </q-td>
       </template>
@@ -143,12 +147,12 @@
             <!-- Інформація про сесію -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Загальна інформація</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.common.generalInfo') }}</div>
 
                 <div class="q-gutter-sm">
                   <div><strong>ID:</strong> {{ selectedSession.id }}</div>
                   <div>
-                    <strong>Статус:</strong>
+                    <strong>{{ $t('wialonSync.sessions.columns.status') }}:</strong>
                     <q-chip
                       :color="getStatusColor(selectedSession.status)"
                       text-color="white"
@@ -158,17 +162,20 @@
                     </q-chip>
                   </div>
                   <div>
-                    <strong>Початок:</strong> {{ formatDateTime(selectedSession.start_time) }}
+                    <strong>{{ $t('wialonSync.sessions.columns.startTime') }}:</strong>
+                    {{ formatDateTime(selectedSession.start_time) }}
                   </div>
                   <div v-if="selectedSession.end_time">
-                    <strong>Завершення:</strong> {{ formatDateTime(selectedSession.end_time) }}
+                    <strong>{{ $t('wialonSync.sessions.columns.endTime') }}:</strong>
+                    {{ formatDateTime(selectedSession.end_time) }}
                   </div>
                   <div v-if="selectedSession.duration_seconds">
-                    <strong>Тривалість:</strong>
+                    <strong>{{ $t('wialonSync.sessions.columns.duration') }}:</strong>
                     {{ formatDuration(selectedSession.duration_seconds) }}
                   </div>
                   <div>
-                    <strong>Створено:</strong> {{ selectedSession.created_by_name || 'Система' }}
+                    <strong>{{ $t('wialonSync.common.createdBy') }}:</strong>
+                    {{ selectedSession.created_by_name || $t('wialonSync.common.system') }}
                   </div>
                 </div>
               </q-card-section>
@@ -177,29 +184,30 @@
             <!-- Статистика -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Статистика</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.common.statistics') }}</div>
 
                 <div class="q-gutter-sm">
                   <div>
-                    <strong>Клієнтів перевірено:</strong>
+                    <strong>{{ $t('wialonSync.sessions.columns.clientsChecked') }}:</strong>
                     {{ selectedSession.total_clients_checked || 0 }}
                   </div>
                   <div>
-                    <strong>Об'єктів перевірено:</strong>
+                    <strong>{{ $t('wialonSync.sessions.columns.objectsChecked') }}:</strong>
                     {{ selectedSession.total_objects_checked || 0 }}
                   </div>
                   <div>
-                    <strong>Розбіжностей знайдено:</strong>
+                    <strong>{{ $t('wialonSync.sessions.columns.discrepanciesFound') }}:</strong>
                     <q-chip color="orange" text-color="white" size="sm">
                       {{ selectedSession.discrepancies_found || 0 }}
                     </q-chip>
                   </div>
                   <div>
-                    <strong>Очікують рішення:</strong>
+                    <strong>{{ $t('wialonSync.discrepancies.pending') }}:</strong>
                     {{ selectedSession.pending_discrepancies || 0 }}
                   </div>
                   <div>
-                    <strong>Схвалено:</strong> {{ selectedSession.approved_discrepancies || 0 }}
+                    <strong>{{ $t('wialonSync.discrepancies.stats.approved') }}:</strong>
+                    {{ selectedSession.approved_discrepancies || 0 }}
                   </div>
                 </div>
               </q-card-section>
@@ -238,9 +246,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useRouter } from 'vue-router'
 import { WialonSyncApi } from 'src/api/wialon-sync'
+import { useI18n } from 'vue-i18n'
 
 const $q = useQuasar()
 const router = useRouter()
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -273,7 +283,7 @@ const columns = [
   {
     name: 'start_time',
     required: true,
-    label: 'Час початку',
+    label: t('wialonSync.sessions.columns.startTime'),
     align: 'left',
     field: 'start_time',
     format: (val) => date.formatDate(val, 'DD.MM.YYYY HH:mm'),
@@ -281,42 +291,42 @@ const columns = [
   },
   {
     name: 'status',
-    label: 'Статус',
+    label: t('wialonSync.sessions.columns.status'),
     align: 'center',
     field: 'status',
     sortable: true,
   },
   {
     name: 'total_clients_checked',
-    label: 'Клієнтів',
+    label: t('wialonSync.sessions.columns.clientsChecked'),
     align: 'center',
     field: 'total_clients_checked',
     sortable: true,
   },
   {
     name: 'total_objects_checked',
-    label: "Об'єктів",
+    label: t('wialonSync.sessions.columns.objectsChecked'),
     align: 'center',
     field: 'total_objects_checked',
     sortable: true,
   },
   {
     name: 'discrepancies_found',
-    label: 'Розбіжностей',
+    label: t('wialonSync.sessions.columns.discrepanciesFound'),
     align: 'center',
     field: 'discrepancies_found',
     sortable: true,
   },
   {
     name: 'duration',
-    label: 'Тривалість',
+    label: t('wialonSync.sessions.columns.duration'),
     align: 'center',
     field: 'duration_seconds',
     sortable: true,
   },
   {
     name: 'actions',
-    label: 'Дії',
+    label: t('wialonSync.common.actions'),
     align: 'center',
   },
 ]
@@ -350,7 +360,7 @@ const loadSessions = async () => {
     console.error('Error loading sessions:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження сесій синхронізації',
+      message: t('wialonSync.common.errorLoading'),
       icon: 'error',
     })
   } finally {
@@ -365,7 +375,7 @@ const startSync = async () => {
 
     $q.notify({
       color: 'positive',
-      message: 'Синхронізацію запущено',
+      message: t('wialonSync.common.syncStarted'),
       icon: 'sync',
     })
 
@@ -377,7 +387,7 @@ const startSync = async () => {
     console.error('Error starting sync:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || 'Помилка запуску синхронізації',
+      message: error.response?.data?.message || t('wialonSync.common.errorStartingSync'),
       icon: 'error',
     })
   } finally {
@@ -473,11 +483,11 @@ const formatDuration = (seconds) => {
   const secs = Math.floor(seconds % 60)
 
   if (hours > 0) {
-    return `${hours}г ${minutes}хв ${secs}с`
+    return `${hours}${t('wialonSync.common.hours')} ${minutes}${t('wialonSync.common.minutes')} ${secs}${t('wialonSync.common.seconds')}`
   } else if (minutes > 0) {
-    return `${minutes}хв ${secs}с`
+    return `${minutes}${t('wialonSync.common.minutes')} ${secs}${t('wialonSync.common.seconds')}`
   } else {
-    return `${secs}с`
+    return `${secs}${t('wialonSync.common.seconds')}`
   }
 }
 
@@ -488,10 +498,10 @@ const formatDateTime = (dateString) => {
 
 const showLogDetails = (log) => {
   $q.dialog({
-    title: 'Деталі логу',
+    title: t('wialonSync.logs.columns.details'),
     message: `<pre>${JSON.stringify(log.details, null, 2)}</pre>`,
     html: true,
-    ok: 'Закрити',
+    ok: t('wialonSync.common.close'),
   })
 }
 

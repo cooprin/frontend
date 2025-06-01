@@ -11,7 +11,13 @@
         outline
       />
 
-      <q-btn label="Очистити логи" color="negative" icon="clear_all" @click="clearLogs" outline />
+      <q-btn
+        :label="$t('wialonSync.logs.actions.clear')"
+        color="negative"
+        icon="clear_all"
+        @click="clearLogs"
+        outline
+      />
 
       <q-space />
 
@@ -19,7 +25,7 @@
       <q-select
         v-model="filters.sessionId"
         :options="sessionOptions"
-        label="Сесія"
+        :label="$t('wialonSync.logs.filters.session')"
         dense
         outlined
         clearable
@@ -40,7 +46,7 @@
 
       <q-input
         v-model="filters.dateFrom"
-        label="З дати"
+        :label="$t('wialonSync.logs.filters.dateFrom')"
         type="date"
         dense
         outlined
@@ -49,7 +55,7 @@
 
       <q-input
         v-model="filters.dateTo"
-        label="До дати"
+        :label="$t('wialonSync.logs.filters.dateTo')"
         type="date"
         dense
         outlined
@@ -75,7 +81,7 @@
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-primary">{{ stats.total }}</div>
-          <div class="text-caption">Всього записів</div>
+          <div class="text-caption">{{ $t('wialonSync.logs.stats.total') }}</div>
         </q-card-section>
       </q-card>
 
@@ -161,7 +167,7 @@
           </q-btn>
 
           <q-btn flat round dense icon="content_copy" @click="copyLogMessage(props.row)">
-            <q-tooltip>Копіювати повідомлення</q-tooltip>
+            <q-tooltip>{{ $t('wialonSync.common.copyMessage') }}</q-tooltip>
           </q-btn>
         </q-td>
       </template>
@@ -212,7 +218,7 @@
               </q-btn>
 
               <q-btn flat round dense icon="content_copy" @click.stop="copyLogMessage(props.row)">
-                <q-tooltip>Копіювати повідомлення</q-tooltip>
+                <q-tooltip>{{ $t('wialonSync.common.copyMessage') }}</q-tooltip>
               </q-btn>
             </template>
 
@@ -226,10 +232,12 @@
         <q-tr v-show="props.expand" :props="props">
           <q-td colspan="100%">
             <div class="q-pa-md bg-grey-1">
-              <div class="text-weight-bold q-mb-sm">Повне повідомлення:</div>
+              <div class="text-weight-bold q-mb-sm">{{ $t('wialonSync.common.fullMessage') }}:</div>
               <div class="text-body2 q-mb-md">{{ props.row.message }}</div>
 
-              <div v-if="props.row.details" class="text-weight-bold q-mb-sm">Деталі:</div>
+              <div v-if="props.row.details" class="text-weight-bold q-mb-sm">
+                {{ $t('wialonSync.logs.columns.details') }}:
+              </div>
               <pre v-if="props.row.details" class="log-details">{{
                 JSON.stringify(props.row.details, null, 2)
               }}</pre>
@@ -251,7 +259,7 @@
     <q-dialog v-model="showDetailsDialog" maximized>
       <q-card>
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Деталі запису логу</div>
+          <div class="text-h6">{{ $t('wialonSync.common.logDetails') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -261,12 +269,15 @@
             <!-- Основна інформація -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Основна інформація</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.common.generalInfo') }}</div>
 
                 <div class="q-gutter-sm">
-                  <div><strong>Час:</strong> {{ formatDateTime(selectedLog.created_at) }}</div>
                   <div>
-                    <strong>Рівень:</strong>
+                    <strong>{{ $t('wialonSync.logs.columns.time') }}:</strong>
+                    {{ formatDateTime(selectedLog.created_at) }}
+                  </div>
+                  <div>
+                    <strong>{{ $t('wialonSync.logs.columns.level') }}:</strong>
                     <q-chip
                       :color="getLogColor(selectedLog.log_level)"
                       text-color="white"
@@ -275,7 +286,10 @@
                       {{ $t(`wialonSync.logs.levels.${selectedLog.log_level}`) }}
                     </q-chip>
                   </div>
-                  <div><strong>Сесія:</strong> {{ selectedLog.session_id }}</div>
+                  <div>
+                    <strong>{{ $t('wialonSync.logs.filters.session') }}:</strong>
+                    {{ selectedLog.session_id }}
+                  </div>
                 </div>
               </q-card-section>
             </q-card>
@@ -283,7 +297,9 @@
             <!-- Повідомлення -->
             <q-card flat bordered class="col-12">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Повідомлення</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.logs.columns.message') }}
+                </div>
                 <div class="text-body1">{{ selectedLog.message }}</div>
               </q-card-section>
             </q-card>
@@ -291,7 +307,9 @@
             <!-- JSON деталі -->
             <q-card flat bordered class="col-12" v-if="selectedLog.details">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Деталі (JSON)</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.logs.columns.details') }} (JSON)
+                </div>
                 <pre class="log-details">{{ JSON.stringify(selectedLog.details, null, 2) }}</pre>
               </q-card-section>
             </q-card>
@@ -300,7 +318,7 @@
 
         <q-card-actions align="right">
           <q-btn
-            label="Копіювати JSON"
+            :label="$t('wialonSync.common.copyJson')"
             v-if="selectedLog?.details"
             color="primary"
             @click="copyJson(selectedLog.details)"
@@ -315,9 +333,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar, date, copyToClipboard } from 'quasar'
+import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -354,10 +374,10 @@ const pagination = ref({
 
 // Опції для фільтрів
 const levelOptions = [
-  { label: 'Інформація', value: 'info' },
-  { label: 'Попередження', value: 'warning' },
-  { label: 'Помилка', value: 'error' },
-  { label: 'Налагодження', value: 'debug' },
+  { label: t('wialonSync.logs.levels.info'), value: 'info' },
+  { label: t('wialonSync.logs.levels.warning'), value: 'warning' },
+  { label: t('wialonSync.logs.levels.error'), value: 'error' },
+  { label: t('wialonSync.logs.levels.debug'), value: 'debug' },
 ]
 
 const sessionOptions = computed(() => {
@@ -372,7 +392,7 @@ const columns = [
   {
     name: 'created_at',
     required: true,
-    label: 'Час',
+    label: t('wialonSync.logs.columns.time'),
     align: 'center',
     field: 'created_at',
     sortable: true,
@@ -380,7 +400,7 @@ const columns = [
   },
   {
     name: 'log_level',
-    label: 'Рівень',
+    label: t('wialonSync.logs.columns.level'),
     align: 'center',
     field: 'log_level',
     sortable: true,
@@ -389,14 +409,14 @@ const columns = [
   {
     name: 'message',
     required: true,
-    label: 'Повідомлення',
+    label: t('wialonSync.logs.columns.message'),
     align: 'left',
     field: 'message',
     sortable: false,
   },
   {
     name: 'actions',
-    label: 'Дії',
+    label: t('wialonSync.common.actions'),
     align: 'center',
     style: 'width: 100px',
   },
@@ -461,7 +481,7 @@ const loadLogs = async () => {
     console.error('Error loading logs:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження логів',
+      message: t('wialonSync.common.errorLoadingLogs'),
       icon: 'error',
     })
   } finally {
@@ -480,8 +500,8 @@ const loadSessions = async () => {
 
 const clearLogs = async () => {
   $q.dialog({
-    title: 'Підтвердження',
-    message: 'Видалити всі логи? Цю дію неможливо скасувати.',
+    title: t('wialonSync.common.confirm'),
+    message: t('wialonSync.common.clearLogsConfirm'),
     cancel: true,
     persistent: true,
   }).onOk(async () => {
@@ -490,7 +510,7 @@ const clearLogs = async () => {
 
       $q.notify({
         color: 'positive',
-        message: 'Логи очищено',
+        message: t('wialonSync.common.logsCleared'),
         icon: 'clear_all',
       })
 
@@ -499,7 +519,7 @@ const clearLogs = async () => {
       console.error('Error clearing logs:', error)
       $q.notify({
         color: 'negative',
-        message: 'Помилка очищення логів',
+        message: t('wialonSync.common.errorClearingLogs'),
         icon: 'error',
       })
     }
@@ -516,14 +536,14 @@ const copyLogMessage = async (log) => {
     await copyToClipboard(log.message)
     $q.notify({
       color: 'positive',
-      message: 'Повідомлення скопійовано',
+      message: t('wialonSync.common.messageCopied'),
       icon: 'content_copy',
     })
   } catch (error) {
     console.error('Error copying to clipboard:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка копіювання',
+      message: t('wialonSync.common.errorCopying'),
       icon: 'error',
     })
   }
@@ -534,14 +554,14 @@ const copyJson = async (details) => {
     await copyToClipboard(JSON.stringify(details, null, 2))
     $q.notify({
       color: 'positive',
-      message: 'JSON скопійовано',
+      message: t('wialonSync.common.jsonCopied'),
       icon: 'content_copy',
     })
   } catch (error) {
     console.error('Error copying to clipboard:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка копіювання',
+      message: t('wialonSync.common.errorCopying'),
       icon: 'error',
     })
   }

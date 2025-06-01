@@ -56,28 +56,28 @@
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-primary">{{ stats.total }}</div>
-          <div class="text-caption">Всього правил</div>
+          <div class="text-caption">{{ $t('wialonSync.rules.stats.total') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-positive">{{ stats.active }}</div>
-          <div class="text-caption">Активних</div>
+          <div class="text-caption">{{ $t('wialonSync.rules.stats.active') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-grey">{{ stats.inactive }}</div>
-          <div class="text-caption">Неактивних</div>
+          <div class="text-caption">{{ $t('wialonSync.rules.stats.inactive') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-blue">{{ stats.executions }}</div>
-          <div class="text-caption">Виконань сьогодні</div>
+          <div class="text-caption">{{ $t('wialonSync.rules.stats.executions') }}</div>
         </q-card-section>
       </q-card>
     </div>
@@ -132,7 +132,7 @@
           <div v-if="props.value">
             {{ formatDateTime(props.value) }}
           </div>
-          <span v-else class="text-grey-7">Ніколи</span>
+          <span v-else class="text-grey-7">{{ $t('wialonSync.common.never') }}</span>
         </q-td>
       </template>
 
@@ -152,7 +152,7 @@
             :disable="!props.row.is_active"
             @click="executeRule(props.row)"
           >
-            <q-tooltip>Виконати правило</q-tooltip>
+            <q-tooltip>{{ $t('wialonSync.common.executeRule') }}</q-tooltip>
           </q-btn>
 
           <q-btn flat round dense icon="visibility" @click="showRuleDetails(props.row)">
@@ -160,7 +160,7 @@
           </q-btn>
 
           <q-btn flat round dense icon="delete" color="negative" @click="deleteRule(props.row)">
-            <q-tooltip>Видалити</q-tooltip>
+            <q-tooltip>{{ $t('wialonSync.common.delete') }}</q-tooltip>
           </q-btn>
         </q-td>
       </template>
@@ -169,7 +169,7 @@
       <template v-slot:no-data>
         <div class="full-width row flex-center text-grey q-gutter-sm">
           <q-icon size="2em" name="rule" />
-          <span>Правила синхронізації не знайдені</span>
+          <span>{{ $t('wialonSync.common.noRulesFound') }}</span>
         </div>
       </template>
     </q-table>
@@ -190,7 +190,7 @@
                 <q-input
                   v-model="ruleForm.name"
                   :label="$t('wialonSync.rules.form.name')"
-                  :rules="[(val) => !!val || 'Назва є обов\'язковою']"
+                  :rules="[(val) => !!val || $t('wialonSync.common.nameRequired')]"
                   outlined
                   dense
                 />
@@ -224,7 +224,7 @@
                   v-model="ruleForm.rule_type"
                   :options="typeOptions"
                   :label="$t('wialonSync.rules.form.type')"
-                  :rules="[(val) => !!val || 'Тип правила є обов\'язковим']"
+                  :rules="[(val) => !!val || $t('wialonSync.common.ruleTypeRequired')]"
                   outlined
                   dense
                 />
@@ -245,7 +245,7 @@
               type="textarea"
               outlined
               rows="8"
-              :rules="[(val) => !!val || 'SQL запит є обов\'язковим']"
+              :rules="[(val) => !!val || $t('wialonSync.common.sqlQueryRequired')]"
             />
 
             <q-input
@@ -254,14 +254,19 @@
               type="textarea"
               outlined
               rows="4"
-              hint='JSON формат: {"key": "value"}'
+              :hint="$t('wialonSync.common.jsonFormat')"
             />
           </q-form>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat :label="$t('common.cancel')" v-close-popup />
-          <q-btn :label="$t('common.save')" color="primary" :loading="saving" @click="saveRule" />
+          <q-btn flat :label="$t('wialonSync.common.cancel')" v-close-popup />
+          <q-btn
+            :label="$t('wialonSync.common.save')"
+            color="primary"
+            :loading="saving"
+            @click="saveRule"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -270,7 +275,7 @@
     <q-dialog v-model="showDetailsDialog" maximized>
       <q-card>
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Деталі правила</div>
+          <div class="text-h6">{{ $t('wialonSync.common.ruleDetails') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -280,13 +285,18 @@
             <!-- Загальна інформація -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Загальна інформація</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.common.generalInfo') }}</div>
 
                 <div class="q-gutter-sm">
-                  <div><strong>Назва:</strong> {{ selectedRule.name }}</div>
-                  <div><strong>Опис:</strong> {{ selectedRule.description || '-' }}</div>
                   <div>
-                    <strong>Тип:</strong>
+                    <strong>{{ $t('wialonSync.rules.form.name') }}:</strong> {{ selectedRule.name }}
+                  </div>
+                  <div>
+                    <strong>{{ $t('wialonSync.rules.form.description') }}:</strong>
+                    {{ selectedRule.description || '-' }}
+                  </div>
+                  <div>
+                    <strong>{{ $t('wialonSync.rules.columns.type') }}:</strong>
                     <q-chip
                       :color="getTypeColor(selectedRule.rule_type)"
                       text-color="white"
@@ -295,18 +305,25 @@
                       {{ $t(`wialonSync.rules.types.${selectedRule.rule_type}`) }}
                     </q-chip>
                   </div>
-                  <div><strong>Порядок виконання:</strong> {{ selectedRule.execution_order }}</div>
                   <div>
-                    <strong>Активне:</strong>
+                    <strong>{{ $t('wialonSync.rules.form.executionOrder') }}:</strong>
+                    {{ selectedRule.execution_order }}
+                  </div>
+                  <div>
+                    <strong>{{ $t('wialonSync.rules.columns.isActive') }}:</strong>
                     <q-icon
                       :name="selectedRule.is_active ? 'check_circle' : 'cancel'"
                       :color="selectedRule.is_active ? 'positive' : 'negative'"
                     />
                   </div>
                   <div>
-                    <strong>Створено:</strong> {{ formatDateTime(selectedRule.created_at) }}
+                    <strong>{{ $t('wialonSync.common.created') }}:</strong>
+                    {{ formatDateTime(selectedRule.created_at) }}
                   </div>
-                  <div><strong>Автор:</strong> {{ selectedRule.created_by_name || '-' }}</div>
+                  <div>
+                    <strong>{{ $t('wialonSync.common.author') }}:</strong>
+                    {{ selectedRule.created_by_name || '-' }}
+                  </div>
                 </div>
               </q-card-section>
             </q-card>
@@ -314,18 +331,21 @@
             <!-- Статистика виконань -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Статистика виконань</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.common.executionStats') }}
+                </div>
 
                 <div class="q-gutter-sm">
                   <div>
-                    <strong>Всього виконань:</strong> {{ selectedRule.total_executions || 0 }}
+                    <strong>{{ $t('wialonSync.common.totalExecutions') }}:</strong>
+                    {{ selectedRule.total_executions || 0 }}
                   </div>
                   <div>
-                    <strong>Останнє виконання:</strong>
+                    <strong>{{ $t('wialonSync.rules.columns.lastExecution') }}:</strong>
                     {{
                       selectedRule.last_execution
                         ? formatDateTime(selectedRule.last_execution)
-                        : 'Ніколи'
+                        : $t('wialonSync.common.never')
                     }}
                   </div>
                 </div>
@@ -335,7 +355,7 @@
             <!-- SQL запит -->
             <q-card flat bordered class="col-12">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">SQL запит</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.rules.form.sqlQuery') }}</div>
 
                 <pre class="sql-query">{{ selectedRule.sql_query }}</pre>
               </q-card-section>
@@ -344,7 +364,9 @@
             <!-- Параметри -->
             <q-card flat bordered class="col-12" v-if="selectedRule.parameters">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Параметри</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.rules.form.parameters') }}
+                </div>
 
                 <pre class="parameters">{{ JSON.stringify(selectedRule.parameters, null, 2) }}</pre>
               </q-card-section>
@@ -367,9 +389,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar, date } from 'quasar'
+import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -419,12 +443,12 @@ const pagination = ref({
 
 // Опції для типів правил
 const typeOptions = [
-  { label: 'Зіставлення клієнтів', value: 'client_mapping' },
-  { label: "Зіставлення об'єктів", value: 'object_mapping' },
-  { label: 'Перевірка обладнання', value: 'equipment_check' },
-  { label: 'Порівняння назв', value: 'name_comparison' },
-  { label: 'Перевірка власників', value: 'owner_validation' },
-  { label: 'Власне правило', value: 'custom' },
+  { label: t('wialonSync.rules.types.client_mapping'), value: 'client_mapping' },
+  { label: t('wialonSync.rules.types.object_mapping'), value: 'object_mapping' },
+  { label: t('wialonSync.rules.types.equipment_check'), value: 'equipment_check' },
+  { label: t('wialonSync.rules.types.name_comparison'), value: 'name_comparison' },
+  { label: t('wialonSync.rules.types.owner_validation'), value: 'owner_validation' },
+  { label: t('wialonSync.rules.types.custom'), value: 'custom' },
 ]
 
 // Колонки таблиці
@@ -432,7 +456,7 @@ const columns = [
   {
     name: 'execution_order',
     required: true,
-    label: 'Порядок',
+    label: t('wialonSync.common.order'),
     align: 'center',
     field: 'execution_order',
     sortable: true,
@@ -440,42 +464,42 @@ const columns = [
   {
     name: 'name',
     required: true,
-    label: 'Назва',
+    label: t('wialonSync.rules.columns.name'),
     align: 'left',
     field: 'name',
     sortable: true,
   },
   {
     name: 'rule_type',
-    label: 'Тип',
+    label: t('wialonSync.rules.columns.type'),
     align: 'center',
     field: 'rule_type',
     sortable: true,
   },
   {
     name: 'is_active',
-    label: 'Активне',
+    label: t('wialonSync.rules.columns.isActive'),
     align: 'center',
     field: 'is_active',
     sortable: true,
   },
   {
     name: 'total_executions',
-    label: 'Виконань',
+    label: t('wialonSync.common.executions'),
     align: 'center',
     field: 'total_executions',
     sortable: true,
   },
   {
     name: 'last_execution',
-    label: 'Останнє виконання',
+    label: t('wialonSync.rules.columns.lastExecution'),
     align: 'center',
     field: 'last_execution',
     sortable: true,
   },
   {
     name: 'actions',
-    label: 'Дії',
+    label: t('wialonSync.common.actions'),
     align: 'center',
   },
 ]
@@ -524,7 +548,7 @@ const loadRules = async () => {
     console.error('Error loading rules:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження правил синхронізації',
+      message: t('wialonSync.common.errorLoadingRules'),
       icon: 'error',
     })
   } finally {
@@ -563,7 +587,7 @@ const saveRule = async () => {
       const parsedParameters = JSON.parse(parametersJson.value)
       ruleForm.value.parameters = parsedParameters
     } catch {
-      throw new Error('Невірний формат JSON для параметрів')
+      throw new Error(t('wialonSync.common.invalidJsonFormat'))
     }
 
     if (editingRule.value) {
@@ -574,7 +598,9 @@ const saveRule = async () => {
 
     $q.notify({
       color: 'positive',
-      message: editingRule.value ? 'Правило оновлено' : 'Правило створено',
+      message: editingRule.value
+        ? t('wialonSync.common.ruleUpdated')
+        : t('wialonSync.common.ruleCreated'),
       icon: 'check',
     })
 
@@ -584,7 +610,7 @@ const saveRule = async () => {
     console.error('Error saving rule:', error)
     $q.notify({
       color: 'negative',
-      message: error.message || 'Помилка збереження правила',
+      message: error.message || t('wialonSync.common.errorSavingRule'),
       icon: 'error',
     })
   } finally {
@@ -601,14 +627,16 @@ const toggleRuleActive = async (rule, isActive) => {
 
     $q.notify({
       color: 'positive',
-      message: `Правило ${isActive ? 'активовано' : 'деактивовано'}`,
+      message: t(
+        isActive ? 'wialonSync.common.ruleActivated' : 'wialonSync.common.ruleDeactivated',
+      ),
       icon: 'check',
     })
   } catch (error) {
     console.error('Error toggling rule:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка зміни статусу правила',
+      message: t('wialonSync.common.errorTogglingRule'),
       icon: 'error',
     })
   }
@@ -620,14 +648,14 @@ const executeRule = async (rule) => {
 
     $q.notify({
       color: 'positive',
-      message: `Правило "${rule.name}" виконано`,
+      message: t('wialonSync.common.ruleExecuted', { name: rule.name }),
       icon: 'play_arrow',
     })
   } catch (error) {
     console.error('Error executing rule:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка виконання правила',
+      message: t('wialonSync.common.errorExecutingRule'),
       icon: 'error',
     })
   }
@@ -635,8 +663,8 @@ const executeRule = async (rule) => {
 
 const deleteRule = async (rule) => {
   $q.dialog({
-    title: 'Підтвердження',
-    message: `Видалити правило "${rule.name}"?`,
+    title: t('wialonSync.common.confirm'),
+    message: t('wialonSync.common.deleteRuleConfirm', { name: rule.name }),
     cancel: true,
     persistent: true,
   }).onOk(async () => {
@@ -645,7 +673,7 @@ const deleteRule = async (rule) => {
 
       $q.notify({
         color: 'positive',
-        message: 'Правило видалено',
+        message: t('wialonSync.common.ruleDeleted'),
         icon: 'delete',
       })
 
@@ -654,7 +682,7 @@ const deleteRule = async (rule) => {
       console.error('Error deleting rule:', error)
       $q.notify({
         color: 'negative',
-        message: 'Помилка видалення правила',
+        message: t('wialonSync.common.errorDeletingRule'),
         icon: 'error',
       })
     }

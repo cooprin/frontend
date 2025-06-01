@@ -3,7 +3,7 @@
     <!-- Панель управління -->
     <div class="row q-gutter-md q-mb-lg items-center">
       <q-btn
-        :label="$t('wialonSync.discrepancies.approveSelected')"
+        :label="$t('wialonSync.discrepancies.actions.approveSelected')"
         color="positive"
         icon="check"
         :disable="!hasSelected || loading"
@@ -61,28 +61,28 @@
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-orange">{{ stats.pending }}</div>
-          <div class="text-caption">{{ $t('wialonSync.discrepancies.pending') }}</div>
+          <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.pending') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-positive">{{ stats.approved }}</div>
-          <div class="text-caption">Схвалено</div>
+          <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.approved') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-negative">{{ stats.rejected }}</div>
-          <div class="text-caption">Відхилено</div>
+          <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.rejected') }}</div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
           <div class="text-h6 text-grey">{{ stats.ignored }}</div>
-          <div class="text-caption">Проігноровано</div>
+          <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.ignored') }}</div>
         </q-card-section>
       </q-card>
     </div>
@@ -216,7 +216,7 @@
     <q-dialog v-model="showDetailsDialog" maximized>
       <q-card>
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Деталі розбіжності</div>
+          <div class="text-h6">{{ $t('wialonSync.common.discrepancyDetails') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -226,11 +226,11 @@
             <!-- Загальна інформація -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Загальна інформація</div>
+                <div class="text-subtitle1 q-mb-md">{{ $t('wialonSync.common.generalInfo') }}</div>
 
                 <div class="q-gutter-sm">
                   <div>
-                    <strong>Тип:</strong>
+                    <strong>{{ $t('wialonSync.discrepancies.columns.type') }}:</strong>
                     <q-chip
                       :color="getTypeColor(selectedDiscrepancy.discrepancy_type)"
                       text-color="white"
@@ -242,7 +242,7 @@
                     </q-chip>
                   </div>
                   <div>
-                    <strong>Статус:</strong>
+                    <strong>{{ $t('wialonSync.discrepancies.columns.status') }}:</strong>
                     <q-chip
                       :color="getStatusColor(selectedDiscrepancy.status)"
                       text-color="white"
@@ -252,13 +252,16 @@
                     </q-chip>
                   </div>
                   <div>
-                    <strong>Знайдено:</strong> {{ formatDateTime(selectedDiscrepancy.created_at) }}
+                    <strong>{{ $t('wialonSync.common.found') }}:</strong>
+                    {{ formatDateTime(selectedDiscrepancy.created_at) }}
                   </div>
                   <div v-if="selectedDiscrepancy.resolved_at">
-                    <strong>Вирішено:</strong> {{ formatDateTime(selectedDiscrepancy.resolved_at) }}
+                    <strong>{{ $t('wialonSync.discrepancies.columns.resolvedAt') }}:</strong>
+                    {{ formatDateTime(selectedDiscrepancy.resolved_at) }}
                   </div>
                   <div v-if="selectedDiscrepancy.resolved_by_name">
-                    <strong>Вирішив:</strong> {{ selectedDiscrepancy.resolved_by_name }}
+                    <strong>{{ $t('wialonSync.common.resolvedBy') }}:</strong>
+                    {{ selectedDiscrepancy.resolved_by_name }}
                   </div>
                 </div>
               </q-card-section>
@@ -267,7 +270,9 @@
             <!-- Дані з Wialon -->
             <q-card flat bordered class="col-12 col-md-6">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Дані з Wialon</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.discrepancies.columns.wialonData') }}
+                </div>
 
                 <pre class="text-caption">{{
                   JSON.stringify(selectedDiscrepancy.wialon_entity_data, null, 2)
@@ -283,7 +288,9 @@
               v-if="selectedDiscrepancy.system_entity_data"
             >
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Дані в системі</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.discrepancies.columns.systemData') }}
+                </div>
 
                 <pre class="text-caption">{{
                   JSON.stringify(selectedDiscrepancy.system_entity_data, null, 2)
@@ -294,7 +301,9 @@
             <!-- Примітки -->
             <q-card flat bordered class="col-12" v-if="selectedDiscrepancy.resolution_notes">
               <q-card-section>
-                <div class="text-subtitle1 q-mb-md">Примітки до вирішення</div>
+                <div class="text-subtitle1 q-mb-md">
+                  {{ $t('wialonSync.common.resolutionNotes') }}
+                </div>
                 <p>{{ selectedDiscrepancy.resolution_notes }}</p>
               </q-card-section>
             </q-card>
@@ -327,10 +336,12 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
 const route = useRoute()
+const { t } = useI18n()
 
 // State
 const loading = ref(false)
@@ -366,19 +377,22 @@ const pagination = ref({
 
 // Опції для фільтрів
 const typeOptions = [
-  { label: 'Новий клієнт', value: 'new_client' },
-  { label: "Новий об'єкт", value: 'new_object' },
-  { label: "Новий об'єкт (відомий клієнт)", value: 'new_object_with_known_client' },
-  { label: 'Зміна назви клієнта', value: 'client_name_changed' },
-  { label: "Зміна назви об'єкта", value: 'object_name_changed' },
-  { label: 'Зміна власника', value: 'owner_changed' },
+  { label: t('wialonSync.discrepancies.types.new_client'), value: 'new_client' },
+  { label: t('wialonSync.discrepancies.types.new_object'), value: 'new_object' },
+  {
+    label: t('wialonSync.discrepancies.types.new_object_with_known_client'),
+    value: 'new_object_with_known_client',
+  },
+  { label: t('wialonSync.discrepancies.types.client_name_changed'), value: 'client_name_changed' },
+  { label: t('wialonSync.discrepancies.types.object_name_changed'), value: 'object_name_changed' },
+  { label: t('wialonSync.discrepancies.types.owner_changed'), value: 'owner_changed' },
 ]
 
 const statusOptions = [
-  { label: 'Очікує', value: 'pending' },
-  { label: 'Схвалено', value: 'approved' },
-  { label: 'Відхилено', value: 'rejected' },
-  { label: 'Проігноровано', value: 'ignored' },
+  { label: t('wialonSync.discrepancies.status.pending'), value: 'pending' },
+  { label: t('wialonSync.discrepancies.status.approved'), value: 'approved' },
+  { label: t('wialonSync.discrepancies.status.rejected'), value: 'rejected' },
+  { label: t('wialonSync.discrepancies.status.ignored'), value: 'ignored' },
 ]
 
 // Колонки таблиці
@@ -386,39 +400,39 @@ const columns = [
   {
     name: 'discrepancy_type',
     required: true,
-    label: 'Тип',
+    label: t('wialonSync.discrepancies.columns.type'),
     align: 'left',
     field: 'discrepancy_type',
     sortable: true,
   },
   {
     name: 'wialon_data',
-    label: 'Дані з Wialon',
+    label: t('wialonSync.discrepancies.columns.wialonData'),
     align: 'left',
     field: 'wialon_entity_data',
   },
   {
     name: 'system_data',
-    label: 'Дані в системі',
+    label: t('wialonSync.discrepancies.columns.systemData'),
     align: 'left',
     field: 'system_entity_data',
   },
   {
     name: 'suggested_action',
-    label: 'Запропонована дія',
+    label: t('wialonSync.discrepancies.columns.suggestedAction'),
     align: 'center',
     field: 'suggested_action',
   },
   {
     name: 'status',
-    label: 'Статус',
+    label: t('wialonSync.discrepancies.columns.status'),
     align: 'center',
     field: 'status',
     sortable: true,
   },
   {
     name: 'created_at',
-    label: 'Знайдено',
+    label: t('wialonSync.common.found'),
     align: 'center',
     field: 'created_at',
     format: (val) => date.formatDate(val, 'DD.MM.YYYY HH:mm'),
@@ -426,7 +440,7 @@ const columns = [
   },
   {
     name: 'actions',
-    label: 'Дії',
+    label: t('wialonSync.common.actions'),
     align: 'center',
   },
 ]
@@ -482,13 +496,14 @@ const loadDiscrepancies = async () => {
     console.error('Error loading discrepancies:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження розбіжностей',
+      message: t('wialonSync.common.errorLoadingDiscrepancies'),
       icon: 'error',
     })
   } finally {
     loading.value = false
   }
 }
+
 const resolveDiscrepancy = async (discrepancy, action) => {
   try {
     await WialonSyncApi.resolveDiscrepancies([discrepancy.id], action)
@@ -499,7 +514,7 @@ const resolveDiscrepancy = async (discrepancy, action) => {
 
     $q.notify({
       color: 'positive',
-      message: 'Розбіжність вирішено',
+      message: t('wialonSync.common.discrepancyResolved'),
       icon: 'check',
     })
 
@@ -509,7 +524,7 @@ const resolveDiscrepancy = async (discrepancy, action) => {
     console.error('Error resolving discrepancy:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || 'Помилка вирішення розбіжності',
+      message: error.response?.data?.message || t('wialonSync.discrepancies.resolveError'),
       icon: 'error',
     })
   }
@@ -532,7 +547,7 @@ const resolveSelected = async (action) => {
 
     $q.notify({
       color: 'positive',
-      message: `Вирішено ${selected.value.length} розбіжностей`,
+      message: t('wialonSync.common.discrepanciesResolved', { count: selected.value.length }),
       icon: 'check',
     })
 
@@ -542,7 +557,7 @@ const resolveSelected = async (action) => {
     console.error('Error resolving discrepancies:', error)
     $q.notify({
       color: 'negative',
-      message: error.response?.data?.message || 'Помилка вирішення розбіжностей',
+      message: error.response?.data?.message || t('wialonSync.discrepancies.resolveError'),
       icon: 'error',
     })
   }
