@@ -9,6 +9,7 @@
         :disable="!hasSelected || loading"
         @click="resolveSelected('ignored')"
       />
+
       <q-btn
         :label="$t('wialonSync.common.refresh')"
         color="secondary"
@@ -175,7 +176,13 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn-group v-if="props.row.status === 'pending'" flat>
-            <q-btn flat dense icon="edit" color="primary" @click="openInteractiveDialog(props.row)">
+            <q-btn
+              flat
+              dense
+              :icon="getActionIcon(props.row.discrepancy_type)"
+              :color="getActionColor(props.row.discrepancy_type)"
+              @click="openInteractiveDialog(props.row)"
+            >
               <q-tooltip>{{ getActionTooltip(props.row.discrepancy_type) }}</q-tooltip>
             </q-btn>
 
@@ -305,14 +312,9 @@
 
         <q-card-actions align="right" v-if="selectedDiscrepancy?.status === 'pending'">
           <q-btn
-            :label="$t('wialonSync.discrepancies.actions.approve')"
-            color="positive"
-            @click="resolveDiscrepancy(selectedDiscrepancy, 'approved')"
-          />
-          <q-btn
-            :label="$t('wialonSync.discrepancies.actions.reject')"
-            color="negative"
-            @click="resolveDiscrepancy(selectedDiscrepancy, 'rejected')"
+            :label="getActionTooltip(selectedDiscrepancy.discrepancy_type)"
+            :color="getActionColor(selectedDiscrepancy.discrepancy_type)"
+            @click="openInteractiveDialog(selectedDiscrepancy)"
           />
           <q-btn
             :label="$t('wialonSync.discrepancies.actions.ignore')"
@@ -322,6 +324,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
     <!-- Діалоги для інтерактивного вирішення розбіжностей -->
 
     <!-- Діалог клієнта -->
@@ -357,19 +360,19 @@ const $q = useQuasar()
 const route = useRoute()
 const { t } = useI18n()
 
-// Діалоги для інтерактивного вирішення
-const showClientDialog = ref(false)
-const showObjectDialog = ref(false)
-const showChangeOwnerDialog = ref(false)
-const currentDiscrepancy = ref(null)
-const dialogEditData = ref(null)
-
 // State
 const loading = ref(false)
 const discrepancies = ref([])
 const selected = ref([])
 const showDetailsDialog = ref(false)
 const selectedDiscrepancy = ref(null)
+
+// Діалоги для інтерактивного вирішення
+const showClientDialog = ref(false)
+const showObjectDialog = ref(false)
+const showChangeOwnerDialog = ref(false)
+const currentDiscrepancy = ref(null)
+const dialogEditData = ref(null)
 
 // Фільтри
 const filters = ref({
@@ -513,6 +516,183 @@ const loadDiscrepancies = async () => {
   }
 }
 
+// Інтерактивне вирішення розбіжностей
+const openInteractiveDialog = (discrepancy) => {
+  currentDiscrepancy.value = discrepancy
+
+  switch (discrepancy.discrepancy_type) {
+    case 'new_client':
+      openNewClientDialog(discrepancy)
+      break
+    case 'new_object':
+    case 'new_object_with_known_client':
+      openNewObjectDialog(discrepancy)
+      break
+    case 'client_name_changed':
+      openEditClientDialog(discrepancy)
+      break
+    case 'object_name_changed':
+      openEditObjectDialog(discrepancy)
+      break
+    case 'owner_changed':
+      openChangeOwnerDialog(discrepancy)
+      break
+    default:
+      resolveDiscrepancy(discrepancy, 'approved')
+  }
+}
+
+const openNewClientDialog = (discrepancy) => {
+  const wialonData = discrepancy.wialon_entity_data
+
+  // Для нового клієнта editData = null (режим створення)
+  // Передаємо початкові дані з Wialon через поля форми
+  dialogEditData.value = {
+    name: wialonData.name,
+    full_name: wialonData.full_name || wialonData.name,
+    description: wialonData.description,
+    wialon_id: wialonData.wialon_id,
+    wialon_username: wialonData.name,
+    is_active: true,
+  }
+
+  showClientDialog.value = true
+}
+
+const openEditClientDialog = (discrepancy) => {
+  const systemData = discrepancy.system_entity_data
+  const wialonData = discrepancy.wialon_entity_data
+
+  // Для редагування передаємо системні дані з ID + пропоновану назву
+  dialogEditData.value = {
+    ...systemData,
+    name: wialonData.name, // Пропонована нова назва з Wialon
+  }
+
+  showClientDialog.value = true
+}
+
+const openNewObjectDialog = (discrepancy) => {
+  const wialonData = discrepancy.wialon_entity_data
+
+  // Для нового об'єкта editData = null (режим створення)
+  // Передаємо початкові дані з Wialon
+  dialogEditData.value = {
+    name: wialonData.name,
+    wialon_id: wialonData.wialon_id,
+    description: wialonData.description,
+    client_id: discrepancy.suggested_client_id,
+    status: 'active',
+  }
+
+  showObjectDialog.value = true
+}
+
+const openEditObjectDialog = (discrepancy) => {
+  const systemData = discrepancy.system_entity_data
+  const wialonData = discrepancy.wialon_entity_data
+
+  // Для редагування передаємо системні дані з ID + пропоновану назву
+  dialogEditData.value = {
+    ...systemData,
+    name: wialonData.name, // Пропонована нова назва з Wialon
+  }
+
+  showObjectDialog.value = true
+}
+
+const openChangeOwnerDialog = (discrepancy) => {
+  // Для зміни власника передаємо об'єкт з системи
+  dialogEditData.value = {
+    ...discrepancy.system_entity_data,
+  }
+
+  showChangeOwnerDialog.value = true
+}
+
+const getActionIcon = (discrepancyType) => {
+  const icons = {
+    new_client: 'person_add',
+    new_object: 'add_circle',
+    new_object_with_known_client: 'add_circle',
+    client_name_changed: 'edit',
+    object_name_changed: 'edit',
+    owner_changed: 'swap_horiz',
+  }
+  return icons[discrepancyType] || 'check'
+}
+
+const getActionColor = (discrepancyType) => {
+  const colors = {
+    new_client: 'primary',
+    new_object: 'primary',
+    new_object_with_known_client: 'primary',
+    client_name_changed: 'warning',
+    object_name_changed: 'warning',
+    owner_changed: 'info',
+  }
+  return colors[discrepancyType] || 'positive'
+}
+
+const getActionTooltip = (discrepancyType) => {
+  const tooltips = {
+    new_client: t('wialonSync.discrepancies.actions.createClient'),
+    new_object: t('wialonSync.discrepancies.actions.createObject'),
+    new_object_with_known_client: t('wialonSync.discrepancies.actions.createObject'),
+    client_name_changed: t('wialonSync.discrepancies.actions.updateClient'),
+    object_name_changed: t('wialonSync.discrepancies.actions.updateObject'),
+    owner_changed: t('wialonSync.discrepancies.actions.changeOwner'),
+  }
+  return tooltips[discrepancyType] || t('wialonSync.discrepancies.actions.resolve')
+}
+
+// Обробники успішного збереження з діалогів
+const onClientSaved = async () => {
+  await markDiscrepancyAsApproved()
+  showClientDialog.value = false
+}
+
+const onObjectSaved = async () => {
+  await markDiscrepancyAsApproved()
+  showObjectDialog.value = false
+}
+
+const onOwnerChanged = async () => {
+  await markDiscrepancyAsApproved()
+  showChangeOwnerDialog.value = false
+}
+
+const markDiscrepancyAsApproved = async () => {
+  if (!currentDiscrepancy.value) return
+
+  try {
+    await WialonSyncApi.resolveDiscrepancies(
+      [currentDiscrepancy.value.id],
+      'approved',
+      `Вирішено інтерактивно: ${currentDiscrepancy.value.discrepancy_type}`,
+    )
+
+    // Оновлюємо локальний стан
+    currentDiscrepancy.value.status = 'approved'
+    currentDiscrepancy.value.resolved_at = new Date().toISOString()
+
+    updateStats()
+
+    $q.notify({
+      color: 'positive',
+      message: t('wialonSync.common.discrepancyResolved'),
+      icon: 'check',
+    })
+  } catch (error) {
+    console.error('Error marking discrepancy as approved:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('wialonSync.discrepancies.resolveError'),
+      icon: 'error',
+    })
+  }
+}
+
 const resolveDiscrepancy = async (discrepancy, action) => {
   try {
     await WialonSyncApi.resolveDiscrepancies([discrepancy.id], action)
@@ -608,160 +788,6 @@ const updateStats = () => {
     approved: discrepancies.value.filter((d) => d.status === 'approved').length,
     rejected: discrepancies.value.filter((d) => d.status === 'rejected').length,
     ignored: discrepancies.value.filter((d) => d.status === 'ignored').length,
-  }
-}
-// Інтерактивне вирішення розбіжностей
-const openInteractiveDialog = (discrepancy) => {
-  currentDiscrepancy.value = discrepancy
-
-  switch (discrepancy.discrepancy_type) {
-    case 'new_client':
-      openNewClientDialog(discrepancy)
-      break
-    case 'new_object':
-    case 'new_object_with_known_client':
-      openNewObjectDialog(discrepancy)
-      break
-    case 'client_name_changed':
-      openEditClientDialog(discrepancy)
-      break
-    case 'object_name_changed':
-      openEditObjectDialog(discrepancy)
-      break
-    case 'owner_changed':
-      openChangeOwnerDialog(discrepancy)
-      break
-    default:
-      // Fallback - стандартне автоматичне вирішення
-      resolveDiscrepancy(discrepancy, 'approved')
-  }
-}
-
-const openNewClientDialog = (discrepancy) => {
-  const wialonData = discrepancy.wialon_entity_data
-
-  dialogEditData.value = {
-    name: wialonData.name,
-    full_name: wialonData.full_name || wialonData.name,
-    description: wialonData.description,
-    wialon_id: wialonData.wialon_id,
-    wialon_username: wialonData.name, // Можна використати як username
-    is_active: true,
-  }
-
-  showClientDialog.value = true
-}
-
-const openNewObjectDialog = (discrepancy) => {
-  const wialonData = discrepancy.wialon_entity_data
-
-  dialogEditData.value = {
-    name: wialonData.name,
-    wialon_id: wialonData.wialon_id,
-    description: wialonData.description,
-    client_id: discrepancy.suggested_client_id,
-    status: 'active',
-  }
-
-  showObjectDialog.value = true
-}
-
-const openEditClientDialog = (discrepancy) => {
-  const systemData = discrepancy.system_entity_data
-  const wialonData = discrepancy.wialon_entity_data
-
-  // Береми існуючі дані та пропонуємо нову назву з Wialon
-  dialogEditData.value = {
-    ...systemData,
-    name: wialonData.name, // Пропонована нова назва
-    _original_name: systemData.name, // Зберігаємо оригінальну назву для референсу
-    _suggested_name: wialonData.name,
-  }
-
-  showClientDialog.value = true
-}
-
-const openEditObjectDialog = (discrepancy) => {
-  const systemData = discrepancy.system_entity_data
-  const wialonData = discrepancy.wialon_entity_data
-
-  // Береми існуючі дані та пропонуємо нову назву з Wialon
-  dialogEditData.value = {
-    ...systemData,
-    name: wialonData.name, // Пропонована нова назва
-    _original_name: systemData.name, // Зберігаємо оригінальну назву для референсу
-    _suggested_name: wialonData.name,
-  }
-
-  showObjectDialog.value = true
-}
-
-const openChangeOwnerDialog = (discrepancy) => {
-  // Для зміни власника використовуємо існуючий об'єкт з системи
-  dialogEditData.value = {
-    ...discrepancy.system_entity_data,
-    client_id: discrepancy.suggested_client_id,
-    _new_owner_id: discrepancy.suggested_client_id,
-  }
-
-  showChangeOwnerDialog.value = true
-}
-
-const getActionTooltip = (discrepancyType) => {
-  const tooltips = {
-    new_client: t('wialonSync.discrepancies.actions.createClient'),
-    new_object: t('wialonSync.discrepancies.actions.createObject'),
-    new_object_with_known_client: t('wialonSync.discrepancies.actions.createObject'),
-    client_name_changed: t('wialonSync.discrepancies.actions.updateClient'),
-    object_name_changed: t('wialonSync.discrepancies.actions.updateObject'),
-    owner_changed: t('wialonSync.discrepancies.actions.changeOwner'),
-  }
-  return tooltips[discrepancyType] || t('wialonSync.discrepancies.actions.resolve')
-}
-// Обробники успішного збереження з діалогів
-const onClientSaved = async () => {
-  await markDiscrepancyAsApproved()
-  showClientDialog.value = false
-}
-
-const onObjectSaved = async () => {
-  await markDiscrepancyAsApproved()
-  showObjectDialog.value = false
-}
-
-const onOwnerChanged = async () => {
-  await markDiscrepancyAsApproved()
-  showChangeOwnerDialog.value = false
-}
-
-const markDiscrepancyAsApproved = async () => {
-  if (!currentDiscrepancy.value) return
-
-  try {
-    await WialonSyncApi.resolveDiscrepancies(
-      [currentDiscrepancy.value.id],
-      'approved',
-      `Вирішено інтерактивно: ${currentDiscrepancy.value.discrepancy_type}`,
-    )
-
-    // Оновлюємо локальний стан
-    currentDiscrepancy.value.status = 'approved'
-    currentDiscrepancy.value.resolved_at = new Date().toISOString()
-
-    updateStats()
-
-    $q.notify({
-      color: 'positive',
-      message: t('wialonSync.common.discrepancyResolved'),
-      icon: 'check',
-    })
-  } catch (error) {
-    console.error('Error marking discrepancy as approved:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('wialonSync.discrepancies.resolveError'),
-      icon: 'error',
-    })
   }
 }
 
