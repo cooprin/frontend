@@ -46,11 +46,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import WialonSyncSessions from 'components/wialon-sync/WialonSyncSessions.vue'
 import WialonSyncDiscrepancies from 'components/wialon-sync/WialonSyncDiscrepancies.vue'
 import WialonSyncRules from 'components/wialon-sync/WialonSyncRules.vue'
 import WialonSyncLogs from 'components/wialon-sync/WialonSyncLogs.vue'
 
 // Стани
+const { t } = useI18n()
 const tab = ref('sessions')
+
+console.log('WialonSync title:', t('wialonSync.title'))
 </script>
