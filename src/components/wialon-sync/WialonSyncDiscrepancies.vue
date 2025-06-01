@@ -546,7 +546,6 @@ const openNewClientDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
   // Для нового клієнта editData = null (режим створення)
-  // Передаємо початкові дані з Wialon через поля форми
   dialogEditData.value = {
     name: wialonData.name,
     full_name: wialonData.full_name || wialonData.name,
@@ -554,6 +553,7 @@ const openNewClientDialog = (discrepancy) => {
     wialon_id: wialonData.wialon_id,
     wialon_username: wialonData.name,
     is_active: true,
+    // НЕ передаємо id - діалог зрозуміє що це створення
   }
 
   showClientDialog.value = true
@@ -576,13 +576,13 @@ const openNewObjectDialog = (discrepancy) => {
   const wialonData = discrepancy.wialon_entity_data
 
   // Для нового об'єкта editData = null (режим створення)
-  // Передаємо початкові дані з Wialon
   dialogEditData.value = {
     name: wialonData.name,
     wialon_id: wialonData.wialon_id,
     description: wialonData.description,
     client_id: discrepancy.suggested_client_id,
     status: 'active',
+    // НЕ передаємо id - діалог зрозуміє що це створення
   }
 
   showObjectDialog.value = true
