@@ -30,6 +30,8 @@
         outlined
         clearable
         style="min-width: 200px"
+        emit-value
+        map-options
       />
 
       <q-select
@@ -40,15 +42,20 @@
         outlined
         clearable
         style="min-width: 150px"
+        emit-value
+        map-options
       />
+    </div>
 
-      <!-- Пошук -->
+    <!-- Пошук окремо -->
+    <div class="row justify-end q-mb-md">
       <q-input
-        v-model="filter"
+        v-model="filters.search"
         :placeholder="$t('wialonSync.common.search')"
         dense
         outlined
         style="min-width: 250px"
+        debounce="300"
       >
         <template v-slot:append>
           <q-icon name="search" />
@@ -100,6 +107,9 @@
       binary-state-sort
       flat
       bordered
+      :rows-per-page-options="pagination.rowsPerPageOptions"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :pagination-label="paginationLabel"
     >
       <!-- Тип розбіжності -->
       <template v-slot:body-cell-discrepancy_type="props">
@@ -347,7 +357,6 @@ const { t } = useI18n()
 const loading = ref(false)
 const discrepancies = ref([])
 const selected = ref([])
-const filter = ref('')
 const showDetailsDialog = ref(false)
 const selectedDiscrepancy = ref(null)
 
@@ -356,6 +365,7 @@ const filters = ref({
   type: null,
   status: null,
   sessionId: null,
+  search: '',
 })
 
 // Статистика
@@ -373,10 +383,11 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 15,
   rowsNumber: 0,
+  rowsPerPageOptions: [10, 15, 20, 25, 50],
 })
 
 // Опції для фільтрів
-const typeOptions = [
+const typeOptions = computed(() => [
   { label: t('wialonSync.discrepancies.types.new_client'), value: 'new_client' },
   { label: t('wialonSync.discrepancies.types.new_object'), value: 'new_object' },
   {
@@ -386,17 +397,17 @@ const typeOptions = [
   { label: t('wialonSync.discrepancies.types.client_name_changed'), value: 'client_name_changed' },
   { label: t('wialonSync.discrepancies.types.object_name_changed'), value: 'object_name_changed' },
   { label: t('wialonSync.discrepancies.types.owner_changed'), value: 'owner_changed' },
-]
+])
 
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: t('wialonSync.discrepancies.status.pending'), value: 'pending' },
   { label: t('wialonSync.discrepancies.status.approved'), value: 'approved' },
   { label: t('wialonSync.discrepancies.status.rejected'), value: 'rejected' },
   { label: t('wialonSync.discrepancies.status.ignored'), value: 'ignored' },
-]
+])
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'discrepancy_type',
     required: true,
@@ -443,28 +454,31 @@ const columns = [
     label: t('wialonSync.common.actions'),
     align: 'center',
   },
-]
+])
 
 // Computed
-
 const hasSelected = computed(() => selected.value.length > 0)
 
 // Methods
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 const loadDiscrepancies = async () => {
   loading.value = true
   try {
     const params = {
-      limit: pagination.value.rowsPerPage,
-      offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
+      search: filters.value.search || undefined,
       sessionId: filters.value.sessionId,
       type: filters.value.type,
       status: filters.value.status,
-      search: filter.value || undefined,
     }
 
-    // Видаляємо undefined параметри
+    // Видалити undefined параметри
     Object.keys(params).forEach((key) => {
       if (params[key] === undefined) {
         delete params[key]
@@ -625,20 +639,27 @@ const formatDateTime = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm:ss')
 }
 
+// Функція для встановлення фільтра по сесії (викликається з сесій)
+const setSessionFilter = (sessionId) => {
+  filters.value.sessionId = sessionId
+  pagination.value.page = 1
+  loadDiscrepancies()
+}
+
 // Watch for route changes (session filter)
 watch(
   () => route.query.sessionId,
   (sessionId) => {
     if (sessionId) {
-      filters.value.sessionId = sessionId
-      loadDiscrepancies()
+      setSessionFilter(sessionId)
     }
   },
   { immediate: true },
 )
+
 // Watchers
 watch(
-  () => filters.value,
+  filters,
   () => {
     pagination.value.page = 1
     loadDiscrepancies()
@@ -646,17 +667,14 @@ watch(
   { deep: true },
 )
 
-watch(
-  () => filter.value,
-  () => {
-    pagination.value.page = 1
-    loadDiscrepancies()
-  },
-)
-
 // Lifecycle
 onMounted(() => {
   loadDiscrepancies()
+})
+
+// Expose для доступу з батьківського компонента
+defineExpose({
+  setSessionFilter,
 })
 </script>
 

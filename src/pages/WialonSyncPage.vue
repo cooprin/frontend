@@ -25,19 +25,22 @@
 
       <q-tab-panels v-model="tab" animated>
         <q-tab-panel name="sessions">
-          <wialon-sync-sessions />
+          <wialon-sync-sessions
+            ref="sessionsComponent"
+            @show-discrepancies="handleShowDiscrepancies"
+          />
         </q-tab-panel>
 
         <q-tab-panel name="discrepancies">
-          <wialon-sync-discrepancies />
+          <wialon-sync-discrepancies ref="discrepanciesComponent" />
         </q-tab-panel>
 
         <q-tab-panel name="rules">
-          <wialon-sync-rules />
+          <wialon-sync-rules ref="rulesComponent" />
         </q-tab-panel>
 
         <q-tab-panel name="logs">
-          <wialon-sync-logs />
+          <wialon-sync-logs ref="logsComponent" />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -52,6 +55,21 @@ import WialonSyncRules from 'components/wialon-sync/WialonSyncRules.vue'
 import WialonSyncLogs from 'components/wialon-sync/WialonSyncLogs.vue'
 
 // Стани
-
 const tab = ref('sessions')
+
+// Refs для компонентів
+const sessionsComponent = ref(null)
+const discrepanciesComponent = ref(null)
+const rulesComponent = ref(null)
+const logsComponent = ref(null)
+
+// Обробник для переключення на розбіжності
+const handleShowDiscrepancies = (sessionId) => {
+  tab.value = 'discrepancies'
+  setTimeout(() => {
+    if (discrepanciesComponent.value?.setSessionFilter) {
+      discrepanciesComponent.value.setSessionFilter(sessionId)
+    }
+  }, 100)
+}
 </script>

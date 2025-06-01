@@ -32,6 +32,8 @@
         style="min-width: 200px"
         option-value="value"
         option-label="label"
+        emit-value
+        map-options
       />
 
       <q-select
@@ -42,6 +44,8 @@
         outlined
         clearable
         style="min-width: 150px"
+        emit-value
+        map-options
       />
 
       <q-input
@@ -61,14 +65,17 @@
         outlined
         style="min-width: 150px"
       />
+    </div>
 
-      <!-- Пошук -->
+    <!-- Пошук окремо -->
+    <div class="row justify-end q-mb-md">
       <q-input
-        v-model="filter"
+        v-model="filters.search"
         :placeholder="$t('wialonSync.common.search')"
         dense
         outlined
         style="min-width: 250px"
+        debounce="300"
       >
         <template v-slot:append>
           <q-icon name="search" />
@@ -119,6 +126,9 @@
       flat
       bordered
       dense
+      :rows-per-page-options="pagination.rowsPerPageOptions"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :pagination-label="paginationLabel"
     >
       <!-- Рівень логу -->
       <template v-slot:body-cell-log_level="props">
@@ -343,7 +353,6 @@ const { t } = useI18n()
 const loading = ref(false)
 const logs = ref([])
 const sessions = ref([])
-const filter = ref('')
 const showDetailsDialog = ref(false)
 const selectedLog = ref(null)
 
@@ -353,6 +362,7 @@ const filters = ref({
   level: null,
   dateFrom: null,
   dateTo: null,
+  search: '',
 })
 
 // Статистика
@@ -370,15 +380,16 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 20,
   rowsNumber: 0,
+  rowsPerPageOptions: [10, 15, 20, 25, 50],
 })
 
 // Опції для фільтрів
-const levelOptions = [
+const levelOptions = computed(() => [
   { label: t('wialonSync.logs.levels.info'), value: 'info' },
   { label: t('wialonSync.logs.levels.warning'), value: 'warning' },
   { label: t('wialonSync.logs.levels.error'), value: 'error' },
   { label: t('wialonSync.logs.levels.debug'), value: 'debug' },
-]
+])
 
 const sessionOptions = computed(() => {
   return sessions.value.map((session) => ({
@@ -388,7 +399,7 @@ const sessionOptions = computed(() => {
 })
 
 // Колонки таблиці
-const columns = [
+const columns = computed(() => [
   {
     name: 'created_at',
     required: true,
@@ -420,27 +431,29 @@ const columns = [
     align: 'center',
     style: 'width: 100px',
   },
-]
-
-// Computed
+])
 
 // Methods
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 const loadLogs = async () => {
   loading.value = true
   try {
     const params = {
-      limit: pagination.value.rowsPerPage,
-      offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
+      search: filters.value.search || undefined,
       sessionId: filters.value.sessionId,
       level: filters.value.level,
       dateFrom: filters.value.dateFrom,
       dateTo: filters.value.dateTo,
-      search: filter.value || undefined,
     }
 
-    // Видаляємо undefined параметри
+    // Видалити undefined параметри
     Object.keys(params).forEach((key) => {
       if (params[key] === undefined) {
         delete params[key]
@@ -448,7 +461,6 @@ const loadLogs = async () => {
     })
 
     const response = await WialonSyncApi.getLogs(params)
-
     logs.value = response.data.logs || []
     pagination.value.rowsNumber = response.data.total || 0
     updateStats()
@@ -466,7 +478,7 @@ const loadLogs = async () => {
 
 const loadSessions = async () => {
   try {
-    const response = await WialonSyncApi.getSessions({ limit: 50 })
+    const response = await WialonSyncApi.getSessions({ perPage: 50 })
     sessions.value = response.data.sessions || []
   } catch (error) {
     console.error('Error loading sessions:', error)
@@ -593,7 +605,7 @@ const formatDateTime = (dateString) => {
 
 // Watchers
 watch(
-  () => filters.value,
+  filters,
   () => {
     pagination.value.page = 1
     loadLogs()
@@ -601,13 +613,6 @@ watch(
   { deep: true },
 )
 
-watch(
-  () => filter.value,
-  () => {
-    pagination.value.page = 1
-    loadLogs()
-  },
-)
 // Lifecycle
 onMounted(() => {
   loadSessions()

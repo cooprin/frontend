@@ -78,7 +78,9 @@
       binary-state-sort
       flat
       bordered
-      :rows-per-page-options="[10, 20, 50]"
+      :rows-per-page-options="pagination.rowsPerPageOptions"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :pagination-label="paginationLabel"
     >
       <!-- Статус -->
       <template v-slot:body-cell-status="props">
@@ -256,13 +258,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, getCurrentInstance } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
 const { t } = useI18n()
+const emit = defineEmits(['show-discrepancies'])
 
 // State
 const loading = ref(false)
@@ -292,6 +295,7 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 10,
   rowsNumber: 0,
+  rowsPerPageOptions: [5, 7, 10, 15, 20, 25, 50],
 })
 
 // Колонки таблиці
@@ -347,16 +351,18 @@ const columns = computed(() => [
   },
 ])
 
-// Computed
-
 // Methods
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
 const loadSessions = async () => {
   loading.value = true
   try {
     const params = {
-      limit: pagination.value.rowsPerPage,
-      offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
-      sortBy: pagination.value.sortBy,
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy || undefined,
       descending: pagination.value.descending,
       search: filters.value.search || undefined,
     }
@@ -427,20 +433,7 @@ const showSessionDetails = async (session) => {
 }
 
 const showDiscrepancies = (sessionId) => {
-  // Переключаємося на вкладку розбіжностей і передаємо sessionId як параметр
-  const parent = getCurrentInstance().parent
-  if (parent && parent.setupState && parent.setupState.tab) {
-    parent.setupState.tab.value = 'discrepancies'
-
-    // Встановлюємо фільтр по сесії в компоненті розбіжностей
-    setTimeout(() => {
-      // Шукаємо компонент розбіжностей і передаємо йому sessionId
-      const discrepanciesComponent = parent.refs?.discrepanciesComponent
-      if (discrepanciesComponent && discrepanciesComponent.setSessionFilter) {
-        discrepanciesComponent.setSessionFilter(sessionId)
-      }
-    }, 100)
-  }
+  emit('show-discrepancies', sessionId)
 }
 
 const onRequest = async (props) => {
@@ -542,11 +535,12 @@ const showLogDetails = (log) => {
 
 // Watchers
 watch(
-  () => filters.value.search,
+  filters,
   () => {
     pagination.value.page = 1
     loadSessions()
   },
+  { deep: true },
 )
 
 // Lifecycle
