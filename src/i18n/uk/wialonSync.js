@@ -64,8 +64,16 @@ export default {
       ignore: 'Проігнорувати',
       reject: 'Відхилити',
       approveSelected: 'Схвалити вибрані',
-      bulkAction: 'Масова дія',
+
+      createClient: 'Створити клієнта',
+      createObject: "Створити об'єкт",
+      updateClient: 'Оновити клієнта',
+      updateObject: "Оновити об'єкт",
+      changeOwner: 'Змінити власника',
+      resolve: 'Вирішити',
+      bulkIgnore: 'Проігнорувати вибрані',
     },
+    useInteractiveMode: 'Використовуйте інтерактивний режим для вирішення розбіжностей',
     columns: {
       type: 'Тип',
       entity: 'Сутність',
