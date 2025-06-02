@@ -34,13 +34,69 @@
       flat
       bordered
     >
+      <!-- Тип правила -->
+      <template v-slot:body-cell-rule_type="props">
+        <q-td :props="props">
+          <q-chip
+            :color="getTypeColor(props.value)"
+            text-color="white"
+            :icon="getTypeIcon(props.value)"
+            size="sm"
+          >
+            {{ getTypeLabel(props.value) }}
+          </q-chip>
+        </q-td>
+      </template>
+
+      <!-- Порядок виконання -->
+      <template v-slot:body-cell-execution_order="props">
+        <q-td :props="props">
+          <q-badge :color="props.value <= 5 ? 'positive' : 'orange'" :label="props.value" />
+        </q-td>
+      </template>
+
+      <!-- Активність -->
+      <template v-slot:body-cell-is_active="props">
+        <q-td :props="props">
+          <q-toggle
+            :model-value="props.value"
+            @update:model-value="toggleRuleActive(props.row, $event)"
+            color="positive"
+          />
+        </q-td>
+      </template>
+
       <!-- Дії -->
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <q-btn flat round dense icon="edit" color="primary" @click="editRule(props.row)">
             <q-tooltip>Редагувати</q-tooltip>
           </q-btn>
+
+          <q-btn
+            flat
+            round
+            dense
+            icon="play_arrow"
+            color="positive"
+            :disable="!props.row.is_active"
+            @click="executeRule(props.row)"
+          >
+            <q-tooltip>Виконати</q-tooltip>
+          </q-btn>
+
+          <q-btn flat round dense icon="delete" color="negative" @click="deleteRule(props.row)">
+            <q-tooltip>Видалити</q-tooltip>
+          </q-btn>
         </q-td>
+      </template>
+
+      <!-- Порожня таблиця -->
+      <template v-slot:no-data>
+        <div class="full-width row flex-center text-grey q-gutter-sm">
+          <q-icon size="2em" name="rule" />
+          <span>Правила не знайдено</span>
+        </div>
       </template>
     </q-table>
 
@@ -362,6 +418,117 @@ const onRequest = async (props) => {
 onMounted(() => {
   loadRules()
 })
+
+// Utility methods
+const getTypeColor = (type) => {
+  const colors = {
+    client_mapping: 'blue',
+    object_mapping: 'green',
+    equipment_check: 'orange',
+    name_comparison: 'purple',
+    owner_validation: 'teal',
+    custom: 'indigo',
+  }
+  return colors[type] || 'grey'
+}
+
+const getTypeIcon = (type) => {
+  const icons = {
+    client_mapping: 'people',
+    object_mapping: 'location_on',
+    equipment_check: 'settings',
+    name_comparison: 'text_fields',
+    owner_validation: 'verified',
+    custom: 'code',
+  }
+  return icons[type] || 'rule'
+}
+
+const getTypeLabel = (type) => {
+  const labels = {
+    client_mapping: 'Зіставлення клієнтів',
+    object_mapping: "Зіставлення об'єктів",
+    equipment_check: 'Перевірка обладнання',
+    name_comparison: 'Порівняння назв',
+    owner_validation: 'Валідація власника',
+    custom: 'Користувацьке',
+  }
+  return labels[type] || type
+}
+
+const toggleRuleActive = async (rule, isActive) => {
+  try {
+    const updateData = {
+      name: rule.name,
+      description: rule.description,
+      rule_type: rule.rule_type,
+      sql_query: rule.sql_query,
+      parameters: rule.parameters || {},
+      execution_order: rule.execution_order,
+      is_active: isActive,
+    }
+
+    await WialonSyncApi.updateRule(rule.id, updateData)
+    rule.is_active = isActive
+
+    $q.notify({
+      color: 'positive',
+      message: isActive ? 'Правило активовано' : 'Правило деактивовано',
+      icon: 'check',
+    })
+  } catch (error) {
+    console.error('Error toggling rule:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка зміни статусу правила',
+      icon: 'error',
+    })
+  }
+}
+
+const executeRule = async (rule) => {
+  try {
+    await WialonSyncApi.executeRule(rule.id)
+    $q.notify({
+      color: 'positive',
+      message: `Правило "${rule.name}" виконано`,
+      icon: 'play_arrow',
+    })
+  } catch (error) {
+    console.error('Error executing rule:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка виконання правила',
+      icon: 'error',
+    })
+  }
+}
+
+const deleteRule = async (rule) => {
+  $q.dialog({
+    title: 'Підтвердження',
+    message: `Видалити правило "${rule.name}"?`,
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    try {
+      await WialonSyncApi.deleteRule(rule.id)
+      $q.notify({
+        color: 'positive',
+        message: 'Правило видалено',
+        icon: 'delete',
+      })
+      loadRules()
+    } catch (error) {
+      console.error('Error deleting rule:', error)
+      $q.notify({
+        color: 'negative',
+        message: 'Помилка видалення правила',
+        icon: 'error',
+      })
+    }
+  })
+}
 </script>
 
 <style scoped></style>
