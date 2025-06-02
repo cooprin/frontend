@@ -55,7 +55,48 @@
 
         <q-card-section>
           <q-form @submit="saveRule" class="q-gutter-md">
-            <q-input v-model="ruleForm.name" label="Назва" outlined dense />
+            <div class="row q-gutter-md">
+              <div class="col-12 col-md-8">
+                <q-input v-model="ruleForm.name" label="Назва" outlined dense />
+              </div>
+
+              <div class="col-12 col-md-4">
+                <q-input
+                  v-model.number="ruleForm.execution_order"
+                  label="Порядок виконання"
+                  type="number"
+                  outlined
+                  dense
+                  min="1"
+                  max="999"
+                />
+              </div>
+            </div>
+
+            <q-input
+              v-model="ruleForm.description"
+              label="Опис"
+              type="textarea"
+              outlined
+              dense
+              autogrow
+            />
+
+            <div class="row q-gutter-md">
+              <div class="col-12 col-md-6">
+                <q-select
+                  v-model="ruleForm.rule_type"
+                  :options="typeOptions"
+                  label="Тип правила"
+                  outlined
+                  dense
+                />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <q-toggle v-model="ruleForm.is_active" label="Активне" color="positive" />
+              </div>
+            </div>
 
             <q-input
               v-model="ruleForm.sql_query"
@@ -63,6 +104,15 @@
               type="textarea"
               outlined
               rows="8"
+            />
+
+            <q-input
+              v-model="parametersJson"
+              label="Параметри (JSON)"
+              type="textarea"
+              outlined
+              rows="4"
+              hint="Формат JSON"
             />
           </q-form>
         </q-card-section>
@@ -95,8 +145,15 @@ const editingRule = ref(false)
 const ruleForm = ref({
   id: null,
   name: '',
+  description: '',
+  rule_type: '',
   sql_query: '',
+  parameters: {},
+  execution_order: 1,
+  is_active: true,
 })
+
+const parametersJson = ref('{}')
 
 // Пагінація
 const pagination = ref({
@@ -107,14 +164,46 @@ const pagination = ref({
   rowsNumber: 0,
 })
 
+// Опції для типів правил
+const typeOptions = computed(() => [
+  { label: 'Зіставлення клієнтів', value: 'client_mapping' },
+  { label: "Зіставлення об'єктів", value: 'object_mapping' },
+  { label: 'Перевірка обладнання', value: 'equipment_check' },
+  { label: 'Порівняння назв', value: 'name_comparison' },
+  { label: 'Валідація власника', value: 'owner_validation' },
+  { label: 'Користувацьке', value: 'custom' },
+])
+
 // Computed колонки таблиці
 const columns = computed(() => [
+  {
+    name: 'execution_order',
+    required: true,
+    label: 'Порядок',
+    align: 'center',
+    field: 'execution_order',
+    sortable: true,
+  },
   {
     name: 'name',
     required: true,
     label: 'Назва',
     align: 'left',
     field: 'name',
+    sortable: true,
+  },
+  {
+    name: 'rule_type',
+    label: 'Тип',
+    align: 'center',
+    field: 'rule_type',
+    sortable: true,
+  },
+  {
+    name: 'is_active',
+    label: 'Активне',
+    align: 'center',
+    field: 'is_active',
     sortable: true,
   },
   {
@@ -152,30 +241,83 @@ const showCreateDialog = () => {
   ruleForm.value = {
     id: null,
     name: '',
+    description: '',
+    rule_type: '',
     sql_query: '',
+    parameters: {},
+    execution_order: rules.value.length + 1,
+    is_active: true,
   }
+  parametersJson.value = '{}'
   showRuleDialog.value = true
 }
 
 const editRule = (rule) => {
   editingRule.value = true
+
+  let parametersString = '{}'
+  try {
+    if (rule.parameters) {
+      if (typeof rule.parameters === 'string') {
+        JSON.parse(rule.parameters)
+        parametersString = rule.parameters
+      } else if (typeof rule.parameters === 'object') {
+        parametersString = JSON.stringify(rule.parameters, null, 2)
+      }
+    }
+  } catch (error) {
+    console.warn('Invalid parameters JSON, using empty object:', error)
+    parametersString = '{}'
+  }
+
   ruleForm.value = {
     id: rule.id,
     name: rule.name || '',
+    description: rule.description || '',
+    rule_type: rule.rule_type || '',
     sql_query: rule.sql_query || '',
+    parameters: typeof rule.parameters === 'object' ? rule.parameters : {},
+    execution_order: rule.execution_order || 1,
+    is_active: rule.is_active ?? true,
   }
+
+  parametersJson.value = parametersString
   showRuleDialog.value = true
 }
 
 const saveRule = async () => {
   saving.value = true
   try {
+    if (!ruleForm.value.name?.trim()) {
+      throw new Error("Назва обов'язкова")
+    }
+
+    if (!ruleForm.value.rule_type) {
+      throw new Error("Тип правила обов'язковий")
+    }
+
+    if (!ruleForm.value.sql_query?.trim()) {
+      throw new Error("SQL запит обов'язковий")
+    }
+
+    let parsedParameters = {}
+    try {
+      const trimmedJson = parametersJson.value.trim()
+      if (trimmedJson) {
+        parsedParameters = JSON.parse(trimmedJson)
+      }
+    } catch (jsonError) {
+      throw new Error('Неправильний формат JSON: ' + jsonError.message)
+    }
+
     const ruleData = {
       name: ruleForm.value.name.trim(),
+      description: ruleForm.value.description?.trim() || '',
+      rule_type: ruleForm.value.rule_type,
       sql_query: ruleForm.value.sql_query.trim(),
-      rule_type: 'custom',
-      execution_order: 1,
-      is_active: true,
+      parameters: parsedParameters,
+      execution_order: parseInt(ruleForm.value.execution_order) || 1,
+      is_active: Boolean(ruleForm.value.is_active),
     }
 
     if (editingRule.value && ruleForm.value.id) {
@@ -196,7 +338,7 @@ const saveRule = async () => {
     console.error('Error saving rule:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка збереження правила',
+      message: error.message || 'Помилка збереження правила',
       icon: 'error',
     })
   } finally {
