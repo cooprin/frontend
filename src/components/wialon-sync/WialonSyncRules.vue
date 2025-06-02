@@ -387,7 +387,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
@@ -442,18 +442,18 @@ const pagination = ref({
   rowsNumber: 0,
 })
 
-// Опції для типів правил
-const typeOptions = [
+// Computed опції для типів правил
+const typeOptions = computed(() => [
   { label: t('wialonSync.rules.types.client_mapping'), value: 'client_mapping' },
   { label: t('wialonSync.rules.types.object_mapping'), value: 'object_mapping' },
   { label: t('wialonSync.rules.types.equipment_check'), value: 'equipment_check' },
   { label: t('wialonSync.rules.types.name_comparison'), value: 'name_comparison' },
   { label: t('wialonSync.rules.types.owner_validation'), value: 'owner_validation' },
   { label: t('wialonSync.rules.types.custom'), value: 'custom' },
-]
+])
 
-// Колонки таблиці
-const columns = [
+// Computed колонки таблиці
+const columns = computed(() => [
   {
     name: 'execution_order',
     required: true,
@@ -503,7 +503,7 @@ const columns = [
     label: t('wialonSync.common.actions'),
     align: 'center',
   },
-]
+])
 
 // Methods
 const loadRules = async () => {
