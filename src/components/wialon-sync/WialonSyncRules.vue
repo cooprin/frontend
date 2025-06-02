@@ -280,7 +280,7 @@
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
 
-        <q-card-section v-if="selectedRule">
+        <q-card-section v-if="selectedRule && Object.keys(selectedRule).length > 0">
           <div class="row q-gutter-md">
             <!-- Загальна інформація -->
             <q-card flat bordered class="col-12 col-md-6">
@@ -368,7 +368,7 @@
                   {{ $t('wialonSync.rules.form.parameters') }}
                 </div>
 
-                <pre class="parameters">{{ JSON.stringify(selectedRule.parameters, null, 2) }}</pre>
+                <pre class="parameters">{{ formatParameters(selectedRule.parameters) }}</pre>
               </q-card-section>
             </q-card>
           </div>
@@ -421,6 +421,7 @@ const stats = ref({
 
 // Форма правила
 const ruleForm = ref({
+  id: null,
   name: '',
   description: '',
   rule_type: '',
@@ -504,8 +505,6 @@ const columns = [
   },
 ]
 
-// Computed
-
 // Methods
 const loadRules = async () => {
   loading.value = true
@@ -547,6 +546,7 @@ const loadRules = async () => {
 const showCreateDialog = () => {
   editingRule.value = false
   ruleForm.value = {
+    id: null,
     name: '',
     description: '',
     rule_type: '',
@@ -561,16 +561,37 @@ const showCreateDialog = () => {
 
 const editRule = (rule) => {
   editingRule.value = true
-  ruleForm.value = {
-    name: rule.name,
-    description: rule.description,
-    rule_type: rule.rule_type,
-    sql_query: rule.sql_query,
-    parameters: rule.parameters || {},
-    execution_order: rule.execution_order,
-    is_active: rule.is_active,
+
+  // Безпечний парсинг параметрів
+  let parametersString = '{}'
+  try {
+    if (rule.parameters) {
+      if (typeof rule.parameters === 'string') {
+        // Якщо параметри приходять як рядок, перевіряємо валідність JSON
+        JSON.parse(rule.parameters)
+        parametersString = rule.parameters
+      } else if (typeof rule.parameters === 'object') {
+        // Якщо параметри - об'єкт, конвертуємо в рядок
+        parametersString = JSON.stringify(rule.parameters, null, 2)
+      }
+    }
+  } catch (error) {
+    console.warn('Invalid parameters JSON, using empty object:', error)
+    parametersString = '{}'
   }
-  parametersJson.value = JSON.stringify(rule.parameters || {}, null, 2)
+
+  ruleForm.value = {
+    id: rule.id, // Важливо додати ID для редагування!
+    name: rule.name || '',
+    description: rule.description || '',
+    rule_type: rule.rule_type || '',
+    sql_query: rule.sql_query || '',
+    parameters: typeof rule.parameters === 'object' ? rule.parameters : {},
+    execution_order: rule.execution_order || 1,
+    is_active: rule.is_active ?? true,
+  }
+
+  parametersJson.value = parametersString
   showDetailsDialog.value = false
   showRuleDialog.value = true
 }
@@ -578,18 +599,44 @@ const editRule = (rule) => {
 const saveRule = async () => {
   saving.value = true
   try {
-    // Validate and parse parameters JSON
-    try {
-      const parsedParameters = JSON.parse(parametersJson.value)
-      ruleForm.value.parameters = parsedParameters
-    } catch {
-      throw new Error(t('wialonSync.common.invalidJsonFormat'))
+    // Перевірка обов'язкових полів
+    if (!ruleForm.value.name?.trim()) {
+      throw new Error(t('wialonSync.common.nameRequired'))
     }
 
-    if (editingRule.value) {
-      await WialonSyncApi.updateRule(ruleForm.value.id, ruleForm.value)
+    if (!ruleForm.value.rule_type) {
+      throw new Error(t('wialonSync.common.ruleTypeRequired'))
+    }
+
+    if (!ruleForm.value.sql_query?.trim()) {
+      throw new Error(t('wialonSync.common.sqlQueryRequired'))
+    }
+
+    // Безпечний парсинг JSON параметрів
+    let parsedParameters = {}
+    try {
+      const trimmedJson = parametersJson.value.trim()
+      if (trimmedJson) {
+        parsedParameters = JSON.parse(trimmedJson)
+      }
+    } catch (jsonError) {
+      throw new Error(t('wialonSync.common.invalidJsonFormat') + ': ' + jsonError.message)
+    }
+
+    const ruleData = {
+      name: ruleForm.value.name.trim(),
+      description: ruleForm.value.description?.trim() || '',
+      rule_type: ruleForm.value.rule_type,
+      sql_query: ruleForm.value.sql_query.trim(),
+      parameters: parsedParameters,
+      execution_order: parseInt(ruleForm.value.execution_order) || 1,
+      is_active: Boolean(ruleForm.value.is_active),
+    }
+
+    if (editingRule.value && ruleForm.value.id) {
+      await WialonSyncApi.updateRule(ruleForm.value.id, ruleData)
     } else {
-      await WialonSyncApi.createRule(ruleForm.value)
+      await WialonSyncApi.createRule(ruleData)
     }
 
     $q.notify({
@@ -601,7 +648,7 @@ const saveRule = async () => {
     })
 
     showRuleDialog.value = false
-    loadRules()
+    await loadRules()
   } catch (error) {
     console.error('Error saving rule:', error)
     $q.notify({
@@ -752,6 +799,18 @@ const formatDateTime = (dateString) => {
   if (!dateString) return ''
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm')
 }
+
+const formatParameters = (parameters) => {
+  try {
+    if (typeof parameters === 'string') {
+      return JSON.stringify(JSON.parse(parameters), null, 2)
+    }
+    return JSON.stringify(parameters, null, 2)
+  } catch {
+    return parameters
+  }
+}
+
 // Watchers
 watch(
   () => filters.value,
