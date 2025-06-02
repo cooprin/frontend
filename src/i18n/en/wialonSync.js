@@ -211,7 +211,7 @@ export default {
     nameRequired: 'Name is required',
     ruleTypeRequired: 'Rule type is required',
     sqlQueryRequired: 'SQL query is required',
-    jsonFormat: 'JSON format: {"key": "value"}',
+    jsonFormat: 'JSON format: {key: "value"}',
     invalidJsonFormat: 'Invalid JSON format for parameters',
     ruleUpdated: 'Rule updated',
     ruleCreated: 'Rule created',

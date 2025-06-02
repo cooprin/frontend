@@ -211,7 +211,7 @@ export default {
     nameRequired: "Назва є обов'язковою",
     ruleTypeRequired: "Тип правила є обов'язковим",
     sqlQueryRequired: "SQL запит є обов'язковим",
-    jsonFormat: 'JSON формат: {"key": "value"}',
+    jsonFormat: 'JSON формат: {key: "value"}',
     invalidJsonFormat: 'Невірний формат JSON для параметрів',
     ruleUpdated: 'Правило оновлено',
     ruleCreated: 'Правило створено',
