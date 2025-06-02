@@ -559,7 +559,7 @@ const openNewClientDialog = (discrepancy) => {
     full_name: wialonData.full_name || wialonData.name,
     description: wialonData.description,
     wialon_id: wialonData.wialon_id,
-    wialon_username: wialonData.name,
+    wialon_username: wialonData.wialon_username,
     is_active: true,
   }
 
@@ -574,6 +574,7 @@ const openEditClientDialog = (discrepancy) => {
   dialogEditData.value = {
     ...systemData,
     name: wialonData.name, // Пропонована нова назва з Wialon
+    wialon_username: wialonData.wialon_username,
   }
 
   showClientDialog.value = true
