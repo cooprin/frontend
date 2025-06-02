@@ -342,13 +342,6 @@
       :initial-data="dialogInitialData"
       @saved="onObjectSaved"
     />
-
-    <!-- Діалог зміни власника -->
-    <wialon-object-change-owner-dialog
-      v-model="showChangeOwnerDialog"
-      :object="dialogEditData"
-      @saved="onOwnerChanged"
-    />
   </div>
 </template>
 
@@ -360,7 +353,6 @@ import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
-import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -377,7 +369,6 @@ const selectedDiscrepancy = ref(null)
 // Діалоги для інтерактивного вирішення
 const showClientDialog = ref(false)
 const showObjectDialog = ref(false)
-const showChangeOwnerDialog = ref(false)
 const currentDiscrepancy = ref(null)
 const dialogEditData = ref(null)
 
@@ -417,7 +408,6 @@ const typeOptions = computed(() => [
   },
   { label: t('wialonSync.discrepancies.types.client_name_changed'), value: 'client_name_changed' },
   { label: t('wialonSync.discrepancies.types.object_name_changed'), value: 'object_name_changed' },
-  { label: t('wialonSync.discrepancies.types.owner_changed'), value: 'owner_changed' },
 ])
 
 const statusOptions = computed(() => [
@@ -541,9 +531,6 @@ const openInteractiveDialog = (discrepancy) => {
     case 'object_name_changed':
       openEditObjectDialog(discrepancy)
       break
-    case 'owner_changed':
-      openChangeOwnerDialog(discrepancy)
-      break
     default:
       resolveDiscrepancy(discrepancy, 'approved')
   }
@@ -574,7 +561,7 @@ const openEditClientDialog = (discrepancy) => {
   dialogEditData.value = {
     ...systemData,
     name: wialonData.name, // Пропонована нова назва з Wialon
-    wialon_username: wialonData.wialon_username,
+    wialon_username: wialonData.wialon_username, // wialon_username з Wialon
   }
 
   showClientDialog.value = true
@@ -609,15 +596,6 @@ const openEditObjectDialog = (discrepancy) => {
   showObjectDialog.value = true
 }
 
-const openChangeOwnerDialog = (discrepancy) => {
-  // Для зміни власника передаємо об'єкт з системи
-  dialogEditData.value = {
-    ...discrepancy.system_entity_data,
-  }
-
-  showChangeOwnerDialog.value = true
-}
-
 const getActionIcon = (discrepancyType) => {
   const icons = {
     new_client: 'person_add',
@@ -625,7 +603,6 @@ const getActionIcon = (discrepancyType) => {
     new_object_with_known_client: 'add_circle',
     client_name_changed: 'edit',
     object_name_changed: 'edit',
-    owner_changed: 'swap_horiz',
   }
   return icons[discrepancyType] || 'check'
 }
@@ -637,7 +614,6 @@ const getActionColor = (discrepancyType) => {
     new_object_with_known_client: 'primary',
     client_name_changed: 'warning',
     object_name_changed: 'warning',
-    owner_changed: 'info',
   }
   return colors[discrepancyType] || 'positive'
 }
@@ -649,7 +625,6 @@ const getActionTooltip = (discrepancyType) => {
     new_object_with_known_client: t('wialonSync.discrepancies.actions.createObject'),
     client_name_changed: t('wialonSync.discrepancies.actions.updateClient'),
     object_name_changed: t('wialonSync.discrepancies.actions.updateObject'),
-    owner_changed: t('wialonSync.discrepancies.actions.changeOwner'),
   }
   return tooltips[discrepancyType] || t('wialonSync.discrepancies.actions.resolve')
 }
@@ -663,11 +638,6 @@ const onClientSaved = async () => {
 const onObjectSaved = async () => {
   await markDiscrepancyAsApproved()
   showObjectDialog.value = false
-}
-
-const onOwnerChanged = async () => {
-  await markDiscrepancyAsApproved()
-  showChangeOwnerDialog.value = false
 }
 
 const markDiscrepancyAsApproved = async () => {
@@ -807,7 +777,6 @@ const getTypeColor = (type) => {
     new_object_with_known_client: 'teal',
     client_name_changed: 'orange',
     object_name_changed: 'amber',
-    owner_changed: 'purple',
   }
   return colors[type] || 'grey'
 }
@@ -819,7 +788,6 @@ const getTypeIcon = (type) => {
     new_object_with_known_client: 'add_circle_outline',
     client_name_changed: 'edit',
     object_name_changed: 'edit',
-    owner_changed: 'swap_horiz',
   }
   return icons[type] || 'help'
 }
