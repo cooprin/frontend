@@ -159,11 +159,15 @@
 
             <!-- Синхронізація об'єктів - ОНОВЛЕНО -->
             <q-btn
-              :label="$t('company.wialonIntegration.syncObjects')"
+              :label="
+                isSyncing
+                  ? `Синхронізація (${syncDuration})`
+                  : $t('company.wialonIntegration.syncObjects')
+              "
               color="primary"
               icon="sync"
-              :loading="syncing"
-              :disable="!integrationData?.id || !connectionStatus"
+              :loading="isSyncing"
+              :disable="isSyncing || !integrationData?.id || !connectionStatus"
               @click="syncObjects"
             />
 
@@ -244,6 +248,7 @@ import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { CompanyApi } from 'src/api/company'
+import { useWialonSync } from 'src/composables/useWialonSync'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -253,11 +258,11 @@ const router = useRouter()
 const loading = ref(false)
 const saving = ref(false)
 const testing = ref(false)
-const syncing = ref(false)
+const { isSyncing, syncDuration, startSync: globalStartSync } = useWialonSync()
 const showToken = ref(false)
 const connectionStatus = ref(false)
 const integrationData = ref(null)
-const lastSyncResults = ref(null) // НОВИЙ СТЕЙТ
+const lastSyncResults = ref(null)
 
 // Form
 const form = ref({
@@ -406,11 +411,9 @@ const testConnection = async (silent = false) => {
   }
 }
 
-// ОНОВЛЕНИЙ МЕТОД: syncObjects - тепер використовує правильний ендпоінт
 const syncObjects = async () => {
-  syncing.value = true
   try {
-    const response = await CompanyApi.syncWialonObjects()
+    const response = await globalStartSync()
 
     if (response.data.success) {
       // Зберігаємо результати синхронізації
@@ -464,8 +467,6 @@ const syncObjects = async () => {
       caption: error.response?.data?.message,
       icon: 'sync_problem',
     })
-  } finally {
-    syncing.value = false
   }
 }
 

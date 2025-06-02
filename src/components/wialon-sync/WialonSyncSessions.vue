@@ -3,10 +3,11 @@
     <!-- Панель управління -->
     <div class="row q-gutter-md q-mb-lg items-center">
       <q-btn
-        :label="$t('wialonSync.sessions.startNew')"
+        :label="isSyncing ? `Синхронізація (${syncDuration})` : $t('wialonSync.sessions.startNew')"
         color="primary"
         icon="sync"
-        :loading="starting"
+        :loading="isSyncing"
+        :disable="isSyncing"
         @click="startSync"
       />
 
@@ -262,6 +263,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar, date } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
+import { useWialonSync } from 'src/composables/useWialonSync'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -269,7 +271,7 @@ const emit = defineEmits(['show-discrepancies'])
 
 // State
 const loading = ref(false)
-const starting = ref(false)
+const { isSyncing, syncDuration, startSync: globalStartSync } = useWialonSync()
 const sessions = ref([])
 const showDetailsDialog = ref(false)
 const selectedSession = ref(null)
@@ -392,9 +394,8 @@ const loadSessions = async () => {
 }
 
 const startSync = async () => {
-  starting.value = true
   try {
-    await WialonSyncApi.startSync()
+    await globalStartSync()
 
     $q.notify({
       color: 'positive',
@@ -413,8 +414,6 @@ const startSync = async () => {
       message: error.response?.data?.message || t('wialonSync.common.errorStartingSync'),
       icon: 'error',
     })
-  } finally {
-    starting.value = false
   }
 }
 
