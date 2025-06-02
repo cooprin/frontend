@@ -561,7 +561,15 @@ const showCreateDialog = () => {
 
 const editRule = (rule) => {
   editingRule.value = true
-  ruleForm.value = { ...rule }
+  ruleForm.value = {
+    name: rule.name,
+    description: rule.description,
+    rule_type: rule.rule_type,
+    sql_query: rule.sql_query,
+    parameters: rule.parameters || {},
+    execution_order: rule.execution_order,
+    is_active: rule.is_active,
+  }
   parametersJson.value = JSON.stringify(rule.parameters || {}, null, 2)
   showDetailsDialog.value = false
   showRuleDialog.value = true
@@ -608,7 +616,17 @@ const saveRule = async () => {
 
 const toggleRuleActive = async (rule, isActive) => {
   try {
-    await WialonSyncApi.updateRule(rule.id, { is_active: isActive })
+    const updateData = {
+      name: rule.name,
+      description: rule.description,
+      rule_type: rule.rule_type,
+      sql_query: rule.sql_query,
+      parameters: rule.parameters || {},
+      execution_order: rule.execution_order,
+      is_active: isActive,
+    }
+
+    await WialonSyncApi.updateRule(rule.id, updateData)
 
     rule.is_active = isActive
     updateStats()
