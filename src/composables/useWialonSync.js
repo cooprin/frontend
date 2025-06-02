@@ -93,7 +93,10 @@ export function useWialonSync() {
   })
 
   const startSync = async () => {
-    // Якщо вже синхронізується - не запускаємо
+    // СПОЧАТКУ перевіряємо чи є активні сесії
+    await checkActiveSync()
+
+    // Якщо знайшли активну сесію - не запускаємо нову
     if (globalSyncState.value.isActive) {
       throw new Error('Синхронізація вже активна')
     }
