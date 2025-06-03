@@ -45,7 +45,6 @@ export default {
     types: {
       new_client: 'Новий клієнт',
       new_object: "Новий об'єкт",
-      new_object_with_known_client: "Новий об'єкт (відомий клієнт)",
       client_name_changed: 'Зміна назви клієнта',
       object_name_changed: "Зміна назви об'єкта",
       owner_changed: 'Зміна власника',
@@ -236,5 +235,7 @@ export default {
     messageCopied: 'Повідомлення скопійовано',
     jsonCopied: 'JSON скопійовано',
     errorCopying: 'Помилка копіювання',
+    errorLoadingClientData: 'Помилка завантаження даних клієнта',
+    errorLoadingObjectData: "Помилка завантаження даних об'єкта",
   },
 }

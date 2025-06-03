@@ -45,7 +45,6 @@ export default {
     types: {
       new_client: 'New Client',
       new_object: 'New Object',
-      new_object_with_known_client: 'New Object (Known Client)',
       client_name_changed: 'Client Name Changed',
       object_name_changed: 'Object Name Changed',
       owner_changed: 'Owner Changed',
@@ -236,5 +235,7 @@ export default {
     messageCopied: 'Message copied',
     jsonCopied: 'JSON copied',
     errorCopying: 'Error copying',
+    errorLoadingClientData: 'Error loading client data',
+    errorLoadingObjectData: 'Error loading object data',
   },
 }

@@ -353,6 +353,8 @@ import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
+import { ClientsApi } from 'src/api/clients'
+import { WialonApi } from 'src/api/wialon'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -402,10 +404,6 @@ const pagination = ref({
 const typeOptions = computed(() => [
   { label: t('wialonSync.discrepancies.types.new_client'), value: 'new_client' },
   { label: t('wialonSync.discrepancies.types.new_object'), value: 'new_object' },
-  {
-    label: t('wialonSync.discrepancies.types.new_object_with_known_client'),
-    value: 'new_object_with_known_client',
-  },
   { label: t('wialonSync.discrepancies.types.client_name_changed'), value: 'client_name_changed' },
   { label: t('wialonSync.discrepancies.types.object_name_changed'), value: 'object_name_changed' },
 ])
@@ -522,7 +520,6 @@ const openInteractiveDialog = (discrepancy) => {
       openNewClientDialog(discrepancy)
       break
     case 'new_object':
-    case 'new_object_with_known_client':
       openNewObjectDialog(discrepancy)
       break
     case 'client_name_changed':
@@ -553,18 +550,43 @@ const openNewClientDialog = (discrepancy) => {
   showClientDialog.value = true
 }
 
-const openEditClientDialog = (discrepancy) => {
-  const systemData = discrepancy.system_entity_data
-  const wialonData = discrepancy.wialon_entity_data
+const openEditClientDialog = async (discrepancy) => {
+  try {
+    // Завантажуємо повні дані клієнта з API
+    const response = await ClientsApi.getClient(discrepancy.system_entity_data.id)
+    const fullClientData = response.data.client
 
-  // Для редагування передаємо системні дані з ID + пропоновану назву
-  dialogEditData.value = {
-    ...systemData,
-    name: wialonData.name, // Пропонована нова назва з Wialon
-    wialon_username: wialonData.wialon_username, // wialon_username з Wialon
+    const wialonData = discrepancy.wialon_entity_data
+
+    dialogEditData.value = {
+      ...fullClientData, // Всі поля клієнта з бази даних
+      name: wialonData.name, // Пропонована нова назва з Wialon
+      wialon_username: wialonData.wialon_username, // wialon_username з Wialon
+    }
+
+    dialogInitialData.value = null // Скидаємо початкові дані
+    showClientDialog.value = true
+  } catch (error) {
+    console.error('Error loading client data:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('wialonSync.common.errorLoadingClientData'),
+      icon: 'error',
+    })
+
+    // Fallback до поточного варіанту якщо API не працює
+    const systemData = discrepancy.system_entity_data
+    const wialonData = discrepancy.wialon_entity_data
+
+    dialogEditData.value = {
+      ...systemData,
+      name: wialonData.name,
+      wialon_username: wialonData.wialon_username,
+    }
+
+    dialogInitialData.value = null
+    showClientDialog.value = true
   }
-
-  showClientDialog.value = true
 }
 
 const openNewObjectDialog = (discrepancy) => {
@@ -583,17 +605,41 @@ const openNewObjectDialog = (discrepancy) => {
   showObjectDialog.value = true
 }
 
-const openEditObjectDialog = (discrepancy) => {
-  const systemData = discrepancy.system_entity_data
-  const wialonData = discrepancy.wialon_entity_data
+const openEditObjectDialog = async (discrepancy) => {
+  try {
+    // Завантажуємо повні дані об'єкта з API
+    const response = await WialonApi.getObject(discrepancy.system_entity_data.id)
+    const fullObjectData = response.data.object
 
-  // Для редагування передаємо системні дані з ID + пропоновану назву
-  dialogEditData.value = {
-    ...systemData,
-    name: wialonData.name, // Пропонована нова назва з Wialon
+    const wialonData = discrepancy.wialon_entity_data
+
+    dialogEditData.value = {
+      ...fullObjectData, // Всі поля об'єкта з бази даних
+      name: wialonData.name, // Пропонована нова назва з Wialon
+    }
+
+    dialogInitialData.value = null // Скидаємо початкові дані
+    showObjectDialog.value = true
+  } catch (error) {
+    console.error('Error loading object data:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('wialonSync.common.errorLoadingObjectData'),
+      icon: 'error',
+    })
+
+    // Fallback до поточного варіанту якщо API не працює
+    const systemData = discrepancy.system_entity_data
+    const wialonData = discrepancy.wialon_entity_data
+
+    dialogEditData.value = {
+      ...systemData,
+      name: wialonData.name,
+    }
+
+    dialogInitialData.value = null
+    showObjectDialog.value = true
   }
-
-  showObjectDialog.value = true
 }
 
 const getActionIcon = (discrepancyType) => {
