@@ -20,7 +20,7 @@ export default {
     totalItems: 'Total Items',
     totalProducts: 'Total Products',
     lowStockItems: 'Low Stock Items (<5)',
-    mediumStockItems: 'Medium Stock Items (5-10)',
+    itemsInRepair: 'Items in Repair',
     warehousesCount: 'Active Warehouses',
   },
   clientsWithOverduePayments: 'Clients with Overdue Payments',
@@ -48,10 +48,40 @@ export default {
   allItems: 'All Items',
   onlyObjects: 'Only Objects',
   onlyFixedServices: 'Only Fixed Services',
-  inventoryByWarehouse: 'Inventory by Warehouse',
-  inventoryByType: 'Inventory by Product Type',
-  inventoryByModel: 'Inventory by Model',
-  criticalStock: 'Critical Stock Items',
-  noStockData: 'No stock data available',
-  stockStatus: 'Stock Status',
+
+  // Inventory dashboard
+  warehouseSelector: 'Select Warehouse',
+  allWarehouses: 'All Warehouses',
+  warehouseSummary: 'Warehouse Summary',
+  stockByTypes: 'Stock by Product Types',
+  modelsStock: 'Models Stock',
+  repairItems: 'Items in Repair',
+
+  // Stock statuses
+  stockHigh: 'Sufficient',
+  stockMedium: 'Limited',
+  stockCritical: 'Critical',
+
+  // Table headers
+  modelName: 'Model',
+  manufacturer: 'Manufacturer',
+  productType: 'Product Type',
+  quantity: 'Quantity',
+  units: 'Units',
+  status: 'Status',
+  actions: 'Actions',
+
+  // Repair
+  sentToRepairDate: 'Sent Date',
+  daysInRepair: 'Days in Repair',
+  returnFromRepair: 'Return from Repair',
+  noItemsInRepair: 'No items in repair! All products are in working condition.',
+
+  // Actions
+  viewDetails: 'View Details',
+  refresh: 'Refresh',
+  search: 'Search',
+  searchModels: 'Search models...',
+  searchPlaceholder: 'Search...',
+  noDataAvailable: 'No data available',
 }

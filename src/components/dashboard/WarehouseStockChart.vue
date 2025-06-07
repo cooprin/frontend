@@ -26,38 +26,28 @@ const createChart = () => {
 
   const ctx = chartRef.value.getContext('2d')
 
-  // Обробляємо дані для теплової карти
+  // Підготуємо дані для графіка
   const labels = data.value.map((item) => item.product_type_name)
-  const totalQuantity = data.value.reduce((sum, item) => sum + item.quantity, 0)
+  const quantities = data.value.map((item) => item.total_quantity)
 
-  // Обчислюємо відсоток від загальної кількості
-  const percentages = data.value.map((item) => ({
-    value: item.quantity,
-    percentage: (item.quantity / totalQuantity) * 100,
-  }))
+  // Генеруємо кольори для кожного типу
+  const backgroundColors = data.value.map((item, index) => {
+    const hue = (index * 137.5) % 360 // Golden angle for better color distribution
+    return `hsla(${hue}, 70%, 60%, 0.7)`
+  })
 
-  // Визначаємо кольори залежно від відсотка
-  const getColorForPercentage = (percentage) => {
-    // Зелений для низького відсотка, жовтий для середнього, червоний для високого
-    const r = percentage < 30 ? 46 : percentage < 70 ? 241 : 231
-    const g = percentage < 30 ? 204 : percentage < 70 ? 196 : 76
-    const b = percentage < 30 ? 113 : percentage < 70 ? 15 : 60
-    return `rgba(${r}, ${g}, ${b}, 0.7)`
-  }
-
-  const backgroundColors = percentages.map((item) => getColorForPercentage(item.percentage))
   const borderColors = backgroundColors.map((color) => color.replace('0.7', '1'))
 
   chart = new Chart(ctx, {
-    type: 'polarArea',
+    type: 'doughnut',
     data: {
       labels: labels,
       datasets: [
         {
-          data: percentages.map((item) => item.value),
+          data: quantities,
           backgroundColor: backgroundColors,
           borderColor: borderColors,
-          borderWidth: 1,
+          borderWidth: 2,
         },
       ],
     },
@@ -66,14 +56,14 @@ const createChart = () => {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: 'bottom',
         },
         tooltip: {
           callbacks: {
             label: function (context) {
-              const value = context.raw
-              const item = percentages[context.dataIndex]
-              return [`Кількість: ${value}`, `Частка: ${item.percentage.toFixed(1)}%`]
+              const total = context.dataset.data.reduce((a, b) => a + b, 0)
+              const percentage = ((context.raw / total) * 100).toFixed(1)
+              return `${context.label}: ${context.raw} (${percentage}%)`
             },
           },
         },

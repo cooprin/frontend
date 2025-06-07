@@ -78,14 +78,6 @@ export const StockApi = {
     return api.get('/stock/critical', { params })
   },
 
-  getNonLiquidStock: (params) => {
-    return api.get('/stock/non-liquid', { params })
-  },
-
-  getStockForecast: (params) => {
-    return api.get('/stock/forecast', { params })
-  },
-
   getWarehousesOptions: () => {
     return api.get('/warehouses', { params: { perPage: 'All', isActive: true } })
   },
@@ -96,5 +88,26 @@ export const StockApi = {
 
   getManufacturersOptions: () => {
     return api.get('/manufacturers', { params: { perPage: 'All', isActive: true } })
+  },
+  // Нові методи для дашборду
+  getWarehouseStockSummary: (warehouseId = 'all') => {
+    return api.get(`/stock/warehouse-summary/${warehouseId}`)
+  },
+
+  getStockByTypesForWarehouse: (warehouseId = 'all') => {
+    return api.get(`/stock/stock-by-types/${warehouseId}`)
+  },
+
+  getModelStockForWarehouse: (warehouseId = 'all', params = {}) => {
+    return api.get(`/stock/models-stock/${warehouseId}`, { params })
+  },
+
+  getRepairItems: (params = {}) => {
+    return api.get('/stock/repair-items', { params })
+  },
+
+  // Додаткові методи для отримання опцій
+  getActiveWarehouses: () => {
+    return api.get('/warehouses', { params: { perPage: 'All', is_active: true } })
   },
 }

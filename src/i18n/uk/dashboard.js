@@ -20,7 +20,7 @@ export default {
     totalItems: 'Загальна кількість одиниць',
     totalProducts: 'Кількість найменувань',
     lowStockItems: 'Критично мало (<5)',
-    mediumStockItems: 'Середня кількість (5-10)',
+    itemsInRepair: 'Товарів в ремонті',
     warehousesCount: 'Активних складів',
   },
   clientsWithOverduePayments: 'Клієнти з простроченими платежами',
@@ -48,10 +48,40 @@ export default {
   allItems: 'Всі позиції',
   onlyObjects: "Тільки об'єкти",
   onlyFixedServices: 'Тільки фікс. послуги',
-  inventoryByWarehouse: 'Залишки по складах',
-  inventoryByType: 'Залишки за типом товару',
-  inventoryByModel: 'Залишки за моделями',
-  criticalStock: 'Товари з малим залишком',
-  noStockData: 'Немає даних про залишки',
-  stockStatus: 'Статус залишків',
+
+  // Дашборд залишків
+  warehouseSelector: 'Оберіть склад',
+  allWarehouses: 'Всі склади',
+  warehouseSummary: 'Інформація по складу',
+  stockByTypes: 'Залишки за типами товарів',
+  modelsStock: 'Залишки моделей',
+  repairItems: 'Товари в ремонті',
+
+  // Статуси залишків
+  stockHigh: 'Достатньо',
+  stockMedium: 'Обмежено',
+  stockCritical: 'Критично',
+
+  // Заголовки таблиць
+  modelName: 'Модель',
+  manufacturer: 'Виробник',
+  productType: 'Тип товару',
+  quantity: 'Кількість',
+  units: 'Одиниць',
+  status: 'Статус',
+  actions: 'Дії',
+
+  // Ремонт
+  sentToRepairDate: 'Дата відправки',
+  daysInRepair: 'Днів в ремонті',
+  returnFromRepair: 'Повернути з ремонту',
+  noItemsInRepair: 'Немає товарів в ремонті! Всі товари в робочому стані.',
+
+  // Дії
+  viewDetails: 'Переглянути деталі',
+  refresh: 'Оновити',
+  search: 'Пошук',
+  searchModels: 'Пошук моделей...',
+  searchPlaceholder: 'Пошук...',
+  noDataAvailable: 'Немає даних для відображення',
 }
