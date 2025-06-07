@@ -1,6 +1,6 @@
 // constants/permissions.js
 export const MENU_PERMISSIONS = {
-  // Продуктове меню
+  // Продуктове меню - спрощено під SQL структуру
   PRODUCTS: {
     VIEW: {
       LIST: 'products.read',
@@ -8,29 +8,30 @@ export const MENU_PERMISSIONS = {
       UPDATE: 'products.update',
       DELETE: 'products.delete',
     },
+    // Об'єднано всі продуктові сутності під products.*
     MANUFACTURERS: {
-      LIST: 'manufacturers.read',
-      CREATE: 'manufacturers.create',
-      UPDATE: 'manufacturers.update',
-      DELETE: 'manufacturers.delete',
+      LIST: 'products.read',
+      CREATE: 'products.create',
+      UPDATE: 'products.update',
+      DELETE: 'products.delete',
     },
     SUPPLIERS: {
-      LIST: 'suppliers.read',
-      CREATE: 'suppliers.create',
-      UPDATE: 'suppliers.update',
-      DELETE: 'suppliers.delete',
+      LIST: 'products.read',
+      CREATE: 'products.create',
+      UPDATE: 'products.update',
+      DELETE: 'products.delete',
     },
     MODELS: {
-      LIST: 'models.read',
-      CREATE: 'models.create',
-      UPDATE: 'models.update',
-      DELETE: 'models.delete',
+      LIST: 'products.read',
+      CREATE: 'products.create',
+      UPDATE: 'products.update',
+      DELETE: 'products.delete',
     },
     PRODUCT_TYPES: {
-      LIST: 'product_types.read',
-      CREATE: 'product_types.create',
-      UPDATE: 'product_types.update',
-      DELETE: 'product_types.delete',
+      LIST: 'products.read',
+      CREATE: 'products.create',
+      UPDATE: 'products.update',
+      DELETE: 'products.delete',
     },
   },
 
@@ -43,19 +44,20 @@ export const MENU_PERMISSIONS = {
       DELETE: 'warehouses.delete',
     },
     STOCK: {
-      LIST: 'stock.read',
-      CREATE: 'stock.create',
-      UPDATE: 'stock.update',
-      DELETE: 'stock.delete',
+      LIST: 'warehouses.read',
+      CREATE: 'warehouses.create',
+      UPDATE: 'warehouses.update',
+      DELETE: 'warehouses.delete',
     },
     STOCK_MOVEMENTS: {
-      LIST: 'stock_movements.read',
-      CREATE: 'stock_movements.create',
-      UPDATE: 'stock_movements.update',
-      DELETE: 'stock_movements.delete',
+      LIST: 'warehouses.read',
+      CREATE: 'warehouses.create',
+      UPDATE: 'warehouses.update',
+      DELETE: 'warehouses.delete',
     },
   },
-  // Клієнти
+
+  // Клієнти - спрощено
   CLIENTS: {
     VIEW: {
       LIST: 'clients.read',
@@ -63,10 +65,11 @@ export const MENU_PERMISSIONS = {
       UPDATE: 'clients.update',
       DELETE: 'clients.delete',
     },
+    // Документи клієнтів використовують ті ж права що й клієнти
     DOCUMENTS: {
-      LIST: 'client_documents.read',
-      CREATE: 'client_documents.create',
-      DELETE: 'client_documents.delete',
+      LIST: 'clients.read',
+      CREATE: 'clients.create',
+      DELETE: 'clients.delete',
     },
   },
 
@@ -114,7 +117,7 @@ export const MENU_PERMISSIONS = {
     },
   },
 
-  // Адміністративне меню
+  // Адміністративне меню - відповідає SQL
   SETTINGS: {
     USERS: {
       LIST: 'users.read',
@@ -141,7 +144,7 @@ export const MENU_PERMISSIONS = {
       DELETE: 'resources.delete',
     },
     AUDIT_LOGS: {
-      LIST: 'logs.read',
+      LIST: 'audit.read', // Виправлено з logs.read на audit.read
     },
     COMPANY: {
       READ: 'company_profile.read',

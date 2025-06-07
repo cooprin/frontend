@@ -73,7 +73,7 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
-      :mini="miniState"
+      :mini="miniState && $q.screen.gt.xs"
       :width="240"
       :breakpoint="500"
       class="drawer-menu"
@@ -85,14 +85,17 @@
             <q-item-section avatar>
               <q-icon name="grid_view" />
             </q-item-section>
-            <q-item-section v-if="!miniState">
+            <q-item-section v-if="!miniState || $q.screen.xs">
               {{ $t('layouts.mainLayout.dashboard') }}
             </q-item-section>
           </q-item>
 
           <!-- Products Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.PRODUCTS)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.PRODUCTS)
+            "
           >
             <q-expansion-item
               icon="shopping_bag"
@@ -178,7 +181,10 @@
 
           <!-- Warehouses Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WAREHOUSES)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WAREHOUSES)
+            "
           >
             <q-expansion-item
               icon="warehouse"
@@ -236,7 +242,10 @@
 
           <!-- Клієнти Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.CLIENTS)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.CLIENTS)
+            "
           >
             <q-expansion-item
               icon="people"
@@ -262,7 +271,10 @@
 
           <!-- Послуги Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SERVICES)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SERVICES)
+            "
           >
             <q-expansion-item
               icon="miscellaneous_services"
@@ -332,7 +344,10 @@
 
           <!-- Wialon Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WIALON)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.WIALON)
+            "
           >
             <q-expansion-item
               icon="location_on"
@@ -372,7 +387,10 @@
 
           <!-- Settings Menu - Full Mode -->
           <template
-            v-if="!miniState && authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)"
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)
+            "
           >
             <q-expansion-item
               icon="settings"
@@ -471,8 +489,8 @@
             </q-expansion-item>
           </template>
 
-          <!-- Mini Mode Menus -->
-          <template v-else>
+          <!-- Mini Mode Menus - показуємо тільки на великих екранах -->
+          <template v-if="miniState && $q.screen.gt.xs">
             <!-- Products Menu - Mini Mode -->
             <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.PRODUCTS)" dense>
               <q-item-section avatar>
@@ -907,7 +925,6 @@ onMounted(() => {
   window.addEventListener('scroll', checkScroll)
 
   // Нова функція для перевірки валідності токена
-
   const checkTokenValidity = () => {
     // Перевіряємо, що ми не на сторінці логування
     if (router.currentRoute.value.path === '/auth/login') return
@@ -921,7 +938,6 @@ onMounted(() => {
   }
 
   checkTokenValidity()
-
   tokenCheckInterval = setInterval(checkTokenValidity, 5 * 60 * 1000)
 })
 
@@ -931,7 +947,6 @@ onUnmounted(() => {
   window.removeEventListener('scroll', checkScroll)
 
   // Нова частина - очищаємо інтервал перевірки токена
-
   if (tokenCheckInterval) {
     clearInterval(tokenCheckInterval)
   }
@@ -968,7 +983,12 @@ const handleImageError = (e) => {
 }
 
 const toggleMiniState = () => {
-  miniState.value = !miniState.value
+  // На мобільних пристроях не показуємо міні-режим, а закриваємо/відкриваємо drawer
+  if ($q.screen.xs) {
+    leftDrawerOpen.value = !leftDrawerOpen.value
+  } else {
+    miniState.value = !miniState.value
+  }
 }
 
 const toggleDarkMode = () => {
@@ -985,6 +1005,7 @@ const logout = async () => {
   await authStore.logout()
   router.push({ name: 'login' })
 }
+
 watch(
   () => authStore.isAuthenticated,
   (newValue) => {
@@ -1004,12 +1025,12 @@ watch(
 /* Стилі для світлої теми */
 .body--light .drawer-menu .q-item,
 .body--light .drawer-menu .q-icon {
-  color: #000000de !important; /* Material Design recommended black with opacity */
+  color: #ffffff !important; /* Білий текст для контрасту з кольоровим фоном */
   transition: all 0.3s ease;
 }
 
 .body--light .drawer-menu .q-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .body--light .drawer-menu .q-item:hover .q-icon {
@@ -1017,7 +1038,7 @@ watch(
 }
 
 .body--light .drawer-menu .q-item.q-router-link-active {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.3);
   font-weight: 500;
 }
 
@@ -1027,14 +1048,18 @@ watch(
 }
 
 /* Стилі для темної теми */
+.body--dark .drawer-menu {
+  background-color: var(--q-primary);
+}
+
 .body--dark .drawer-menu .q-item,
 .body--dark .drawer-menu .q-icon {
-  color: #ffffffde !important; /* Material Design recommended white with opacity */
+  color: #ffffff !important;
   transition: all 0.3s ease;
 }
 
 .body--dark .drawer-menu .q-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .body--dark .drawer-menu .q-item:hover .q-icon {
@@ -1042,7 +1067,7 @@ watch(
 }
 
 .body--dark .drawer-menu .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   font-weight: 500;
 }
 
@@ -1083,6 +1108,7 @@ watch(
   transform: scale(0.8);
   pointer-events: none;
 }
+
 .drawer-menu .q-expansion-item > .q-expansion-item__container > .q-item > .q-item__section--main {
   font-weight: 600;
 }
@@ -1093,39 +1119,33 @@ watch(
   min-height: 40px;
   font-weight: normal;
 }
-/* Стилі для меню */
+
 /* Стилі для лівого меню - колір як у футера */
 .drawer-menu {
   background-color: var(--q-primary);
 }
 
-/* Стилі для світлої теми в лівому меню */
-.body--light .drawer-menu .q-item,
-.body--light .drawer-menu .q-icon {
-  color: #ffffff !important; /* Білий текст для контрасту з кольоровим фоном */
-  transition: all 0.3s ease;
+/* Фіксація для мобільних пристроїв */
+@media (max-width: 599px) {
+  .q-drawer--mini {
+    transform: translateX(-100%) !important;
+  }
+
+  .q-drawer .q-item__section--main {
+    display: block !important;
+  }
+
+  .q-drawer {
+    width: 280px !important;
+  }
 }
 
-.body--light .drawer-menu .q-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* Покращена анімація для переходів */
+.q-drawer {
+  transition: all 0.3s ease-in-out;
 }
 
-.body--light .drawer-menu .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.3);
-  font-weight: 500;
-}
-
-/* Стилі для темної теми в лівому меню */
-.body--dark .drawer-menu {
-  background-color: var(--q-primary);
-}
-
-.body--dark .drawer-menu .q-item:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.body--dark .drawer-menu .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.25);
-  font-weight: 500;
+.q-expansion-item {
+  transition: all 0.2s ease;
 }
 </style>
