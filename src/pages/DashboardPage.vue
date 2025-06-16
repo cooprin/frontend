@@ -710,7 +710,7 @@ const onRepairFilterChange = (filters) => {
 
 const openModel = (model) => {
   // Навігація до деталей моделі
-  router.push({ name: 'model-details', params: { id: model.model_id } })
+  router.push({ name: 'models', query: { modelId: model.model_id } })
 }
 
 const returnFromRepair = (product) => {
