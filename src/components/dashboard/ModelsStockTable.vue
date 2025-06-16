@@ -171,13 +171,7 @@ const columns = computed(() => [
     field: 'total_quantity',
     sortable: true,
   },
-  {
-    name: 'product_count',
-    align: 'center',
-    label: t('dashboard.units'),
-    field: 'product_count',
-    sortable: true,
-  },
+
   {
     name: 'stock_status',
     align: 'center',

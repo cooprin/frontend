@@ -492,6 +492,60 @@
               </q-card-section>
             </q-card>
           </div>
+          <!-- Критичні моделі -->
+          <div class="col-12 col-md-6" v-if="criticalModels.length > 0">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.criticalModels') }}</div>
+                <q-space />
+                <q-chip color="negative" text-color="white" :label="criticalModels.length" />
+              </q-card-section>
+              <q-card-section>
+                <q-list separator>
+                  <q-item v-for="model in criticalModels.slice(0, 5)" :key="model.model_id">
+                    <q-item-section>
+                      <q-item-label>{{ model.model_name }}</q-item-label>
+                      <q-item-label caption>{{ model.manufacturer_name }}</q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-badge color="negative" :label="model.total_quantity" />
+                    </q-item-section>
+                  </q-item>
+                  <q-item v-if="criticalModels.length > 5" clickable>
+                    <q-item-section class="text-center text-primary">
+                      {{ $t('dashboard.viewCriticalModels') }} (+{{ criticalModels.length - 5 }})
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Критичні типи -->
+          <div class="col-12 col-md-6" v-if="criticalTypes.length > 0">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.criticalByTypes') }}</div>
+                <q-space />
+                <q-chip color="orange" text-color="white" :label="criticalTypes.length" />
+              </q-card-section>
+              <q-card-section>
+                <q-list separator>
+                  <q-item v-for="type in criticalTypes" :key="type.product_type_id">
+                    <q-item-section>
+                      <q-item-label>{{ type.product_type_name }}</q-item-label>
+                      <q-item-label caption>
+                        {{ type.critical_models_count }} з {{ type.models_count }} моделей
+                      </q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-badge color="orange" :label="type.total_quantity" />
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
       </div>
 
@@ -550,6 +604,8 @@ const modelsStock = ref([])
 const repairItems = ref([])
 const warehouseOptions = ref([])
 const productTypeOptions = ref([])
+const criticalModels = ref([])
+const criticalTypes = ref([])
 
 const inventoryFilters = ref({
   search: '',
@@ -561,13 +617,16 @@ const repairFilters = ref({
 // Нові методи для inventory дашборду
 const loadInventoryData = async () => {
   loadingInventoryData.value = true
-
+  const warehouseId = selectedWarehouse.value === 'all' ? 'all' : selectedWarehouse.value
   try {
-    const warehouseId = selectedWarehouse.value === 'all' ? 'all' : selectedWarehouse.value
-
     // Завантажуємо метрики складу
     const summaryResponse = await StockApi.getWarehouseStockSummary(warehouseId)
-    inventoryMetrics.value = summaryResponse.data.summary
+    inventoryMetrics.value = {
+      total_quantity: summaryResponse.data.summary.total_quantity,
+      total_products: summaryResponse.data.summary.total_models,
+      product_types_count: summaryResponse.data.summary.product_types_count,
+      critical_count: summaryResponse.data.summary.critical_models_count,
+    }
 
     // Завантажуємо розподіл по типах
     const typesResponse = await StockApi.getStockByTypesForWarehouse(warehouseId)
@@ -578,8 +637,15 @@ const loadInventoryData = async () => {
       warehouseId,
       inventoryFilters.value,
     )
-
     modelsStock.value = modelsResponse.data.models || []
+
+    // Завантажуємо критичні моделі та типи
+    const [criticalModelsResponse, criticalTypesResponse] = await Promise.all([
+      StockApi.getCriticalModels(warehouseId),
+      StockApi.getCriticalByTypes(warehouseId),
+    ])
+    criticalModels.value = criticalModelsResponse.data.models || []
+    criticalTypes.value = criticalTypesResponse.data.types || []
 
     // Завантажуємо опції для фільтрів якщо ще не завантажені
     if (!warehouseOptions.value.length) {

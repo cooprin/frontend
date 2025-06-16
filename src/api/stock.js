@@ -105,6 +105,15 @@ export const StockApi = {
   getRepairItems: (params = {}) => {
     return api.get('/stock/repair-items', { params })
   },
+  // Отримання критичних моделей
+  getCriticalModels: (warehouseId = 'all') => {
+    return api.get(`/stock/critical-models/${warehouseId}`)
+  },
+
+  // Отримання критичних залишків по типах
+  getCriticalByTypes: (warehouseId = 'all') => {
+    return api.get(`/stock/critical-by-types/${warehouseId}`)
+  },
 
   // Додаткові методи для отримання опцій
   getActiveWarehouses: () => {

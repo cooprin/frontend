@@ -157,7 +157,7 @@ const columns = computed(() => [
   {
     name: 'from_warehouse_name',
     align: 'left',
-    label: t('warehouses.warehouse'),
+    label: t('dashboard.warehouseSelector'),
     field: 'from_warehouse_name',
     sortable: true,
   },
