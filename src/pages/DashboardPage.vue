@@ -575,9 +575,11 @@ const loadInventoryData = async () => {
     stockByTypes.value = typesResponse.data.types || []
 
     // Завантажуємо моделі з залишками
-    const modelsResponse = await StockApi.getModelStockForWarehouse(warehouseId, {
-      search: inventoryFilters.value.search,
-    })
+    const modelsResponse = await StockApi.getModelStockForWarehouse(
+      warehouseId,
+      inventoryFilters.value,
+    )
+
     modelsStock.value = modelsResponse.data.models || []
 
     // Завантажуємо опції для фільтрів якщо ще не завантажені
