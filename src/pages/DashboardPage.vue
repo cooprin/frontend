@@ -345,7 +345,6 @@
                       :label="$t('dashboard.warehouseSelector')"
                       dense
                       outlined
-                      clearable
                       emit-value
                       map-options
                       @update:model-value="loadInventoryData"
