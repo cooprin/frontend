@@ -246,7 +246,7 @@ async function save() {
         icon: 'check',
       })
     } else {
-      // Створення нового правила
+      // Створення нового правила 111
       await WialonSyncApi.createRule(ruleData)
       $q.notify({
         color: 'positive',
