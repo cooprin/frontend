@@ -1,7 +1,12 @@
 <template>
   <div>
     <!-- Кнопка створення -->
-    <q-btn label="Створити правило" color="primary" icon="add" @click="showDialog = true" />
+    <q-btn
+      :label="t('wialonSync.rules.create')"
+      color="primary"
+      icon="add"
+      @click="showDialog = true"
+    />
 
     <!-- Таблиця -->
     <q-table :rows="rules" :columns="columns" :loading="loading" row-key="id" class="q-mt-md">
@@ -18,17 +23,17 @@
       <q-card style="min-width: 700px; max-width: 800px">
         <q-card-section>
           <div class="text-h6">
-            {{ isEditing ? 'Редагувати правило' : 'Створити правило' }}
+            {{ isEditing ? t('wialonSync.rules.edit') : t('wialonSync.rules.create') }}
           </div>
         </q-card-section>
 
         <q-card-section>
           <div class="q-gutter-md">
-            <q-input v-model="form.name" label="Назва правила" outlined dense />
+            <q-input v-model="form.name" :label="t('wialonSync.rules.form.name')" outlined dense />
 
             <q-input
               v-model="form.description"
-              label="Опис"
+              :label="t('wialonSync.rules.form.description')"
               type="textarea"
               outlined
               dense
@@ -40,7 +45,7 @@
                 <q-select
                   v-model="form.rule_type"
                   :options="typeOptions"
-                  label="Тип правила"
+                  :label="t('wialonSync.rules.form.type')"
                   outlined
                   dense
                   emit-value
@@ -51,7 +56,7 @@
               <div class="col-3">
                 <q-input
                   v-model.number="form.execution_order"
-                  label="Порядок"
+                  :label="t('wialonSync.rules.form.executionOrder')"
                   type="number"
                   outlined
                   dense
@@ -60,25 +65,41 @@
               </div>
             </div>
 
-            <q-input v-model="form.sql_query" label="SQL запит" type="textarea" outlined rows="6" />
+            <q-input
+              v-model="form.sql_query"
+              :label="t('wialonSync.rules.form.sqlQuery')"
+              type="textarea"
+              outlined
+              rows="6"
+            />
 
             <q-input
               v-model="form.parameters"
-              label="Параметри (JSON)"
+              :label="t('wialonSync.rules.form.parameters')"
               type="textarea"
               outlined
               dense
               rows="3"
-              hint='Формат: {"key": "value"}'
+              :hint="t('wialonSync.common.jsonFormat')"
             />
 
-            <q-toggle v-model="form.is_active" label="Активне правило" color="positive" />
+            <q-toggle
+              v-model="form.is_active"
+              :label="t('wialonSync.rules.form.isActive')"
+              color="positive"
+            />
           </div>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Скасувати" v-close-popup />
-          <q-btn flat label="Зберегти" color="primary" :loading="saving" @click="save" />
+          <q-btn flat :label="t('wialonSync.common.cancel')" v-close-popup />
+          <q-btn
+            flat
+            :label="t('wialonSync.common.save')"
+            color="primary"
+            :loading="saving"
+            @click="save"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -88,9 +109,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
 
 const $q = useQuasar()
+const { t } = useI18n()
 const loading = ref(false)
 const saving = ref(false)
 const showDialog = ref(false)
@@ -109,24 +132,24 @@ const form = ref({
 })
 
 const typeOptions = [
-  { label: 'Зіставлення клієнтів', value: 'client_mapping' },
-  { label: "Зіставлення об'єктів", value: 'object_mapping' },
-  { label: 'Перевірка обладнання', value: 'equipment_check' },
-  { label: 'Порівняння назв', value: 'name_comparison' },
-  { label: 'Перевірка власників', value: 'owner_validation' },
-  { label: 'Власне правило', value: 'custom' },
+  { label: t('wialonSync.rules.types.client_mapping'), value: 'client_mapping' },
+  { label: t('wialonSync.rules.types.object_mapping'), value: 'object_mapping' },
+  { label: t('wialonSync.rules.types.equipment_check'), value: 'equipment_check' },
+  { label: t('wialonSync.rules.types.name_comparison'), value: 'name_comparison' },
+  { label: t('wialonSync.rules.types.owner_validation'), value: 'owner_validation' },
+  { label: t('wialonSync.rules.types.custom'), value: 'custom' },
 ]
 
 const columns = [
   {
     name: 'name',
-    label: 'Назва',
+    label: t('wialonSync.rules.columns.name'),
     align: 'left',
     field: 'name',
   },
   {
     name: 'actions',
-    label: 'Дії',
+    label: t('wialonSync.common.actions'),
     align: 'center',
   },
 ]
@@ -141,7 +164,7 @@ async function loadRules() {
     console.error('Error loading rules:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження правил',
+      message: t('wialonSync.common.errorLoadingRules'),
       icon: 'error',
     })
   } finally {
@@ -173,13 +196,13 @@ async function save() {
   try {
     // Валідація
     if (!form.value.name?.trim()) {
-      throw new Error("Назва правила обов'язкова")
+      throw new Error(t('wialonSync.common.nameRequired'))
     }
     if (!form.value.rule_type) {
-      throw new Error("Тип правила обов'язковий")
+      throw new Error(t('wialonSync.common.ruleTypeRequired'))
     }
     if (!form.value.sql_query?.trim()) {
-      throw new Error("SQL запит обов'язковий")
+      throw new Error(t('wialonSync.common.sqlQueryRequired'))
     }
 
     // Парсинг параметрів JSON
@@ -187,7 +210,7 @@ async function save() {
     try {
       parsedParameters = JSON.parse(form.value.parameters || '{}')
     } catch {
-      throw new Error('Невірний формат JSON в параметрах')
+      throw new Error(t('wialonSync.common.invalidJsonFormat'))
     }
 
     const ruleData = {
@@ -205,7 +228,7 @@ async function save() {
       await WialonSyncApi.updateRule(form.value.id, ruleData)
       $q.notify({
         color: 'positive',
-        message: 'Правило оновлено',
+        message: t('wialonSync.common.ruleUpdated'),
         icon: 'check',
       })
     } else {
@@ -213,7 +236,7 @@ async function save() {
       await WialonSyncApi.createRule(ruleData)
       $q.notify({
         color: 'positive',
-        message: 'Правило створено',
+        message: t('wialonSync.common.ruleCreated'),
         icon: 'check',
       })
     }
@@ -237,7 +260,7 @@ async function save() {
     console.error('Error saving rule:', error)
     $q.notify({
       color: 'negative',
-      message: error.message || 'Помилка збереження правила',
+      message: error.message || t('wialonSync.common.errorSavingRule'),
       icon: 'error',
     })
   } finally {
