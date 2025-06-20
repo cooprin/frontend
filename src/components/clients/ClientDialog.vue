@@ -151,15 +151,62 @@
                 </q-card-section>
 
                 <q-card-section class="q-gutter-md">
-                  <!-- Wialon ID -->
-                  <q-input v-model="form.wialon_id" :label="t('clients.wialonId')" outlined />
+                  <!-- Wialon Resource ID -->
+                  <q-input
+                    v-model="form.wialon_resource_id"
+                    :label="t('clients.wialonResourceId')"
+                    outlined
+                    :rules="[
+                      (val) =>
+                        !val ||
+                        /^\d+$/.test(val) ||
+                        t('clients.validation.wialonResourceIdNumeric'),
+                    ]"
+                    hint="ID ресурсу для біллінгу в Wialon"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="credit_card" />
+                    </template>
+                  </q-input>
+
+                  <!-- Wialon User ID -->
+                  <q-input
+                    v-model="form.wialon_id"
+                    :label="t('clients.wialonId')"
+                    outlined
+                    :rules="[
+                      (val) => !val || /^\d+$/.test(val) || t('clients.validation.wialonIdNumeric'),
+                    ]"
+                    hint="User ID для авторизації в Wialon"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="person" />
+                    </template>
+                  </q-input>
 
                   <!-- Wialon Username -->
                   <q-input
                     v-model="form.wialon_username"
                     :label="t('clients.wialonUsername')"
                     outlined
-                  />
+                    hint="Ім'я користувача в Wialon"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="account_circle" />
+                    </template>
+                  </q-input>
+
+                  <!-- Інформація про поля -->
+                  <q-banner dense rounded class="bg-blue-1 text-blue-9">
+                    <template v-slot:avatar>
+                      <q-icon name="info" color="blue" />
+                    </template>
+                    <div class="text-caption">
+                      <div><strong>Resource ID:</strong> для роботи з біллінгом</div>
+                      <div><strong>User ID:</strong> для авторизації користувача</div>
+                      <div><strong>Username:</strong> логін користувача</div>
+                    </div>
+                  </q-banner>
                 </q-card-section>
               </q-card>
             </div>
@@ -223,6 +270,7 @@ const defaultForm = {
   phone: '',
   email: '',
   wialon_id: '',
+  wialon_resource_id: '',
   wialon_username: '',
   is_active: true,
 }

@@ -14,11 +14,18 @@ export default {
   email: 'Email',
   address: 'Address',
   description: 'Description',
-  wialonId: 'Wialon ID',
+  wialonId: 'Wialon User ID',
+  wialonResourceId: 'Wialon Resource ID',
   wialonUsername: 'Wialon Username',
   isActive: 'Active',
   objectsCount: 'Objects Count',
   documentsCount: 'Documents Count',
+
+  // Validation messages
+  validation: {
+    wialonIdNumeric: 'Wialon User ID must contain only numbers',
+    wialonResourceIdNumeric: 'Wialon Resource ID must contain only numbers',
+  },
 
   // Повідомлення
   createSuccess: 'Client created successfully',
@@ -81,7 +88,7 @@ export default {
       expired: 'Debt',
     },
     notConfigured: 'Wialon integration not configured',
-    noWialonId: 'Wialon ID not specified',
+    noWialonResourceId: 'Wialon Resource ID not specified',
     error: 'Error getting information',
     loading: 'Loading...',
   },

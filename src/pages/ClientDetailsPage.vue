@@ -132,6 +132,16 @@
                       <div class="col-12 col-sm-6">
                         <q-item>
                           <q-item-section>
+                            <q-item-label caption>{{
+                              $t('clients.wialonResourceId')
+                            }}</q-item-label>
+                            <q-item-label>{{ client.wialon_resource_id || '-' }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+                      <div class="col-12 col-sm-6">
+                        <q-item>
+                          <q-item-section>
                             <q-item-label caption>{{ $t('clients.wialonId') }}</q-item-label>
                             <q-item-label>{{ client.wialon_id || '-' }}</q-item-label>
                           </q-item-section>
@@ -168,9 +178,11 @@
                       </div>
                     </div>
 
-                    <div v-else-if="!paymentInfo?.hasWialonId" class="text-center q-pa-md">
+                    <div v-else-if="!paymentInfo?.hasWialonResourceId" class="text-center q-pa-md">
                       <q-icon name="info" color="info" size="2em" />
-                      <div class="text-body2 q-mt-sm">{{ $t('clients.payment.noWialonId') }}</div>
+                      <div class="text-body2 q-mt-sm">
+                        {{ $t('clients.payment.noWialonResourceId') }}
+                      </div>
                     </div>
 
                     <div v-else-if="paymentInfo?.error" class="text-center q-pa-md">
@@ -798,7 +810,7 @@ const loadClientPaymentInfo = async () => {
     console.error('Error loading client payment info:', error)
     paymentInfo.value = {
       isConfigured: false,
-      hasWialonId: false,
+      hasWialonResourceId: false,
       error: error.response?.data?.message || 'Помилка завантаження платіжної інформації',
     }
   } finally {

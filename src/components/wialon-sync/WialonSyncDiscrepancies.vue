@@ -542,7 +542,8 @@ const openNewClientDialog = (discrepancy) => {
     name: wialonData.name,
     full_name: wialonData.full_name || wialonData.name,
     description: wialonData.description,
-    wialon_id: wialonData.wialon_id,
+    wialon_resource_id: wialonData.wialon_resource_id,
+    wialon_id: wialonData.wialon_user_id,
     wialon_username: wialonData.wialon_username,
     is_active: true,
   }
