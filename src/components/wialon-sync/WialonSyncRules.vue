@@ -443,11 +443,6 @@ const onRequest = async (props) => {
   await loadRules()
 }
 
-// Lifecycle
-onMounted(() => {
-  loadRules()
-})
-
 // Utility methods
 const getTypeColor = (type) => {
   const colors = {
@@ -558,6 +553,11 @@ const deleteRule = async (rule) => {
     }
   })
 }
+
+// Lifecycle
+onMounted(() => {
+  loadRules()
+})
 </script>
 
 <style scoped></style>
