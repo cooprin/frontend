@@ -150,31 +150,95 @@
                   </q-card-section>
                 </q-card>
 
-                <!-- Статистика клієнта -->
+                <!-- Платіжна інформація Wialon -->
                 <q-card flat bordered class="q-mt-md">
                   <q-card-section>
-                    <div class="text-subtitle1">{{ $t('clients.statistics') }}</div>
+                    <div class="text-subtitle1">{{ $t('clients.payment.title') }}</div>
                   </q-card-section>
                   <q-card-section>
-                    <div class="row q-col-gutter-md">
-                      <div class="col-6">
+                    <div v-if="loadingPayment" class="text-center q-pa-md">
+                      <q-spinner color="primary" size="2em" />
+                      <div class="text-caption q-mt-sm">{{ $t('clients.payment.loading') }}</div>
+                    </div>
+
+                    <div v-else-if="!paymentInfo?.isConfigured" class="text-center q-pa-md">
+                      <q-icon name="warning" color="warning" size="2em" />
+                      <div class="text-body2 q-mt-sm">
+                        {{ $t('clients.payment.notConfigured') }}
+                      </div>
+                    </div>
+
+                    <div v-else-if="!paymentInfo?.hasWialonId" class="text-center q-pa-md">
+                      <q-icon name="info" color="info" size="2em" />
+                      <div class="text-body2 q-mt-sm">{{ $t('clients.payment.noWialonId') }}</div>
+                    </div>
+
+                    <div v-else-if="paymentInfo?.error" class="text-center q-pa-md">
+                      <q-icon name="error" color="negative" size="2em" />
+                      <div class="text-body2 q-mt-sm text-negative">
+                        {{ $t('clients.payment.error') }}
+                      </div>
+                      <div class="text-caption q-mt-xs">{{ paymentInfo.error }}</div>
+                    </div>
+
+                    <div v-else-if="paymentInfo" class="q-gutter-sm">
+                      <div v-if="paymentInfo.paidUntil">
                         <q-item>
                           <q-item-section>
-                            <q-item-label caption>{{ $t('clients.objectsCount') }}</q-item-label>
-                            <q-item-label class="text-h6">{{
-                              client.objects_count || 0
+                            <q-item-label caption>{{
+                              $t('clients.payment.paidUntil')
                             }}</q-item-label>
+                            <q-item-label>{{ formatDate(paymentInfo.paidUntil) }}</q-item-label>
                           </q-item-section>
                         </q-item>
                       </div>
 
-                      <div class="col-6">
+                      <div v-if="paymentInfo.daysLeft !== null">
                         <q-item>
                           <q-item-section>
-                            <q-item-label caption>{{ $t('clients.documentsCount') }}</q-item-label>
-                            <q-item-label class="text-h6">{{
-                              client.documents_count || 0
+                            <q-item-label caption>{{
+                              $t('clients.payment.daysLeft')
                             }}</q-item-label>
+                            <q-item-label>
+                              <q-chip
+                                :color="getPaymentStatusColor(paymentInfo.status)"
+                                text-color="white"
+                                size="sm"
+                              >
+                                {{ paymentInfo.daysLeft }}
+                                {{ $t('clients.payment.daysLeft').toLowerCase() }}
+                              </q-chip>
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <div>
+                        <q-item>
+                          <q-item-section>
+                            <q-item-label caption>Статус</q-item-label>
+                            <q-item-label>
+                              <q-chip
+                                :color="getPaymentStatusColor(paymentInfo.status)"
+                                text-color="white"
+                                size="sm"
+                                :icon="getPaymentStatusIcon(paymentInfo.status)"
+                              >
+                                {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
+                              </q-chip>
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <div v-if="paymentInfo.balance !== null">
+                        <q-item>
+                          <q-item-section>
+                            <q-item-label caption>Баланс</q-item-label>
+                            <q-item-label
+                              >{{ paymentInfo.balance }}
+                              {{ paymentInfo.currency || 'UAH' }}</q-item-label
+                            >
                           </q-item-section>
                         </q-item>
                       </div>
@@ -644,6 +708,8 @@ const router = useRouter()
 
 const clientServices = ref([])
 const loadingServices = ref(false)
+const paymentInfo = ref(null)
+const loadingPayment = ref(false)
 
 // Додайте новий стан
 const showGenerateSmartInvoiceDialog = ref(false)
@@ -719,6 +785,24 @@ const loadClientInvoices = async () => {
     clientInvoices.value = { invoices: [], total: 0 }
   } finally {
     loadingInvoices.value = false
+  }
+}
+const loadClientPaymentInfo = async () => {
+  if (!client.value) return
+
+  loadingPayment.value = true
+  try {
+    const response = await ClientsApi.getClientPaymentStatus(client.value.id)
+    paymentInfo.value = response.data.paymentInfo
+  } catch (error) {
+    console.error('Error loading client payment info:', error)
+    paymentInfo.value = {
+      isConfigured: false,
+      hasWialonId: false,
+      error: error.response?.data?.message || 'Помилка завантаження платіжної інформації',
+    }
+  } finally {
+    loadingPayment.value = false
   }
 }
 
@@ -903,7 +987,7 @@ const loadClient = async () => {
     const clientId = route.params.id
     const response = await ClientsApi.getClient(clientId)
     client.value = response.data.client
-    await Promise.all([loadClientServices(), loadClientInvoices()])
+    await Promise.all([loadClientServices(), loadClientInvoices(), loadClientPaymentInfo()])
   } catch (error) {
     console.error('Error loading client:', error)
     $q.notify({
@@ -1064,6 +1148,26 @@ const deleteDocument = async () => {
     deletingDocument.value = false
     deleteDocumentDialog.value = false
   }
+}
+// Допоміжні методи для платіжної інформації
+const getPaymentStatusColor = (status) => {
+  const colors = {
+    active: 'positive',
+    expiringSoon: 'warning',
+    expired: 'negative',
+    unknown: 'grey',
+  }
+  return colors[status] || 'grey'
+}
+
+const getPaymentStatusIcon = (status) => {
+  const icons = {
+    active: 'check_circle',
+    expiringSoon: 'schedule',
+    expired: 'error',
+    unknown: 'help',
+  }
+  return icons[status] || 'help'
 }
 
 // Життєвий цикл

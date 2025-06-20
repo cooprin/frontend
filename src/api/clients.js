@@ -50,4 +50,8 @@ export const ClientsApi = {
     if (!filePath) return null
     return `${process.env.API_URL}/uploads/${filePath}`
   },
+  // Отримання інформації про оплату клієнта в Wialon
+  getClientPaymentStatus: (clientId) => {
+    return api.get(`/clients/${clientId}/payment-status`)
+  },
 }

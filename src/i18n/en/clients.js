@@ -70,4 +70,19 @@ export default {
     services: 'Services',
     invoices: 'Invoices',
   },
+  // Wialon payment information
+  payment: {
+    title: 'Payment Information',
+    paidUntil: 'Paid until',
+    daysLeft: 'Days left',
+    status: {
+      active: 'Active',
+      expiringSoon: 'Expiring soon',
+      expired: 'Debt',
+    },
+    notConfigured: 'Wialon integration not configured',
+    noWialonId: 'Wialon ID not specified',
+    error: 'Error getting information',
+    loading: 'Loading...',
+  },
 }

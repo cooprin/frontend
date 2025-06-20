@@ -70,4 +70,19 @@ export default {
     services: 'Послуги',
     invoices: 'Рахунки',
   },
+  // Платіжна інформація Wialon
+  payment: {
+    title: 'Платіжна інформація',
+    paidUntil: 'Проплачено до',
+    daysLeft: 'Залишилось днів',
+    status: {
+      active: 'Активний',
+      expiringSoon: 'Закінчується',
+      expired: 'Заборгованість',
+    },
+    notConfigured: 'Інтеграція з Wialon не налаштована',
+    noWialonId: 'Wialon ID не вказано',
+    error: 'Помилка отримання інформації',
+    loading: 'Завантаження...',
+  },
 }
