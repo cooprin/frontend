@@ -1,12 +1,7 @@
 <template>
   <div>
     <!-- Кнопка створення -->
-    <q-btn
-      :label="t('wialonSync.rules.create')"
-      color="primary"
-      icon="add"
-      @click="showDialog = true"
-    />
+    <q-btn :label="t('wialonSync.rules.create')" color="primary" icon="add" @click="createRule" />
 
     <!-- Таблиця -->
     <q-table :rows="rules" :columns="columns" :loading="loading" row-key="id" class="q-mt-md">
@@ -107,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
@@ -131,14 +126,14 @@ const form = ref({
   is_active: true,
 })
 
-const typeOptions = [
+const typeOptions = computed(() => [
   { label: t('wialonSync.rules.types.client_mapping'), value: 'client_mapping' },
   { label: t('wialonSync.rules.types.object_mapping'), value: 'object_mapping' },
   { label: t('wialonSync.rules.types.equipment_check'), value: 'equipment_check' },
   { label: t('wialonSync.rules.types.name_comparison'), value: 'name_comparison' },
   { label: t('wialonSync.rules.types.owner_validation'), value: 'owner_validation' },
   { label: t('wialonSync.rules.types.custom'), value: 'custom' },
-]
+])
 
 const columns = [
   {
@@ -172,7 +167,25 @@ async function loadRules() {
   }
 }
 
+function createRule() {
+  console.log('Creating new rule') // Для діагностики
+  isEditing.value = false
+  form.value = {
+    id: null,
+    name: '',
+    description: '',
+    rule_type: '',
+    sql_query: '',
+    parameters: '{}',
+    execution_order: 1,
+    is_active: true,
+  }
+  console.log('Form data for new rule:', form.value) // Для діагностики
+  showDialog.value = true
+}
+
 function editRule(rule) {
+  console.log('Editing rule:', rule) // Для діагностики
   isEditing.value = true
   form.value = {
     id: rule.id,
@@ -187,6 +200,7 @@ function editRule(rule) {
     execution_order: rule.execution_order || 1,
     is_active: rule.is_active ?? true,
   }
+  console.log('Form data:', form.value) // Для діагностики
   showDialog.value = true
 }
 
