@@ -297,7 +297,7 @@ const columns = computed(() => [
 ])
 
 // Methods
-const loadRules = async () => {
+async function loadRules() {
   loading.value = true
   try {
     const response = await WialonSyncApi.getRules({
@@ -319,7 +319,7 @@ const loadRules = async () => {
   }
 }
 
-const showCreateDialog = () => {
+function showCreateDialog() {
   editingRule.value = false
   ruleForm.value = {
     id: null,
@@ -335,7 +335,7 @@ const showCreateDialog = () => {
   showRuleDialog.value = true
 }
 
-const editRule = (rule) => {
+function editRule(rule) {
   editingRule.value = true
 
   let parametersString = '{}'
@@ -368,7 +368,7 @@ const editRule = (rule) => {
   showRuleDialog.value = true
 }
 
-const saveRule = async () => {
+async function saveRule() {
   saving.value = true
   try {
     if (!ruleForm.value.name?.trim()) {
@@ -431,7 +431,7 @@ const saveRule = async () => {
   }
 }
 
-const onRequest = async (props) => {
+async function onRequest(props) {
   const { page, rowsPerPage, sortBy, descending } = props.pagination
   pagination.value = {
     ...pagination.value,
@@ -443,8 +443,7 @@ const onRequest = async (props) => {
   await loadRules()
 }
 
-// Utility methods
-const getTypeColor = (type) => {
+function getTypeColor(type) {
   const colors = {
     client_mapping: 'blue',
     object_mapping: 'green',
@@ -456,7 +455,7 @@ const getTypeColor = (type) => {
   return colors[type] || 'grey'
 }
 
-const getTypeIcon = (type) => {
+function getTypeIcon(type) {
   const icons = {
     client_mapping: 'people',
     object_mapping: 'location_on',
@@ -468,7 +467,7 @@ const getTypeIcon = (type) => {
   return icons[type] || 'rule'
 }
 
-const getTypeLabel = (type) => {
+function getTypeLabel(type) {
   const labels = {
     client_mapping: t('wialonSync.rules.types.client_mapping'),
     object_mapping: t('wialonSync.rules.types.object_mapping'),
@@ -480,7 +479,7 @@ const getTypeLabel = (type) => {
   return labels[type] || type
 }
 
-const toggleRuleActive = async (rule, isActive) => {
+async function toggleRuleActive(rule, isActive) {
   try {
     const updateData = {
       name: rule.name,
@@ -510,7 +509,7 @@ const toggleRuleActive = async (rule, isActive) => {
   }
 }
 
-const executeRule = async (rule) => {
+async function executeRule(rule) {
   try {
     await WialonSyncApi.executeRule(rule.id)
     $q.notify({
@@ -528,7 +527,7 @@ const executeRule = async (rule) => {
   }
 }
 
-const deleteRule = async (rule) => {
+async function deleteRule(rule) {
   $q.dialog({
     title: 'Підтвердження',
     message: `Видалити правило "${rule.name}"?`,
