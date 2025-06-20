@@ -80,16 +80,27 @@ export default {
   // Платіжна інформація Wialon
   payment: {
     title: 'Платіжна інформація',
-    paidUntil: 'Проплачено до',
     daysLeft: 'Залишилось днів',
     status: {
       active: 'Активний',
-      expiringSoon: 'Закінчується',
-      expired: 'Заборгованість',
+      expiring_soon: 'Закінчується',
+      expired: 'Прострочено',
+      blocked: 'Заблокований',
+      unknown: 'Невідомо',
+    },
+    reason: {
+      paid: 'Акаунт оплачений',
+      unlimited: 'Необмежений доступ',
+      expiring: 'Доступ закінчується',
+      days_expired: 'Період оплати закінчився',
+      account_blocked: 'Акаунт заблокований',
+      parent_account_blocked: 'Батьківський акаунт заблокований',
     },
     notConfigured: 'Інтеграція з Wialon не налаштована',
     noWialonResourceId: 'Wialon Resource ID не вказано',
     error: 'Помилка отримання інформації',
     loading: 'Завантаження...',
+    plan: 'Тарифний план',
+    parentAccount: 'Батьківський акаунт',
   },
 }

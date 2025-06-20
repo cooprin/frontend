@@ -80,16 +80,27 @@ export default {
   // Wialon payment information
   payment: {
     title: 'Payment Information',
-    paidUntil: 'Paid until',
     daysLeft: 'Days left',
     status: {
       active: 'Active',
-      expiringSoon: 'Expiring soon',
-      expired: 'Debt',
+      expiring_soon: 'Expiring soon',
+      expired: 'Expired',
+      blocked: 'Blocked',
+      unknown: 'Unknown',
+    },
+    reason: {
+      paid: 'Account is paid',
+      unlimited: 'Unlimited access',
+      expiring: 'Access expiring soon',
+      days_expired: 'Payment period expired',
+      account_blocked: 'Account is blocked',
+      parent_account_blocked: 'Parent account is blocked',
     },
     notConfigured: 'Wialon integration not configured',
     noWialonResourceId: 'Wialon Resource ID not specified',
     error: 'Error getting information',
     loading: 'Loading...',
+    plan: 'Tariff plan',
+    parentAccount: 'Parent account',
   },
 }

@@ -1165,8 +1165,9 @@ const deleteDocument = async () => {
 const getPaymentStatusColor = (status) => {
   const colors = {
     active: 'positive',
-    expiringSoon: 'warning',
+    expiring_soon: 'warning',
     expired: 'negative',
+    blocked: 'negative',
     unknown: 'grey',
   }
   return colors[status] || 'grey'
@@ -1175,8 +1176,9 @@ const getPaymentStatusColor = (status) => {
 const getPaymentStatusIcon = (status) => {
   const icons = {
     active: 'check_circle',
-    expiringSoon: 'schedule',
+    expiring_soon: 'schedule',
     expired: 'error',
+    blocked: 'block',
     unknown: 'help',
   }
   return icons[status] || 'help'
