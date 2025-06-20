@@ -11,6 +11,7 @@ export default {
   fullName: 'Повна назва компанії',
   contactPerson: 'Контактна особа',
   phone: 'Телефон',
+  countryCode: 'Код країни',
   email: 'Email',
   address: 'Адреса',
   description: 'Опис',
@@ -20,6 +21,19 @@ export default {
   isActive: 'Активний',
   objectsCount: "Кількість об'єктів",
   documentsCount: 'Кількість документів',
+  status: 'Статус',
+
+  // Підказки для полів Wialon
+  wialonResourceIdHint: 'ID ресурсу для біллінгу в Wialon',
+  wialonUserIdHint: 'User ID для авторизації в Wialon',
+  wialonUsernameHint: "Ім'я користувача в Wialon",
+
+  // Описи полів Wialon (для інформаційного банера)
+  wialonFields: {
+    resourceIdDescription: 'для роботи з біллінгом',
+    userIdDescription: 'для авторизації користувача',
+    usernameDescription: 'логін користувача',
+  },
 
   // Повідомлення валідації
   validation: {
@@ -77,10 +91,12 @@ export default {
     services: 'Послуги',
     invoices: 'Рахунки',
   },
+
   // Платіжна інформація Wialon
   payment: {
     title: 'Платіжна інформація',
     daysLeft: 'Залишилось днів',
+    paidUntil: 'Оплачено до',
     status: {
       active: 'Активний',
       expiring_soon: 'Закінчується',

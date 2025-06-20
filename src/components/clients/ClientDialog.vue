@@ -162,7 +162,7 @@
                         /^\d+$/.test(val) ||
                         t('clients.validation.wialonResourceIdNumeric'),
                     ]"
-                    hint="ID ресурсу для біллінгу в Wialon"
+                    :hint="$t('clients.wialonResourceIdHint')"
                   >
                     <template v-slot:prepend>
                       <q-icon name="credit_card" />
@@ -177,7 +177,7 @@
                     :rules="[
                       (val) => !val || /^\d+$/.test(val) || t('clients.validation.wialonIdNumeric'),
                     ]"
-                    hint="User ID для авторизації в Wialon"
+                    :hint="$t('clients.wialonUserIdHint')"
                   >
                     <template v-slot:prepend>
                       <q-icon name="person" />
@@ -189,7 +189,7 @@
                     v-model="form.wialon_username"
                     :label="t('clients.wialonUsername')"
                     outlined
-                    hint="Ім'я користувача в Wialon"
+                    :hint="$t('clients.wialonUsernameHint')"
                   >
                     <template v-slot:prepend>
                       <q-icon name="account_circle" />
@@ -202,9 +202,17 @@
                       <q-icon name="info" color="blue" />
                     </template>
                     <div class="text-caption">
-                      <div><strong>Resource ID:</strong> для роботи з біллінгом</div>
-                      <div><strong>User ID:</strong> для авторизації користувача</div>
-                      <div><strong>Username:</strong> логін користувача</div>
+                      <div>
+                        <strong>Resource ID:</strong>
+                        {{ $t('clients.wialonFields.resourceIdDescription') }}
+                      </div>
+                      <div>
+                        <strong>User ID:</strong> {{ $t('clients.wialonFields.userIdDescription') }}
+                      </div>
+                      <div>
+                        <strong>Username:</strong>
+                        {{ $t('clients.wialonFields.usernameDescription') }}
+                      </div>
                     </div>
                   </q-banner>
                 </q-card-section>

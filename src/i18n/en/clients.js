@@ -11,6 +11,7 @@ export default {
   fullName: 'Full Company Name',
   contactPerson: 'Contact Person',
   phone: 'Phone',
+  countryCode: 'Country Code',
   email: 'Email',
   address: 'Address',
   description: 'Description',
@@ -20,6 +21,19 @@ export default {
   isActive: 'Active',
   objectsCount: 'Objects Count',
   documentsCount: 'Documents Count',
+  status: 'Status',
+
+  // Підказки для полів Wialon
+  wialonResourceIdHint: 'Resource ID for billing in Wialon',
+  wialonUserIdHint: 'User ID for authorization in Wialon',
+  wialonUsernameHint: 'Username in Wialon',
+
+  // Описи полів Wialon (для інформаційного банера)
+  wialonFields: {
+    resourceIdDescription: 'for billing operations',
+    userIdDescription: 'for user authorization',
+    usernameDescription: 'user login',
+  },
 
   // Validation messages
   validation: {
@@ -77,10 +91,12 @@ export default {
     services: 'Services',
     invoices: 'Invoices',
   },
+
   // Wialon payment information
   payment: {
     title: 'Payment Information',
     daysLeft: 'Days left',
+    paidUntil: 'Paid until',
     status: {
       active: 'Active',
       expiring_soon: 'Expiring soon',

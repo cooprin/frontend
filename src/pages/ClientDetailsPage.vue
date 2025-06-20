@@ -228,7 +228,7 @@
                       <div>
                         <q-item>
                           <q-item-section>
-                            <q-item-label caption>Статус</q-item-label>
+                            <q-item-label caption>{{ $t('clients.status') }}</q-item-label>
                             <q-item-label>
                               <q-chip
                                 :color="getPaymentStatusColor(paymentInfo.status)"
@@ -239,18 +239,6 @@
                                 {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
                               </q-chip>
                             </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <div v-if="paymentInfo.balance !== null">
-                        <q-item>
-                          <q-item-section>
-                            <q-item-label caption>Баланс</q-item-label>
-                            <q-item-label
-                              >{{ paymentInfo.balance }}
-                              {{ paymentInfo.currency || 'UAH' }}</q-item-label
-                            >
                           </q-item-section>
                         </q-item>
                       </div>
