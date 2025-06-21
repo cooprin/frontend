@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile для Quasar додатка
+# Multi-stage Dockerfile для Quasar додатка (стабільна версія)
 
 # =============================================================================
 # STAGE 1: Builder stage (збірка додатка)
@@ -9,15 +9,32 @@ WORKDIR /app
 
 # Встановлюємо системні залежності для збірки
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 gcc g++ make \
+    && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        gcc \
+        g++ \
+        make \
+        git \
+        ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Копіюємо package файли для кешування шарів
 COPY package.json package-lock.json ./
 
-# Встановлюємо залежності (включно з devDependencies для збірки)
-RUN npm ci
+# Очистимо npm кеш і встановимо останню версію
+RUN npm cache clean --force \
+    && npm install -g npm@latest
+
+# Налаштовуємо npm для кращої стабільності
+RUN npm config set fetch-retry-maxtimeout 600000 \
+    && npm config set fetch-retry-mintimeout 10000 \
+    && npm config set fetch-retries 5 \
+    && npm config set registry https://registry.npmjs.org/
+
+# Встановлюємо залежності (використовуємо install замість ci для більшої гнучкості)
+RUN npm install --production=false
 
 # Встановлюємо Quasar CLI глобально
 RUN npm install -g @quasar/cli
@@ -69,15 +86,32 @@ WORKDIR /app
 
 # Встановлюємо системні залежності
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 gcc g++ make \
+    && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        gcc \
+        g++ \
+        make \
+        git \
+        ca-certificates \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Копіюємо package файли
 COPY package.json package-lock.json ./
 
+# Очистимо npm кеш і встановимо останню версію
+RUN npm cache clean --force \
+    && npm install -g npm@latest
+
+# Налаштовуємо npm
+RUN npm config set fetch-retry-maxtimeout 600000 \
+    && npm config set fetch-retry-mintimeout 10000 \
+    && npm config set fetch-retries 5 \
+    && npm config set registry https://registry.npmjs.org/
+
 # Встановлюємо залежності
-RUN npm ci
+RUN npm install
 
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
