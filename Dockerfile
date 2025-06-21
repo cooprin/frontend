@@ -7,64 +7,9 @@ FROM node:18-bullseye AS builder
 
 WORKDIR /app
 
-# Встановлюємо системні залежності для збірки
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python3 \
-        gcc \
-        g++ \
-        make \
-        git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Копіюємо package файли для кешування шарів
-COPY package.json package-lock.json ./
-
-# Встановлюємо залежності
-RUN npm install
-
-# Встановлюємо Quasar CLI глобально
-RUN npm install -g @quasar/cli
-
-# Копіюємо весь код проєкту
-COPY . .
-
-# Збираємо додаток для продакшену
-RUN quasar build
-
-# =============================================================================
-# STAGE 2: Production stage (nginx + статичні файли)
-# =============================================================================
-FROM nginx:alpine AS production
-
-# Копіюємо зібрані файли з builder stage
-COPY --from=builder /app/dist/spa /usr/share/nginx/html
-
-# Копіюємо конфігурацію nginx
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Відкриваємо порт
-EXPOSE 80
-
-# Запускаємо nginx
-CMD ["nginx", "-g", "daemon off;"]
-
-# =============================================================================
-# STAGE 3: Development stage (повний код + dev server)
-# =============================================================================
-FROM node:18-bullseye AS development
-
-WORKDIR /app
-
 # Встановлюємо системні залежності
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python3 \
-        gcc \
-        g++ \
-        make \
-        git \
+    && apt-get install -y --no-install-recommends python3 gcc g++ make \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -77,11 +22,57 @@ RUN npm install
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
 
-# Копіюємо весь код (для development потрібен повний код)
+# Копіюємо весь код
 COPY . .
 
-# Відкриваємо порт для dev сервера
+# Збираємо для production
+RUN quasar build
+
+# =============================================================================
+# STAGE 2: Production stage (nginx + статичні файли)
+# =============================================================================
+FROM nginx:alpine AS production
+
+# Копіюємо зібрані файли
+COPY --from=builder /app/dist/spa /usr/share/nginx/html
+
+# Копіюємо nginx конфігурацію
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Відкриваємо порт
+EXPOSE 80
+
+# Запускаємо nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+# =============================================================================
+# STAGE 3: Development stage (ТОЧНО ЯК У ТВОЄМУ ОРИГІНАЛЬНОМУ DOCKERFILE)
+# =============================================================================
+FROM node:18-bullseye AS development
+
+# Налаштуємо робочу директорію в контейнері
+WORKDIR /app
+
+# Копіюємо файли package.json та package-lock.json
+COPY package.json package-lock.json ./
+
+# Копіюємо всі файли проєкту
+COPY . .
+
+# Оновлюємо систему та встановлюємо необхідні пакети
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 gcc g++ make \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Встановлюємо залежності
+RUN npm install
+
+# Встановлюємо Quasar CLI
+RUN npm install -g @quasar/cli
+
+# Відкриваємо порт
 EXPOSE 9000
 
-# Запускаємо dev сервер з hot reload
+# Запуск dev сервера
 CMD ["quasar", "dev", "--host", "0.0.0.0"]
