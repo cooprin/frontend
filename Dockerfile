@@ -3,29 +3,31 @@
 # =============================================================================
 # STAGE 1: Builder stage (збірка додатка)
 # =============================================================================
-FROM node:18-bullseye AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Встановлюємо системні залежності
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 gcc g++ make \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Build arguments (передаються з CI/CD)
+ARG VUE_APP_API_URL=https://erp.cooprin.com.ua/api
+ARG VUE_APP_CORS_ORIGIN=https://erp.cooprin.com.ua
 
-# Копіюємо package файли
-COPY package.json package-lock.json ./
+# Встановлюємо системні залежності для Alpine
+RUN apk add --no-cache python3 make g++ git
 
-# Встановлюємо залежності
-RUN npm install
+# Копіюємо весь код СПОЧАТКУ
+COPY . .
+
+# Встановлюємо залежності (тепер quasar prepare буде працювати)
+RUN npm install --no-audit --no-fund
 
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
 
-# Копіюємо весь код
-COPY . .
+# Встановлюємо environment змінні з build arguments
+ENV VUE_APP_API_URL=$VUE_APP_API_URL
+ENV VUE_APP_CORS_ORIGIN=$VUE_APP_CORS_ORIGIN
 
-# Збираємо для production
+# Збираємо для production з правильними environment змінними
 RUN quasar build
 
 # =============================================================================
