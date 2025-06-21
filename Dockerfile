@@ -6,21 +6,20 @@ ARG BUILD_MODE=production
 # Налаштуємо робочу директорію в контейнері
 WORKDIR /app
 
-# Копіюємо файли package.json та package-lock.json
-COPY package.json package-lock.json ./
-
 # Оновлюємо систему та встановлюємо необхідні пакети
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 gcc g++ make \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Встановлюємо залежності
-RUN npm install
-
-# Встановлюємо Quasar CLI
+# КРИТИЧНО: Встановлюємо Quasar CLI ПЕРЕД npm install
 RUN npm install -g @quasar/cli
-RUN npm install axios pinia
+
+# Копіюємо package files
+COPY package.json package-lock.json ./
+
+# Встановлюємо залежності (postinstall запустить quasar prepare)
+RUN npm install
 
 # Копіюємо всі файли проєкту
 COPY . .
