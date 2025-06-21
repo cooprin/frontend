@@ -1,0 +1,45 @@
+# Git та редактори
+.git
+.gitignore
+README.md
+.DS_Store
+.thumbs.db
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Node.js (буде встановлено в контейнері)
+node_modules
+
+# Quasar збірки та кеш
+.quasar
+/dist
+/quasar.config.*.temporary.compiled*
+
+# Cordova
+/src-cordova/node_modules
+/src-cordova/platforms
+/src-cordova/plugins
+/src-cordova/www
+
+# Capacitor
+/src-capacitor/www
+/src-capacitor/node_modules
+
+# Логи
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment файли
+.env.local*
+.env
+
+# Docker файли
+Dockerfile*
+.dockerignore
+
+# CI/CD
+.github
