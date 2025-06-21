@@ -1,67 +1,92 @@
-FROM node:18-bullseye
+# Multi-stage Dockerfile для Quasar додатка
 
-# Аргумент для типу збірки
-ARG BUILD_MODE=production
+# =============================================================================
+# STAGE 1: Builder stage (збірка додатка)
+# =============================================================================
+FROM node:18-bullseye AS builder
 
-# Налаштуємо робочу директорію в контейнері
 WORKDIR /app
 
-# Копіюємо файли package.json та package-lock.json
-COPY package.json package-lock.json ./
-
-# Копіюємо всі файли проєкту (як в оригіналі)
-COPY . .
-
-# Оновлюємо систему та встановлюємо необхідні пакети
+# Встановлюємо системні залежності для збірки
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 gcc g++ make \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Встановлюємо залежності (як в оригіналі)
-RUN npm install
+# Копіюємо package файли для кешування шарів
+COPY package.json package-lock.json ./
 
-# Встановлюємо Quasar CLI (як в оригіналі)
+# Встановлюємо залежності (включно з devDependencies для збірки)
+RUN npm ci
+
+# Встановлюємо Quasar CLI глобально
 RUN npm install -g @quasar/cli
 
-# Умовна збірка залежно від BUILD_MODE
-RUN if [ "$BUILD_MODE" = "production" ] ; then \
-        echo "Building for production..." && \
-        quasar build && \
-        npm install -g serve ; \
-    else \
-        echo "Development mode - no build needed" ; \
-    fi
+# Копіюємо весь код проєкту
+COPY . .
+
+# Збираємо додаток для продакшену
+RUN quasar build
+
+# =============================================================================
+# STAGE 2: Production stage (nginx + статичні файли)
+# =============================================================================
+FROM nginx:alpine AS production
+
+# Копіюємо зібрані файли з builder stage
+COPY --from=builder /app/dist/spa /usr/share/nginx/html
+
+# Копіюємо конфігурацію nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Створюємо non-root користувача для безпеки
+RUN addgroup -g 1001 -S nodejs \
+    && adduser -S nextjs -u 1001
+
+# Змінюємо власника файлів
+RUN chown -R nextjs:nodejs /usr/share/nginx/html \
+    && chown -R nextjs:nodejs /var/cache/nginx \
+    && chown -R nextjs:nodejs /var/log/nginx \
+    && chown -R nextjs:nodejs /etc/nginx/conf.d
+
+# Створюємо директорії для PID файлів
+RUN touch /var/run/nginx.pid \
+    && chown -R nextjs:nodejs /var/run/nginx.pid
 
 # Відкриваємо порт
+EXPOSE 80
+
+# Запускаємо nginx як non-root користувач
+USER nextjs
+CMD ["nginx", "-g", "daemon off;"]
+
+# =============================================================================
+# STAGE 3: Development stage (повний код + dev server)
+# =============================================================================
+FROM node:18-bullseye AS development
+
+WORKDIR /app
+
+# Встановлюємо системні залежності
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 gcc g++ make \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копіюємо package файли
+COPY package.json package-lock.json ./
+
+# Встановлюємо залежності
+RUN npm ci
+
+# Встановлюємо Quasar CLI
+RUN npm install -g @quasar/cli
+
+# Копіюємо весь код (для development потрібен повний код)
+COPY . .
+
+# Відкриваємо порт для dev сервера
 EXPOSE 9000
 
-# Умовний запуск залежно від BUILD_MODE
-CMD if [ "$BUILD_MODE" = "production" ] ; then \
-        echo "Starting production server..." && \
-        serve -s dist/spa -l 9000 ; \
-    else \
-        echo "Starting development server..." && \
-        quasar dev --host 0.0.0.0 ; \
-    fi
-
-# Умовна збірка залежно від BUILD_MODE
-RUN if [ "$BUILD_MODE" = "production" ] ; then \
-        echo "Building for production..." && \
-        quasar build && \
-        npm install -g serve ; \
-    else \
-        echo "Development mode - no build needed" ; \
-    fi
-
-# Відкриваємо порт
-EXPOSE 9000
-
-# Умовний запуск залежно від BUILD_MODE
-CMD if [ "$BUILD_MODE" = "production" ] ; then \
-        echo "Starting production server..." && \
-        serve -s dist/spa -l 9000 ; \
-    else \
-        echo "Starting development server..." && \
-        quasar dev --host 0.0.0.0 ; \
-    fi
+# Запускаємо dev сервер з hot reload
+CMD ["quasar", "dev", "--host", "0.0.0.0"]
