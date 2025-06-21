@@ -198,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WialonSyncApi } from 'src/api/wialon-sync'
@@ -291,10 +291,22 @@ const columns = computed(() => [
 const loadRules = async () => {
   loading.value = true
   try {
-    const response = await WialonSyncApi.getRules({
-      limit: pagination.value.rowsPerPage,
-      offset: (pagination.value.page - 1) * pagination.value.rowsPerPage,
+    const params = {
+      page: pagination.value.page,
+      perPage: pagination.value.rowsPerPage,
+      sortBy: pagination.value.sortBy || undefined,
+      descending: pagination.value.descending,
+      search: filter.value || undefined,
+    }
+
+    // Видалити undefined параметри
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined) {
+        delete params[key]
+      }
     })
+
+    const response = await WialonSyncApi.getRules(params)
 
     rules.value = response.data.rules || []
     pagination.value.rowsNumber = response.data.total || 0
@@ -309,7 +321,6 @@ const loadRules = async () => {
     loading.value = false
   }
 }
-
 const showCreateDialog = () => {
   editingRule.value = false
   ruleForm.value = {
@@ -550,6 +561,14 @@ const deleteRule = async (rule) => {
     }
   })
 }
+watch(
+  filter,
+  () => {
+    pagination.value.page = 1
+    loadRules()
+  },
+  { deep: true },
+)
 
 // Lifecycle
 onMounted(() => {
