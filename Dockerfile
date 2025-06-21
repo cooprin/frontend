@@ -3,21 +3,17 @@
 # =============================================================================
 # STAGE 1: Builder stage (збірка додатка)
 # =============================================================================
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Встановлюємо системні залежності
+# Встановлюємо системні залежності для Alpine
 RUN apk add --no-cache python3 make g++ git
-
-# Оновлюємо npm до останньої LTS версії
-RUN npm install -g npm@8
 
 # Копіюємо package файли
 COPY package.json package-lock.json ./
 
-# Очищуємо npm кеш та встановлюємо залежності
-RUN npm cache clean --force
+# Встановлюємо залежності
 RUN npm install --no-audit --no-fund
 
 # Встановлюємо Quasar CLI
