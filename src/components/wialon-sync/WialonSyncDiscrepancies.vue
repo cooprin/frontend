@@ -129,9 +129,7 @@
       <template v-slot:body-cell-wialon_data="props">
         <q-td :props="props">
           <div class="text-weight-bold">{{ props.row.wialon_entity_data?.name || '-' }}</div>
-          <div class="text-caption text-grey-7">
-            ID: {{ props.row.wialon_entity_data?.wialon_id || '-' }}
-          </div>
+          <div class="text-caption text-grey-7">ID: {{ getWialonId(props.row) }}</div>
         </q-td>
       </template>
 
@@ -140,9 +138,7 @@
         <q-td :props="props">
           <div v-if="props.row.system_entity_data">
             <div class="text-weight-bold">{{ props.row.system_entity_data?.name || '-' }}</div>
-            <div class="text-caption text-grey-7">
-              ID: {{ props.row.system_entity_data?.id || '-' }}
-            </div>
+            <div class="text-caption text-grey-7">ID: {{ getSystemId(props.row) }}</div>
           </div>
           <div v-else class="text-grey-7">-</div>
         </q-td>
@@ -862,6 +858,26 @@ const getStatusIcon = (status) => {
 const formatDateTime = (dateString) => {
   if (!dateString) return ''
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm:ss')
+}
+// Допоміжні методи для відображення ID
+const getWialonId = (row) => {
+  const data = row.wialon_entity_data
+  if (!data) return '-'
+
+  // Для клієнтів використовуємо wialon_resource_id або wialon_user_id
+  if (row.discrepancy_type?.includes('client')) {
+    return data.wialon_resource_id || data.wialon_user_id || data.wialon_id || '-'
+  }
+
+  // Для об'єктів використовуємо wialon_id
+  return data.wialon_id || '-'
+}
+
+const getSystemId = (row) => {
+  const data = row.system_entity_data
+  if (!data) return '-'
+
+  return data.id || '-'
 }
 
 // Функція для встановлення фільтра по сесії (викликається з сесій)

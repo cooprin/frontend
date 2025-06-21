@@ -42,8 +42,12 @@
       row-key="id"
       v-model:pagination="pagination"
       @request="onRequest"
+      binary-state-sort
       flat
       bordered
+      :rows-per-page-options="pagination.rowsPerPageOptions"
+      :rows-per-page-label="$t('common.rowsPerPage')"
+      :pagination-label="paginationLabel"
     >
       <!-- Тип правила -->
       <template v-slot:body-cell-rule_type="props">
@@ -229,8 +233,9 @@ const pagination = ref({
   sortBy: 'execution_order',
   descending: false,
   page: 1,
-  rowsPerPage: 10,
+  rowsPerPage: 15,
   rowsNumber: 0,
+  rowsPerPageOptions: [10, 15, 20, 25, 50],
 })
 
 // Опції для типів правил (англійською)
@@ -427,6 +432,10 @@ const onRequest = async (props) => {
     descending,
   }
   await loadRules()
+}
+
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
 }
 
 // Utility methods
