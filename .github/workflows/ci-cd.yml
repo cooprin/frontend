@@ -37,6 +37,10 @@ jobs:
             echo "environment=development" >> $GITHUB_OUTPUT
           fi
 
+      # Налаштування Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       # Збірка для production (nginx-based, маленький образ)
       - name: Build and push production image
         if: steps.params.outputs.target == 'production'
@@ -45,11 +49,10 @@ jobs:
           context: .
           push: true
           target: production
+          platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:${{ steps.params.outputs.tag }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:prod-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       # Збірка для development (Node.js-based, великий образ)
       - name: Build and push development image
@@ -59,11 +62,10 @@ jobs:
           context: .
           push: true
           target: development
+          platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:${{ steps.params.outputs.tag }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:dev-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       # Виводимо інформацію про створений образ
       - name: Image info
