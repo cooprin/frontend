@@ -10,17 +10,14 @@ WORKDIR /app
 # Встановлюємо системні залежності для Alpine
 RUN apk add --no-cache python3 make g++ git
 
-# Копіюємо package файли
-COPY package.json package-lock.json ./
+# Копіюємо весь код СПОЧАТКУ
+COPY . .
 
-# Встановлюємо залежності
+# Встановлюємо залежності (тепер quasar prepare буде працювати)
 RUN npm install --no-audit --no-fund
 
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
-
-# Копіюємо весь код
-COPY . .
 
 # Збираємо для production
 RUN quasar build
