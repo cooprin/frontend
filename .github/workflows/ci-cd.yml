@@ -41,6 +41,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # ДІАГНОСТИКА - тимчасовий крок для виявлення помилки
+      - name: Debug npm install issue
+        run: |
+          echo "=== Testing npm install locally ==="
+          docker run --rm -v $PWD:/test -w /test node:16-alpine sh -c "
+            echo 'Installing system deps...'
+            apk add --no-cache python3 make g++ git
+            echo 'Updating npm...'
+            npm install -g npm@8
+            echo 'Node version:' && node --version
+            echo 'NPM version:' && npm --version
+            echo 'Cleaning cache...'
+            npm cache clean --force
+            echo 'Starting npm install with verbose output...'
+            npm install --no-audit --no-fund --verbose
+          " 2>&1 | head -100
+
       # Збірка для production (nginx-based, маленький образ)
       - name: Build and push production image
         if: steps.params.outputs.target == 'production'
