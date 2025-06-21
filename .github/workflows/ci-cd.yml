@@ -50,6 +50,9 @@ jobs:
           push: true
           target: production
           platforms: linux/amd64
+          build-args: |
+            VUE_APP_API_URL=https://erp.cooprin.com.ua/api
+            VUE_APP_CORS_ORIGIN=https://erp.cooprin.com.ua
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:${{ steps.params.outputs.tag }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:prod-${{ github.sha }}

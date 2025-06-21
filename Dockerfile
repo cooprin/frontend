@@ -7,6 +7,10 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments (передаються з CI/CD)
+ARG VUE_APP_API_URL=https://erp.cooprin.com.ua/api
+ARG VUE_APP_CORS_ORIGIN=https://erp.cooprin.com.ua
+
 # Встановлюємо системні залежності для Alpine
 RUN apk add --no-cache python3 make g++ git
 
@@ -19,7 +23,11 @@ RUN npm install --no-audit --no-fund
 # Встановлюємо Quasar CLI
 RUN npm install -g @quasar/cli
 
-# Збираємо для production
+# Встановлюємо environment змінні з build arguments
+ENV VUE_APP_API_URL=$VUE_APP_API_URL
+ENV VUE_APP_CORS_ORIGIN=$VUE_APP_CORS_ORIGIN
+
+# Збираємо для production з правильними environment змінними
 RUN quasar build
 
 # =============================================================================
