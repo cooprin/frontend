@@ -29,9 +29,8 @@
             </template>
           </q-input>
 
-          <div class="flex justify-between">
+          <div class="flex justify-center">
             <q-btn label="Увійти" type="submit" color="primary" :loading="authStore.loading" />
-            <q-btn label="Реєстрація" flat color="primary" :to="{ name: 'register' }" />
           </div>
         </q-form>
       </q-card-section>
@@ -52,13 +51,21 @@ const password = ref('')
 const isPwd = ref(true)
 
 const onSubmit = async () => {
-  const success = await authStore.login({
+  const result = await authStore.login({
     email: email.value,
     password: password.value,
   })
 
-  if (success) {
-    router.push({ name: 'dashboard' })
+  if (result.success) {
+    // Перевіряємо тип користувача і редіректимо на відповідну сторінку
+    if (result.userType === 'staff') {
+      router.push({ name: 'admin-dashboard' })
+    } else if (result.userType === 'client') {
+      router.push({ name: 'portal-dashboard' })
+    } else {
+      // Fallback на дефолтний роут
+      router.push(authStore.getDefaultRoute)
+    }
   }
 }
 </script>
