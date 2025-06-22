@@ -2,23 +2,24 @@
   <q-page class="flex flex-center">
     <q-card class="auth-card">
       <q-card-section>
-        <div class="text-h6">Вхід в систему</div>
+        <div class="text-h6">System Login</div>
       </q-card-section>
 
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <q-input
-            v-model="email"
-            label="Email"
-            type="email"
-            :rules="[(val) => !!val || 'Email обов\'язковий']"
+            v-model="username"
+            label="System or Wialon Username"
+            autocomplete="username"
+            :rules="[(val) => !!val || 'Username is required']"
           />
 
           <q-input
             v-model="password"
-            label="Пароль"
+            label="Password"
             :type="isPwd ? 'password' : 'text'"
-            :rules="[(val) => !!val || 'Пароль обов\'язковий']"
+            autocomplete="current-password"
+            :rules="[(val) => !!val || 'Password is required']"
           >
             <template v-slot:append>
               <q-icon
@@ -30,7 +31,7 @@
           </q-input>
 
           <div class="flex justify-center">
-            <q-btn label="Увійти" type="submit" color="primary" :loading="authStore.loading" />
+            <q-btn label="Login" type="submit" color="primary" :loading="authStore.loading" />
           </div>
         </q-form>
       </q-card-section>
@@ -46,13 +47,13 @@ import { useAuthStore } from 'src/stores/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const isPwd = ref(true)
 
 const onSubmit = async () => {
   const result = await authStore.login({
-    email: email.value,
+    email: username.value, // Backend ще очікує поле email
     password: password.value,
   })
 
