@@ -4,7 +4,7 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
-        <q-toolbar-title class="cursor-pointer" @click="router.push('/')">
+        <q-toolbar-title class="cursor-pointer" @click="goToDashboard">
           {{ companyName || $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
@@ -47,7 +47,7 @@
 
               <q-separator />
 
-              <q-item clickable v-close-popup to="/profile">
+              <q-item clickable v-close-popup to="/admin/profile">
                 <q-item-section avatar>
                   <q-icon name="person" />
                 </q-item-section>
@@ -81,7 +81,7 @@
       <q-scroll-area class="fit">
         <q-list padding>
           <!-- Dashboard -->
-          <q-item clickable v-ripple :to="{ name: 'dashboard' }">
+          <q-item clickable v-ripple @click="goToDashboard">
             <q-item-section avatar>
               <q-icon name="grid_view" />
             </q-item-section>
@@ -999,6 +999,17 @@ const toggleDarkMode = () => {
 const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('userLanguage', lang)
+}
+
+const goToDashboard = () => {
+  if (authStore.userType === 'staff') {
+    router.push({ name: 'admin-dashboard' })
+  } else if (authStore.userType === 'client') {
+    router.push({ name: 'portal-dashboard' })
+  } else {
+    // Fallback
+    router.push(authStore.getDefaultRoute)
+  }
 }
 
 const logout = async () => {
