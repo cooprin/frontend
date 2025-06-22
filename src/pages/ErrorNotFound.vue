@@ -6,7 +6,7 @@
       <q-btn
         color="primary"
         :label="$t('pages.error.returnHome')"
-        :to="{ name: 'dashboard' }"
+        @click="goHome"
         icon="home"
         no-caps
         unelevated
@@ -17,5 +17,19 @@
 </template>
 
 <script setup>
-// No setup needed
+import { useRouter } from 'vue-router'
+import { useAuthStore } from 'stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const goHome = () => {
+  if (authStore.isAuthenticated) {
+    // Перенаправляємо на правильний dashboard залежно від типу користувача
+    router.push(authStore.getDefaultRoute)
+  } else {
+    // Якщо не автентифікований - на логін
+    router.push({ name: 'login' })
+  }
+}
 </script>
