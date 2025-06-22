@@ -17,6 +17,8 @@ import payments from './payments'
 import dashboard from './dashboard'
 import company from './company'
 import wialonSync from './wialonSync'
+import portal from './portal'
+import tickets from './tickets'
 
 export default {
   layouts,
@@ -38,4 +40,6 @@ export default {
   dashboard,
   company,
   wialonSync,
+  portal,
+  tickets,
 }
