@@ -323,14 +323,7 @@ const routes = [
   // Legacy redirect for old dashboard route
   {
     path: '/',
-    beforeEnter: (to, from, next) => {
-      const authStore = useAuthStore()
-      if (authStore.isAuthenticated) {
-        next(authStore.getDefaultRoute)
-      } else {
-        next('/auth/login')
-      }
-    },
+    redirect: '/auth/login',
   },
 
   // Auth routes
