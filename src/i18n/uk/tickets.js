@@ -100,4 +100,11 @@ export default {
     history: 'Історія',
   },
   createError: 'Помилка створення заявки',
+  created: 'Створена',
+  resolved: 'Вирішена',
+  closed: 'Закрита',
+  notFound: 'Заявку не знайдено',
+  ticketInfo: 'Інформація про заявку',
+  clientComment: 'Коментар клієнта',
+  staffComment: 'Коментар співробітника',
 }

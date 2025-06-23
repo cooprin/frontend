@@ -101,4 +101,11 @@ export default {
   },
   // ... в кінець файлу перед закриваючою дужкою
   createError: 'Error creating ticket',
+  created: 'Created',
+  resolved: 'Resolved',
+  closed: 'Closed',
+  notFound: 'Ticket not found',
+  ticketInfo: 'Ticket Information',
+  clientComment: 'Client Comment',
+  staffComment: 'Staff Comment',
 }

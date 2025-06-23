@@ -174,23 +174,119 @@ const logout = async () => {
 }
 </script>
 
-<style scoped>
+<style>
+/* Основні стилі для портального drawer */
 .portal-drawer {
   background-color: var(--q-primary);
 }
 
-.portal-drawer .q-item,
-.portal-drawer .q-icon {
+.portal-drawer .q-item {
+  cursor: pointer;
+}
+
+/* Стилі для світлої теми */
+.body--light .portal-drawer .q-item,
+.body--light .portal-drawer .q-icon {
+  color: #ffffff !important; /* Білий текст для контрасту з кольоровим фоном */
+  transition: all 0.3s ease;
+}
+
+.body--light .portal-drawer .q-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.body--light .portal-drawer .q-item:hover .q-icon {
+  transform: scale(1.1);
+}
+
+.body--light .portal-drawer .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.3);
+  font-weight: 500;
+}
+
+.body--light .portal-drawer .q-item.q-router-link-active .q-icon {
+  transform: scale(1.1);
+}
+
+/* Стилі для темної теми */
+.body--dark .portal-drawer {
+  background-color: var(--q-primary);
+}
+
+.body--dark .portal-drawer .q-item,
+.body--dark .portal-drawer .q-icon {
   color: #ffffff !important;
   transition: all 0.3s ease;
 }
 
-.portal-drawer .q-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+.body--dark .portal-drawer .q-item:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.portal-drawer .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.3);
+.body--dark .portal-drawer .q-item:hover .q-icon {
+  transform: scale(1.1);
+}
+
+.body--dark .portal-drawer .q-item.q-router-link-active {
+  background: rgba(255, 255, 255, 0.25);
   font-weight: 500;
+}
+
+.body--dark .portal-drawer .q-item.q-router-link-active .q-icon {
+  transform: scale(1.1);
+}
+
+/* Стилі для меню */
+.body--dark .q-menu {
+  background: #1d1d1d;
+}
+
+.body--light .q-menu {
+  background: white;
+}
+
+/* Анімації та переходи */
+.portal-drawer {
+  transition: all 0.3s ease-in-out;
+}
+
+.portal-drawer .q-item {
+  transition: all 0.2s ease;
+}
+
+/* Фіксація для мобільних пристроїв */
+@media (max-width: 599px) {
+  .portal-drawer {
+    width: 280px !important;
+  }
+
+  .portal-drawer .q-item__section--main {
+    display: block !important;
+  }
+}
+
+/* Покращені hover ефекти */
+.portal-drawer .q-item:hover {
+  border-radius: 8px;
+  margin: 0 8px;
+}
+
+/* Стилі для активного елемента */
+.portal-drawer .q-item.q-router-link-active {
+  border-radius: 8px;
+  margin: 0 8px;
+  position: relative;
+}
+
+.portal-drawer .q-item.q-router-link-active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
 }
 </style>
