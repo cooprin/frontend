@@ -74,4 +74,7 @@ export const InvoicesApi = {
 
     return api.get(url, { responseType: 'blob' })
   },
+  updateInvoice: (id, data) => {
+    return api.put(`/services/invoices/${id}`, data)
+  },
 }

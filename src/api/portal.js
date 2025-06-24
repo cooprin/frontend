@@ -52,6 +52,6 @@ export const PortalApi = {
   // Get document URL for download/preview
   getDocumentUrl: (filePath) => {
     if (!filePath) return null
-    return `${process.env.API_URL}/uploads/client_documents${filePath}`
+    return `${process.env.API_URL}/uploads${filePath}`
   },
 }

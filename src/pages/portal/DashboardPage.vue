@@ -168,9 +168,13 @@ const loadDashboardData = async () => {
     }
 
     // Load unpaid invoices count
-    const invoicesResponse = await PortalApi.getInvoices({ status: 'unpaid', limit: 1 })
+    const invoicesResponse = await PortalApi.getInvoices({ status: 'issued', limit: 100 })
     if (invoicesResponse.data.success) {
-      statistics.value.unpaidInvoices = invoicesResponse.data.pagination?.total || 0
+      // Фільтруємо тільки ті, що дійсно неоплачені
+      const unpaidCount = invoicesResponse.data.invoices.filter(
+        (invoice) => !invoice.payment_date,
+      ).length
+      statistics.value.unpaidInvoices = unpaidCount
     }
 
     // Load open tickets count
