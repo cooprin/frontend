@@ -1,302 +1,260 @@
 <template>
   <q-page padding>
     <div class="row justify-center">
-      <div class="col-12 col-md-8">
-        <q-card>
-          <q-card-section>
-            <div class="text-h5 q-mb-md">
-              {{ $t('portal.pages.profile.title') }}
-            </div>
+      <div class="col-12 col-xl-10">
+        <!-- Header -->
+        <div class="text-h4 q-mb-lg text-center text-weight-light">
+          {{ $t('portal.pages.profile.title') }}
+        </div>
 
-            <q-separator class="q-mb-md" />
+        <!-- Loading -->
+        <div v-if="loading" class="text-center q-py-xl">
+          <q-spinner size="60px" color="primary" />
+          <div class="q-mt-md text-subtitle1">{{ $t('portal.messages.loading') }}</div>
+        </div>
 
-            <!-- Loading -->
-            <div v-if="loading" class="text-center q-py-md">
-              <q-spinner size="40px" color="primary" />
-              <div class="q-mt-sm">{{ $t('portal.messages.loading') }}</div>
-            </div>
-
-            <!-- Profile Content -->
-            <div v-else-if="profile" class="row q-gutter-md">
-              <!-- Personal Information -->
-              <div class="col-12 col-md-6">
-                <div class="text-h6 q-mb-sm">
+        <!-- Profile Content -->
+        <div v-else-if="profile" class="row q-gutter-lg">
+          <!-- Personal Information -->
+          <div class="col-12 col-md-6">
+            <q-card flat bordered class="full-height">
+              <q-card-section class="bg-primary text-white">
+                <div class="text-h6">
+                  <q-icon name="business" class="q-mr-sm" />
                   {{ $t('portal.pages.profile.personalInfo') }}
                 </div>
-                <q-list bordered separator>
+              </q-card-section>
+              <q-card-section>
+                <q-list>
                   <q-item>
                     <q-item-section avatar>
-                      <q-icon name="business" color="primary" />
+                      <q-avatar color="primary" text-color="white" icon="business" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.name') }}</q-item-label>
-                      <q-item-label caption>{{ profile.name }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.name')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{ profile.name }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
                   <q-item v-if="profile.full_name">
                     <q-item-section avatar>
-                      <q-icon name="domain" color="primary" />
+                      <q-avatar color="secondary" text-color="white" icon="domain" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.fullName') }}</q-item-label>
-                      <q-item-label caption>{{ profile.full_name }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.fullName')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{
+                        profile.full_name
+                      }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
                   <q-item v-if="profile.contact_person">
                     <q-item-section avatar>
-                      <q-icon name="person" color="primary" />
+                      <q-avatar color="orange" text-color="white" icon="person" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.contactPerson') }}</q-item-label>
-                      <q-item-label caption>{{ profile.contact_person }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.contactPerson')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{
+                        profile.contact_person
+                      }}</q-item-label>
                     </q-item-section>
                   </q-item>
                 </q-list>
-              </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-              <!-- Contact Information -->
-              <div class="col-12 col-md-6">
-                <div class="text-h6 q-mb-sm">
+          <!-- Contact Information -->
+          <div class="col-12 col-md-6">
+            <q-card flat bordered class="full-height">
+              <q-card-section class="bg-secondary text-white">
+                <div class="text-h6">
+                  <q-icon name="contact_phone" class="q-mr-sm" />
                   {{ $t('portal.pages.profile.contactInfo') }}
                 </div>
-                <q-list bordered separator>
+              </q-card-section>
+              <q-card-section>
+                <q-list>
                   <q-item v-if="profile.email">
                     <q-item-section avatar>
-                      <q-icon name="email" color="secondary" />
+                      <q-avatar color="green" text-color="white" icon="email" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.email') }}</q-item-label>
-                      <q-item-label caption>{{ profile.email }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.email')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{ profile.email }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
                   <q-item v-if="profile.phone">
                     <q-item-section avatar>
-                      <q-icon name="phone" color="secondary" />
+                      <q-avatar color="blue" text-color="white" icon="phone" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.phone') }}</q-item-label>
-                      <q-item-label caption>{{ profile.phone }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.phone')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{ profile.phone }}</q-item-label>
                     </q-item-section>
                   </q-item>
 
                   <q-item v-if="profile.address">
                     <q-item-section avatar>
-                      <q-icon name="location_on" color="secondary" />
+                      <q-avatar color="purple" text-color="white" icon="location_on" />
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ $t('clients.address') }}</q-item-label>
-                      <q-item-label caption>{{ profile.address }}</q-item-label>
+                      <q-item-label class="text-weight-medium">{{
+                        $t('clients.address')
+                      }}</q-item-label>
+                      <q-item-label caption class="text-body1">{{ profile.address }}</q-item-label>
                     </q-item-section>
                   </q-item>
                 </q-list>
-              </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-              <!-- Wialon Payment Status -->
-              <div class="col-12">
-                <q-card flat bordered>
-                  <q-card-section>
-                    <div class="text-h6 q-mb-sm">
-                      {{ $t('clients.payment.title') }}
+          <!-- Payment Status -->
+          <div class="col-12 col-md-6">
+            <q-card flat bordered class="full-height">
+              <q-card-section class="bg-orange text-white">
+                <div class="text-h6">
+                  <q-icon name="payment" class="q-mr-sm" />
+                  {{ $t('clients.payment.title') }}
+                </div>
+              </q-card-section>
+              <q-card-section>
+                <div v-if="loadingPayment" class="text-center q-py-lg">
+                  <q-spinner color="primary" size="40px" />
+                  <div class="text-caption q-mt-sm">{{ $t('clients.payment.loading') }}</div>
+                </div>
+
+                <div v-else-if="paymentInfo?.error" class="text-center q-py-lg">
+                  <q-icon name="error" color="negative" size="48px" />
+                  <div class="text-body2 q-mt-sm text-negative">
+                    {{ $t('clients.payment.error') }}
+                  </div>
+                </div>
+
+                <div v-else-if="!paymentInfo?.isConfigured" class="text-center q-py-lg">
+                  <q-icon name="info" color="info" size="48px" />
+                  <div class="text-body2 q-mt-sm">
+                    {{ $t('clients.payment.notConfigured') }}
+                  </div>
+                </div>
+
+                <div v-else-if="paymentInfo" class="q-gutter-md">
+                  <!-- Payment Status -->
+                  <div class="text-center">
+                    <q-avatar
+                      :color="getPaymentStatusColor(paymentInfo.status)"
+                      text-color="white"
+                      size="64px"
+                      :icon="getPaymentStatusIcon(paymentInfo.status)"
+                    />
+                    <div class="text-h6 q-mt-md">
+                      {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
                     </div>
-                  </q-card-section>
-                  <q-card-section>
-                    <div v-if="loadingPayment" class="text-center q-pa-md">
-                      <q-spinner color="primary" size="2em" />
-                      <div class="text-caption q-mt-sm">{{ $t('clients.payment.loading') }}</div>
+                  </div>
+
+                  <!-- Days Left (if available) -->
+                  <div
+                    v-if="paymentInfo.daysLeft !== null && paymentInfo.daysLeft !== undefined"
+                    class="text-center"
+                  >
+                    <q-chip
+                      :color="getDaysLeftColor(paymentInfo.daysLeft)"
+                      text-color="white"
+                      size="lg"
+                      icon="schedule"
+                    >
+                      {{ paymentInfo.daysLeft }} {{ $t('common.days') }}
+                    </q-chip>
+                    <div class="text-caption q-mt-xs text-grey-6">
+                      {{ $t('clients.payment.daysLeft') }}
                     </div>
+                  </div>
 
-                    <div v-else-if="!paymentInfo?.isConfigured" class="text-center q-pa-md">
-                      <q-icon name="warning" color="warning" size="2em" />
-                      <div class="text-body2 q-mt-sm">
-                        {{ $t('clients.payment.notConfigured') }}
-                      </div>
+                  <!-- Wialon Information -->
+                  <div v-if="paymentInfo.wialonUsername" class="q-mt-md">
+                    <q-separator class="q-mb-sm" />
+                    <div class="text-caption text-grey-6 q-mb-xs">Wialon</div>
+                    <div class="text-body2">
+                      <q-icon name="account_circle" class="q-mr-xs" />
+                      {{ paymentInfo.wialonUsername }}
                     </div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-                    <div v-else-if="!paymentInfo?.hasWialonResourceId" class="text-center q-pa-md">
-                      <q-icon name="info" color="info" size="2em" />
-                      <div class="text-body2 q-mt-sm">
-                        {{ $t('clients.payment.noWialonResourceId') }}
-                      </div>
-                    </div>
-
-                    <div v-else-if="paymentInfo?.error" class="text-center q-pa-md">
-                      <q-icon name="error" color="negative" size="2em" />
-                      <div class="text-body2 q-mt-sm text-negative">
-                        {{ $t('clients.payment.error') }}
-                      </div>
-                      <div class="text-caption q-mt-xs">{{ paymentInfo.error }}</div>
-                    </div>
-
-                    <div v-else-if="paymentInfo" class="row q-gutter-md">
-                      <!-- Статус -->
-                      <div class="col-12 col-md-6">
-                        <q-item>
-                          <q-item-section avatar>
-                            <q-icon
-                              :name="getPaymentStatusIcon(paymentInfo.status)"
-                              :color="getPaymentStatusColor(paymentInfo.status)"
-                              size="24px"
-                            />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ $t('clients.status') }}</q-item-label>
-                            <q-item-label caption>
-                              <q-chip
-                                :color="getPaymentStatusColor(paymentInfo.status)"
-                                text-color="white"
-                                size="sm"
-                                :icon="getPaymentStatusIcon(paymentInfo.status)"
-                              >
-                                {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
-                              </q-chip>
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <!-- Дні до блокування -->
-                      <div v-if="paymentInfo.daysLeft !== null" class="col-12 col-md-6">
-                        <q-item>
-                          <q-item-section avatar>
-                            <q-icon
-                              name="schedule"
-                              :color="getDaysLeftColor(paymentInfo.daysLeft)"
-                              size="24px"
-                            />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ $t('clients.payment.daysLeft') }}</q-item-label>
-                            <q-item-label caption>
-                              <q-chip
-                                :color="getDaysLeftColor(paymentInfo.daysLeft)"
-                                text-color="white"
-                                size="sm"
-                              >
-                                {{ paymentInfo.daysLeft }}
-                                {{ $t('common.days') }}
-                              </q-chip>
-                            </q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <!-- Дата створення акаунту -->
-                      <div v-if="paymentInfo.created" class="col-12 col-md-6">
-                        <q-item>
-                          <q-item-section avatar>
-                            <q-icon name="event" color="grey-6" size="24px" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ $t('clients.payment.accountCreated') }}</q-item-label>
-                            <q-item-label caption>{{
-                              formatDate(paymentInfo.created)
-                            }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <!-- План підписки -->
-                      <div v-if="paymentInfo.plan" class="col-12 col-md-6">
-                        <q-item>
-                          <q-item-section avatar>
-                            <q-icon name="card_membership" color="blue-6" size="24px" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ $t('clients.payment.plan') }}</q-item-label>
-                            <q-item-label caption>{{ paymentInfo.plan }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <!-- Батьківський акаунт -->
-                      <div v-if="paymentInfo.parentAccountName" class="col-12">
-                        <q-item>
-                          <q-item-section avatar>
-                            <q-icon name="account_tree" color="purple-6" size="24px" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>{{ $t('clients.payment.parentAccount') }}</q-item-label>
-                            <q-item-label caption>{{ paymentInfo.parentAccountName }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-                    </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-
-              <!-- Statistics -->
-              <div class="col-12">
-                <div class="text-h6 q-mb-sm">
+          <!-- Statistics -->
+          <div class="col-12 col-md-6">
+            <q-card flat bordered class="full-height">
+              <q-card-section class="bg-accent text-white">
+                <div class="text-h6">
+                  <q-icon name="analytics" class="q-mr-sm" />
                   {{ $t('portal.pages.profile.statisticsInfo') }}
                 </div>
+              </q-card-section>
+              <q-card-section>
                 <div class="row q-gutter-md">
-                  <div class="col-12 col-md-6">
-                    <q-card flat bordered>
-                      <q-card-section class="text-center">
-                        <q-icon name="directions_car" size="48px" color="primary" />
-                        <div class="text-h5 text-weight-bold q-mt-sm">
-                          {{ profile.objects_count || 0 }}
-                        </div>
-                        <div class="text-subtitle2 text-grey-7">
-                          {{ $t('portal.myObjects') }}
-                        </div>
-                      </q-card-section>
-                    </q-card>
-                  </div>
-
-                  <div class="col-12 col-md-6">
-                    <q-card flat bordered>
-                      <q-card-section class="text-center">
-                        <q-icon name="folder" size="48px" color="orange" />
-                        <div class="text-h5 text-weight-bold q-mt-sm">
-                          {{ profile.documents_count || 0 }}
-                        </div>
-                        <div class="text-subtitle2 text-grey-7">
-                          {{ $t('portal.myDocuments') }}
-                        </div>
-                      </q-card-section>
-                    </q-card>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Registration Date -->
-              <div class="col-12">
-                <q-card flat bordered>
-                  <q-card-section>
-                    <div class="row items-center">
-                      <div class="col">
-                        <q-item-label>{{ $t('common.registrationDate') }}</q-item-label>
-                        <q-item-label caption>
-                          {{ formatDate(profile.created_at) }}
-                        </q-item-label>
+                  <div class="col">
+                    <div class="text-center">
+                      <q-avatar
+                        color="primary"
+                        text-color="white"
+                        size="56px"
+                        icon="directions_car"
+                      />
+                      <div class="text-h4 text-weight-bold q-mt-sm text-primary">
+                        {{ profile.objects_count || 0 }}
                       </div>
-                      <div class="col-auto">
-                        <q-icon name="event" size="32px" color="accent" />
+                      <div class="text-subtitle2 text-grey-7">
+                        {{ $t('portal.myObjects') }}
                       </div>
                     </div>
-                  </q-card-section>
-                </q-card>
-              </div>
-            </div>
+                  </div>
 
-            <!-- Error State -->
-            <div v-else class="text-center q-py-md">
-              <q-icon name="error" size="48px" color="negative" />
-              <div class="q-mt-sm">{{ $t('portal.messages.error') }}</div>
-              <q-btn
-                color="primary"
-                :label="$t('common.retry')"
-                @click="loadProfile"
-                class="q-mt-md"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
+                  <q-separator vertical />
+
+                  <div class="col">
+                    <div class="text-center">
+                      <q-avatar color="orange" text-color="white" size="56px" icon="folder" />
+                      <div class="text-h4 text-weight-bold q-mt-sm text-orange">
+                        {{ profile.documents_count || 0 }}
+                      </div>
+                      <div class="text-subtitle2 text-grey-7">
+                        {{ $t('portal.myDocuments') }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else class="text-center q-py-xl">
+          <q-icon name="error" size="80px" color="negative" />
+          <div class="text-h6 q-mt-md text-negative">{{ $t('portal.messages.error') }}</div>
+          <q-btn
+            color="primary"
+            :label="$t('common.retry')"
+            @click="loadProfile"
+            class="q-mt-lg"
+            size="lg"
+          />
+        </div>
       </div>
     </div>
   </q-page>
@@ -305,16 +263,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { PortalApi } from 'src/api/portal'
-import { date } from 'quasar'
 
 const profile = ref(null)
 const loading = ref(false)
 const paymentInfo = ref(null)
 const loadingPayment = ref(false)
-
-const formatDate = (dateString) => {
-  return date.formatDate(dateString, 'DD.MM.YYYY')
-}
 
 const loadProfile = async () => {
   try {
@@ -344,7 +297,6 @@ const loadPaymentInfo = async () => {
     console.error('Error loading payment info:', error)
     paymentInfo.value = {
       isConfigured: false,
-      hasWialonResourceId: false,
       error: error.response?.data?.message || 'Помилка завантаження платіжної інформації',
     }
   } finally {
@@ -367,7 +319,7 @@ const getPaymentStatusColor = (status) => {
 const getPaymentStatusIcon = (status) => {
   const icons = {
     active: 'check_circle',
-    expiring_soon: 'schedule',
+    expiring_soon: 'warning',
     expired: 'error',
     blocked: 'block',
     unknown: 'help',
@@ -393,7 +345,17 @@ onMounted(() => {
 }
 
 .q-item-label[caption] {
-  font-size: 0.9rem;
-  color: var(--q-dark);
+  font-size: 1rem !important;
+  color: var(--q-dark) !important;
+  opacity: 0.8;
+}
+
+.q-card {
+  transition: all 0.3s ease;
+}
+
+.q-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 </style>
