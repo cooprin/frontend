@@ -16,21 +16,27 @@ export const PortalApi = {
     return api.get('/portal/invoices', { params })
   },
 
-  // Get single invoice details
+  // Get single invoice details with items
   getInvoice: (invoiceId) => {
     return api.get(`/portal/invoices/${invoiceId}`)
-  },
-
-  // Download invoice PDF
-  downloadInvoice: (invoiceId) => {
-    return api.get(`/portal/invoices/${invoiceId}/download`, {
-      responseType: 'blob',
-    })
   },
 
   // Get invoice items
   getInvoiceItems: (invoiceId) => {
     return api.get(`/portal/invoices/${invoiceId}/items`)
+  },
+
+  // НОВІ МЕТОДИ ДЛЯ ДОКУМЕНТІВ
+  // Get invoice documents
+  getInvoiceDocuments: (invoiceId) => {
+    return api.get(`/portal/invoices/${invoiceId}/documents`)
+  },
+
+  // Download invoice document
+  downloadInvoiceDocument: (documentId) => {
+    return api.get(`/portal/invoice-documents/${documentId}/download`, {
+      responseType: 'blob',
+    })
   },
 
   // Get client documents

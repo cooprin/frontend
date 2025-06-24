@@ -148,14 +148,7 @@
                       icon="visibility"
                       :label="$t('common.view')"
                       @click="viewInvoiceDetails(invoice)"
-                      flat
-                    />
-                    <q-btn
-                      color="secondary"
-                      icon="download"
-                      :label="$t('portal.pages.invoices.downloadPdf')"
-                      @click="downloadInvoicePdf(invoice)"
-                      :loading="downloadingPdf === invoice.id"
+                      :loading="loadingInvoiceDetails && selectedInvoiceId === invoice.id"
                       flat
                     />
                   </div>
@@ -213,19 +206,31 @@
             {{ selectedInvoice?.invoice_number }} - {{ $t('portal.pages.invoices.details') }}
           </div>
           <q-space />
-          <q-btn
-            flat
-            round
-            icon="download"
-            @click="downloadInvoicePdf(selectedInvoice)"
-            :loading="downloadingPdf === selectedInvoice?.id"
-            class="q-mr-sm"
-          />
           <q-btn flat round icon="close" v-close-popup />
         </q-card-section>
 
         <q-card-section class="q-pa-md">
-          <div v-if="selectedInvoice" class="row q-gutter-md">
+          <!-- Loading state -->
+          <div v-if="loadingInvoiceDetails" class="text-center q-py-lg">
+            <q-spinner size="40px" color="primary" />
+            <div class="q-mt-sm">{{ $t('portal.messages.loading') }}</div>
+          </div>
+
+          <!-- Error state -->
+          <div v-else-if="invoiceDetailsError" class="text-center q-py-md">
+            <q-icon name="error" size="48px" color="negative" />
+            <div class="q-mt-sm text-negative">{{ invoiceDetailsError }}</div>
+            <q-btn
+              color="primary"
+              :label="$t('common.retry')"
+              @click="viewInvoiceDetails({ id: selectedInvoice?.id })"
+              class="q-mt-md"
+              v-if="selectedInvoice?.id"
+            />
+          </div>
+
+          <!-- Content -->
+          <div v-else-if="selectedInvoice" class="row q-gutter-md">
             <!-- Invoice Information -->
             <div class="col-12 col-md-6">
               <q-card flat bordered>
@@ -303,11 +308,9 @@
                   </q-list>
                 </q-card-section>
               </q-card>
-            </div>
 
-            <!-- Invoice Items -->
-            <div class="col-12 col-md-6">
-              <q-card flat bordered>
+              <!-- Invoice Items -->
+              <q-card flat bordered class="q-mt-md">
                 <q-card-section>
                   <div class="text-h6 q-mb-md">{{ $t('portal.pages.invoices.items') }}</div>
 
@@ -318,8 +321,8 @@
                   >
                     <q-item v-for="item in selectedInvoice.items" :key="item.id">
                       <q-item-section>
-                        <q-item-label>{{ item.service_name }}</q-item-label>
-                        <q-item-label caption v-if="item.description">
+                        <q-item-label>{{ item.service_name || item.description }}</q-item-label>
+                        <q-item-label caption v-if="item.description && item.service_name">
                           {{ item.description }}
                         </q-item-label>
                         <q-item-label caption>
@@ -338,6 +341,83 @@
 
                   <div v-else class="text-center text-grey-6 q-py-md">
                     {{ $t('portal.pages.invoices.noItems') }}
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+
+            <!-- Invoice Documents -->
+            <div class="col-12 col-md-6">
+              <q-card flat bordered>
+                <q-card-section>
+                  <div class="text-h6 q-mb-md">{{ $t('portal.pages.invoices.documents') }}</div>
+
+                  <!-- Loading documents -->
+                  <div v-if="loadingDocuments" class="text-center q-py-md">
+                    <q-spinner size="30px" color="primary" />
+                    <div class="q-mt-sm">{{ $t('portal.pages.invoices.loadingDocuments') }}</div>
+                  </div>
+
+                  <!-- Documents list -->
+                  <q-list v-else-if="invoiceDocuments.length > 0" bordered separator>
+                    <q-item
+                      v-for="document in invoiceDocuments"
+                      :key="document.id"
+                      clickable
+                      @click="downloadDocument(document)"
+                      class="document-item"
+                    >
+                      <q-item-section avatar>
+                        <q-icon
+                          :name="getDocumentIcon(document.document_type)"
+                          color="primary"
+                          size="md"
+                        />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>{{ document.document_name }}</q-item-label>
+                        <q-item-label caption>
+                          {{ formatFileSize(document.file_size) }} •
+                          {{ formatDate(document.created_at) }}
+                        </q-item-label>
+                      </q-item-section>
+                      <q-item-section side>
+                        <q-btn
+                          flat
+                          round
+                          color="primary"
+                          icon="download"
+                          :loading="downloadingDocument === document.id"
+                          @click.stop="downloadDocument(document)"
+                        >
+                          <q-tooltip>{{ $t('portal.pages.invoices.downloadDocument') }}</q-tooltip>
+                        </q-btn>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+
+                  <!-- No documents -->
+                  <div v-else class="text-center text-grey-6 q-py-md">
+                    <q-icon name="description" size="3rem" color="grey-4" />
+                    <div class="text-body1 q-mt-sm">
+                      {{ $t('portal.pages.invoices.noDocuments') }}
+                    </div>
+                    <div class="text-caption">
+                      {{ $t('portal.pages.invoices.noDocumentsHint') }}
+                    </div>
+                  </div>
+
+                  <!-- Documents error -->
+                  <div v-if="documentsError" class="text-center q-py-md">
+                    <q-icon name="error" size="2rem" color="negative" />
+                    <div class="text-negative q-mt-sm">{{ documentsError }}</div>
+                    <q-btn
+                      flat
+                      color="primary"
+                      :label="$t('common.retry')"
+                      @click="loadInvoiceDocuments"
+                      class="q-mt-sm"
+                    />
                   </div>
                 </q-card-section>
               </q-card>
@@ -361,9 +441,19 @@ const { t: $t } = useI18n()
 const invoices = ref([])
 const loading = ref(false)
 const error = ref(null)
-const downloadingPdf = ref(null)
 const showDetailsDialog = ref(false)
 const selectedInvoice = ref(null)
+const selectedInvoiceId = ref(null)
+
+// Invoice details loading
+const loadingInvoiceDetails = ref(false)
+const invoiceDetailsError = ref(null)
+
+// Documents loading
+const loadingDocuments = ref(false)
+const documentsError = ref(null)
+const invoiceDocuments = ref([])
+const downloadingDocument = ref(null)
 
 // Filters
 const filters = ref({
@@ -462,39 +552,91 @@ const clearFilters = () => {
   loadInvoices()
 }
 
-const downloadInvoicePdf = async (invoice) => {
+// Load invoice details and documents
+const viewInvoiceDetails = async (invoice) => {
   try {
-    downloadingPdf.value = invoice.id
+    selectedInvoiceId.value = invoice.id
+    loadingInvoiceDetails.value = true
+    invoiceDetailsError.value = null
 
-    const response = await PortalApi.downloadInvoice(invoice.id)
+    // Завантажуємо повні деталі рахунку з позиціями
+    const response = await PortalApi.getInvoice(invoice.id)
+
+    if (response.data.success) {
+      selectedInvoice.value = response.data.invoice
+      showDetailsDialog.value = true
+
+      // Завантажуємо документи рахунку
+      loadInvoiceDocuments()
+    } else {
+      throw new Error(response.data.message || 'Помилка завантаження деталей рахунку')
+    }
+  } catch (error) {
+    console.error('Error loading invoice details:', error)
+    invoiceDetailsError.value = error.message || 'Помилка завантаження деталей рахунку'
+    Notify.create({
+      type: 'negative',
+      message: invoiceDetailsError.value,
+    })
+  } finally {
+    loadingInvoiceDetails.value = false
+    selectedInvoiceId.value = null
+  }
+}
+
+// Load invoice documents
+const loadInvoiceDocuments = async () => {
+  if (!selectedInvoice.value?.id) return
+
+  try {
+    loadingDocuments.value = true
+    documentsError.value = null
+    invoiceDocuments.value = []
+
+    const response = await PortalApi.getInvoiceDocuments(selectedInvoice.value.id)
+
+    if (response.data.success) {
+      invoiceDocuments.value = response.data.documents
+    } else {
+      throw new Error(response.data.message || 'Помилка завантаження документів')
+    }
+  } catch (error) {
+    console.error('Error loading invoice documents:', error)
+    documentsError.value = error.message || 'Помилка завантаження документів'
+  } finally {
+    loadingDocuments.value = false
+  }
+}
+
+// Download document
+const downloadDocument = async (document) => {
+  try {
+    downloadingDocument.value = document.id
+
+    const response = await PortalApi.downloadInvoiceDocument(document.id)
 
     // Create blob and download
-    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const blob = new Blob([response.data])
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${invoice.invoice_number}.pdf`
+    link.download = document.document_name
     link.click()
     window.URL.revokeObjectURL(url)
 
     Notify.create({
       type: 'positive',
-      message: $t('portal.pages.invoices.downloadSuccess'),
+      message: $t('portal.pages.invoices.documentDownloadSuccess'),
     })
   } catch (error) {
-    console.error('Error downloading invoice PDF:', error)
+    console.error('Error downloading document:', error)
     Notify.create({
       type: 'negative',
-      message: $t('portal.pages.invoices.downloadError'),
+      message: $t('portal.pages.invoices.documentDownloadError'),
     })
   } finally {
-    downloadingPdf.value = null
+    downloadingDocument.value = null
   }
-}
-
-const viewInvoiceDetails = (invoice) => {
-  selectedInvoice.value = invoice
-  showDetailsDialog.value = true
 }
 
 // Utility methods
@@ -521,6 +663,28 @@ const formatDate = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY')
 }
 
+const formatFileSize = (bytes) => {
+  if (!bytes) return '-'
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+const getDocumentIcon = (type) => {
+  const icons = {
+    pdf: 'picture_as_pdf',
+    doc: 'description',
+    docx: 'description',
+    txt: 'article',
+    xls: 'table_chart',
+    xlsx: 'table_chart',
+    jpg: 'image',
+    jpeg: 'image',
+    png: 'image',
+  }
+  return icons[type?.toLowerCase()] || 'insert_drive_file'
+}
+
 // Lifecycle
 onMounted(() => {
   loadInvoices()
@@ -535,5 +699,13 @@ onMounted(() => {
 .invoice-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.document-item {
+  transition: background-color 0.2s ease;
+}
+
+.document-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>
