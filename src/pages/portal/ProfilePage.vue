@@ -19,7 +19,7 @@
             <!-- Profile Content -->
             <div v-else-if="profile" class="row q-gutter-md">
               <!-- Personal Information -->
-              <div class="col-12">
+              <div class="col-12 col-md-6">
                 <div class="text-h6 q-mb-sm">
                   {{ $t('portal.pages.profile.personalInfo') }}
                 </div>
@@ -57,7 +57,7 @@
               </div>
 
               <!-- Contact Information -->
-              <div class="col-12">
+              <div class="col-12 col-md-6">
                 <div class="text-h6 q-mb-sm">
                   {{ $t('portal.pages.profile.contactInfo') }}
                 </div>
@@ -92,6 +92,140 @@
                     </q-item-section>
                   </q-item>
                 </q-list>
+              </div>
+
+              <!-- Wialon Payment Status -->
+              <div class="col-12">
+                <q-card flat bordered>
+                  <q-card-section>
+                    <div class="text-h6 q-mb-sm">
+                      {{ $t('clients.payment.title') }}
+                    </div>
+                  </q-card-section>
+                  <q-card-section>
+                    <div v-if="loadingPayment" class="text-center q-pa-md">
+                      <q-spinner color="primary" size="2em" />
+                      <div class="text-caption q-mt-sm">{{ $t('clients.payment.loading') }}</div>
+                    </div>
+
+                    <div v-else-if="!paymentInfo?.isConfigured" class="text-center q-pa-md">
+                      <q-icon name="warning" color="warning" size="2em" />
+                      <div class="text-body2 q-mt-sm">
+                        {{ $t('clients.payment.notConfigured') }}
+                      </div>
+                    </div>
+
+                    <div v-else-if="!paymentInfo?.hasWialonResourceId" class="text-center q-pa-md">
+                      <q-icon name="info" color="info" size="2em" />
+                      <div class="text-body2 q-mt-sm">
+                        {{ $t('clients.payment.noWialonResourceId') }}
+                      </div>
+                    </div>
+
+                    <div v-else-if="paymentInfo?.error" class="text-center q-pa-md">
+                      <q-icon name="error" color="negative" size="2em" />
+                      <div class="text-body2 q-mt-sm text-negative">
+                        {{ $t('clients.payment.error') }}
+                      </div>
+                      <div class="text-caption q-mt-xs">{{ paymentInfo.error }}</div>
+                    </div>
+
+                    <div v-else-if="paymentInfo" class="row q-gutter-md">
+                      <!-- Статус -->
+                      <div class="col-12 col-md-6">
+                        <q-item>
+                          <q-item-section avatar>
+                            <q-icon
+                              :name="getPaymentStatusIcon(paymentInfo.status)"
+                              :color="getPaymentStatusColor(paymentInfo.status)"
+                              size="24px"
+                            />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ $t('clients.status') }}</q-item-label>
+                            <q-item-label caption>
+                              <q-chip
+                                :color="getPaymentStatusColor(paymentInfo.status)"
+                                text-color="white"
+                                size="sm"
+                                :icon="getPaymentStatusIcon(paymentInfo.status)"
+                              >
+                                {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
+                              </q-chip>
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <!-- Дні до блокування -->
+                      <div v-if="paymentInfo.daysLeft !== null" class="col-12 col-md-6">
+                        <q-item>
+                          <q-item-section avatar>
+                            <q-icon
+                              name="schedule"
+                              :color="getDaysLeftColor(paymentInfo.daysLeft)"
+                              size="24px"
+                            />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ $t('clients.payment.daysLeft') }}</q-item-label>
+                            <q-item-label caption>
+                              <q-chip
+                                :color="getDaysLeftColor(paymentInfo.daysLeft)"
+                                text-color="white"
+                                size="sm"
+                              >
+                                {{ paymentInfo.daysLeft }}
+                                {{ $t('common.days') }}
+                              </q-chip>
+                            </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <!-- Дата створення акаунту -->
+                      <div v-if="paymentInfo.created" class="col-12 col-md-6">
+                        <q-item>
+                          <q-item-section avatar>
+                            <q-icon name="event" color="grey-6" size="24px" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ $t('clients.payment.accountCreated') }}</q-item-label>
+                            <q-item-label caption>{{
+                              formatDate(paymentInfo.created)
+                            }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <!-- План підписки -->
+                      <div v-if="paymentInfo.plan" class="col-12 col-md-6">
+                        <q-item>
+                          <q-item-section avatar>
+                            <q-icon name="card_membership" color="blue-6" size="24px" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ $t('clients.payment.plan') }}</q-item-label>
+                            <q-item-label caption>{{ paymentInfo.plan }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <!-- Батьківський акаунт -->
+                      <div v-if="paymentInfo.parentAccountName" class="col-12">
+                        <q-item>
+                          <q-item-section avatar>
+                            <q-icon name="account_tree" color="purple-6" size="24px" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ $t('clients.payment.parentAccount') }}</q-item-label>
+                            <q-item-label caption>{{ paymentInfo.parentAccountName }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
               </div>
 
               <!-- Statistics -->
@@ -175,6 +309,8 @@ import { date } from 'quasar'
 
 const profile = ref(null)
 const loading = ref(false)
+const paymentInfo = ref(null)
+const loadingPayment = ref(false)
 
 const formatDate = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY')
@@ -187,12 +323,63 @@ const loadProfile = async () => {
 
     if (response.data.success) {
       profile.value = response.data.client
+      // Завантажуємо платіжну інформацію після отримання профілю
+      await loadPaymentInfo()
     }
   } catch (error) {
     console.error('Error loading profile:', error)
   } finally {
     loading.value = false
   }
+}
+
+const loadPaymentInfo = async () => {
+  if (!profile.value) return
+
+  loadingPayment.value = true
+  try {
+    const response = await PortalApi.getPaymentStatus()
+    paymentInfo.value = response.data.paymentInfo
+  } catch (error) {
+    console.error('Error loading payment info:', error)
+    paymentInfo.value = {
+      isConfigured: false,
+      hasWialonResourceId: false,
+      error: error.response?.data?.message || 'Помилка завантаження платіжної інформації',
+    }
+  } finally {
+    loadingPayment.value = false
+  }
+}
+
+// Допоміжні методи для платіжної інформації
+const getPaymentStatusColor = (status) => {
+  const colors = {
+    active: 'positive',
+    expiring_soon: 'warning',
+    expired: 'negative',
+    blocked: 'negative',
+    unknown: 'grey',
+  }
+  return colors[status] || 'grey'
+}
+
+const getPaymentStatusIcon = (status) => {
+  const icons = {
+    active: 'check_circle',
+    expiring_soon: 'schedule',
+    expired: 'error',
+    blocked: 'block',
+    unknown: 'help',
+  }
+  return icons[status] || 'help'
+}
+
+const getDaysLeftColor = (daysLeft) => {
+  if (daysLeft > 7) return 'positive'
+  if (daysLeft > 3) return 'warning'
+  if (daysLeft > 0) return 'orange'
+  return 'negative'
 }
 
 onMounted(() => {

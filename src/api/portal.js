@@ -16,14 +16,9 @@ export const PortalApi = {
     return api.get('/portal/invoices', { params })
   },
 
-  // Get client documents
-  getDocuments: () => {
-    return api.get('/portal/documents')
-  },
-
-  // Get invoice items
-  getInvoiceItems: (invoiceId) => {
-    return api.get(`/portal/invoices/${invoiceId}/items`)
+  // Get single invoice details
+  getInvoice: (invoiceId) => {
+    return api.get(`/portal/invoices/${invoiceId}`)
   },
 
   // Download invoice PDF
@@ -31,6 +26,21 @@ export const PortalApi = {
     return api.get(`/portal/invoices/${invoiceId}/download`, {
       responseType: 'blob',
     })
+  },
+
+  // Get invoice items
+  getInvoiceItems: (invoiceId) => {
+    return api.get(`/portal/invoices/${invoiceId}/items`)
+  },
+
+  // Get client documents
+  getDocuments: () => {
+    return api.get('/portal/documents')
+  },
+
+  // Get client payment status (Wialon)
+  getPaymentStatus: () => {
+    return api.get('/portal/payment-status')
   },
 
   // Get document URL for download/preview
