@@ -415,7 +415,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import { date } from 'quasar'
-import InvoiceEditDialog from 'components/invoices/InvoiceEditDialog.vue'
+import InvoiceEditDialog from 'src/components/invoices/InvoiceEditDialog.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
