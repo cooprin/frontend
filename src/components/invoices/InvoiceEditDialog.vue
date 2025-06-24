@@ -43,28 +43,6 @@
             </template>
           </q-input>
 
-          <!-- Розрахунковий період - місяць -->
-          <q-select
-            v-model="form.billing_month"
-            :options="monthOptions"
-            :label="$t('invoices.billingMonth')"
-            :rules="[(val) => !!val || t('common.validation.required')]"
-            outlined
-            emit-value
-            map-options
-          />
-
-          <!-- Розрахунковий період - рік -->
-          <q-select
-            v-model="form.billing_year"
-            :options="yearOptions"
-            :label="$t('invoices.billingYear')"
-            :rules="[(val) => !!val || t('common.validation.required')]"
-            outlined
-            emit-value
-            map-options
-          />
-
           <!-- Примітки -->
           <q-input
             v-model="form.notes"
@@ -141,26 +119,6 @@ const show = computed({
   set: (value) => emit('update:modelValue', value),
 })
 
-// Поточний рік для вибору + 3 попередні
-const yearOptions = computed(() => {
-  const currentYear = new Date().getFullYear()
-  const years = []
-  for (let i = 0; i < 4; i++) {
-    const year = currentYear - i
-    years.push({ label: year.toString(), value: year })
-  }
-  return years
-})
-
-// Місяці для вибору
-const monthOptions = computed(() => {
-  const months = []
-  for (let i = 1; i <= 12; i++) {
-    months.push({ label: t(`invoices.months.${i}`), value: i })
-  }
-  return months
-})
-
 // Перевірка чи є зміни
 const hasChanges = computed(() => {
   if (!originalData.value) return false
@@ -185,8 +143,6 @@ const initializeForm = () => {
   form.value = {
     invoice_number: props.invoice.invoice_number || '',
     invoice_date: invoiceDate,
-    billing_month: props.invoice.billing_month || null,
-    billing_year: props.invoice.billing_year || null,
     notes: props.invoice.notes || '',
   }
 
