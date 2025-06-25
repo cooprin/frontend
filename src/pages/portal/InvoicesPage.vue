@@ -618,7 +618,7 @@ const downloadDocument = async (document) => {
     // Create blob and download
     const blob = new Blob([response.data])
     const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
+    const link = window.document.createElement('a') // ЗМІНЕНО: window.document замість document
     link.href = url
     link.download = document.document_name
     link.click()
