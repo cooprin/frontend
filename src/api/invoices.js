@@ -67,12 +67,8 @@ export const InvoicesApi = {
       },
     })
   },
-  getPdfInvoice(invoiceId, templateId = null) {
-    const url = templateId
-      ? `/services/invoices/${invoiceId}/pdf/${templateId}`
-      : `/services/invoices/${invoiceId}/pdf`
-
-    return api.get(url, { responseType: 'blob' })
+  getPdfInvoice(invoiceId) {
+    return api.get(`/services/invoices/${invoiceId}/pdf`, { responseType: 'blob' })
   },
   updateInvoice: (id, data) => {
     return api.put(`/services/invoices/${id}`, data)

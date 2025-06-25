@@ -424,9 +424,7 @@ const router = useRouter()
 
 const printInvoice = async () => {
   try {
-    // Переконуємось, що є ID рахунку
     if (!invoice.value || !invoice.value.id) {
-      console.error('Invoice ID is missing')
       $q.notify({
         color: 'negative',
         message: t('common.errors.idNotFound'),
@@ -435,20 +433,12 @@ const printInvoice = async () => {
       return
     }
 
-    // Встановлюємо responseType: 'blob' для отримання PDF
-    const response = await InvoicesApi.getPdfInvoice(invoice.value.id)
+    // Отримуємо мову з localStorage
+    const userLanguage = localStorage.getItem('userLanguage') || 'uk'
 
-    // Створюємо Blob з отриманих даних
-    const blob = new Blob([response.data], { type: 'application/pdf' })
-
-    // Створюємо URL для Blob
-    const url = URL.createObjectURL(blob)
-
-    // Відкриваємо PDF в новому вікні
-    window.open(url, '_blank')
-
-    // Звільняємо URL об'єкт після використання
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    // Відкриваємо PDF з параметром мови
+    const pdfUrl = `${process.env.API_URL}/services/invoices/${invoice.value.id}/pdf?lang=${userLanguage}`
+    window.open(pdfUrl, '_blank')
   } catch (error) {
     console.error('Error printing invoice:', error)
     $q.notify({
