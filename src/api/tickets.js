@@ -45,4 +45,23 @@ export const TicketsApi = {
   deleteComment: (commentId) => {
     return api.delete(`/ticket-comments/${commentId}`)
   },
+  // Метрики заявок для дашборду
+  getTicketsMetrics: () => {
+    return api.get('/tickets/metrics')
+  },
+
+  // Розподіл заявок за статусами
+  getTicketsStatusDistribution: () => {
+    return api.get('/tickets/status-distribution')
+  },
+
+  // Останні заявки
+  getRecentTickets: (params) => {
+    return api.get('/tickets/recent', { params })
+  },
+
+  // Статистика заявок за категоріями
+  getTicketsByCategory: () => {
+    return api.get('/tickets/by-category')
+  },
 }

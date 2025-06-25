@@ -56,15 +56,11 @@
 
       <template v-slot:body-cell-category_name="props">
         <q-td :props="props">
-          <div class="row items-center">
-            <q-icon
-              :name="getCategoryIcon(props.row.category_color)"
-              :color="props.row.category_color || 'grey'"
-              size="xs"
-              class="q-mr-xs"
-            />
-            {{ props.row.category_name || '-' }}
+          <div class="row items-center" v-if="props.row.category_name">
+            <q-icon name="folder" color="blue-grey" size="xs" class="q-mr-xs" />
+            {{ props.row.category_name }}
           </div>
+          <span v-else class="text-grey">-</span>
         </q-td>
       </template>
 
@@ -512,10 +508,6 @@ const getStatusColor = (status) => {
     cancelled: 'red',
   }
   return colors[status] || 'grey'
-}
-
-const getCategoryIcon = () => {
-  return 'folder'
 }
 
 const formatDate = (date) => {
