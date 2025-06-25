@@ -193,8 +193,12 @@ const { t } = useI18n()
 const printInvoice = async (invoice) => {
   try {
     const userLanguage = localStorage.getItem('userLanguage') || 'uk'
-    const pdfUrl = `${process.env.API_URL}/services/invoices/${invoice.id}/pdf?lang=${userLanguage}`
-    window.open(pdfUrl, '_blank')
+    const response = await InvoicesApi.generateInvoicePdf(invoice.id, userLanguage) // ПЕРЕДАЄМО МОВУ
+
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch {
     // обробка помилки
   }

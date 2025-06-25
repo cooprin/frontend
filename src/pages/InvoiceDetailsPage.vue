@@ -424,28 +424,17 @@ const router = useRouter()
 
 const printInvoice = async () => {
   try {
-    if (!invoice.value || !invoice.value.id) {
-      $q.notify({
-        color: 'negative',
-        message: t('common.errors.idNotFound'),
-        icon: 'error',
-      })
-      return
-    }
+    if (!invoice.value || !invoice.value.id) return
 
-    // Отримуємо мову з localStorage
     const userLanguage = localStorage.getItem('userLanguage') || 'uk'
+    const response = await InvoicesApi.generateInvoicePdf(invoice.value.id, userLanguage) // ПЕРЕДАЄМО МОВУ
 
-    // Відкриваємо PDF з параметром мови
-    const pdfUrl = `${process.env.API_URL}/services/invoices/${invoice.value.id}/pdf?lang=${userLanguage}`
-    window.open(pdfUrl, '_blank')
-  } catch (error) {
-    console.error('Error printing invoice:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('common.errors.printing'),
-      icon: 'error',
-    })
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  } catch {
+    // обробка помилки
   }
 }
 
