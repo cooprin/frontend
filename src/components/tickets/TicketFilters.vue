@@ -165,6 +165,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from 'stores/auth'
 import { TicketsApi } from 'src/api/tickets'
 import { debounce } from 'quasar'
+import { UsersApi } from 'src/api/users'
 
 const props = defineProps({
   filters: {
@@ -267,23 +268,24 @@ const fetchCategories = async () => {
 
 const fetchStaff = async () => {
   try {
-    // This would be a staff/users API call
-    // For now, mock data
+    // Використовуємо існуючий API для користувачів
+    const response = await UsersApi.getUsers({
+      perPage: 'All', // Отримуємо всіх користувачів
+      sortBy: 'first_name',
+    })
+
     allStaffOptions.value = [
       { label: t('tickets.filters.unassigned'), value: 'unassigned' },
-      { label: 'John Doe', value: 'user1' },
-      { label: 'Jane Smith', value: 'user2' },
-      {
-        label: authStore.user?.first_name + ' ' + authStore.user?.last_name,
-        value: currentUserId.value,
-      },
+      ...response.data.users.map((user) => ({
+        label: `${user.first_name} ${user.last_name}`,
+        value: user.id,
+      })),
     ]
     staffOptions.value = [...allStaffOptions.value]
   } catch (error) {
     console.error('Error fetching staff:', error)
   }
 }
-
 const filterStaff = (val, update) => {
   update(() => {
     if (val === '') {
