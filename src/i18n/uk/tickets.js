@@ -59,6 +59,16 @@ export default {
   comments: {
     title: 'Коментарі',
     add: 'Додати коментар',
+    addSuccess: 'Коментар успішно додано',
+    addError: 'Помилка додавання коментаря',
+    edit: 'Редагувати коментар',
+    text: 'Текст коментаря',
+    updateSuccess: 'Коментар успішно оновлено',
+    updateError: 'Помилка оновлення коментаря',
+    deleteConfirm: 'Видалити коментар',
+    deleteMessage: 'Ви впевнені, що хочете видалити цей коментар?',
+    deleteSuccess: 'Коментар успішно видалено',
+    deleteError: 'Помилка видалення коментаря',
     internal: 'Внутрішній коментар',
     public: 'Публічний коментар',
     noComments: 'Коментарів немає',
@@ -81,6 +91,11 @@ export default {
   deleteConfirmation: 'Ви впевнені, що хочете видалити цю заявку?',
   commentSuccess: 'Коментар додано',
   fileUploadSuccess: 'Файл завантажено',
+  createError: 'Помилка створення заявки',
+  assignSuccess: 'Заявку успішно призначено',
+  assignError: 'Помилка призначення заявки',
+  updateError: 'Помилка оновлення заявки',
+  notFound: 'Заявку не знайдено',
 
   // Фільтри
   filters: {
@@ -90,21 +105,32 @@ export default {
     status: 'Статус',
     priority: 'Пріоритет',
     assignedTo: 'Відповідальний',
+    unassigned: 'Не призначені',
+    assignedToMe: 'Призначені мені',
+    urgentOnly: 'Тільки термінові',
+    highPriorityOnly: 'Тільки високий пріоритет',
   },
 
   // Вкладки
   tabs: {
+    new: 'Нові',
+    inProgress: 'В роботі',
+    resolved: 'Вирішені',
+    all: 'Всі',
     details: 'Деталі',
-    comments: 'Коментарі',
-    files: 'Файли',
     history: 'Історія',
   },
-  createError: 'Помилка створення заявки',
-  created: 'Створена',
-  resolved: 'Вирішена',
-  closed: 'Закрита',
-  notFound: 'Заявку не знайдено',
+
+  // Швидкі дії та інформація
+  assignToMe: 'Призначити на себе',
+  startWork: 'Почати роботу',
+  markResolved: 'Позначити як вирішену',
+  clientInfo: 'Інформація про клієнта',
+  client: 'Клієнт',
   ticketInfo: 'Інформація про заявку',
   clientComment: 'Коментар клієнта',
   staffComment: 'Коментар співробітника',
+  created: 'Створена',
+  resolved: 'Вирішена',
+  closed: 'Закрита',
 }

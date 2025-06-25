@@ -384,6 +384,49 @@
               </q-item>
             </q-expansion-item>
           </template>
+          <!-- Support Menu - Full Mode -->
+          <template
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SUPPORT)
+            "
+          >
+            <q-expansion-item
+              icon="support_agent"
+              :label="$t('layouts.mainLayout.support')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.TICKETS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'tickets' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="confirmation_number" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.tickets') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.CHAT.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'chat' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="chat" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.chat') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
 
           <!-- Settings Menu - Full Mode -->
           <template
@@ -756,6 +799,45 @@
                         </q-item-section>
                         <q-item-section>
                           {{ $t('layouts.mainLayout.wialonSync') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
+            <!-- Support Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SUPPORT)" dense>
+              <q-item-section avatar>
+                <q-icon name="support_agent">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.TICKETS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'tickets' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="confirmation_number" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.tickets') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.CHAT.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'chat' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="chat" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.chat') }}
                         </q-item-section>
                       </q-item>
                     </q-list>

@@ -93,4 +93,12 @@ export default {
   activity: 'Активність',
   refresh: 'Оновити',
   sendEmail: 'Відправити email',
+  // Час
+  justNow: 'Щойно',
+  minutesAgo: '{count} хвилин тому',
+  hoursAgo: '{count} годин тому',
+  daysAgo: '{count} днів тому',
+  minutesShort: 'хв',
+  hoursShort: 'год',
+  daysShort: 'дн',
 }

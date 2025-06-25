@@ -248,6 +248,24 @@ const routes = [
         },
       },
       {
+        path: 'tickets',
+        name: 'tickets',
+        component: () => import('pages/TicketsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'tickets.read',
+        },
+      },
+      {
+        path: 'tickets/:id',
+        name: 'ticket-details',
+        component: () => import('pages/TicketDetailsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'tickets.read',
+        },
+      },
+      {
         path: 'settings/company',
         name: 'company-settings',
         component: () => import('pages/CompanySettingsPage.vue'),

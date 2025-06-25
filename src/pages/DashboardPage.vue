@@ -330,6 +330,120 @@
           </div>
         </div>
       </div>
+      <!-- Дашборд для заявок -->
+      <div v-if="selectedDashboard.value === 'tickets'">
+        <div class="row q-col-gutter-md">
+          <!-- Карточки метрик заявок -->
+          <div class="col-12 col-md-3">
+            <q-card class="dashboard-card">
+              <q-card-section class="bg-blue text-white">
+                <div class="text-subtitle2">{{ $t('dashboard.metrics.newTickets') }}</div>
+              </q-card-section>
+              <q-card-section class="text-center">
+                <div class="text-h4 text-blue" v-if="!loadingTicketsData">
+                  {{ ticketsMetrics.newCount || 0 }}
+                </div>
+                <q-spinner v-else color="blue" size="2em" />
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <q-card class="dashboard-card">
+              <q-card-section class="bg-orange text-white">
+                <div class="text-subtitle2">{{ $t('dashboard.metrics.inProgressTickets') }}</div>
+              </q-card-section>
+              <q-card-section class="text-center">
+                <div class="text-h4 text-orange" v-if="!loadingTicketsData">
+                  {{ ticketsMetrics.inProgressCount || 0 }}
+                </div>
+                <q-spinner v-else color="orange" size="2em" />
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <q-card class="dashboard-card">
+              <q-card-section class="bg-red text-white">
+                <div class="text-subtitle2">{{ $t('dashboard.metrics.urgentTickets') }}</div>
+              </q-card-section>
+              <q-card-section class="text-center">
+                <div class="text-h4 text-red" v-if="!loadingTicketsData">
+                  {{ ticketsMetrics.urgentCount || 0 }}
+                </div>
+                <q-spinner v-else color="red" size="2em" />
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <q-card class="dashboard-card">
+              <q-card-section class="bg-green text-white">
+                <div class="text-subtitle2">{{ $t('dashboard.metrics.resolvedToday') }}</div>
+              </q-card-section>
+              <q-card-section class="text-center">
+                <div class="text-h4 text-green" v-if="!loadingTicketsData">
+                  {{ ticketsMetrics.resolvedTodayCount || 0 }}
+                </div>
+                <q-spinner v-else color="green" size="2em" />
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Розподіл заявок за статусами -->
+          <div class="col-12 col-md-6">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.ticketsDistribution') }}</div>
+              </q-card-section>
+              <q-card-section>
+                <div style="height: 300px; position: relative" v-if="!loadingTicketsData">
+                  <tickets-status-chart :data="ticketsStatusData" />
+                </div>
+                <div v-else class="text-center q-pa-lg">
+                  <q-spinner color="primary" size="3em" />
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Список останніх заявок -->
+          <div class="col-12 col-md-6">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.recentTickets') }}</div>
+                <q-space />
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  :label="$t('tickets.title')"
+                  @click="$router.push({ name: 'tickets' })"
+                />
+              </q-card-section>
+              <q-card-section>
+                <recent-tickets-table
+                  :data="recentTickets"
+                  :loading="loadingTicketsData"
+                  @view-ticket="viewTicket"
+                />
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <!-- Заявки за категоріями -->
+          <div class="col-12">
+            <q-card class="dashboard-card">
+              <q-card-section class="row items-center">
+                <div class="text-h6">{{ $t('dashboard.ticketsByCategory') }}</div>
+              </q-card-section>
+              <q-card-section>
+                <tickets-category-table :data="ticketsByCategory" :loading="loadingTicketsData" />
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
       <!-- Дашборд для залишків товарів -->
       <div v-if="selectedDashboard.value === 'inventory'">
         <div class="row q-col-gutter-md q-mb-md">
@@ -575,6 +689,10 @@ import { StockApi } from 'src/api/stock'
 import WarehouseStockChart from 'components/dashboard/WarehouseStockChart.vue'
 import ModelsStockTable from 'components/dashboard/ModelsStockTable.vue'
 import RepairItemsTable from 'components/dashboard/RepairItemsTable.vue'
+import { TicketsApi } from 'src/api/tickets'
+import TicketsStatusChart from 'components/dashboard/TicketsStatusChart.vue'
+import RecentTicketsTable from 'components/dashboard/RecentTicketsTable.vue'
+import TicketsCategoryTable from 'components/dashboard/TicketsCategoryTable.vue'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -583,6 +701,7 @@ const { t, locale } = useI18n()
 // Для вибору дашборду - залишається без змін
 const dashboardOptions = computed(() => [
   { label: t('dashboard.types.overduePayments'), value: 'overdue' },
+  { label: t('dashboard.types.tickets'), value: 'tickets' },
   { label: t('dashboard.types.inventory'), value: 'inventory' },
   { label: t('dashboard.types.activity'), value: 'activity' },
   { label: t('dashboard.types.financial'), value: 'financial' },
@@ -606,6 +725,17 @@ const warehouseOptions = ref([])
 const productTypeOptions = ref([])
 const criticalModels = ref([])
 const criticalTypes = ref([])
+// Для даних по заявках
+const loadingTicketsData = ref(false)
+const ticketsMetrics = ref({
+  newCount: 0,
+  inProgressCount: 0,
+  urgentCount: 0,
+  resolvedTodayCount: 0,
+})
+const ticketsStatusData = ref([])
+const recentTickets = ref([])
+const ticketsByCategory = ref([])
 
 const inventoryFilters = ref({
   search: '',
@@ -613,6 +743,41 @@ const inventoryFilters = ref({
 const repairFilters = ref({
   search: '',
 })
+
+// Методи для tickets дашборду
+const loadTicketsData = async () => {
+  loadingTicketsData.value = true
+  try {
+    // Завантажуємо метрики заявок
+    const metricsResponse = await TicketsApi.getTicketsMetrics()
+    ticketsMetrics.value = metricsResponse.data.metrics
+
+    // Завантажуємо дані для графіка статусів
+    const statusResponse = await TicketsApi.getTicketsStatusDistribution()
+    ticketsStatusData.value = statusResponse.data.distribution
+
+    // Завантажуємо останні заявки
+    const recentResponse = await TicketsApi.getRecentTickets({ limit: 10 })
+    recentTickets.value = recentResponse.data.tickets
+
+    // Завантажуємо статистику за категоріями
+    const categoriesResponse = await TicketsApi.getTicketsByCategory()
+    ticketsByCategory.value = categoriesResponse.data.categories
+  } catch (error) {
+    console.error('Error loading tickets data:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  } finally {
+    loadingTicketsData.value = false
+  }
+}
+
+const viewTicket = (ticketId) => {
+  router.push({ name: 'tickets', query: { ticketId } })
+}
 
 // Нові методи для inventory дашборду
 const loadInventoryData = async () => {
@@ -903,14 +1068,18 @@ onMounted(() => {
     loadInventoryData()
   } else if (selectedDashboard.value.value === 'overdue') {
     loadOverdueData()
+  } else if (selectedDashboard.value.value === 'tickets') {
+    loadTicketsData()
   }
 })
-// Спостерігаємо за зміною дашборду
+
 // Спостерігаємо за зміною дашборду
 watch(selectedDashboard, (newVal) => {
   if (newVal.value === 'inventory') {
     loadInventoryData()
     loadRepairData()
+  } else if (newVal.value === 'tickets') {
+    loadTicketsData()
   }
 })
 </script>

@@ -4,6 +4,7 @@ export default {
     activity: 'Активність та нові клієнти',
     financial: 'Фінансова статистика',
     inventory: 'Залишки товарів',
+    tickets: 'Заявки підтримки',
   },
   metrics: {
     totalOverdue: 'Загальна заборгованість',
@@ -88,4 +89,20 @@ export default {
   criticalModelsList: 'Список критичних моделей',
   criticalByTypes: 'Критично по типах',
   viewCriticalModels: 'Переглянути критичні моделі',
+  // Дашборд заявок
+  tickets: 'Заявки підтримки',
+  ticketsDistribution: 'Розподіл заявок за статусами',
+  recentTickets: 'Останні заявки',
+  ticketsByCategory: 'Заявки за категоріями',
+  noRecentTickets: 'Немає останніх заявок',
+  viewAllTickets: 'Переглянути всі заявки',
+  noCategoryData: 'Немає даних по категоріях',
+
+  // Метрики заявок
+  newTickets: 'Нові заявки',
+  inProgressTickets: 'В роботі',
+  urgentTickets: 'Термінові заявки',
+  resolvedToday: 'Вирішено сьогодні',
+  totalTickets: 'Всього',
+  avgResolutionTime: 'Сер. час вирішення',
 }

@@ -59,6 +59,16 @@ export default {
   comments: {
     title: 'Comments',
     add: 'Add Comment',
+    addSuccess: 'Comment added successfully',
+    addError: 'Error adding comment',
+    edit: 'Edit Comment',
+    text: 'Comment Text',
+    updateSuccess: 'Comment updated successfully',
+    updateError: 'Error updating comment',
+    deleteConfirm: 'Delete Comment',
+    deleteMessage: 'Are you sure you want to delete this comment?',
+    deleteSuccess: 'Comment deleted successfully',
+    deleteError: 'Error deleting comment',
     internal: 'Internal Comment',
     public: 'Public Comment',
     noComments: 'No comments',
@@ -81,6 +91,11 @@ export default {
   deleteConfirmation: 'Are you sure you want to delete this ticket?',
   commentSuccess: 'Comment added',
   fileUploadSuccess: 'File uploaded',
+  createError: 'Error creating ticket',
+  assignSuccess: 'Ticket assigned successfully',
+  assignError: 'Error assigning ticket',
+  updateError: 'Error updating ticket',
+  notFound: 'Ticket not found',
 
   // Фільтри
   filters: {
@@ -90,22 +105,32 @@ export default {
     status: 'Status',
     priority: 'Priority',
     assignedTo: 'Assigned To',
+    unassigned: 'Unassigned',
+    assignedToMe: 'Assigned to Me',
+    urgentOnly: 'Urgent Only',
+    highPriorityOnly: 'High Priority Only',
   },
 
   // Вкладки
   tabs: {
+    new: 'New',
+    inProgress: 'In Progress',
+    resolved: 'Resolved',
+    all: 'All',
     details: 'Details',
-    comments: 'Comments',
-    files: 'Files',
     history: 'History',
   },
-  // ... в кінець файлу перед закриваючою дужкою
-  createError: 'Error creating ticket',
-  created: 'Created',
-  resolved: 'Resolved',
-  closed: 'Closed',
-  notFound: 'Ticket not found',
+
+  // Швидкі дії та інформація
+  assignToMe: 'Assign to Me',
+  startWork: 'Start Work',
+  markResolved: 'Mark as Resolved',
+  clientInfo: 'Client Information',
+  client: 'Client',
   ticketInfo: 'Ticket Information',
   clientComment: 'Client Comment',
   staffComment: 'Staff Comment',
+  created: 'Created',
+  resolved: 'Resolved',
+  closed: 'Closed',
 }

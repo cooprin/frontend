@@ -33,5 +33,8 @@ export default {
     payments: 'Платежі',
     companySettings: 'Налаштування компанії',
     wialonSync: 'Синхронізація',
+    support: 'Підтримка',
+    tickets: 'Заявки',
+    chat: 'Чат',
   },
 }

@@ -93,4 +93,12 @@ export default {
   activity: 'Activity',
   refresh: 'Refresh',
   sendEmail: 'Send Email',
+  // Time-related
+  justNow: 'Just now',
+  minutesAgo: '{count} minutes ago',
+  hoursAgo: '{count} hours ago',
+  daysAgo: '{count} days ago',
+  minutesShort: 'm',
+  hoursShort: 'h',
+  daysShort: 'd',
 }
