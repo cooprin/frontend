@@ -35,9 +35,11 @@ export const InvoicesApi = {
     return `${process.env.API_URL}/uploads/${filePath}`
   },
 
-  generateInvoicePdf: (id) => {
+  generateInvoicePdf: (id, language = 'uk') => {
+    console.log('API: Sending PDF request with language:', language)
     return api.get(`/services/invoices/${id}/pdf`, {
-      responseType: 'blob', // Важливо для отримання бінарних даних
+      params: { lang: language },
+      responseType: 'blob',
     })
   },
 

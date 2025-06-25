@@ -434,7 +434,6 @@ const printInvoice = async () => {
     }
 
     const userLanguage = localStorage.getItem('userLanguage') || 'uk'
-    console.log('Using language for PDF:', userLanguage) // Для дебагу
     const response = await InvoicesApi.generateInvoicePdf(invoice.value.id, userLanguage)
 
     const blob = new Blob([response.data], { type: 'application/pdf' })
