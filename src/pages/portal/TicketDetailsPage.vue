@@ -241,6 +241,32 @@
                       >
                         {{ comment.comment_text }}
                       </div>
+
+                      <!-- Action buttons for own comments -->
+                      <div
+                        v-if="comment.created_by_type === 'client'"
+                        class="comment-actions q-mt-xs text-right"
+                      >
+                        <q-btn
+                          flat
+                          dense
+                          size="sm"
+                          icon="edit"
+                          color="primary"
+                          :label="$t('common.edit')"
+                          @click="editComment(comment)"
+                          class="q-mr-xs"
+                        />
+                        <q-btn
+                          flat
+                          dense
+                          size="sm"
+                          icon="delete"
+                          color="negative"
+                          :label="$t('common.delete')"
+                          @click="confirmDeleteComment(comment)"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -289,6 +315,44 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <!-- Edit Comment Dialog -->
+    <q-dialog v-model="showEditDialog" persistent>
+      <q-card style="min-width: 400px; max-width: 600px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ $t('portal.pages.tickets.comments.editComment') }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="updateComment" ref="editCommentForm">
+            <q-input
+              v-model="editingComment.comment_text"
+              type="textarea"
+              :placeholder="$t('portal.pages.tickets.comments.placeholder')"
+              outlined
+              rows="4"
+              counter
+              maxlength="2000"
+              :rules="[(val) => !!val?.trim() || $t('portal.pages.tickets.comments.required')]"
+              autofocus
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('common.cancel')" color="grey" @click="cancelEdit" />
+          <q-btn
+            color="primary"
+            :label="$t('common.save')"
+            :loading="updatingComment"
+            :disable="!editingComment.comment_text?.trim()"
+            icon="save"
+            @click="updateComment"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -298,6 +362,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
 import { date, Notify } from 'quasar'
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
 
 const { t: $t } = useI18n()
 const route = useRoute()
@@ -313,6 +380,11 @@ const error = ref(null)
 const newComment = ref('')
 const showCommentDialog = ref(false)
 const commentForm = ref(null)
+
+const showEditDialog = ref(false)
+const editingComment = ref({})
+const updatingComment = ref(false)
+const editCommentForm = ref(null)
 
 // Methods
 const loadTicket = async () => {
@@ -415,6 +487,95 @@ const cancelComment = () => {
   // Reset form validation state
   if (commentForm.value) {
     commentForm.value.resetValidation()
+  }
+}
+
+const editComment = (comment) => {
+  editingComment.value = { ...comment }
+  showEditDialog.value = true
+}
+
+const updateComment = async () => {
+  if (!editingComment.value.comment_text?.trim()) return
+
+  try {
+    updatingComment.value = true
+
+    const response = await TicketsApi.updateComment(editingComment.value.id, {
+      comment_text: editingComment.value.comment_text.trim(),
+    })
+
+    if (response.data.success) {
+      // Update comment in list
+      const index = comments.value.findIndex((c) => c.id === editingComment.value.id)
+      if (index !== -1) {
+        comments.value[index] = { ...comments.value[index], ...response.data.comment }
+      }
+
+      // Close dialog
+      showEditDialog.value = false
+
+      Notify.create({
+        type: 'positive',
+        message: $t('portal.pages.tickets.comments.updateSuccess'),
+      })
+    }
+  } catch (error) {
+    console.error('Error updating comment:', error)
+    Notify.create({
+      type: 'negative',
+      message: error.response?.data?.message || $t('portal.pages.tickets.comments.updateError'),
+    })
+  } finally {
+    updatingComment.value = false
+  }
+}
+
+const cancelEdit = () => {
+  editingComment.value = {}
+  showEditDialog.value = false
+
+  if (editCommentForm.value) {
+    editCommentForm.value.resetValidation()
+  }
+}
+
+const confirmDeleteComment = (comment) => {
+  $q.dialog({
+    title: $t('portal.pages.tickets.comments.deleteConfirm'),
+    message: $t('portal.pages.tickets.comments.deleteMessage'),
+    ok: {
+      color: 'negative',
+      label: $t('common.delete'),
+    },
+    cancel: {
+      label: $t('common.cancel'),
+    },
+    persistent: true,
+  }).onOk(() => {
+    deleteComment(comment.id)
+  })
+}
+
+const deleteComment = async (commentId) => {
+  try {
+    const response = await TicketsApi.deleteComment(commentId)
+
+    if (response.data.success) {
+      // Remove comment from list
+      comments.value = comments.value.filter((c) => c.id !== commentId)
+
+      Notify.create({
+        type: 'positive',
+        message: $t('portal.pages.tickets.comments.deleteSuccess'),
+      })
+    }
+  } catch (error) {
+    console.error('Error deleting comment:', error)
+    Notify.create({
+      type: 'negative',
+      message: error.response?.data?.message || $t('portal.pages.tickets.comments.deleteError'),
+    })
   }
 }
 
