@@ -1,114 +1,123 @@
 <template>
   <q-page padding>
+    <div class="text-h5 q-mb-md">{{ $t('tickets.title') }}</div>
+
     <q-card flat bordered>
-      <q-card-section>
-        <div class="text-h6">{{ $t('tickets.title') }}</div>
-      </q-card-section>
+      <q-tabs
+        v-model="tab"
+        dense
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+        align="justify"
+        narrow-indicator
+        outside-arrows
+        mobile-arrows
+      >
+        <q-tab name="new" :label="$t('tickets.tabs.new')" />
+        <q-tab name="inProgress" :label="$t('tickets.tabs.inProgress')" />
+        <q-tab name="resolved" :label="$t('tickets.tabs.resolved')" />
+        <q-tab name="all" :label="$t('tickets.tabs.all')" />
+      </q-tabs>
 
-      <q-card-section>
-        <q-tabs
-          v-model="activeTab"
-          dense
-          class="text-grey"
-          active-color="primary"
-          indicator-color="primary"
-          align="justify"
-          narrow-indicator
-        >
-          <q-tab name="new" :label="$t('tickets.tabs.new')" />
-          <q-tab name="in_progress" :label="$t('tickets.tabs.inProgress')" />
-          <q-tab name="resolved" :label="$t('tickets.tabs.resolved')" />
-          <q-tab name="all" :label="$t('tickets.tabs.all')" />
-        </q-tabs>
+      <q-separator />
 
-        <q-separator />
+      <q-tab-panels v-model="tab" animated>
+        <q-tab-panel name="new">
+          <new-tickets-card />
+        </q-tab-panel>
 
-        <q-tab-panels v-model="activeTab" animated>
-          <q-tab-panel name="new">
-            <TicketsList
-              :status-filter="['open']"
-              :key="'new'"
-              @ticket-selected="onTicketSelected"
-            />
-          </q-tab-panel>
+        <q-tab-panel name="inProgress">
+          <in-progress-tickets-card />
+        </q-tab-panel>
 
-          <q-tab-panel name="in_progress">
-            <TicketsList
-              :status-filter="['in_progress', 'waiting_client']"
-              :key="'in_progress'"
-              @ticket-selected="onTicketSelected"
-            />
-          </q-tab-panel>
+        <q-tab-panel name="resolved">
+          <resolved-tickets-card />
+        </q-tab-panel>
 
-          <q-tab-panel name="resolved">
-            <TicketsList
-              :status-filter="['resolved', 'closed', 'cancelled']"
-              :key="'resolved'"
-              @ticket-selected="onTicketSelected"
-            />
-          </q-tab-panel>
-
-          <q-tab-panel name="all">
-            <TicketsList :status-filter="[]" :key="'all'" @ticket-selected="onTicketSelected" />
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-card-section>
+        <q-tab-panel name="all">
+          <all-tickets-card />
+        </q-tab-panel>
+      </q-tab-panels>
     </q-card>
 
     <!-- Ticket Detail Dialog -->
+    <!--
     <q-dialog
       v-model="ticketDetailDialog"
       maximized
       transition-show="slide-up"
       transition-hide="slide-down"
     >
-      <TicketDetail
+      <ticket-detail-dialog
         v-if="selectedTicket"
         :ticket-id="selectedTicket"
-        @close="ticketDetailDialog = false"
+        @close="closeTicketDetail"
         @ticket-updated="onTicketUpdated"
       />
     </q-dialog>
+    -->
   </q-page>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import TicketsList from 'components/tickets/TicketsList.vue'
-import TicketDetail from 'components/tickets/TicketDetail.vue'
+import { ref, provide, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import NewTicketsCard from 'components/tickets/NewTicketsCard.vue'
+import InProgressTicketsCard from 'components/tickets/InProgressTicketsCard.vue'
+import ResolvedTicketsCard from 'components/tickets/ResolvedTicketsCard.vue'
+import AllTicketsCard from 'components/tickets/AllTicketsCard.vue'
+// import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 // State
-const activeTab = ref('new')
+const tab = ref('new')
 const ticketDetailDialog = ref(false)
 const selectedTicket = ref(null)
 
 // Methods
-const onTicketSelected = (ticketId) => {
+const openTicketDetail = (ticketId) => {
   selectedTicket.value = ticketId
   ticketDetailDialog.value = true
 }
 
 const onTicketUpdated = () => {
-  // Refresh current tab data
-  // This will be handled by TicketsList component through key updates
+  // Refresh current tab data by emitting event to child components
+  // This will be handled by each card component
 }
+
+// Provide methods to child components
+provide('openTicketDetail', openTicketDetail)
+provide('refreshTickets', onTicketUpdated)
 
 // Handle URL parameters for direct ticket access
 onMounted(() => {
   const ticketId = route.query.ticketId
   if (ticketId) {
-    onTicketSelected(ticketId)
+    openTicketDetail(ticketId)
   }
 
   // Set active tab from URL
-  const tab = route.query.tab
-  if (tab && ['new', 'in_progress', 'resolved', 'all'].includes(tab)) {
-    activeTab.value = tab
+  const urlTab = route.query.tab
+  if (urlTab && ['new', 'inProgress', 'resolved', 'all'].includes(urlTab)) {
+    tab.value = urlTab
   }
 })
+
+// Watch tab changes and update URL
+watch(
+  () => tab.value,
+  (newTab) => {
+    router.push({
+      query: {
+        ...route.query,
+        tab: newTab,
+      },
+    })
+  },
+)
 </script>
 
 <style scoped>

@@ -192,7 +192,6 @@
                   icon="add_comment"
                   :label="$t('portal.pages.tickets.comments.addComment')"
                   @click="showCommentDialog = true"
-                  size="sm"
                 />
               </div>
             </q-card-section>
@@ -209,13 +208,6 @@
                   <div class="text-grey-6 q-mt-md">
                     {{ $t('portal.pages.tickets.comments.noComments') }}
                   </div>
-                  <q-btn
-                    color="primary"
-                    :label="$t('portal.pages.tickets.comments.addFirst')"
-                    @click="showCommentDialog = true"
-                    outline
-                    class="q-mt-md"
-                  />
                 </div>
 
                 <div v-else>
