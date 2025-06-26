@@ -175,15 +175,24 @@
         <div class="col-12 col-md-8">
           <q-card flat bordered class="full-height">
             <q-card-section>
-              <div class="text-h6 q-mb-md">
-                {{ $t('portal.pages.tickets.comments.title') }}
-                <q-chip
-                  v-if="comments.length > 0"
-                  :label="comments.length"
+              <div class="row items-center justify-between q-mb-md">
+                <div class="text-h6">
+                  {{ $t('portal.pages.tickets.comments.title') }}
+                  <q-chip
+                    v-if="comments.length > 0"
+                    :label="comments.length"
+                    color="primary"
+                    text-color="white"
+                    size="sm"
+                    class="q-ml-sm"
+                  />
+                </div>
+                <q-btn
                   color="primary"
-                  text-color="white"
+                  icon="add_comment"
+                  :label="$t('portal.pages.tickets.comments.addComment')"
+                  @click="showCommentDialog = true"
                   size="sm"
-                  class="q-ml-sm"
                 />
               </div>
             </q-card-section>
@@ -200,6 +209,13 @@
                   <div class="text-grey-6 q-mt-md">
                     {{ $t('portal.pages.tickets.comments.noComments') }}
                   </div>
+                  <q-btn
+                    color="primary"
+                    :label="$t('portal.pages.tickets.comments.addFirst')"
+                    @click="showCommentDialog = true"
+                    outline
+                    class="q-mt-md"
+                  />
                 </div>
 
                 <div v-else>
@@ -238,42 +254,49 @@
                 </div>
               </div>
             </q-scroll-area>
-
-            <!-- Add Comment Form -->
-            <q-separator />
-            <q-card-section>
-              <div class="text-subtitle2 q-mb-md">
-                {{ $t('portal.pages.tickets.comments.addComment') }}
-              </div>
-
-              <q-form @submit="addComment" class="q-gutter-md">
-                <q-input
-                  v-model="newComment"
-                  type="textarea"
-                  :placeholder="$t('portal.pages.tickets.comments.placeholder')"
-                  outlined
-                  rows="3"
-                  counter
-                  maxlength="2000"
-                  :rules="[(val) => !!val?.trim() || $t('portal.pages.tickets.comments.required')]"
-                />
-
-                <div class="row justify-end">
-                  <q-btn
-                    type="submit"
-                    color="primary"
-                    :label="$t('portal.pages.tickets.comments.submit')"
-                    :loading="submittingComment"
-                    :disable="!newComment?.trim()"
-                    icon="send"
-                  />
-                </div>
-              </q-form>
-            </q-card-section>
           </q-card>
         </div>
       </div>
     </template>
+
+    <!-- Add Comment Dialog -->
+    <q-dialog v-model="showCommentDialog" persistent>
+      <q-card style="min-width: 400px; max-width: 600px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ $t('portal.pages.tickets.comments.addComment') }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="addComment" ref="commentForm">
+            <q-input
+              v-model="newComment"
+              type="textarea"
+              :placeholder="$t('portal.pages.tickets.comments.placeholder')"
+              outlined
+              rows="4"
+              counter
+              maxlength="2000"
+              :rules="[(val) => !!val?.trim() || $t('portal.pages.tickets.comments.required')]"
+              autofocus
+            />
+          </q-form>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('common.cancel')" color="grey" @click="cancelComment" />
+          <q-btn
+            color="primary"
+            :label="$t('portal.pages.tickets.comments.submit')"
+            :loading="submittingComment"
+            :disable="!newComment?.trim()"
+            icon="send"
+            @click="addComment"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -296,6 +319,8 @@ const loadingComments = ref(false)
 const submittingComment = ref(false)
 const error = ref(null)
 const newComment = ref('')
+const showCommentDialog = ref(false)
+const commentForm = ref(null)
 
 // Methods
 const loadTicket = async () => {
@@ -358,8 +383,14 @@ const addComment = async () => {
       // Add new comment to list
       comments.value.push(response.data.comment)
 
-      // Clear form
+      // Clear form and close dialog
       newComment.value = ''
+      showCommentDialog.value = false
+
+      // Reset form validation state
+      if (commentForm.value) {
+        commentForm.value.resetValidation()
+      }
 
       Notify.create({
         type: 'positive',
@@ -382,6 +413,16 @@ const addComment = async () => {
     })
   } finally {
     submittingComment.value = false
+  }
+}
+
+const cancelComment = () => {
+  newComment.value = ''
+  showCommentDialog.value = false
+
+  // Reset form validation state
+  if (commentForm.value) {
+    commentForm.value.resetValidation()
   }
 }
 
