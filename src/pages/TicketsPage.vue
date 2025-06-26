@@ -42,7 +42,7 @@
     </q-card>
 
     <!-- Ticket Detail Dialog -->
-    <!--
+
     <q-dialog
       v-model="ticketDetailDialog"
       maximized
@@ -56,7 +56,6 @@
         @ticket-updated="onTicketUpdated"
       />
     </q-dialog>
-    -->
   </q-page>
 </template>
 
@@ -67,7 +66,13 @@ import NewTicketsCard from 'components/tickets/NewTicketsCard.vue'
 import InProgressTicketsCard from 'components/tickets/InProgressTicketsCard.vue'
 import ResolvedTicketsCard from 'components/tickets/ResolvedTicketsCard.vue'
 import AllTicketsCard from 'components/tickets/AllTicketsCard.vue'
-// import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
+import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
+
+defineOptions({
+  components: {
+    TicketDetailDialog,
+  },
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -88,6 +93,10 @@ const onTicketUpdated = () => {
   // This will be handled by each card component
 }
 
+const closeTicketDetail = () => {
+  ticketDetailDialog.value = false
+  selectedTicket.value = null
+}
 // Provide methods to child components
 provide('openTicketDetail', openTicketDetail)
 provide('refreshTickets', onTicketUpdated)
