@@ -16,7 +16,6 @@
       >
         <q-tab name="new" :label="$t('tickets.tabs.new')" />
         <q-tab name="inProgress" :label="$t('tickets.tabs.inProgress')" />
-        <q-tab name="resolved" :label="$t('tickets.tabs.resolved')" />
         <q-tab name="all" :label="$t('tickets.tabs.all')" />
       </q-tabs>
 
@@ -29,10 +28,6 @@
 
         <q-tab-panel name="inProgress">
           <in-progress-tickets-card />
-        </q-tab-panel>
-
-        <q-tab-panel name="resolved">
-          <resolved-tickets-card />
         </q-tab-panel>
 
         <q-tab-panel name="all">
@@ -64,7 +59,6 @@ import { ref, provide, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NewTicketsCard from 'components/tickets/NewTicketsCard.vue'
 import InProgressTicketsCard from 'components/tickets/InProgressTicketsCard.vue'
-import ResolvedTicketsCard from 'components/tickets/ResolvedTicketsCard.vue'
 import AllTicketsCard from 'components/tickets/AllTicketsCard.vue'
 import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
 
@@ -110,7 +104,7 @@ onMounted(() => {
 
   // Set active tab from URL
   const urlTab = route.query.tab
-  if (urlTab && ['new', 'inProgress', 'resolved', 'all'].includes(urlTab)) {
+  if (urlTab && ['new', 'inProgress', 'all'].includes(urlTab)) {
     tab.value = urlTab
   }
 })
