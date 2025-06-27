@@ -551,9 +551,15 @@ const loadTickets = async () => {
       ...filters.value,
     }
 
-    // Remove empty filters
+    // Remove empty filters (but keep status array)
     Object.keys(params).forEach((key) => {
-      if (params[key] === '' || params[key] === null || params[key] === undefined) {
+      if (
+        key !== 'status' &&
+        (params[key] === '' ||
+          params[key] === null ||
+          params[key] === undefined ||
+          (Array.isArray(params[key]) && params[key].length === 0))
+      ) {
         delete params[key]
       }
     })

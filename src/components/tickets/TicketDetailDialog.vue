@@ -77,6 +77,8 @@
             <q-select
               v-model="editableTicket.assigned_to"
               :options="staffOptions"
+              option-value="value"
+              option-label="label"
               emit-value
               map-options
               outlined
@@ -87,8 +89,8 @@
               @filter="filterStaff"
               @update:model-value="updateTicketField('assigned_to', $event)"
             >
-              <template v-slot:option="{ opt }">
-                <q-item>
+              <template v-slot:option="{ opt, itemProps }">
+                <q-item v-bind="itemProps">
                   <q-item-section avatar>
                     <q-avatar size="24px">
                       <q-icon name="person" />
