@@ -318,6 +318,7 @@ const newTicket = ref({
 // Options
 const clientOptions = ref([])
 const categoryOptions = ref([])
+const allStaffOptions = ref([])
 
 // Computed
 const urgentCount = computed(() => {
@@ -571,6 +572,27 @@ const loadCategories = async () => {
   }
 }
 
+const loadStaff = async () => {
+  try {
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      // Зберігаємо дані працівників для використання у filterStaff та інших методах
+      allStaffOptions.value = response.data.staff.map((user) => ({
+        label: user.label || `${user.first_name} ${user.last_name}`,
+        value: user.id,
+        email: user.email,
+      }))
+    }
+  } catch (error) {
+    console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  }
+}
+
 // Utility methods
 const getPriorityColor = (priority) => {
   const colors = {
@@ -604,6 +626,7 @@ const formatTime = (dateString) => {
 onMounted(() => {
   loadTickets()
   loadCategories()
+  loadStaff()
 })
 </script>
 

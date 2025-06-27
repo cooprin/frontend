@@ -295,6 +295,7 @@ const showMyTicketsOnly = ref(false)
 const statusFilter = ref(null) // null = all, 'in_progress', 'waiting_client'
 const updatingTickets = ref([])
 const resolvingTickets = ref([])
+const allStaffOptions = ref([])
 
 // Pagination
 const pagination = ref({
@@ -568,6 +569,27 @@ const changePriority = async (ticket, priority) => {
   }
 }
 
+const loadStaff = async () => {
+  try {
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      // Зберігаємо дані працівників для можливого майбутнього використання
+      allStaffOptions.value = response.data.staff.map((user) => ({
+        label: user.label || `${user.first_name} ${user.last_name}`,
+        value: user.id,
+        email: user.email,
+      }))
+    }
+  } catch (error) {
+    console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
+  }
+}
+
 // Utility methods
 const getStatusColor = (status) => {
   const colors = {
@@ -642,6 +664,7 @@ const truncateText = (text, maxLength) => {
 // Lifecycle
 onMounted(() => {
   loadTickets()
+  loadStaff()
 })
 </script>
 

@@ -344,7 +344,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
-import { useAuthStore } from 'stores/auth'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
 
@@ -359,7 +358,6 @@ const emit = defineEmits(['close', 'ticket-updated'])
 
 const { t } = useI18n()
 const $q = useQuasar()
-const authStore = useAuthStore()
 
 // State
 const ticket = ref(null)
@@ -583,18 +581,22 @@ const deleteComment = async (comment) => {
 
 const loadStaff = async () => {
   try {
-    // This would be a staff API call
-    allStaffOptions.value = [
-      { label: 'John Doe', value: 'user1' },
-      { label: 'Jane Smith', value: 'user2' },
-      {
-        label: `${authStore.user?.first_name} ${authStore.user?.last_name}`,
-        value: authStore.user?.id,
-      },
-    ]
-    staffOptions.value = [...allStaffOptions.value]
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      allStaffOptions.value = response.data.staff.map((user) => ({
+        label: user.label || `${user.first_name} ${user.last_name}`,
+        value: user.id,
+        email: user.email,
+      }))
+      staffOptions.value = [...allStaffOptions.value]
+    }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 

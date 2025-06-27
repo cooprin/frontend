@@ -64,4 +64,18 @@ export const TicketsApi = {
   getTicketsByCategory: () => {
     return api.get('/tickets/by-category')
   },
+  getStaff: () => {
+    return api.get('/tickets/staff')
+  },
+  bulkAssignTickets: (data) => {
+    return api.post('/tickets/bulk-assign', data)
+  },
+
+  bulkUpdateStatus: (data) => {
+    return api.post('/tickets/bulk-status', data)
+  },
+
+  bulkUpdatePriority: (data) => {
+    return api.post('/tickets/bulk-priority', data)
+  },
 }

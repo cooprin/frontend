@@ -616,6 +616,7 @@ const pagination = ref({
 // Options
 const categoryOptions = ref([])
 const assigneeOptions = ref([])
+
 const allAssigneeOptions = ref([])
 const clientOptions = ref([])
 
@@ -948,26 +949,36 @@ const loadCategories = async () => {
 
 const loadStaff = async () => {
   try {
-    // This would be a staff API call
-    allAssigneeOptions.value = [
-      { label: t('tickets.all.unassigned'), value: 'unassigned' },
-      { label: 'John Doe', value: 'user1' },
-      { label: 'Jane Smith', value: 'user2' },
-    ]
-    assigneeOptions.value = [...allAssigneeOptions.value]
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      allAssigneeOptions.value = [
+        { label: t('tickets.all.unassigned'), value: 'unassigned' },
+        ...response.data.staff.map((user) => ({
+          label: user.label || `${user.first_name} ${user.last_name}`,
+          value: user.id,
+          email: user.email,
+        })),
+      ]
+      assigneeOptions.value = [...allAssigneeOptions.value]
+    }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
 const filterStaff = (val, update) => {
   update(() => {
     if (val === '') {
-      assigneeOptions.value = allAssigneeOptions.value
+      assigneeOptions.value = [...allAssigneeOptions.value]
     } else {
       const needle = val.toLowerCase()
       assigneeOptions.value = allAssigneeOptions.value.filter(
-        (option) => option.label.toLowerCase().indexOf(needle) > -1,
+        (option) => option.label && option.label.toLowerCase().indexOf(needle) > -1,
       )
     }
   })

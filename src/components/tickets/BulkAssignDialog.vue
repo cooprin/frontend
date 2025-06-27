@@ -276,7 +276,6 @@
 import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
-import { useAuthStore } from 'stores/auth'
 import { TicketsApi } from 'src/api/tickets'
 
 const props = defineProps({
@@ -294,7 +293,6 @@ const emit = defineEmits(['update:modelValue', 'assigned'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const authStore = useAuthStore()
 
 // Local dialog state
 const showDialog = computed({
@@ -400,33 +398,25 @@ const onDialogHide = () => {
 
 const loadStaff = async () => {
   try {
-    // This would be a staff API call with workload info
-    allStaffOptions.value = [
-      {
-        label: 'John Doe',
-        value: 'user1',
-        department: 'Technical Support',
-        workload: 5,
-        online: true,
-      },
-      {
-        label: 'Jane Smith',
-        value: 'user2',
-        department: 'Customer Service',
-        workload: 3,
-        online: false,
-      },
-      {
-        label: `${authStore.user?.first_name} ${authStore.user?.last_name}`,
-        value: authStore.user?.id,
-        department: 'Administration',
-        workload: 2,
-        online: true,
-      },
-    ]
-    staffOptions.value = [...allStaffOptions.value]
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      allStaffOptions.value = response.data.staff.map((user) => ({
+        label: user.label || `${user.first_name} ${user.last_name}`,
+        value: user.id,
+        email: user.email,
+        department: user.department || 'Support',
+        workload: 0, // TODO: Add workload calculation
+        online: true, // TODO: Add online status
+      }))
+      staffOptions.value = [...allStaffOptions.value]
+    }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 

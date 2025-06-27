@@ -235,8 +235,8 @@
       <q-chip color="grey" text-color="white" icon="lock">
         {{ $t('tickets.resolved.closed') }}: {{ closedCount }}
       </q-chip>
-      <q-chip color="red" text-color="white" icon="cancel">
-        {{ $t('tickets.resolved.cancelled') }}: {{ cancelledCount }}
+      <q-chip color="purple" text-color="white" icon="done_all">
+        {{ $t('tickets.resolved.totalResolved') }}: {{ totalResolvedCount }}
       </q-chip>
     </div>
 
@@ -454,7 +454,6 @@ const allStaffOptions = ref([])
 const statusOptions = computed(() => [
   { label: t('tickets.statuses.resolved'), value: 'resolved' },
   { label: t('tickets.statuses.closed'), value: 'closed' },
-  { label: t('tickets.statuses.cancelled'), value: 'cancelled' },
 ])
 
 const priorityOptions = computed(() => [
@@ -472,8 +471,8 @@ const closedCount = computed(() => {
   return tickets.value.filter((ticket) => ticket.status === 'closed').length
 })
 
-const cancelledCount = computed(() => {
-  return tickets.value.filter((ticket) => ticket.status === 'cancelled').length
+const totalResolvedCount = computed(() => {
+  return resolvedCount.value + closedCount.value
 })
 
 // Table columns
@@ -546,7 +545,7 @@ const loadTickets = async () => {
     const params = {
       page: pagination.value.page,
       limit: pagination.value.rowsPerPage,
-      status: ['resolved', 'closed', 'cancelled'],
+      status: ['resolved', 'closed'],
       sortBy: pagination.value.sortBy,
       sortDesc: pagination.value.descending,
       ...filters.value,
@@ -744,14 +743,22 @@ const loadCategories = async () => {
 
 const loadStaff = async () => {
   try {
-    // This would be a staff API call
-    allStaffOptions.value = [
-      { label: 'John Doe', value: 'user1' },
-      { label: 'Jane Smith', value: 'user2' },
-    ]
-    staffOptions.value = [...allStaffOptions.value]
+    const response = await TicketsApi.getStaff()
+    if (response.data.success) {
+      allStaffOptions.value = response.data.staff.map((user) => ({
+        label: user.label || `${user.first_name} ${user.last_name}`,
+        value: user.id,
+        email: user.email,
+      }))
+      staffOptions.value = [...allStaffOptions.value]
+    }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
