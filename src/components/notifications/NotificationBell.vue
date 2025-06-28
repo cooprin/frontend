@@ -177,8 +177,6 @@ const markAllAsRead = async () => {
   }
 }
 
-// Замінити метод handleNotificationClick в NotificationBell.vue:
-
 const handleNotificationClick = async (notification) => {
   // Позначити як прочитане
   if (!notification.is_read) {
@@ -195,41 +193,36 @@ const handleNotificationClick = async (notification) => {
   // Навігація залежно від типу сповіщення
   showNotifications.value = false
 
-  switch (notification.notification_type) {
-    case 'new_ticket':
-    case 'ticket_assigned':
-    case 'ticket_updated':
-    case 'ticket_comment':
-      if (notification.entity_id) {
-        router.push({
-          name: 'ticket-details',
-          params: { id: notification.entity_id },
-        })
-      }
-      break
+  if (
+    ['new_ticket', 'ticket_assigned', 'ticket_updated', 'ticket_comment'].includes(
+      notification.notification_type,
+    )
+  ) {
+    if (notification.entity_id) {
+      router.push({
+        name: 'ticket-details',
+        params: { id: notification.entity_id },
+      })
+    }
+  } else if (['new_chat_message', 'chat_assigned'].includes(notification.notification_type)) {
+    // Отримуємо room_id з data сповіщення
+    const roomId = notification.data?.room_id
 
-    case 'new_chat_message':
-    case 'chat_assigned':
-      // Отримуємо room_id з data сповіщення
-      const roomId = notification.data?.room_id
-
-      if (roomId) {
-        // Навігація до chat management з автовідкриттям чату
-        router.push({
-          name: 'chat',
-          query: {
-            openRoom: roomId,
-          },
-        })
-      } else {
-        // Fallback - просто відкрити chat management
-        router.push({ name: 'chat' })
-      }
-      break
-
-    default:
-      // Для інших типів - на загальну сторінку сповіщень
-      viewAllNotifications()
+    if (roomId) {
+      // Навігація до chat management з автовідкриттям чату
+      router.push({
+        name: 'chat',
+        query: {
+          openRoom: roomId,
+        },
+      })
+    } else {
+      // Fallback - просто відкрити chat management
+      router.push({ name: 'chat' })
+    }
+  } else {
+    // Для інших типів - на загальну сторінку сповіщень
+    viewAllNotifications()
   }
 }
 

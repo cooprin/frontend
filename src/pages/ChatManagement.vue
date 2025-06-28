@@ -426,8 +426,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
 import StaffChatDialog from 'components/chat/StaffChatDialog.vue'
