@@ -751,10 +751,10 @@ const loadTicketsData = async () => {
     // Завантажуємо метрики заявок
     const metricsResponse = await TicketsApi.getTicketsMetrics()
     ticketsMetrics.value = {
-      newCount: metricsResponse.data.metrics.new_count,
-      inProgressCount: metricsResponse.data.metrics.in_progress_count,
-      urgentCount: metricsResponse.data.metrics.urgent_count,
-      resolvedTodayCount: metricsResponse.data.metrics.resolved_today_count,
+      newCount: parseInt(metricsResponse.data.metrics.new_count) || 0,
+      inProgressCount: parseInt(metricsResponse.data.metrics.in_progress_count) || 0,
+      urgentCount: parseInt(metricsResponse.data.metrics.urgent_count) || 0,
+      resolvedTodayCount: parseInt(metricsResponse.data.metrics.resolved_today_count) || 0,
     }
 
     // Завантажуємо дані для графіка статусів
