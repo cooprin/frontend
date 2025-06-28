@@ -750,12 +750,14 @@ const loadTicketsData = async () => {
   try {
     // Завантажуємо метрики заявок
     const metricsResponse = await TicketsApi.getTicketsMetrics()
+    console.log('API Response:', metricsResponse.data.metrics) // Перевірити що приходить
     ticketsMetrics.value = {
       newCount: parseInt(metricsResponse.data.metrics.new_count) || 0,
       inProgressCount: parseInt(metricsResponse.data.metrics.in_progress_count) || 0,
       urgentCount: parseInt(metricsResponse.data.metrics.urgent_count) || 0,
       resolvedTodayCount: parseInt(metricsResponse.data.metrics.resolved_today_count) || 0,
     }
+    console.log('Converted metrics:', ticketsMetrics.value) // Перевірити що отримали
 
     // Завантажуємо дані для графіка статусів
     const statusResponse = await TicketsApi.getTicketsStatusDistribution()
