@@ -257,6 +257,21 @@ const routes = [
         },
       },
       {
+        path: 'chat',
+        name: 'chat',
+        component: () => import('pages/ChatManagement.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'chat.read',
+        },
+      },
+      {
+        path: 'notifications',
+        name: 'notifications',
+        component: () => import('pages/NotificationsPage.vue'),
+        meta: { requiresAuth: true, userType: 'staff' },
+      },
+      {
         path: 'settings/company',
         name: 'company-settings',
         component: () => import('pages/CompanySettingsPage.vue'),
@@ -325,6 +340,12 @@ const routes = [
         name: 'portal-chat',
         component: () => import('pages/portal/ChatPage.vue'),
         meta: { title: 'Support Chat' },
+      },
+      {
+        path: 'notifications',
+        name: 'portal-notifications',
+        component: () => import('pages/NotificationsPage.vue'),
+        meta: { requiresAuth: true, userType: 'client' },
       },
     ],
   },

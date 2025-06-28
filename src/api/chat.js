@@ -1,60 +1,98 @@
 import { api } from 'boot/axios'
 
 export const ChatApi = {
-  // Get chat rooms for client
-  getRooms: () => {
+  // Отримання кімнат чату
+  getRooms() {
     return api.get('/chat/rooms')
   },
 
-  // Create new chat room
-  createRoom: (data) => {
+  // Створення нової кімнати
+  createRoom(data) {
     return api.post('/chat/rooms', data)
   },
 
-  // Get messages for a room
-  getMessages: (roomId, params) => {
+  // Отримання повідомлень
+  getMessages(roomId, params = {}) {
     return api.get(`/chat/rooms/${roomId}/messages`, { params })
   },
 
-  // Send message to room
-  sendMessage: (roomId, data) => {
-    return api.post(`/chat/rooms/${roomId}/messages`, data, {
+  // Відправка повідомлення
+  sendMessage(roomId, formData) {
+    return api.post(`/chat/rooms/${roomId}/messages`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
   },
 
-  // Mark room messages as read
-  markAsRead: (roomId) => {
+  // Позначити як прочитане
+  markAsRead(roomId) {
     return api.patch(`/chat/rooms/${roomId}/read`)
   },
 
-  // Get file URL for download
-  getFileUrl: (filePath) => {
-    if (!filePath) return null
-    return `${process.env.API_URL}/uploads/chat/${filePath}`
-  },
-
-  // Download file
-  downloadFile: (fileId) => {
+  // Завантаження файлу
+  downloadFile(fileId) {
     return api.get(`/chat/files/${fileId}/download`, {
       responseType: 'blob',
     })
   },
 
-  // Convert chat to ticket
-  convertToTicket: (roomId, data) => {
-    return api.post(`/chat/rooms/${roomId}/convert-to-ticket`, data)
+  // Статус співробітників (для клієнтів)
+  getStaffStatus() {
+    return api.get('/chat/staff-status')
   },
 
-  // Get online status of staff
-  getStaffStatus: () => {
-    return api.get('/chat/staff/status')
+  // Закриття чату (для співробітників)
+  closeRoom(roomId) {
+    return api.patch(`/chat/rooms/${roomId}/close`)
   },
 
-  // Send typing indicator
-  sendTyping: (roomId) => {
-    return api.post(`/chat/rooms/${roomId}/typing`)
+  // Призначення чату (для співробітників)
+  assignRoom(roomId, staffId) {
+    return api.patch(`/chat/rooms/${roomId}/assign`, { staffId })
+  },
+  // ===========================================
+  // STAFF CHAT MANAGEMENT API METHODS
+  // ===========================================
+
+  // Отримання всіх чатів для співробітників
+  getRoomsForStaff(params = {}) {
+    return api.get('/chat/staff/rooms', { params })
+  },
+
+  // Отримання метрик чатів
+  getChatMetrics() {
+    return api.get('/chat/staff/metrics')
+  },
+
+  // Масове призначення чатів
+  bulkAssignRooms(data) {
+    return api.post('/chat/staff/bulk-assign', data)
+  },
+
+  // Масове закриття чатів
+  bulkCloseRooms(data) {
+    return api.post('/chat/staff/bulk-close', data)
+  },
+
+  // Пошук по чатам та повідомленнях
+  searchChats(params = {}) {
+    return api.get('/chat/staff/search', { params })
+  },
+
+  // Отримання доступних співробітників
+  getAvailableStaff() {
+    return api.get('/chat/staff/available')
+  },
+
+  // Статистика по співробітниках
+  getStaffWorkload() {
+    return this.getChatMetrics().then((response) => ({
+      ...response,
+      data: {
+        ...response.data,
+        staff_workload: response.data.staff_workload || [],
+      },
+    }))
   },
 }

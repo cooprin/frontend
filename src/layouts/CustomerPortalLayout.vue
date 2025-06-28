@@ -25,6 +25,7 @@
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
+        <NotificationBell />
 
         <q-btn flat round dense icon="account_circle">
           <q-menu>
@@ -134,7 +135,15 @@
         </q-list>
       </q-scroll-area>
     </q-drawer>
-
+    <!-- Notifications -->
+    <q-item clickable v-ripple :to="{ name: 'portal-notifications' }">
+      <q-item-section avatar>
+        <q-icon name="notifications" />
+      </q-item-section>
+      <q-item-section>
+        {{ $t('portal.notifications') }}
+      </q-item-section>
+    </q-item>
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -147,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
+import NotificationBell from 'src/components/notifications/NotificationBell.vue'
 
 const $q = useQuasar()
 const { locale } = useI18n()

@@ -19,6 +19,7 @@ import company from './company'
 import wialonSync from './wialonSync'
 import portal from './portal'
 import tickets from './tickets'
+import chat from './chat'
 
 export default {
   layouts,
@@ -42,4 +43,5 @@ export default {
   wialonSync,
   portal,
   tickets,
+  chat,
 }

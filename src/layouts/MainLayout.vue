@@ -25,6 +25,7 @@
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
+        <NotificationBell />
 
         <q-btn flat round dense icon="account_circle">
           <q-menu>
@@ -531,6 +532,14 @@
               </q-item>
             </q-expansion-item>
           </template>
+          <q-item clickable v-ripple :to="{ name: 'notifications' }" dense>
+            <q-item-section avatar>
+              <q-icon name="notifications" />
+            </q-item-section>
+            <q-item-section>
+              {{ $t('layouts.mainLayout.notifications') }}
+            </q-item-section>
+          </q-item>
 
           <!-- Mini Mode Menus - показуємо тільки на великих екранах -->
           <template v-if="miniState && $q.screen.gt.xs">
@@ -970,6 +979,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 import { CompanyApi } from 'src/api/company'
+import NotificationBell from 'src/components/notifications/NotificationBell.vue'
 
 const companyName = ref('')
 
