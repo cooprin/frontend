@@ -568,6 +568,10 @@ import { useAuthStore } from 'stores/auth'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
 import { debounce } from 'quasar'
+import CreateTicketDialog from 'components/tickets/CreateTicketDialog.vue'
+import BulkAssignDialog from 'components/tickets/BulkAssignDialog.vue'
+import BulkStatusDialog from 'components/tickets/BulkStatusDialog.vue'
+import BulkPriorityDialog from 'components/tickets/BulkPriorityDialog.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()

@@ -21,10 +21,10 @@
             />
             <div>
               <div class="text-body2 text-weight-medium">
-                {{ $t(`tickets.categories.${props.row.category_name}`) }}
+                {{ getCategoryName(props.row.category_name) }}
               </div>
               <div class="text-caption text-grey">
-                {{ $t(`tickets.categories.${props.row.category_name}`) }}
+                {{ getCategoryName(props.row.category_name) }}
               </div>
             </div>
           </div>
@@ -214,6 +214,15 @@ const viewCategoryTickets = (category) => {
       tab: 'all',
     },
   })
+}
+
+const getCategoryName = (categoryName) => {
+  // Якщо вже є повний ключ - використовуємо його
+  if (categoryName.startsWith('tickets.categories.')) {
+    return t(categoryName)
+  }
+  // Інакше додаємо префікс
+  return t(`tickets.categories.${categoryName}`)
 }
 </script>
 
