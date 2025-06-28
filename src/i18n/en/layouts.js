@@ -36,5 +36,6 @@ export default {
     support: 'Support',
     tickets: 'Tickets',
     chat: 'Chat',
+    notifications: 'Notifications',
   },
 }

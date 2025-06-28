@@ -36,5 +36,6 @@ export default {
     support: 'Підтримка',
     tickets: 'Заявки',
     chat: 'Чат',
+    notifications: 'Сповіщення',
   },
 }

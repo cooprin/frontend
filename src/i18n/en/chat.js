@@ -25,6 +25,7 @@ export default {
     bulkAssignError: 'Error in bulk assignment',
     bulkCloseSuccess: 'Successfully closed {count} chats',
     bulkCloseError: 'Error in bulk closing',
+    roomNotFound: 'Chat room not found',
 
     filter: {
       status: 'Status',

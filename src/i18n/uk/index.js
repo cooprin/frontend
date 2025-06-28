@@ -20,6 +20,7 @@ import wialonSync from './wialonSync'
 import portal from './portal'
 import tickets from './tickets'
 import chat from './chat'
+import notifications from './notifications'
 
 export default {
   layouts,
@@ -44,4 +45,5 @@ export default {
   portal,
   tickets,
   chat,
+  notifications,
 }
