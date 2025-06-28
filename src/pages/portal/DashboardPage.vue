@@ -179,7 +179,7 @@ const loadDashboardData = async () => {
 
     // Load open tickets count
     const ticketsResponse = await TicketsApi.getTickets({
-      status: 'open',
+      status: ['open', 'in_progress', 'waiting_client'],
       limit: 5,
     })
     if (ticketsResponse.data.success) {

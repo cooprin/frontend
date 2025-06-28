@@ -101,4 +101,5 @@ export default {
   minutesShort: 'm',
   hoursShort: 'h',
   daysShort: 'd',
+  currency: 'UAH',
 }

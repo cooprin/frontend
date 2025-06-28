@@ -101,4 +101,5 @@ export default {
   minutesShort: 'хв',
   hoursShort: 'год',
   daysShort: 'дн',
+  currency: 'грн',
 }
