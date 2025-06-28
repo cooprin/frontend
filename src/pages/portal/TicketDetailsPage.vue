@@ -17,7 +17,7 @@
     <div v-else-if="!ticket" class="text-center q-py-md">
       <q-icon name="support_agent" size="48px" color="grey-4" />
       <div class="text-h6 text-grey-6 q-mt-md">
-        {{ $t$t('tickets.notFound') }}
+        {{ $t('tickets.notFound') }}
       </div>
       <q-btn color="primary" :label="$t('common.back')" @click="goBack" class="q-mt-md" />
     </div>
