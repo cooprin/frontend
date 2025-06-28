@@ -564,7 +564,9 @@ const loadCategories = async () => {
   try {
     const response = await TicketsApi.getCategories()
     categoryOptions.value = response.data.categories.map((cat) => ({
-      label: cat.name,
+      label: cat.name.startsWith('tickets.categories.')
+        ? t(cat.name)
+        : t(`tickets.categories.${cat.name}`),
       value: cat.id,
     }))
   } catch (error) {

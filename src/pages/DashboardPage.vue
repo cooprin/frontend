@@ -341,7 +341,7 @@
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-blue" v-if="!loadingTicketsData">
-                  {{ ticketsMetrics.newCount || 0 }}
+                  {{ ticketsMetrics.new_count || 0 }}
                 </div>
                 <q-spinner v-else color="blue" size="2em" />
               </q-card-section>
@@ -355,7 +355,7 @@
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-orange" v-if="!loadingTicketsData">
-                  {{ ticketsMetrics.inProgressCount || 0 }}
+                  {{ ticketsMetrics.in_progress_count || 0 }}
                 </div>
                 <q-spinner v-else color="orange" size="2em" />
               </q-card-section>
@@ -369,7 +369,7 @@
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-red" v-if="!loadingTicketsData">
-                  {{ ticketsMetrics.urgentCount || 0 }}
+                  {{ ticketsMetrics.urgent_count || 0 }}
                 </div>
                 <q-spinner v-else color="red" size="2em" />
               </q-card-section>
@@ -383,7 +383,7 @@
               </q-card-section>
               <q-card-section class="text-center">
                 <div class="text-h4 text-green" v-if="!loadingTicketsData">
-                  {{ ticketsMetrics.resolvedTodayCount || 0 }}
+                  {{ ticketsMetrics.resolved_today_count || 0 }}
                 </div>
                 <q-spinner v-else color="green" size="2em" />
               </q-card-section>
@@ -728,10 +728,10 @@ const criticalTypes = ref([])
 // Для даних по заявках
 const loadingTicketsData = ref(false)
 const ticketsMetrics = ref({
-  newCount: 0,
-  inProgressCount: 0,
-  urgentCount: 0,
-  resolvedTodayCount: 0,
+  new_count: 0,
+  in_progress_count: 0,
+  urgent_count: 0,
+  resolved_today_count: 0,
 })
 const ticketsStatusData = ref([])
 const recentTickets = ref([])
@@ -750,7 +750,12 @@ const loadTicketsData = async () => {
   try {
     // Завантажуємо метрики заявок
     const metricsResponse = await TicketsApi.getTicketsMetrics()
-    ticketsMetrics.value = metricsResponse.data.metrics
+    ticketsMetrics.value = {
+      newCount: metricsResponse.data.metrics.new_count,
+      inProgressCount: metricsResponse.data.metrics.in_progress_count,
+      urgentCount: metricsResponse.data.metrics.urgent_count,
+      resolvedTodayCount: metricsResponse.data.metrics.resolved_today_count,
+    }
 
     // Завантажуємо дані для графіка статусів
     const statusResponse = await TicketsApi.getTicketsStatusDistribution()
