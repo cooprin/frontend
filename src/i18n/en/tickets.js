@@ -1,12 +1,16 @@
 export default {
   // Main headers and actions
-  title: 'Tickets',
+  title: 'My Tickets',
   add: 'Create Ticket',
   edit: 'Edit Ticket',
   create: 'Create Ticket',
   delete: 'Delete Ticket',
   view: 'View Ticket',
   openDetails: 'Open Details',
+  createNew: 'Create New Ticket',
+  noTickets: 'You have no tickets',
+  notFound: 'Ticket not found',
+  loadError: 'Error loading ticket',
 
   // Fields
   ticketNumber: 'Ticket Number',
@@ -70,6 +74,7 @@ export default {
     addSuccess: 'Comment added successfully',
     addError: 'Error adding comment',
     edit: 'Edit Comment',
+    editComment: 'Edit Comment',
     text: 'Comment Text',
     updateSuccess: 'Comment updated successfully',
     updateError: 'Error updating comment',
@@ -108,8 +113,6 @@ export default {
   updateError: 'Error updating ticket',
   startWorkSuccess: 'Work started successfully',
   startWorkError: 'Error starting work',
-  notFound: 'Ticket not found',
-  loadError: 'Error loading ticket',
   markUrgent: 'Mark as Urgent',
   markHigh: 'Mark as High Priority',
 
@@ -434,4 +437,5 @@ export default {
     error: 'Error creating ticket',
     errorDetails: 'Please check the form and try again',
   },
+  markAsInternal: 'Mark as internal',
 }

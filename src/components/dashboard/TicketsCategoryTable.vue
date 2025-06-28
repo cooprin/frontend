@@ -24,7 +24,7 @@
                 {{ $t(`tickets.categories.${props.row.category_name}`) }}
               </div>
               <div class="text-caption text-grey">
-                {{ $t(`tickets.categories.${props.row.category_name}_desc`) }}
+                {{ $t(`tickets.categories.${props.row.category_name}`) }}
               </div>
             </div>
           </div>

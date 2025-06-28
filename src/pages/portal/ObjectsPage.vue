@@ -92,7 +92,7 @@
                   flat
                   color="primary"
                   icon="support_agent"
-                  :label="$t('tickets.create')"
+                  :label="$t('tickets.createNew')"
                   @click="createTicketForObject(object)"
                 />
               </q-card-actions>

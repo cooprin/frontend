@@ -81,7 +81,7 @@
               <q-btn
                 color="primary"
                 icon="add"
-                :label="$t('tickets.create')"
+                :label="$t('tickets.createNew')"
                 @click="$router.push('/portal/tickets')"
               />
               <q-btn

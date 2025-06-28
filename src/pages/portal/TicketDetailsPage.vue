@@ -17,7 +17,7 @@
     <div v-else-if="!ticket" class="text-center q-py-md">
       <q-icon name="support_agent" size="48px" color="grey-4" />
       <div class="text-h6 text-grey-6 q-mt-md">
-        {{ $t('portal.pages.tickets.notFound') }}
+        {{ $t$t('tickets.notFound') }}
       </div>
       <q-btn color="primary" :label="$t('common.back')" @click="goBack" class="q-mt-md" />
     </div>
@@ -30,20 +30,20 @@
         <div class="col q-ml-sm">
           <div class="text-h5">#{{ ticket.ticket_number }} - {{ ticket.title }}</div>
           <div class="text-subtitle2 text-grey-7">
-            {{ $t('portal.pages.tickets.createdAt') }}: {{ formatDate(ticket.created_at) }}
+            {{ $t('tickets.createdAt') }}: {{ formatDate(ticket.created_at) }}
           </div>
         </div>
         <div class="col-auto">
           <q-chip
             :color="getStatusColor(ticket.status)"
             text-color="white"
-            :label="$t(`portal.pages.tickets.statuses.${ticket.status}`)"
+            :label="$t(`tickets.statuses.${ticket.status}`)"
             class="q-mr-sm"
           />
           <q-chip
             :color="getPriorityColor(ticket.priority)"
             text-color="white"
-            :label="$t(`portal.pages.tickets.priorities.${ticket.priority}`)"
+            :label="$t(`tickets.priorities.${ticket.priority}`)"
             outline
           />
         </div>
@@ -54,7 +54,7 @@
         <div class="col-12 col-md-4">
           <q-card flat bordered>
             <q-card-section>
-              <div class="text-h6 q-mb-md">{{ $t('portal.pages.tickets.information') }}</div>
+              <div class="text-h6 q-mb-md">{{ $t('tickets.information') }}</div>
 
               <q-list>
                 <q-item>
@@ -62,9 +62,7 @@
                     <q-icon name="confirmation_number" color="primary" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{
-                      $t('portal.pages.tickets.ticketNumber')
-                    }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.ticketNumber') }}</q-item-label>
                     <q-item-label>{{ ticket.ticket_number }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -74,9 +72,9 @@
                     <q-icon name="priority_high" :color="getPriorityColor(ticket.priority)" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.priority') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.priority') }}</q-item-label>
                     <q-item-label>
-                      {{ $t(`portal.pages.tickets.priorities.${ticket.priority}`) }}
+                      {{ $t(`tickets.priorities.${ticket.priority}`) }}
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -86,9 +84,9 @@
                     <q-icon name="info" :color="getStatusColor(ticket.status)" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.status') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.status') }}</q-item-label>
                     <q-item-label>
-                      {{ $t(`portal.pages.tickets.statuses.${ticket.status}`) }}
+                      {{ $t(`tickets.statuses.${ticket.status}`) }}
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -98,7 +96,7 @@
                     <q-icon name="category" color="secondary" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.category') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.category') }}</q-item-label>
                     <q-item-label>
                       {{
                         ticket.category_name.startsWith('tickets.')
@@ -114,7 +112,7 @@
                     <q-icon name="directions_car" color="orange" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.object') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.object') }}</q-item-label>
                     <q-item-label>{{ ticket.object_name }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -124,7 +122,7 @@
                     <q-icon name="person" color="purple" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.assignedTo') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.assignedTo') }}</q-item-label>
                     <q-item-label>{{ ticket.assigned_to_name }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -134,7 +132,7 @@
                     <q-icon name="schedule" color="grey-6" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.createdAt') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.createdAt') }}</q-item-label>
                     <q-item-label>{{ formatDateTime(ticket.created_at) }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -144,7 +142,7 @@
                     <q-icon name="check_circle" color="green" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.resolvedAt') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.resolvedAt') }}</q-item-label>
                     <q-item-label>{{ formatDateTime(ticket.resolved_at) }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -154,7 +152,7 @@
                     <q-icon name="lock" color="grey" />
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label caption>{{ $t('portal.pages.tickets.closedAt') }}</q-item-label>
+                    <q-item-label caption>{{ $t('tickets.closedAt') }}</q-item-label>
                     <q-item-label>{{ formatDateTime(ticket.closed_at) }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -163,7 +161,7 @@
 
             <!-- Description -->
             <q-card-section v-if="ticket.description">
-              <div class="text-h6 q-mb-md">{{ $t('portal.pages.tickets.description') }}</div>
+              <div class="text-h6 q-mb-md">{{ $t('tickets.description') }}</div>
               <div class="text-body2 q-pa-md bg-grey-1 rounded-borders">
                 {{ ticket.description }}
               </div>
@@ -177,7 +175,7 @@
             <q-card-section>
               <div class="row items-center justify-between q-mb-md">
                 <div class="text-h6">
-                  {{ $t('portal.pages.tickets.comments.title') }}
+                  {{ $t('tickets.comments.title') }}
                   <q-chip
                     v-if="comments.length > 0"
                     :label="comments.length"
@@ -190,7 +188,7 @@
                 <q-btn
                   color="primary"
                   icon="add_comment"
-                  :label="$t('portal.pages.tickets.comments.addComment')"
+                  :label="$t('tickets.comments.addComment')"
                   @click="showCommentDialog = true"
                 />
               </div>
@@ -206,7 +204,7 @@
                 <div v-else-if="comments.length === 0" class="text-center q-py-xl">
                   <q-icon name="chat_bubble_outline" size="48px" color="grey-4" />
                   <div class="text-grey-6 q-mt-md">
-                    {{ $t('portal.pages.tickets.comments.noComments') }}
+                    {{ $t('tickets.comments.noComments') }}
                   </div>
                 </div>
 
@@ -226,7 +224,7 @@
                       />
                       <div class="q-ml-sm">
                         <div class="text-weight-medium">
-                          {{ comment.author_name || $t('portal.pages.tickets.comments.unknown') }}
+                          {{ comment.author_name || $t('tickets.comments.unknown') }}
                         </div>
                         <div class="text-caption text-grey-6">
                           {{ formatDateTime(comment.created_at) }}
@@ -281,7 +279,7 @@
     <q-dialog v-model="showCommentDialog" persistent>
       <q-card style="min-width: 400px; max-width: 600px">
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ $t('portal.pages.tickets.comments.addComment') }}</div>
+          <div class="text-h6">{{ $t('tickets.comments.addComment') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -291,12 +289,12 @@
             <q-input
               v-model="newComment"
               type="textarea"
-              :placeholder="$t('portal.pages.tickets.comments.placeholder')"
+              :placeholder="$t('tickets.comments.placeholder')"
               outlined
               rows="4"
               counter
               maxlength="2000"
-              :rules="[(val) => !!val?.trim() || $t('portal.pages.tickets.comments.required')]"
+              :rules="[(val) => !!val?.trim() || $t('tickets.comments.required')]"
               autofocus
             />
           </q-form>
@@ -306,7 +304,7 @@
           <q-btn flat :label="$t('common.cancel')" color="grey" @click="cancelComment" />
           <q-btn
             color="primary"
-            :label="$t('portal.pages.tickets.comments.submit')"
+            :label="$t('tickets.comments.submit')"
             :loading="submittingComment"
             :disable="!newComment?.trim()"
             icon="send"
@@ -319,7 +317,7 @@
     <q-dialog v-model="showEditDialog" persistent>
       <q-card style="min-width: 400px; max-width: 600px">
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ $t('portal.pages.tickets.comments.editComment') }}</div>
+          <div class="text-h6">{{ $t('tickets.comments.editComment') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -329,12 +327,12 @@
             <q-input
               v-model="editingComment.comment_text"
               type="textarea"
-              :placeholder="$t('portal.pages.tickets.comments.placeholder')"
+              :placeholder="$t('tickets.comments.placeholder')"
               outlined
               rows="4"
               counter
               maxlength="2000"
-              :rules="[(val) => !!val?.trim() || $t('portal.pages.tickets.comments.required')]"
+              :rules="[(val) => !!val?.trim() || $t('tickets.comments.required')]"
               autofocus
             />
           </q-form>
@@ -399,14 +397,14 @@ const loadTicket = async () => {
       ticket.value = response.data.ticket
       await loadComments()
     } else {
-      error.value = response.data.message || $t('portal.pages.tickets.loadError')
+      error.value = response.data.message || $t('tickets.loadError')
     }
   } catch (err) {
     console.error('Error loading ticket:', err)
     if (err.response?.status === 404) {
-      error.value = $t('portal.pages.tickets.notFound')
+      error.value = $t('tickets.notFound')
     } else {
-      error.value = err.response?.data?.message || $t('portal.pages.tickets.loadError')
+      error.value = err.response?.data?.message || $t('tickets.loadError')
     }
   } finally {
     loading.value = false
@@ -426,7 +424,7 @@ const loadComments = async () => {
     console.error('Error loading comments:', error)
     Notify.create({
       type: 'negative',
-      message: $t('portal.pages.tickets.comments.loadError'),
+      message: $t('tickets.comments.loadError'),
     })
   } finally {
     loadingComments.value = false
@@ -458,7 +456,7 @@ const addComment = async () => {
 
       Notify.create({
         type: 'positive',
-        message: $t('portal.pages.tickets.comments.addSuccess'),
+        message: $t('tickets.comments.addSuccess'),
       })
 
       // Scroll to bottom of comments
@@ -473,7 +471,7 @@ const addComment = async () => {
     console.error('Error adding comment:', error)
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || $t('portal.pages.tickets.comments.addError'),
+      message: error.response?.data?.message || $t('tickets.comments.addError'),
     })
   } finally {
     submittingComment.value = false
@@ -517,14 +515,14 @@ const updateComment = async () => {
 
       Notify.create({
         type: 'positive',
-        message: $t('portal.pages.tickets.comments.updateSuccess'),
+        message: $t('tickets.comments.updateSuccess'),
       })
     }
   } catch (error) {
     console.error('Error updating comment:', error)
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || $t('portal.pages.tickets.comments.updateError'),
+      message: error.response?.data?.message || $t('tickets.comments.updateError'),
     })
   } finally {
     updatingComment.value = false
@@ -542,8 +540,8 @@ const cancelEdit = () => {
 
 const confirmDeleteComment = (comment) => {
   $q.dialog({
-    title: $t('portal.pages.tickets.comments.deleteConfirm'),
-    message: $t('portal.pages.tickets.comments.deleteMessage'),
+    title: $t('tickets.comments.deleteConfirm'),
+    message: $t('tickets.comments.deleteMessage'),
     ok: {
       color: 'negative',
       label: $t('common.delete'),
@@ -567,14 +565,14 @@ const deleteComment = async (commentId) => {
 
       Notify.create({
         type: 'positive',
-        message: $t('portal.pages.tickets.comments.deleteSuccess'),
+        message: $t('tickets.comments.deleteSuccess'),
       })
     }
   } catch (error) {
     console.error('Error deleting comment:', error)
     Notify.create({
       type: 'negative',
-      message: error.response?.data?.message || $t('portal.pages.tickets.comments.deleteError'),
+      message: error.response?.data?.message || $t('tickets.comments.deleteError'),
     })
   }
 }

@@ -20,7 +20,7 @@
         <q-btn
           color="primary"
           icon="add"
-          :label="$t('tickets.create')"
+          :label="$t('tickets.add')"
           @click="showCreateDialog = true"
         />
         <q-btn
@@ -188,7 +188,7 @@
     <q-dialog v-model="showCreateDialog" persistent>
       <q-card style="min-width: 500px; max-width: 600px">
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ $t('tickets.create') }}</div>
+          <div class="text-h6">{{ $t('tickets.add') }}</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>

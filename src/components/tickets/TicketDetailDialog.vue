@@ -319,7 +319,7 @@
 
             <q-checkbox
               v-model="newComment.isInternal"
-              :label="$t('tickets.comments.markAsInternal')"
+              :label="$t('tickets.comments.internal')"
               color="orange"
               class="q-mt-md"
             />

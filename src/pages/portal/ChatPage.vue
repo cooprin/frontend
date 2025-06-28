@@ -565,7 +565,7 @@ const downloadFile = (file) => {
 // Utility methods
 const getRoomTitle = (room) => {
   if (room.room_type === 'ticket' && room.ticket_title) {
-    return `${$t('tickets.title')} #${room.ticket_number}`
+    return `${$t('tickets.ticketNumber')} #${room.ticket_number}`
   }
   return $t('portal.pages.chat.supportChat')
 }

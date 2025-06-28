@@ -61,7 +61,7 @@
         <q-btn
           color="primary"
           icon="add"
-          :label="$t('tickets.create')"
+          :label="$t('tickets.add')"
           @click="showCreateDialog = true"
         />
       </div>

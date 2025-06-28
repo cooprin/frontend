@@ -2,7 +2,7 @@
   <q-dialog v-model="showDialog" persistent @hide="onDialogHide">
     <q-card style="min-width: 600px; max-width: 800px; width: 90vw">
       <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">{{ $t('tickets.create.title') }}</div>
+        <div class="text-h6">{{ $t('tickets.createTicket.title') }}</div>
         <q-space />
         <q-btn icon="close" flat round dense v-close-popup />
       </q-card-section>
@@ -17,8 +17,8 @@
               <q-select
                 v-model="form.client_id"
                 :options="clientOptions"
-                :label="$t('tickets.create.client')"
-                :hint="$t('tickets.create.clientHint')"
+                :label="$t('tickets.createTicket.client')"
+                :hint="$t('tickets.createTicket.clientHint')"
                 outlined
                 dense
                 emit-value
@@ -27,7 +27,7 @@
                 input-debounce="300"
                 :loading="loadingClients"
                 @filter="filterClients"
-                :rules="[(val) => !!val || $t('tickets.create.clientRequired')]"
+                :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
                 clearable
               >
                 <template v-slot:option="{ opt }">
@@ -47,7 +47,7 @@
                 <template v-slot:no-option>
                   <q-item>
                     <q-item-section class="text-grey">
-                      {{ $t('tickets.create.noClientsFound') }}
+                      {{ $t('tickets.createTicket.noClientsFound') }}
                     </q-item-section>
                   </q-item>
                 </template>
@@ -59,8 +59,8 @@
               <q-select
                 v-model="form.object_id"
                 :options="clientObjects"
-                :label="$t('tickets.create.object')"
-                :hint="$t('tickets.create.objectHint')"
+                :label="$t('tickets.createTicket.object')"
+                :hint="$t('tickets.createTicket.objectHint')"
                 outlined
                 dense
                 emit-value
@@ -87,14 +87,14 @@
           <!-- Title -->
           <q-input
             v-model="form.title"
-            :label="$t('tickets.create.title')"
-            :hint="$t('tickets.create.titleHint')"
+            :label="$t('tickets.createTicket.title')"
+            :hint="$t('tickets.createTicket.titleHint')"
             outlined
             dense
             :rules="[
-              (val) => !!val || $t('tickets.create.titleRequired'),
-              (val) => val.length >= 10 || $t('tickets.create.titleMinLength'),
-              (val) => val.length <= 200 || $t('tickets.create.titleMaxLength'),
+              (val) => !!val || $t('tickets.createTicket.titleRequired'),
+              (val) => val.length >= 10 || $t('tickets.createTicket.titleMinLength'),
+              (val) => val.length <= 200 || $t('tickets.createTicket.titleMaxLength'),
             ]"
             counter
             maxlength="200"
@@ -103,17 +103,17 @@
           <!-- Description -->
           <q-input
             v-model="form.description"
-            :label="$t('tickets.create.description')"
-            :hint="$t('tickets.create.descriptionHint')"
+            :label="$t('tickets.createTicket.description')"
+            :hint="$t('tickets.createTicket.descriptionHint')"
             type="textarea"
             outlined
             dense
             rows="4"
             autogrow
             :rules="[
-              (val) => !!val || $t('tickets.create.descriptionRequired'),
-              (val) => val.length >= 20 || $t('tickets.create.descriptionMinLength'),
-              (val) => val.length <= 2000 || $t('tickets.create.descriptionMaxLength'),
+              (val) => !!val || $t('tickets.createTicket.descriptionRequired'),
+              (val) => val.length >= 20 || $t('tickets.createTicket.descriptionMinLength'),
+              (val) => val.length <= 2000 || $t('tickets.createTicket.descriptionMaxLength'),
             ]"
             counter
             maxlength="2000"
@@ -125,8 +125,8 @@
               <q-select
                 v-model="form.category_id"
                 :options="categoryOptions"
-                :label="$t('tickets.create.category')"
-                :hint="$t('tickets.create.categoryHint')"
+                :label="$t('tickets.createTicket.category')"
+                :hint="$t('tickets.createTicket.categoryHint')"
                 outlined
                 dense
                 emit-value
@@ -153,8 +153,8 @@
               <q-select
                 v-model="form.priority"
                 :options="priorityOptions"
-                :label="$t('tickets.create.priority')"
-                :hint="$t('tickets.create.priorityHint')"
+                :label="$t('tickets.createTicket.priority')"
+                :hint="$t('tickets.createTicket.priorityHint')"
                 outlined
                 dense
                 emit-value
@@ -186,8 +186,8 @@
               <q-select
                 v-model="form.assigned_to"
                 :options="staffOptions"
-                :label="$t('tickets.create.assignTo')"
-                :hint="$t('tickets.create.assignToHint')"
+                :label="$t('tickets.createTicket.assignTo')"
+                :hint="$t('tickets.createTicket.assignToHint')"
                 outlined
                 dense
                 emit-value
@@ -217,8 +217,8 @@
               <q-select
                 v-model="form.status"
                 :options="statusOptions"
-                :label="$t('tickets.create.initialStatus')"
-                :hint="$t('tickets.create.statusHint')"
+                :label="$t('tickets.createTicket.initialStatus')"
+                :hint="$t('tickets.createTicket.statusHint')"
                 outlined
                 dense
                 emit-value
@@ -249,8 +249,8 @@
             <div class="col-12 col-md-6">
               <q-input
                 v-model="form.due_date"
-                :label="$t('tickets.create.dueDate')"
-                :hint="$t('tickets.create.dueDateHint')"
+                :label="$t('tickets.createTicket.dueDate')"
+                :hint="$t('tickets.createTicket.dueDateHint')"
                 outlined
                 dense
               >
@@ -272,8 +272,8 @@
             <div class="col-12 col-md-6">
               <q-input
                 v-model.number="form.estimated_hours"
-                :label="$t('tickets.create.estimatedHours')"
-                :hint="$t('tickets.create.estimatedHoursHint')"
+                :label="$t('tickets.createTicket.estimatedHours')"
+                :hint="$t('tickets.createTicket.estimatedHoursHint')"
                 type="number"
                 outlined
                 dense
@@ -286,11 +286,11 @@
 
           <!-- File Attachments -->
           <div class="q-mb-md">
-            <div class="text-subtitle2 q-mb-sm">{{ $t('tickets.create.attachments') }}</div>
+            <div class="text-subtitle2 q-mb-sm">{{ $t('tickets.createTicket.attachments') }}</div>
             <q-file
               v-model="attachments"
-              :label="$t('tickets.create.selectFiles')"
-              :hint="$t('tickets.create.filesHint')"
+              :label="$t('tickets.createTicket.selectFiles')"
+              :hint="$t('tickets.createTicket.filesHint')"
               outlined
               dense
               multiple
@@ -320,7 +320,7 @@
           <!-- Additional Options -->
           <q-expansion-item
             icon="settings"
-            :label="$t('tickets.create.additionalOptions')"
+            :label="$t('tickets.createTicket.additionalOptions')"
             class="q-mb-md"
           >
             <q-card>
@@ -330,7 +330,7 @@
                   <div class="col-12">
                     <q-checkbox
                       v-model="form.notify_client"
-                      :label="$t('tickets.create.notifyClient')"
+                      :label="$t('tickets.createTicket.notifyClient')"
                       color="primary"
                     />
                   </div>
@@ -338,7 +338,7 @@
                   <div class="col-12">
                     <q-checkbox
                       v-model="form.notify_assigned"
-                      :label="$t('tickets.create.notifyAssigned')"
+                      :label="$t('tickets.createTicket.notifyAssigned')"
                       color="primary"
                     />
                   </div>
@@ -348,8 +348,8 @@
                     <q-select
                       v-model="form.tags"
                       :options="tagOptions"
-                      :label="$t('tickets.create.tags')"
-                      :hint="$t('tickets.create.tagsHint')"
+                      :label="$t('tickets.createTicket.tags')"
+                      :hint="$t('tickets.createTicket.tagsHint')"
                       outlined
                       dense
                       multiple
@@ -364,8 +364,8 @@
                   <div class="col-12">
                     <q-input
                       v-model="form.internal_notes"
-                      :label="$t('tickets.create.internalNotes')"
-                      :hint="$t('tickets.create.internalNotesHint')"
+                      :label="$t('tickets.createTicket.internalNotes')"
+                      :hint="$t('tickets.createTicket.internalNotesHint')"
                       type="textarea"
                       outlined
                       dense
@@ -387,7 +387,7 @@
       <q-card-actions align="right" class="q-pa-md">
         <q-btn :label="$t('common.cancel')" color="grey" v-close-popup :disable="creating" />
         <q-btn
-          :label="$t('tickets.create.createTicket')"
+          :label="$t('tickets.createTicket.createTicket')"
           color="primary"
           @click="createTicket"
           :loading="creating"
@@ -508,8 +508,10 @@ const createTicket = async () => {
     if (response.data.success) {
       $q.notify({
         color: 'positive',
-        message: t('tickets.create.success'),
-        caption: t('tickets.create.successDetails', { number: response.data.ticket.ticket_number }),
+        message: t('tickets.createTicket.success'),
+        caption: t('tickets.createTicket.successDetails', {
+          number: response.data.ticket.ticket_number,
+        }),
         icon: 'check_circle',
       })
 
@@ -521,8 +523,8 @@ const createTicket = async () => {
     console.error('Error creating ticket:', error)
     $q.notify({
       color: 'negative',
-      message: t('tickets.create.error'),
-      caption: error.response?.data?.message || t('tickets.create.errorDetails'),
+      message: t('tickets.createTicket.error'),
+      caption: error.response?.data?.message || t('tickets.createTicket.errorDetails'),
       icon: 'error',
     })
   } finally {
@@ -685,13 +687,13 @@ const onFileRejected = (rejectedEntries) => {
     if (entry.failedPropValidation === 'max-file-size') {
       $q.notify({
         color: 'negative',
-        message: t('tickets.create.fileTooLarge', { name: entry.file.name }),
+        message: t('tickets.createTicket.fileTooLarge', { name: entry.file.name }),
         icon: 'error',
       })
     } else if (entry.failedPropValidation === 'accept') {
       $q.notify({
         color: 'negative',
-        message: t('tickets.create.fileTypeNotAllowed', { name: entry.file.name }),
+        message: t('tickets.createTicket.fileTypeNotAllowed', { name: entry.file.name }),
         icon: 'error',
       })
     }

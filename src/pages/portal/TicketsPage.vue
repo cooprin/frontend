@@ -6,14 +6,14 @@
         <div class="row items-center justify-between q-mb-md">
           <div class="col-auto">
             <div class="text-h5">
-              {{ $t('portal.pages.tickets.title') }}
+              {{ $t('tickets.title') }}
             </div>
           </div>
           <div class="col-auto">
             <q-btn
               color="primary"
               icon="add"
-              :label="$t('portal.pages.tickets.createNew')"
+              :label="$t('tickets.createNew')"
               @click="showCreateDialog = true"
             />
           </div>
@@ -157,11 +157,11 @@
         <div v-else class="text-center q-py-xl">
           <q-icon name="support_agent" size="80px" color="grey-4" />
           <div class="text-h6 text-grey-6 q-mt-md">
-            {{ $t('portal.pages.tickets.noTickets') }}
+            {{ $t('tickets.noTickets') }}
           </div>
           <q-btn
             color="primary"
-            :label="$t('portal.pages.tickets.createNew')"
+            :label="$t('tickets.createNew')"
             @click="showCreateDialog = true"
             class="q-mt-md"
           />
@@ -214,18 +214,18 @@ const pagination = ref({
 
 // Options for filters
 const statusOptions = computed(() => [
-  { label: 'Відкрита', value: 'open' },
-  { label: 'В роботі', value: 'in_progress' },
-  { label: 'Очікує клієнта', value: 'waiting_client' },
-  { label: 'Вирішена', value: 'resolved' },
-  { label: 'Закрита', value: 'closed' },
+  { label: $t('tickets.statuses.open'), value: 'open' },
+  { label: $t('tickets.statuses.in_progress'), value: 'in_progress' },
+  { label: $t('tickets.statuses.waiting_client'), value: 'waiting_client' },
+  { label: $t('tickets.statuses.resolved'), value: 'resolved' },
+  { label: $t('tickets.statuses.closed'), value: 'closed' },
 ])
 
 const priorityOptions = computed(() => [
-  { label: 'Низький', value: 'low' },
-  { label: 'Середній', value: 'medium' },
-  { label: 'Високий', value: 'high' },
-  { label: 'Терміновий', value: 'urgent' },
+  { label: $t('tickets.priorities.low'), value: 'low' },
+  { label: $t('tickets.priorities.medium'), value: 'medium' },
+  { label: $t('tickets.priorities.high'), value: 'high' },
+  { label: $t('tickets.priorities.urgent'), value: 'urgent' },
 ])
 
 const categoryOptions = computed(() =>
