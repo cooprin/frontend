@@ -123,7 +123,11 @@
                   size="sm"
                   :style="{ backgroundColor: ticket.category_color }"
                   text-color="white"
-                  :label="$t(ticket.category_name)"
+                  :label="
+                    ticket.category_name.startsWith('tickets.')
+                      ? $t(ticket.category_name)
+                      : ticket.category_name
+                  "
                 />
                 <q-chip
                   v-if="ticket.object_name"
@@ -179,6 +183,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
 import { PortalApi } from 'src/api/portal'
 import { date, Notify } from 'quasar'
@@ -186,6 +191,7 @@ import TicketCreateDialog from 'components/portal/TicketCreateDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
+const { t: $t } = useI18n()
 
 const tickets = ref([])
 const categories = ref([])
@@ -224,7 +230,7 @@ const priorityOptions = computed(() => [
 
 const categoryOptions = computed(() =>
   categories.value.map((cat) => ({
-    label: cat.name.startsWith('tickets.') ? cat.name : cat.name,
+    label: cat.name.startsWith('tickets.') ? $t(cat.name) : cat.name,
     value: cat.id,
   })),
 )
