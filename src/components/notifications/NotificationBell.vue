@@ -229,17 +229,18 @@ const handleNotificationClick = async (notification) => {
     const isClientPortal = currentRoute.path.startsWith('/portal')
 
     if (isClientPortal) {
-      // Клієнтська частина - переходимо на клієнтський чат
+      // Клієнтська частина - переходимо на клієнтський чат (ChatPage.vue)
       router.push({
         name: 'portal-chat',
         query: roomId ? { openRoom: roomId } : {},
       })
     } else {
-      // Адмінська частина - переходимо на адмінський чат
+      // Адмінська частина - переходимо на chat management з параметром для відкриття діалогу
       router.push({
-        name: 'chat',
+        name: 'chat', // це ChatManagement.vue
         query: roomId ? { openRoom: roomId } : {},
       })
+      // ChatManagement.vue вже має логіку handleUrlParameters() для відкриття діалогу
     }
   } else {
     // Для інших типів - на загальну сторінку сповіщень
