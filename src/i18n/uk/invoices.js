@@ -68,8 +68,8 @@ export default {
     upload: 'Завантажити документ',
     selectFile: 'Вибрати файл',
     description: 'Опис',
-    deleteConfirmation: 'Ви впевнені, що хочете видалити цей документ?',
     uploadSuccess: 'Документ успішно завантажено',
+    confirmDelete: 'Ви впевнені, що хочете видалити цей документ?',
     deleteSuccess: 'Документ успішно видалено',
   },
 
