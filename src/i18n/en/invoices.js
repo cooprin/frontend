@@ -124,4 +124,9 @@ export default {
   cancellationReason: 'Cancellation reason',
   generatePdf: 'Generate PDF',
   smartGenerationSuccess: 'Invoices successfully generated',
+  edit: 'Edit',
+  print: 'Print',
+  editTitle: 'Edit Invoice',
+  updateSuccess: 'Invoice updated successfully',
+  editLimitations: 'You can only edit basic invoice information. Items cannot be modified.',
 }

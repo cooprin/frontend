@@ -178,7 +178,7 @@
                       </div>
                     </div>
 
-                    <div v-else-if="!paymentInfo?.hasWialonResourceId" class="text-center q-pa-md">
+                    <div v-else-if="!client.wialon_resource_id" class="text-center q-pa-md">
                       <q-icon name="info" color="info" size="2em" />
                       <div class="text-body2 q-mt-sm">
                         {{ $t('clients.payment.noWialonResourceId') }}
@@ -194,18 +194,9 @@
                     </div>
 
                     <div v-else-if="paymentInfo" class="q-gutter-sm">
-                      <div v-if="paymentInfo.paidUntil">
-                        <q-item>
-                          <q-item-section>
-                            <q-item-label caption>{{
-                              $t('clients.payment.paidUntil')
-                            }}</q-item-label>
-                            <q-item-label>{{ formatDate(paymentInfo.paidUntil) }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </div>
-
-                      <div v-if="paymentInfo.daysLeft !== null">
+                      <div
+                        v-if="paymentInfo.daysLeft !== null && paymentInfo.daysLeft !== undefined"
+                      >
                         <q-item>
                           <q-item-section>
                             <q-item-label caption>{{
@@ -213,12 +204,12 @@
                             }}</q-item-label>
                             <q-item-label>
                               <q-chip
-                                :color="getPaymentStatusColor(paymentInfo.status)"
+                                :color="getDaysLeftColor(paymentInfo.daysLeft)"
                                 text-color="white"
                                 size="sm"
                               >
                                 {{ paymentInfo.daysLeft }}
-                                {{ $t('clients.payment.daysLeft').toLowerCase() }}
+                                {{ $t('common.days') }}
                               </q-chip>
                             </q-item-label>
                           </q-item-section>
@@ -239,6 +230,15 @@
                                 {{ $t(`clients.payment.status.${paymentInfo.status}`) }}
                               </q-chip>
                             </q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </div>
+
+                      <div v-if="paymentInfo.wialonUsername">
+                        <q-item>
+                          <q-item-section>
+                            <q-item-label caption>Wialon Username</q-item-label>
+                            <q-item-label>{{ paymentInfo.wialonUsername }}</q-item-label>
                           </q-item-section>
                         </q-item>
                       </div>
@@ -798,7 +798,6 @@ const loadClientPaymentInfo = async () => {
     console.error('Error loading client payment info:', error)
     paymentInfo.value = {
       isConfigured: false,
-      hasWialonResourceId: false,
       error: error.response?.data?.message || 'Помилка завантаження платіжної інформації',
     }
   } finally {
@@ -1149,6 +1148,7 @@ const deleteDocument = async () => {
     deleteDocumentDialog.value = false
   }
 }
+
 // Допоміжні методи для платіжної інформації
 const getPaymentStatusColor = (status) => {
   const colors = {
@@ -1164,12 +1164,19 @@ const getPaymentStatusColor = (status) => {
 const getPaymentStatusIcon = (status) => {
   const icons = {
     active: 'check_circle',
-    expiring_soon: 'schedule',
+    expiring_soon: 'warning',
     expired: 'error',
     blocked: 'block',
     unknown: 'help',
   }
   return icons[status] || 'help'
+}
+
+const getDaysLeftColor = (daysLeft) => {
+  if (daysLeft > 7) return 'positive'
+  if (daysLeft > 3) return 'warning'
+  if (daysLeft > 0) return 'orange'
+  return 'negative'
 }
 
 // Життєвий цикл

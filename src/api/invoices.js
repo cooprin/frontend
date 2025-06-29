@@ -35,9 +35,11 @@ export const InvoicesApi = {
     return `${process.env.API_URL}/uploads/${filePath}`
   },
 
-  generateInvoicePdf: (id) => {
+  generateInvoicePdf: (id, language = 'uk') => {
+    console.log('API: Sending PDF request with language:', language)
     return api.get(`/services/invoices/${id}/pdf`, {
-      responseType: 'blob', // Важливо для отримання бінарних даних
+      params: { lang: language },
+      responseType: 'blob',
     })
   },
 
@@ -67,11 +69,10 @@ export const InvoicesApi = {
       },
     })
   },
-  getPdfInvoice(invoiceId, templateId = null) {
-    const url = templateId
-      ? `/services/invoices/${invoiceId}/pdf/${templateId}`
-      : `/services/invoices/${invoiceId}/pdf`
-
-    return api.get(url, { responseType: 'blob' })
+  getPdfInvoice(invoiceId) {
+    return api.get(`/services/invoices/${invoiceId}/pdf`, { responseType: 'blob' })
+  },
+  updateInvoice: (id, data) => {
+    return api.put(`/services/invoices/${id}`, data)
   },
 }

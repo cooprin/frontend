@@ -23,11 +23,7 @@
         </q-chip>
         <q-space />
 
-        <q-btn-dropdown
-          v-if="invoice.status === 'issued'"
-          color="primary"
-          :label="$t('common.actions')"
-        >
+        <q-btn-dropdown color="primary" :label="$t('common.actions')">
           <q-list>
             <q-item clickable v-close-popup @click="printInvoice">
               <q-item-section avatar>
@@ -37,7 +33,22 @@
                 {{ $t('invoices.print') }}
               </q-item-section>
             </q-item>
-            <q-item clickable v-close-popup @click="markAsPaid">
+
+            <q-item
+              v-if="invoice.status === 'issued'"
+              clickable
+              v-close-popup
+              @click="openEditDialog"
+            >
+              <q-item-section avatar>
+                <q-icon name="edit" color="warning" />
+              </q-item-section>
+              <q-item-section>
+                {{ $t('invoices.edit') }}
+              </q-item-section>
+            </q-item>
+
+            <q-item v-if="invoice.status === 'issued'" clickable v-close-popup @click="markAsPaid">
               <q-item-section avatar>
                 <q-icon name="payment" color="positive" />
               </q-item-section>
@@ -46,7 +57,12 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-close-popup @click="markAsCancelled">
+            <q-item
+              v-if="invoice.status === 'issued'"
+              clickable
+              v-close-popup
+              @click="markAsCancelled"
+            >
               <q-item-section avatar>
                 <q-icon name="cancel" color="negative" />
               </q-item-section>
@@ -260,6 +276,9 @@
       </q-card>
     </template>
 
+    <!-- Діалог редагування рахунку -->
+    <invoice-edit-dialog v-model="showEditDialog" :invoice="invoice" @saved="onInvoiceUpdated" />
+
     <!-- Діалог завантаження документа -->
     <q-dialog v-model="uploadDialog">
       <q-card style="min-width: 400px">
@@ -396,6 +415,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import { date } from 'quasar'
+import InvoiceEditDialog from 'src/components/invoices/InvoiceEditDialog.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -404,9 +424,7 @@ const router = useRouter()
 
 const printInvoice = async () => {
   try {
-    // Переконуємось, що є ID рахунку
     if (!invoice.value || !invoice.value.id) {
-      console.error('Invoice ID is missing')
       $q.notify({
         color: 'negative',
         message: t('common.errors.idNotFound'),
@@ -415,19 +433,12 @@ const printInvoice = async () => {
       return
     }
 
-    // Встановлюємо responseType: 'blob' для отримання PDF
-    const response = await InvoicesApi.getPdfInvoice(invoice.value.id)
+    const userLanguage = localStorage.getItem('userLanguage') || 'uk'
+    const response = await InvoicesApi.generateInvoicePdf(invoice.value.id, userLanguage)
 
-    // Створюємо Blob з отриманих даних
     const blob = new Blob([response.data], { type: 'application/pdf' })
-
-    // Створюємо URL для Blob
     const url = URL.createObjectURL(blob)
-
-    // Відкриваємо PDF в новому вікні
     window.open(url, '_blank')
-
-    // Звільняємо URL об'єкт після використання
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (error) {
     console.error('Error printing invoice:', error)
@@ -450,6 +461,7 @@ const uploading = ref(false)
 const showPaidDialog = ref(false)
 const showCancelledDialog = ref(false)
 const updatingStatus = ref(false)
+const showEditDialog = ref(false)
 
 // Статус форма
 const statusForm = ref({
@@ -530,6 +542,21 @@ const openClientDetails = (invoice) => {
   router.push({ name: 'client-details', params: { id: invoice.client_id } })
 }
 
+const openEditDialog = () => {
+  showEditDialog.value = true
+}
+
+const onInvoiceUpdated = () => {
+  // Перезавантажуємо дані рахунку після редагування
+  loadInvoice()
+
+  $q.notify({
+    color: 'positive',
+    message: t('invoices.updateSuccess'),
+    icon: 'check',
+  })
+}
+
 const getStatusColor = (status) => {
   const colors = {
     issued: 'info',
@@ -570,7 +597,7 @@ const uploadDocument = async () => {
     formData.append('file', documentFile.value)
 
     if (documentDescription.value) {
-      formData.append('description', documentDescription.value)
+      formData.append('document_name', documentDescription.value)
     }
 
     await InvoicesApi.uploadInvoiceDocument(invoice.value.id, formData)
@@ -597,7 +624,15 @@ const uploadDocument = async () => {
 
 const downloadDocument = (document) => {
   const url = InvoicesApi.getDocumentUrl(document.file_path)
-  window.open(url, '_blank')
+  if (url) {
+    window.open(url, '_blank')
+  } else {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.fileNotFound'),
+      icon: 'error',
+    })
+  }
 }
 
 const markAsPaid = () => {

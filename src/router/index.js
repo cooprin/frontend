@@ -3,54 +3,58 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 
 const routes = [
+  // Admin routes (staff only)
   {
-    path: '/',
+    path: '/admin',
     component: () => import('layouts/MainLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, requiresStaff: true },
     children: [
       {
         path: '',
-        name: 'dashboard',
+        redirect: '/admin/dashboard',
+      },
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
         component: () => import('pages/DashboardPage.vue'),
         meta: { title: 'Cooprins CRM' },
       },
       {
         path: 'profile',
-        name: 'profile',
+        name: 'admin-profile',
         component: () => import('pages/ProfilePage.vue'),
         meta: { title: 'Profile' },
       },
       {
-        path: '/users',
+        path: 'users',
         name: 'users',
         component: () => import('pages/UsersPage.vue'),
         meta: { requiresAuth: true },
       },
       {
-        path: '/roles',
+        path: 'roles',
         name: 'roles',
         component: () => import('pages/RolesPage.vue'),
         meta: { requiresAuth: true },
       },
       {
-        path: '/permissions',
+        path: 'permissions',
         name: 'permissions',
         component: () => import('pages/PermissionPage.vue'),
         meta: { requiresAuth: true },
       },
       {
-        path: '/resources',
+        path: 'resources',
         name: 'resources',
         component: () => import('pages/ResourcesPage.vue'),
         meta: { requiresAuth: true },
       },
       {
-        path: '/audit-logs',
+        path: 'audit-logs',
         name: 'audit-logs',
         component: () => import('pages/AuditLogsPage.vue'),
         meta: { requiresAuth: true },
       },
-
       {
         path: 'products',
         name: 'products',
@@ -100,7 +104,7 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: '/product-types',
+        path: 'product-types',
         name: 'product-types',
         component: () => import('pages/ProductTypesPage.vue'),
         meta: {
@@ -109,7 +113,7 @@ const routes = [
         },
       },
       {
-        path: '/product-types/create',
+        path: 'product-types/create',
         name: 'product-type-create',
         component: () => import('pages/ProductTypeEditPage.vue'),
         meta: {
@@ -118,7 +122,7 @@ const routes = [
         },
       },
       {
-        path: '/product-types/:id',
+        path: 'product-types/:id',
         name: 'product-type-edit',
         component: () => import('pages/ProductTypeEditPage.vue'),
         meta: {
@@ -126,9 +130,8 @@ const routes = [
           permission: 'products.update',
         },
       },
-      // Нові маршрути для клієнтів
       {
-        path: '/clients',
+        path: 'clients',
         name: 'clients',
         component: () => import('pages/ClientsPage.vue'),
         meta: {
@@ -137,7 +140,7 @@ const routes = [
         },
       },
       {
-        path: '/clients/:id',
+        path: 'clients/:id',
         name: 'client-details',
         component: () => import('pages/ClientDetailsPage.vue'),
         meta: {
@@ -145,10 +148,8 @@ const routes = [
           permission: 'clients.read',
         },
       },
-
-      // Маршрути для платежів
       {
-        path: '/payments',
+        path: 'payments',
         name: 'payments',
         component: () => import('pages/PaymentsPage.vue'),
         meta: {
@@ -157,7 +158,7 @@ const routes = [
         },
       },
       {
-        path: '/payments/:id',
+        path: 'payments/:id',
         name: 'payment-details',
         component: () => import('pages/PaymentDetailsPage.vue'),
         meta: {
@@ -165,10 +166,8 @@ const routes = [
           requiredPermissions: ['payments.read'],
         },
       },
-
-      // Нові маршрути для послуг
       {
-        path: '/services',
+        path: 'services',
         name: 'services',
         component: () => import('pages/ServicesPage.vue'),
         meta: {
@@ -177,7 +176,7 @@ const routes = [
         },
       },
       {
-        path: '/services/:id',
+        path: 'services/:id',
         name: 'service-details',
         component: () => import('pages/ServiceDetailsPage.vue'),
         meta: {
@@ -185,10 +184,8 @@ const routes = [
           permission: 'services.read',
         },
       },
-
-      // Нові маршрути для тарифів
       {
-        path: '/tariffs',
+        path: 'tariffs',
         name: 'tariffs',
         component: () => import('pages/TariffsPage.vue'),
         meta: {
@@ -197,7 +194,7 @@ const routes = [
         },
       },
       {
-        path: '/tariffs/:id',
+        path: 'tariffs/:id',
         name: 'tariff-details',
         component: () => import('pages/TariffDetailsPage.vue'),
         meta: {
@@ -205,10 +202,8 @@ const routes = [
           permission: 'tariffs.read',
         },
       },
-
-      // Нові маршрути для рахунків
       {
-        path: '/invoices',
+        path: 'invoices',
         name: 'invoices',
         component: () => import('pages/InvoicesPage.vue'),
         meta: {
@@ -217,7 +212,7 @@ const routes = [
         },
       },
       {
-        path: '/invoices/:id',
+        path: 'invoices/:id',
         name: 'invoice-details',
         component: () => import('pages/InvoiceDetailsPage.vue'),
         meta: {
@@ -225,10 +220,8 @@ const routes = [
           permission: 'invoices.read',
         },
       },
-
-      // Нові маршрути для об'єктів Wialon
       {
-        path: '/wialon-objects',
+        path: 'wialon-objects',
         name: 'wialon-objects',
         component: () => import('pages/WialonObjectsPage.vue'),
         meta: {
@@ -237,7 +230,7 @@ const routes = [
         },
       },
       {
-        path: '/wialon-objects/:id',
+        path: 'wialon-objects/:id',
         name: 'wialon-object-details',
         component: () => import('pages/WialonObjectDetailsPage.vue'),
         meta: {
@@ -246,7 +239,7 @@ const routes = [
         },
       },
       {
-        path: '/wialon-sync',
+        path: 'wialon-sync',
         name: 'wialon-sync',
         component: () => import('pages/WialonSyncPage.vue'),
         meta: {
@@ -255,7 +248,31 @@ const routes = [
         },
       },
       {
-        path: '/settings/company',
+        path: 'tickets',
+        name: 'tickets',
+        component: () => import('pages/TicketsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'tickets.read',
+        },
+      },
+      {
+        path: 'chat',
+        name: 'chat',
+        component: () => import('pages/ChatManagement.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'chat.read',
+        },
+      },
+      {
+        path: 'notifications',
+        name: 'notifications',
+        component: () => import('pages/NotificationsPage.vue'),
+        meta: { requiresAuth: true, userType: 'staff' },
+      },
+      {
+        path: 'settings/company',
         name: 'company-settings',
         component: () => import('pages/CompanySettingsPage.vue'),
         meta: {
@@ -263,13 +280,83 @@ const routes = [
           permissions: ['company_profile.read'],
         },
       },
+    ],
+  },
+
+  // Customer Portal routes (clients only)
+  {
+    path: '/portal',
+    component: () => import('layouts/CustomerPortalLayout.vue'),
+    meta: { requiresAuth: true, requiresClient: true },
+    children: [
       {
-        path: '/:catchAll(.*)*',
-        component: () => import('pages/ErrorNotFound.vue'),
+        path: '',
+        redirect: '/portal/dashboard',
+      },
+      {
+        path: 'dashboard',
+        name: 'portal-dashboard',
+        component: () => import('pages/portal/DashboardPage.vue'),
+        meta: { title: 'Customer Portal' },
+      },
+      {
+        path: 'profile',
+        name: 'portal-profile',
+        component: () => import('pages/portal/ProfilePage.vue'),
+        meta: { title: 'My Profile' },
+      },
+      {
+        path: 'objects',
+        name: 'portal-objects',
+        component: () => import('pages/portal/ObjectsPage.vue'),
+        meta: { title: 'My Objects' },
+      },
+      {
+        path: 'invoices',
+        name: 'portal-invoices',
+        component: () => import('pages/portal/InvoicesPage.vue'),
+        meta: { title: 'My Invoices' },
+      },
+      {
+        path: 'documents',
+        name: 'portal-documents',
+        component: () => import('pages/portal/DocumentsPage.vue'),
+        meta: { title: 'My Documents' },
+      },
+      {
+        path: 'tickets',
+        name: 'portal-tickets',
+        component: () => import('pages/portal/TicketsPage.vue'),
+        meta: { title: 'My Tickets' },
+      },
+      {
+        path: 'tickets/:id',
+        name: 'portal-ticket-details',
+        component: () => import('pages/portal/TicketDetailsPage.vue'),
+        meta: { title: 'Ticket Details' },
+      },
+      {
+        path: 'chat',
+        name: 'portal-chat',
+        component: () => import('pages/portal/ChatPage.vue'),
+        meta: { title: 'Support Chat' },
+      },
+      {
+        path: 'notifications',
+        name: 'portal-notifications',
+        component: () => import('pages/NotificationsPage.vue'),
+        meta: { requiresAuth: true, userType: 'client' },
       },
     ],
   },
 
+  // Legacy redirect for old dashboard route
+  {
+    path: '/',
+    redirect: '/auth/login',
+  },
+
+  // Auth routes
   {
     path: '/auth',
     component: () => import('layouts/AuthLayout.vue'),
@@ -278,7 +365,7 @@ const routes = [
         path: 'login',
         name: 'login',
         component: () => import('pages/LoginPage.vue'),
-        meta: { title: 'Cooprins Login' },
+        meta: { title: 'Login' },
       },
       {
         path: 'register',
@@ -286,6 +373,12 @@ const routes = [
         component: () => import('pages/RegisterPage.vue'),
       },
     ],
+  },
+
+  // Always leave this as last one, but you can also remove it
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
   },
 ]
 
@@ -308,22 +401,45 @@ export default route(function () {
 
     // Перевіряємо метадані маршруту для автентифікації
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
+    const requiresStaff = to.matched.some((record) => record.meta.requiresStaff)
+    const requiresClient = to.matched.some((record) => record.meta.requiresClient)
 
     console.log('Route check:', {
       path: to.path,
       requiresAuth,
-      token: !!authStore.token,
-      user: !!authStore.user,
+      requiresStaff,
+      requiresClient,
       isAuthenticated: authStore.isAuthenticated,
+      userType: authStore.userType,
     })
 
     if (requiresAuth && !authStore.isAuthenticated) {
       next('/auth/login')
-    } else if (to.path === '/auth/login' && authStore.isAuthenticated) {
-      next('/')
-    } else {
-      next()
+      return
     }
+
+    // Redirect based on user type
+    if (authStore.isAuthenticated) {
+      // Staff trying to access client portal
+      if (requiresClient && authStore.userType !== 'client') {
+        next('/admin/dashboard')
+        return
+      }
+
+      // Client trying to access admin
+      if (requiresStaff && authStore.userType !== 'staff') {
+        next('/portal/dashboard')
+        return
+      }
+
+      // Redirect from login if already authenticated
+      if (to.path === '/auth/login') {
+        next(authStore.getDefaultRoute)
+        return
+      }
+    }
+
+    next()
   })
 
   return Router

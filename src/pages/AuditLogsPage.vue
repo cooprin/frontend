@@ -109,6 +109,23 @@
                   map-options
                 />
               </div>
+              <!-- Тип користувача -->
+              <div class="col-12 col-sm-4">
+                <q-select
+                  v-model="filters.userType"
+                  :options="[
+                    { label: $t('pages.auditLogs.userTypes.all'), value: null },
+                    { label: $t('pages.auditLogs.userTypes.staff'), value: 'staff' },
+                    { label: $t('pages.auditLogs.userTypes.client'), value: 'client' },
+                  ]"
+                  :label="$t('pages.auditLogs.userType')"
+                  outlined
+                  dense
+                  clearable
+                  emit-value
+                  map-options
+                />
+              </div>
 
               <!-- Дата від -->
               <div class="col-12 col-sm-4">
@@ -224,6 +241,24 @@
               </q-chip>
             </q-td>
           </template>
+          <!-- Тип користувача -->
+          <template v-slot:body-cell-user_type="props">
+            <q-td :props="props">
+              <q-chip
+                v-if="props.value"
+                :color="props.value === 'staff' ? 'blue' : 'green'"
+                text-color="white"
+                dense
+              >
+                {{
+                  props.value === 'staff'
+                    ? $t('pages.auditLogs.userTypes.staff')
+                    : $t('pages.auditLogs.userTypes.client')
+                }}
+              </q-chip>
+              <span v-else>-</span>
+            </q-td>
+          </template>
 
           <!-- Зміни -->
           <template v-slot:body-cell-changes="props">
@@ -297,7 +332,9 @@
                 <q-item>
                   <q-item-section>
                     <q-item-label caption>{{ $t('pages.auditLogs.user') }}</q-item-label>
-                    <q-item-label>{{ selectedLog?.user_email }}</q-item-label>
+                    <q-item-label>{{
+                      selectedLog?.display_name || selectedLog?.user_email || '-'
+                    }}</q-item-label>
                   </q-item-section>
                 </q-item>
                 <q-item>
@@ -442,6 +479,7 @@ const filters = ref({
   dateFrom: null,
   dateTo: null,
   auditType: null,
+  userType: null,
   tableSchema: null,
   tableName: null,
   ipAddress: null,
@@ -463,11 +501,18 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'user_email',
+    name: 'user_display',
     required: true,
     label: t('pages.auditLogs.user'),
     align: 'left',
-    field: 'user_email',
+    field: 'display_name',
+    sortable: true,
+  },
+  {
+    name: 'user_type',
+    label: t('pages.auditLogs.userType'),
+    align: 'left',
+    field: 'user_type',
     sortable: true,
   },
   {
@@ -659,6 +704,7 @@ const clearFilters = () => {
     dateFrom: null,
     dateTo: null,
     auditType: null,
+    userType: null,
     tableSchema: null,
     tableName: null,
     ipAddress: null,

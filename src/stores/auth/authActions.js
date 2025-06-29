@@ -27,24 +27,35 @@ export const useAuthActions = () => ({
   async login(credentials) {
     try {
       this.loading = true
-      const { data } = await AuthApi.login(credentials) // Використовуємо AuthApi
+      const { data } = await AuthApi.login(credentials)
+
       this.token = data.token
-      this.user = data.user
+
+      // Handle different user types
+      if (data.userType === 'staff') {
+        this.user = data.user
+        this.userType = 'staff'
+        localStorage.setItem('user', JSON.stringify(data.user))
+      } else if (data.userType === 'client') {
+        this.user = data.client
+        this.userType = 'client'
+        localStorage.setItem('user', JSON.stringify(data.client))
+      }
 
       localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      localStorage.setItem('userType', data.userType)
 
       Notify.create({
         type: 'positive',
-        message: 'Ласкаво просимо!',
+        message: data.userType === 'staff' ? 'Ласкаво просимо!' : 'Вітаємо в особистому кабінеті!',
       })
-      return true
+      return { success: true, userType: data.userType }
     } catch (error) {
       Notify.create({
         type: 'negative',
         message: error.response?.data?.message || 'Помилка входу',
       })
-      return false
+      return { success: false }
     } finally {
       this.loading = false
     }
@@ -64,14 +75,16 @@ export const useAuthActions = () => ({
   // Метод для виходу
   async logout() {
     try {
-      await AuthApi.logout() // Використовуємо AuthApi
+      await AuthApi.logout()
     } catch (error) {
       console.error('Помилка при виході:', error)
     } finally {
       this.token = null
       this.user = null
+      this.userType = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      localStorage.removeItem('userType')
       Notify.create({
         type: 'info',
         message: 'Ви вийшли з системи',

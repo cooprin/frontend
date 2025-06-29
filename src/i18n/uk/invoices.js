@@ -124,4 +124,10 @@ export default {
   cancellationReason: 'Причина скасування',
   generatePdf: 'Згенерувати PDF',
   smartGenerationSuccess: 'Рахунки успішно згенеровані',
+  edit: 'Редагувати',
+  print: 'Друк',
+  editTitle: 'Редагування рахунку',
+  updateSuccess: 'Рахунок успішно оновлено',
+  editLimitations:
+    'Можна редагувати тільки основну інформацію рахунку. Позиції змінювати не можна.',
 }

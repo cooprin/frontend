@@ -11,11 +11,13 @@ export const useAuthStore = defineStore('auth', {
       // Базова перевірка наявності токена і користувача
       const hasToken = !!state.token
       const hasUser = !!state.user
+      const hasUserType = !!state.userType
 
-      if (!hasToken || !hasUser) {
-        console.log('isAuthenticated перевірка: відсутній токен або користувач', {
+      if (!hasToken || !hasUser || !hasUserType) {
+        console.log('isAuthenticated перевірка: відсутній токен, користувач або тип користувача', {
           hasToken,
           hasUser,
+          hasUserType,
         })
         return false
       }
@@ -46,16 +48,36 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Перевірка наявності хоча б одного права з масиву
+    // Check if user is staff
+    isStaff: (state) => {
+      return state.userType === 'staff'
+    },
+
+    // Check if user is client
+    isClient: (state) => {
+      return state.userType === 'client'
+    },
+
+    // Перевірка наявності хоча б одного права з масиву (тільки для персоналу)
     hasAnyPermission: (state) => (permissions) => {
-      if (!state.user?.permissions) return false
+      if (state.userType !== 'staff' || !state.user?.permissions) return false
       return permissions.some((permission) => state.user.permissions.includes(permission))
     },
 
-    // Перевірка наявності всіх прав з масиву
+    // Перевірка наявності всіх прав з масиву (тільки для персоналу)
     hasAllPermissions: (state) => (permissions) => {
-      if (!state.user?.permissions) return false
+      if (state.userType !== 'staff' || !state.user?.permissions) return false
       return permissions.every((permission) => state.user.permissions.includes(permission))
+    },
+
+    // Get appropriate redirect path based on user type
+    getDefaultRoute: (state) => {
+      if (state.userType === 'staff') {
+        return '/admin/dashboard'
+      } else if (state.userType === 'client') {
+        return '/portal/dashboard'
+      }
+      return '/auth/login'
     },
   },
   actions: useAuthActions(),

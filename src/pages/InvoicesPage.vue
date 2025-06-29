@@ -192,19 +192,12 @@ const { t } = useI18n()
 
 const printInvoice = async (invoice) => {
   try {
-    // Встановлюємо responseType: 'blob' для отримання PDF
-    const response = await InvoicesApi.getPdfInvoice(invoice.id)
+    const userLanguage = localStorage.getItem('userLanguage') || 'uk'
+    const response = await InvoicesApi.generateInvoicePdf(invoice.id, userLanguage)
 
-    // Створюємо Blob з отриманих даних
     const blob = new Blob([response.data], { type: 'application/pdf' })
-
-    // Створюємо URL для Blob
     const url = URL.createObjectURL(blob)
-
-    // Відкриваємо PDF в новому вікні
     window.open(url, '_blank')
-
-    // Звільняємо URL об'єкт після використання
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch (error) {
     console.error('Error printing invoice:', error)

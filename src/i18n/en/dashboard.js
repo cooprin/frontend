@@ -4,6 +4,7 @@ export default {
     activity: 'Activity and New Clients',
     financial: 'Financial Statistics',
     inventory: 'Inventory Status',
+    tickets: 'Support Tickets',
   },
   metrics: {
     totalOverdue: 'Total Overdue',
@@ -22,6 +23,12 @@ export default {
     lowStockItems: 'Low Stock Models',
     itemsInRepair: 'Items in Repair',
     warehousesCount: 'Active Warehouses',
+    newTickets: 'New Tickets',
+    inProgressTickets: 'In Progress',
+    urgentTickets: 'Urgent Tickets',
+    resolvedToday: 'Resolved Today',
+    totalTickets: 'Total Tickets',
+    avgResolutionTime: 'Avg. Resolution Time',
   },
   clientsWithOverduePayments: 'Clients with Overdue Payments',
   objectsWithOverduePayments: 'Objects with Overdue Payments',
@@ -88,4 +95,20 @@ export default {
   criticalModelsList: 'List of Critical Models',
   criticalByTypes: 'Critical by Types',
   viewCriticalModels: 'View Critical Models',
+  // Tickets dashboard
+  tickets: 'Support Tickets',
+  ticketsDistribution: 'Tickets Distribution by Status',
+  recentTickets: 'Recent Tickets',
+  ticketsByCategory: 'Tickets by Category',
+  noRecentTickets: 'No recent tickets',
+  viewAllTickets: 'View All Tickets',
+  noCategoryData: 'No category data available',
+
+  // Tickets metrics
+  newTickets: 'New Tickets',
+  inProgressTickets: 'In Progress',
+  urgentTickets: 'Urgent Tickets',
+  resolvedToday: 'Resolved Today',
+  totalTickets: 'Total',
+  avgResolutionTime: 'Avg. Resolution Time',
 }

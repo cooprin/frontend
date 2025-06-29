@@ -2,23 +2,24 @@
   <q-page class="flex flex-center">
     <q-card class="auth-card">
       <q-card-section>
-        <div class="text-h6">Вхід в систему</div>
+        <div class="text-h6">System Login</div>
       </q-card-section>
 
       <q-card-section>
         <q-form @submit="onSubmit" class="q-gutter-md">
           <q-input
-            v-model="email"
-            label="Email"
-            type="email"
-            :rules="[(val) => !!val || 'Email обов\'язковий']"
+            v-model="username"
+            label="System or Wialon Username"
+            autocomplete="username"
+            :rules="[(val) => !!val || 'Username is required']"
           />
 
           <q-input
             v-model="password"
-            label="Пароль"
+            label="Password"
             :type="isPwd ? 'password' : 'text'"
-            :rules="[(val) => !!val || 'Пароль обов\'язковий']"
+            autocomplete="current-password"
+            :rules="[(val) => !!val || 'Password is required']"
           >
             <template v-slot:append>
               <q-icon
@@ -29,9 +30,8 @@
             </template>
           </q-input>
 
-          <div class="flex justify-between">
-            <q-btn label="Увійти" type="submit" color="primary" :loading="authStore.loading" />
-            <q-btn label="Реєстрація" flat color="primary" :to="{ name: 'register' }" />
+          <div class="flex justify-center">
+            <q-btn label="Login" type="submit" color="primary" :loading="authStore.loading" />
           </div>
         </q-form>
       </q-card-section>
@@ -47,18 +47,26 @@ import { useAuthStore } from 'src/stores/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const isPwd = ref(true)
 
 const onSubmit = async () => {
-  const success = await authStore.login({
-    email: email.value,
+  const result = await authStore.login({
+    email: username.value, // Backend ще очікує поле email
     password: password.value,
   })
 
-  if (success) {
-    router.push({ name: 'dashboard' })
+  if (result.success) {
+    // Перевіряємо тип користувача і редіректимо на відповідну сторінку
+    if (result.userType === 'staff') {
+      router.push({ name: 'admin-dashboard' })
+    } else if (result.userType === 'client') {
+      router.push({ name: 'portal-dashboard' })
+    } else {
+      // Fallback на дефолтний роут
+      router.push(authStore.getDefaultRoute)
+    }
   }
 }
 </script>

@@ -117,6 +117,21 @@ export const MENU_PERMISSIONS = {
     },
   },
 
+  // Support (Підтримка)
+  SUPPORT: {
+    TICKETS: {
+      LIST: 'tickets.read',
+      CREATE: 'tickets.create',
+      UPDATE: 'tickets.update',
+      DELETE: 'tickets.delete',
+    },
+    CHAT: {
+      LIST: 'chat.read',
+      CREATE: 'chat.create',
+      UPDATE: 'chat.update',
+      DELETE: 'chat.delete',
+    },
+  },
   // Адміністративне меню - відповідає SQL
   SETTINGS: {
     USERS: {
@@ -169,5 +184,6 @@ export const MENU_SECTIONS_PERMISSIONS = {
   CLIENTS: getListPermissions(MENU_PERMISSIONS.CLIENTS),
   SERVICES: getListPermissions(MENU_PERMISSIONS.SERVICES),
   WIALON: getListPermissions(MENU_PERMISSIONS.WIALON),
+  SUPPORT: getListPermissions(MENU_PERMISSIONS.SUPPORT),
   SETTINGS: getListPermissions(MENU_PERMISSIONS.SETTINGS),
 }

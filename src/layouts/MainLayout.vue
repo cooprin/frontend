@@ -4,7 +4,7 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleMiniState" />
-        <q-toolbar-title class="cursor-pointer" @click="router.push('/')">
+        <q-toolbar-title class="cursor-pointer" @click="goToDashboard">
           {{ companyName || $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
@@ -25,6 +25,7 @@
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
+        <NotificationBell />
 
         <q-btn flat round dense icon="account_circle">
           <q-menu>
@@ -47,7 +48,7 @@
 
               <q-separator />
 
-              <q-item clickable v-close-popup to="/profile">
+              <q-item clickable v-close-popup to="/admin/profile">
                 <q-item-section avatar>
                   <q-icon name="person" />
                 </q-item-section>
@@ -81,7 +82,7 @@
       <q-scroll-area class="fit">
         <q-list padding>
           <!-- Dashboard -->
-          <q-item clickable v-ripple :to="{ name: 'dashboard' }">
+          <q-item clickable v-ripple @click="goToDashboard">
             <q-item-section avatar>
               <q-icon name="grid_view" />
             </q-item-section>
@@ -384,6 +385,49 @@
               </q-item>
             </q-expansion-item>
           </template>
+          <!-- Support Menu - Full Mode -->
+          <template
+            v-if="
+              (!miniState || $q.screen.xs) &&
+              authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SUPPORT)
+            "
+          >
+            <q-expansion-item
+              icon="support_agent"
+              :label="$t('layouts.mainLayout.support')"
+              expand-separator
+            >
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.TICKETS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'tickets' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="confirmation_number" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.tickets') }}
+                </q-item-section>
+              </q-item>
+
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.CHAT.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'chat' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="chat" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.chat') }}
+                </q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </template>
 
           <!-- Settings Menu - Full Mode -->
           <template
@@ -488,6 +532,14 @@
               </q-item>
             </q-expansion-item>
           </template>
+          <q-item clickable v-ripple :to="{ name: 'notifications' }" dense>
+            <q-item-section avatar>
+              <q-icon name="notifications" />
+            </q-item-section>
+            <q-item-section>
+              {{ $t('layouts.mainLayout.notifications') }}
+            </q-item-section>
+          </q-item>
 
           <!-- Mini Mode Menus - показуємо тільки на великих екранах -->
           <template v-if="miniState && $q.screen.gt.xs">
@@ -764,6 +816,45 @@
               </q-item-section>
             </q-item>
 
+            <!-- Support Menu - Mini Mode -->
+            <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SUPPORT)" dense>
+              <q-item-section avatar>
+                <q-icon name="support_agent">
+                  <q-menu anchor="top right" self="top left" :offset="[10, 0]" auto-close>
+                    <q-list style="min-width: 200px">
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.TICKETS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'tickets' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="confirmation_number" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.tickets') }}
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.SUPPORT.CHAT.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'chat' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="chat" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.chat') }}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-icon>
+              </q-item-section>
+            </q-item>
+
             <!-- Settings Menu - Mini Mode -->
             <q-item v-if="authStore.hasAnyPermission(MENU_SECTIONS_PERMISSIONS.SETTINGS)" dense>
               <q-item-section avatar>
@@ -888,6 +979,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 import { CompanyApi } from 'src/api/company'
+import NotificationBell from 'src/components/notifications/NotificationBell.vue'
 
 const companyName = ref('')
 
@@ -999,6 +1091,17 @@ const toggleDarkMode = () => {
 const changeLanguage = (lang) => {
   locale.value = lang
   localStorage.setItem('userLanguage', lang)
+}
+
+const goToDashboard = () => {
+  if (authStore.userType === 'staff') {
+    router.push({ name: 'admin-dashboard' })
+  } else if (authStore.userType === 'client') {
+    router.push({ name: 'portal-dashboard' })
+  } else {
+    // Fallback
+    router.push(authStore.getDefaultRoute)
+  }
 }
 
 const logout = async () => {

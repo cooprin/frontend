@@ -33,5 +33,9 @@ export default {
     payments: 'Payments',
     companySettings: 'Company Settings',
     wialonSync: 'Synchronization',
+    support: 'Support',
+    tickets: 'Tickets',
+    chat: 'Chat',
+    notifications: 'Notifications',
   },
 }
