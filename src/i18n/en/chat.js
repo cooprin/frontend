@@ -1,5 +1,6 @@
 export default {
   management: {
+    closeChat: 'Close Chat',
     title: 'Chat Management',
     subtitle: 'Manage chats with clients and staff',
     search: 'Search',
@@ -93,7 +94,6 @@ export default {
     chatClosed: 'Chat is closed',
     assignChat: 'Assign Chat',
     reassignChat: 'Reassign Chat',
-    closeChat: 'Close Chat',
     assignToMe: 'Assign to Me',
     reassign: 'Reassign',
     convertToTicket: 'Convert to Ticket',

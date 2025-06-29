@@ -1,5 +1,6 @@
 export default {
   management: {
+    closeChat: 'Закрити чат',
     title: 'Управління чатами',
     subtitle: 'Управління чатами з клієнтами та співробітниками',
     search: 'Пошук',
@@ -92,7 +93,6 @@ export default {
     chatClosed: 'Чат закрито',
     assignChat: 'Призначити чат',
     reassignChat: 'Перепризначити чат',
-    closeChat: 'Закрити чат',
     assignToMe: 'Призначити мені',
     reassign: 'Перепризначити',
     convertToTicket: 'Перетворити на заявку',
