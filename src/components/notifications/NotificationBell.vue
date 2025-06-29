@@ -143,10 +143,22 @@ const loadUnreadCount = async () => {
 }
 
 const toggleNotifications = async () => {
+  console.log('🔔 Toggle notifications clicked')
+  console.log('Current state:', showNotifications.value)
+
   if (!showNotifications.value) {
-    await loadNotifications()
+    console.log('📥 Loading notifications...')
+    try {
+      await loadNotifications()
+      console.log('✅ Notifications loaded')
+    } catch (error) {
+      console.error('❌ Error loading notifications:', error)
+      return // Не змінюємо стан якщо помилка
+    }
   }
+
   showNotifications.value = !showNotifications.value
+  console.log('New state:', showNotifications.value)
 }
 
 const markAllAsRead = async () => {
