@@ -18,20 +18,32 @@
         class="notification-menu-container"
       >
         <q-card class="notification-menu">
-          <!-- Header -->
+          <!-- Header with action buttons -->
           <q-card-section class="row items-center q-pb-sm q-pt-md">
             <div class="text-h6">{{ $t('notifications.title') }}</div>
             <q-space />
-            <q-btn
-              v-if="unreadCount > 0"
-              flat
-              dense
-              size="sm"
-              :label="$t('notifications.markAllRead')"
-              @click="markAllAsRead"
-              :loading="markingAllRead"
-              color="primary"
-            />
+            <div class="row q-gutter-xs">
+              <q-btn
+                v-if="unreadCount > 0"
+                flat
+                dense
+                size="sm"
+                icon="done_all"
+                :label="$t('notifications.markAllRead')"
+                @click="markAllAsRead"
+                :loading="markingAllRead"
+                color="primary"
+              />
+              <q-btn
+                flat
+                dense
+                size="sm"
+                icon="open_in_new"
+                :label="$t('notifications.viewAll')"
+                @click="viewAllNotifications"
+                color="primary"
+              />
+            </div>
           </q-card-section>
 
           <q-separator />
@@ -80,32 +92,18 @@
               </q-item>
             </q-list>
           </q-scroll-area>
-
-          <!-- Fixed footer -->
-          <q-separator />
-
-          <q-card-actions class="q-pa-md q-pt-sm">
-            <q-btn
-              flat
-              class="full-width"
-              color="primary"
-              :label="$t('notifications.viewAll')"
-              @click="viewAllNotifications"
-              unelevated
-            />
-          </q-card-actions>
         </q-card>
       </q-menu>
     </q-btn>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { date, Notify } from 'quasar'
 import { NotificationsApi } from 'src/api/notifications'
+import { io } from 'socket.io-client'
 
 const { t: $t } = useI18n()
 const router = useRouter()
@@ -116,6 +114,9 @@ const unreadCount = ref(0)
 const loading = ref(false)
 const markingAllRead = ref(false)
 const showNotifications = ref(false)
+
+const socket = ref(null)
+const isConnected = ref(false)
 
 // Polling interval
 let pollInterval = null
@@ -209,10 +210,10 @@ const handleNotificationClick = async (notification) => {
     }
   } else if (['new_chat_message', 'chat_assigned'].includes(notification.notification_type)) {
     // Отримуємо room_id з data сповіщення
-    const roomId = notification.data?.room_id
+    const roomId = notification.data?.room_id || notification.entity_id
 
     if (roomId) {
-      // Навігація до chat management з автовідкриттям чату
+      // Навігація прямо до клієнтського чату
       router.push({
         name: 'chat',
         query: {
@@ -220,7 +221,7 @@ const handleNotificationClick = async (notification) => {
         },
       })
     } else {
-      // Fallback - просто відкрити chat management
+      // Fallback - відкрити chat
       router.push({ name: 'chat' })
     }
   } else {
@@ -278,13 +279,94 @@ const formatDate = (dateString) => {
   return date.formatDate(notificationDate, 'DD.MM.YYYY HH:mm')
 }
 
+const initializeSocket = () => {
+  const token = localStorage.getItem('auth_token')
+
+  socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
+    auth: {
+      token: token,
+    },
+  })
+
+  socket.value.on('connect', () => {
+    console.log('Notifications socket connected')
+    isConnected.value = true
+    // Запитуємо поточну кількість непрочитаних
+    socket.value.emit('get_unread_notifications')
+  })
+
+  socket.value.on('disconnect', () => {
+    console.log('Notifications socket disconnected')
+    isConnected.value = false
+  })
+
+  // Слухаємо нові сповіщення
+  socket.value.on('new_notification', (notification) => {
+    // Додаємо нове сповіщення на початок списку
+    notifications.value.unshift(notification)
+
+    // Оновлюємо лічильник
+    unreadCount.value = notification.unread_count || unreadCount.value + 1
+
+    // Показуємо toast сповіщення
+    Notify.create({
+      type: 'info',
+      message: notification.title,
+      caption: notification.message,
+      position: 'top-right',
+      timeout: 5000,
+      actions: [
+        {
+          icon: 'close',
+          color: 'white',
+          round: true,
+          handler: () => {},
+        },
+      ],
+    })
+  })
+
+  // Слухаємо оновлення лічильника
+  socket.value.on('unread_notifications_count', (data) => {
+    unreadCount.value = data.count
+  })
+
+  socket.value.on('notification_marked_read', (data) => {
+    // Знаходимо сповіщення та позначаємо як прочитане
+    const notification = notifications.value.find((n) => n.id === data.notificationId)
+    if (notification && !notification.is_read) {
+      notification.is_read = true
+      unreadCount.value = Math.max(0, unreadCount.value - 1)
+    }
+  })
+
+  socket.value.on('notifications_all_read', () => {
+    // Позначаємо всі сповіщення як прочитані
+    notifications.value.forEach((n) => {
+      if (!n.is_read) {
+        n.is_read = true
+      }
+    })
+    unreadCount.value = 0
+  })
+}
+
+const cleanupSocket = () => {
+  if (socket.value) {
+    socket.value.disconnect()
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadUnreadCount()
+  initializeSocket()
 
-  // Polling кожні 30 секунд
+  // Polling кожні 30 секунд як fallback
   pollInterval = setInterval(() => {
-    loadUnreadCount()
+    if (!isConnected.value) {
+      loadUnreadCount()
+    }
   }, 30000)
 })
 
@@ -292,6 +374,7 @@ onUnmounted(() => {
   if (pollInterval) {
     clearInterval(pollInterval)
   }
+  cleanupSocket()
 })
 
 // Expose methods for parent components

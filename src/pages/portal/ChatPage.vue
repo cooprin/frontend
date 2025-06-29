@@ -337,6 +337,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
+import { io } from 'socket.io-client'
 
 const { t: $t } = useI18n()
 
@@ -356,6 +357,10 @@ const isTyping = ref(false)
 // Refs
 const messagesScroll = ref(null)
 const fileInput = ref(null)
+
+const socket = ref(null)
+const isConnected = ref(false)
+let typingTimeout = null
 
 // Computed (видалив невикористану змінну hasUnreadMessages)
 
@@ -382,9 +387,17 @@ const loadChatRooms = async () => {
 const selectRoom = async (room) => {
   if (selectedRoom.value?.id === room.id) return
 
+  // Покидаємо попередню кімнату
+  if (selectedRoom.value?.id) {
+    leaveChatRoom(selectedRoom.value.id)
+  }
+
   selectedRoom.value = room
   messages.value = []
   await loadMessages()
+
+  // Приєднуємося до нової кімнати
+  joinChatRoom(room.id)
 
   // Mark messages as read
   markRoomAsRead(room.id)
@@ -405,9 +418,11 @@ const loadMessages = async (loadMore = false) => {
 
     if (response.data.success) {
       if (loadMore) {
-        messages.value = [...response.data.messages.reverse(), ...messages.value]
+        // Для старіших повідомлень додаємо на початок
+        messages.value = [...response.data.messages, ...messages.value]
       } else {
-        messages.value = response.data.messages.reverse()
+        // Для нових повідомлень просто замінюємо (вони вже в правильному порядку)
+        messages.value = response.data.messages
         await nextTick()
         scrollToBottom()
       }
@@ -436,15 +451,14 @@ const sendMessage = async () => {
     const response = await ChatApi.sendMessage(selectedRoom.value.id, formData)
 
     if (response.data.success) {
-      // Add message to local state
+      // Add message to local state immediately
       messages.value.push(response.data.message)
 
       // Clear input
       newMessage.value = ''
       selectedFiles.value = []
 
-      // Scroll to bottom
-      await nextTick()
+      // Scroll to bottom immediately
       scrollToBottom()
 
       // Update room in list
@@ -505,8 +519,17 @@ const removeFile = (index) => {
 }
 
 const handleTyping = () => {
-  // Implement typing indicator logic here
-  // This would typically send a typing event to the server
+  if (socket.value && isConnected.value && selectedRoom.value?.id) {
+    socket.value.emit('typing_start', selectedRoom.value.id)
+
+    // Зупиняємо typing через 3 секунди
+    clearTimeout(typingTimeout)
+    typingTimeout = setTimeout(() => {
+      if (socket.value && isConnected.value && selectedRoom.value?.id) {
+        socket.value.emit('typing_stop', selectedRoom.value.id)
+      }
+    }, 3000)
+  }
 }
 
 const markRoomAsRead = async (roomId) => {
@@ -536,14 +559,17 @@ const updateRoomInList = (roomId, updates) => {
 
 const scrollToBottom = () => {
   if (messagesScroll.value) {
-    const scrollArea = messagesScroll.value
-    scrollArea.setScrollPosition('vertical', scrollArea.getScrollTarget().scrollHeight)
+    nextTick(() => {
+      const scrollArea = messagesScroll.value
+      const scrollTarget = scrollArea.getScrollTarget()
+      scrollArea.setScrollPosition('vertical', scrollTarget.scrollHeight, 300)
+    })
   }
 }
 
 const onScroll = (info) => {
   // Load more messages when scrolled to top
-  if (info.verticalPercentage === 0 && messages.value.length >= 20) {
+  if (info.verticalPercentage === 0 && messages.value.length >= 20 && !loadingMessages.value) {
     loadMessages(true)
   }
 }
@@ -614,16 +640,112 @@ const shouldShowDateSeparator = (messageIndex) => {
   return !date.isSameDate(currentDate, previousDate, 'day')
 }
 
+const initializeSocket = () => {
+  // Отримуємо токен з localStorage або authStore
+  const token = localStorage.getItem('auth_token') // або з вашого auth store
+
+  socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
+    auth: {
+      token: token,
+    },
+  })
+
+  socket.value.on('connect', () => {
+    console.log('Socket connected')
+    isConnected.value = true
+  })
+
+  socket.value.on('disconnect', () => {
+    console.log('Socket disconnected')
+    isConnected.value = false
+  })
+
+  // Слухаємо нові повідомлення
+  // Слухаємо нові повідомлення
+  socket.value.on('new_message', (data) => {
+    if (data.room_id === selectedRoom.value?.id) {
+      // Перевіряємо, чи повідомлення вже не існує (щоб уникнути дублікатів)
+      const existingMessage = messages.value.find((m) => m.id === data.message.id)
+      if (!existingMessage) {
+        // Додаємо нове повідомлення в кінець
+        messages.value.push(data.message)
+        nextTick(() => {
+          scrollToBottom()
+        })
+      }
+
+      // Оновлюємо превью в списку кімнат
+      updateRoomInList(data.room_id, {
+        last_message_at: data.message.created_at,
+        last_message_preview: data.message.message_text,
+      })
+    }
+  })
+
+  // Слухаємо сповіщення про нові сповіщення
+  socket.value.on('new_notification', (notification) => {
+    // Тут можна показати toast або оновити лічильник
+    console.log('New notification:', notification)
+  })
+  // Слухаємо typing індикатори
+  socket.value.on('user_typing', (data) => {
+    if (data.userType === 'staff') {
+      isTyping.value = true
+      // Автоматично приховуємо через 5 секунд
+      setTimeout(() => {
+        isTyping.value = false
+      }, 5000)
+    }
+  })
+
+  socket.value.on('user_stopped_typing', (data) => {
+    if (data.userType === 'staff') {
+      isTyping.value = false
+    }
+  })
+
+  // Слухаємо оновлення сповіщень
+  socket.value.on('unread_count_updated', (data) => {
+    // Тут можна оновити лічильник сповіщень
+    console.log('Unread count updated:', data.unread_count)
+  })
+}
+
+const joinChatRoom = (roomId) => {
+  if (socket.value && isConnected.value) {
+    socket.value.emit('join_chat_room', roomId)
+  }
+}
+
+const leaveChatRoom = (roomId) => {
+  if (socket.value && isConnected.value) {
+    socket.value.emit('leave_chat_room', roomId)
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadChatRooms()
 
-  // Set up real-time updates here (WebSocket, polling, etc.)
-  // This is a simplified version - you'd implement WebSocket connection
+  // Ініціалізація Socket.IO
+  initializeSocket()
 })
 
 onUnmounted(() => {
-  // Clean up real-time connections
+  // Покидаємо поточну кімнату
+  if (selectedRoom.value?.id) {
+    leaveChatRoom(selectedRoom.value.id)
+  }
+
+  // Очищуємо timeout
+  if (typingTimeout) {
+    clearTimeout(typingTimeout)
+  }
+
+  // Відключення Socket.IO
+  if (socket.value) {
+    socket.value.disconnect()
+  }
 })
 </script>
 

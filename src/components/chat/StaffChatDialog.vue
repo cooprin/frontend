@@ -379,11 +379,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from 'stores/auth'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
+import { io } from 'socket.io-client'
 
 const { t: $t } = useI18n()
 const authStore = useAuthStore()
@@ -429,6 +430,8 @@ const closeData = ref({
 // Refs
 const messagesScroll = ref(null)
 const fileInput = ref(null)
+const socket = ref(null)
+const isConnected = ref(false)
 
 // Computed
 const availableStaffOptions = computed(() =>
@@ -452,9 +455,11 @@ const loadMessages = async (loadMore = false) => {
 
     if (response.data.success) {
       if (loadMore) {
-        messages.value = [...response.data.messages.reverse(), ...messages.value]
+        // Для старіших повідомлень додаємо на початок
+        messages.value = [...response.data.messages, ...messages.value]
       } else {
-        messages.value = response.data.messages.reverse()
+        // Для нових повідомлень просто замінюємо (вони вже в правильному порядку)
+        messages.value = response.data.messages
         await nextTick()
         scrollToBottom()
       }
@@ -482,11 +487,14 @@ const sendMessage = async () => {
     const response = await ChatApi.sendMessage(props.room.id, formData)
 
     if (response.data.success) {
+      // Add message to local state immediately
       messages.value.push(response.data.message)
+
+      // Clear input
       newMessage.value = ''
       selectedFiles.value = []
 
-      await nextTick()
+      // Scroll to bottom immediately
       scrollToBottom()
 
       // Mark messages as read
@@ -618,13 +626,16 @@ const downloadFile = (file) => {
 
 const scrollToBottom = () => {
   if (messagesScroll.value) {
-    const scrollArea = messagesScroll.value
-    scrollArea.setScrollPosition('vertical', scrollArea.getScrollTarget().scrollHeight)
+    nextTick(() => {
+      const scrollArea = messagesScroll.value
+      const scrollTarget = scrollArea.getScrollTarget()
+      scrollArea.setScrollPosition('vertical', scrollTarget.scrollHeight, 300)
+    })
   }
 }
 
 const onScroll = (info) => {
-  if (info.verticalPercentage === 0 && messages.value.length >= 20) {
+  if (info.verticalPercentage === 0 && messages.value.length >= 20 && !loadingMessages.value) {
     loadMessages(true)
   }
 }
@@ -668,13 +679,72 @@ const shouldShowDateSeparator = (messageIndex) => {
   return !date.isSameDate(currentDate, previousDate, 'day')
 }
 
+const initializeSocket = () => {
+  const token = localStorage.getItem('auth_token')
+
+  socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
+    auth: {
+      token: token,
+    },
+  })
+
+  socket.value.on('connect', () => {
+    console.log('Staff chat socket connected')
+    isConnected.value = true
+    // Приєднуємося до кімнати чату
+    socket.value.emit('join_chat_room', props.room.id)
+  })
+
+  socket.value.on('disconnect', () => {
+    console.log('Staff chat socket disconnected')
+    isConnected.value = false
+  })
+
+  // Слухаємо нові повідомлення
+  socket.value.on('new_message', (data) => {
+    if (data.room_id === props.room.id) {
+      // Перевіряємо, чи повідомлення вже не існує (щоб уникнути дублікатів)
+      const existingMessage = messages.value.find((m) => m.id === data.message.id)
+      if (!existingMessage) {
+        // Додаємо нове повідомлення в кінець
+        messages.value.push(data.message)
+        nextTick(() => {
+          scrollToBottom()
+        })
+      }
+    }
+  })
+
+  // Слухаємо typing індикатори
+  socket.value.on('user_typing', (data) => {
+    console.log(`${data.userName} is typing...`)
+    // Можна додати typing індикатор
+  })
+
+  socket.value.on('user_stopped_typing', (data) => {
+    console.log(`${data.userName} stopped typing`)
+  })
+}
+
+const cleanupSocket = () => {
+  if (socket.value) {
+    socket.value.emit('leave_chat_room', props.room.id)
+    socket.value.disconnect()
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadMessages()
   loadAvailableStaff()
+  initializeSocket()
 
   // Mark messages as read when opening
   ChatApi.markAsRead(props.room.id)
+})
+
+onUnmounted(() => {
+  cleanupSocket()
 })
 </script>
 
