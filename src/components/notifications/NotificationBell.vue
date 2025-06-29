@@ -15,6 +15,8 @@
         anchor="bottom right"
         self="top right"
         :offset="[0, 8]"
+        no-focus
+        auto-close
       >
         <q-card class="notification-menu">
           <q-card-section class="row items-center q-pb-none">
@@ -125,6 +127,10 @@ const loadNotifications = async () => {
     }
   } catch (error) {
     console.error('Error loading notifications:', error)
+    Notify.create({
+      type: 'negative',
+      message: 'Помилка завантаження сповіщень',
+    })
   } finally {
     loading.value = false
   }
@@ -146,12 +152,16 @@ const toggleNotifications = async () => {
   console.log('🔔 Toggle notifications clicked')
   console.log('Current state:', showNotifications.value)
 
-  // Тимчасово закоментуй loadNotifications
-  // if (!showNotifications.value) {
-  //   console.log('📥 Loading notifications...')
-  //   await loadNotifications()
-  //   console.log('✅ Notifications loaded')
-  // }
+  if (!showNotifications.value) {
+    console.log('📥 Loading notifications...')
+    try {
+      await loadNotifications()
+      console.log('✅ Notifications loaded successfully')
+    } catch (error) {
+      console.error('❌ Error loading notifications:', error)
+      return // Не відкриваємо меню якщо помилка
+    }
+  }
 
   showNotifications.value = !showNotifications.value
   console.log('New state:', showNotifications.value)
