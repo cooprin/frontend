@@ -40,7 +40,7 @@
                 size="sm"
                 icon="open_in_new"
                 :label="$t('notifications.viewAll')"
-                @click="viewAllNotifications"
+                @click="handleViewAllNotifications"
                 color="primary"
               />
             </div>
@@ -203,36 +203,64 @@ const handleNotificationClick = async (notification) => {
     )
   ) {
     if (notification.entity_id) {
-      router.push({
-        name: 'ticket-details',
-        params: { id: notification.entity_id },
-      })
+      // Перевіряємо чи ми в клієнтській частині
+      const currentRoute = router.currentRoute.value
+      const isClientPortal = currentRoute.path.startsWith('/portal')
+
+      if (isClientPortal) {
+        // Клієнтська частина - переходимо на клієнтський тікет
+        router.push({
+          name: 'portal-ticket-details',
+          params: { id: notification.entity_id },
+        })
+      } else {
+        // Адмінська частина - переходимо на адмінський тікет
+        router.push({
+          name: 'ticket-details',
+          params: { id: notification.entity_id },
+        })
+      }
     }
   } else if (['new_chat_message', 'chat_assigned'].includes(notification.notification_type)) {
-    // Отримуємо room_id з data сповіщення
     const roomId = notification.data?.room_id || notification.entity_id
 
-    if (roomId) {
-      // Навігація прямо до клієнтського чату
+    // Перевіряємо чи ми в клієнтській частині
+    const currentRoute = router.currentRoute.value
+    const isClientPortal = currentRoute.path.startsWith('/portal')
+
+    if (isClientPortal) {
+      // Клієнтська частина - переходимо на клієнтський чат
       router.push({
-        name: 'chat',
-        query: {
-          openRoom: roomId,
-        },
+        name: 'portal-chat',
+        query: roomId ? { openRoom: roomId } : {},
       })
     } else {
-      // Fallback - відкрити chat
-      router.push({ name: 'chat' })
+      // Адмінська частина - переходимо на адмінський чат
+      router.push({
+        name: 'chat',
+        query: roomId ? { openRoom: roomId } : {},
+      })
     }
   } else {
     // Для інших типів - на загальну сторінку сповіщень
-    viewAllNotifications()
+    handleViewAllNotifications()
   }
 }
 
-const viewAllNotifications = () => {
+const handleViewAllNotifications = () => {
   showNotifications.value = false
-  router.push({ name: 'notifications' })
+
+  // Перевіряємо чи ми в клієнтській частині
+  const currentRoute = router.currentRoute.value
+  const isClientPortal = currentRoute.path.startsWith('/portal')
+
+  if (isClientPortal) {
+    // Клієнтська частина - переходимо на клієнтські сповіщення
+    router.push({ name: 'portal-notifications' })
+  } else {
+    // Адмінська частина - переходимо на адмінські сповіщення
+    router.push({ name: 'notifications' })
+  }
 }
 
 const getNotificationIcon = (type) => {
