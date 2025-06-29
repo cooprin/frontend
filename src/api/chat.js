@@ -1,6 +1,11 @@
 import { api } from 'boot/axios'
 
 export const ChatApi = {
+  // NEW: Get active chat for client
+  getActiveChat() {
+    return api.get('/chat/active')
+  },
+
   // Отримання кімнат чату
   getRooms() {
     return api.get('/chat/rooms')
@@ -9,6 +14,11 @@ export const ChatApi = {
   // Створення нової кімнати
   createRoom(data) {
     return api.post('/chat/rooms', data)
+  },
+
+  // NEW: Delete chat room (staff only)
+  deleteRoom(roomId) {
+    return api.delete(`/chat/rooms/${roomId}`)
   },
 
   // Отримання повідомлень
@@ -51,6 +61,7 @@ export const ChatApi = {
   assignRoom(roomId, staffId) {
     return api.patch(`/chat/rooms/${roomId}/assign`, { staffId })
   },
+
   // ===========================================
   // STAFF CHAT MANAGEMENT API METHODS
   // ===========================================

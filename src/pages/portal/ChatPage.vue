@@ -1,333 +1,267 @@
 <template>
   <q-page class="chat-page">
-    <div class="row no-wrap full-height">
-      <!-- Sidebar with chat rooms -->
-      <div class="col-4 chat-sidebar">
-        <q-card flat class="full-height">
-          <!-- Header -->
-          <q-card-section class="bg-primary text-white q-pa-md">
-            <div class="text-h6">{{ $t('portal.pages.chat.title') }}</div>
-            <div class="text-caption">{{ $t('portal.pages.chat.support') }}</div>
-          </q-card-section>
+    <!-- Loading State -->
+    <div v-if="loading" class="full-height flex flex-center">
+      <div class="text-center">
+        <q-spinner color="primary" size="3em" />
+        <div class="q-mt-md text-grey-7">{{ $t('portal.pages.chat.loading') }}</div>
+      </div>
+    </div>
 
-          <!-- New Chat Button -->
-          <q-card-section class="q-pa-md">
+    <!-- No Active Chat - Create Chat Screen -->
+    <div v-else-if="!activeRoom" class="full-height flex flex-center">
+      <div class="text-center" style="max-width: 500px">
+        <q-icon name="support_agent" size="80px" color="primary" />
+
+        <div class="text-h5 q-mt-md">{{ $t('portal.pages.chat.welcome') }}</div>
+        <div class="text-subtitle1 text-grey-7 q-mt-sm q-mb-lg">
+          {{ $t('portal.pages.chat.welcomeDesc') }}
+        </div>
+
+        <q-btn
+          color="primary"
+          size="lg"
+          icon="chat"
+          :label="$t('portal.pages.chat.startChat')"
+          @click="createNewChat"
+          :loading="creatingChat"
+          class="q-mb-xl"
+        />
+
+        <!-- FAQ or Quick Actions -->
+        <div class="q-mt-xl">
+          <div class="text-h6 q-mb-md">{{ $t('portal.pages.chat.commonQuestions') }}</div>
+          <div class="row q-gutter-md justify-center">
             <q-btn
+              flat
               color="primary"
-              icon="add_comment"
-              :label="$t('portal.pages.chat.newChat')"
-              class="full-width"
-              @click="createNewChat"
+              icon="help"
+              :label="$t('portal.pages.chat.generalHelp')"
+              @click="createChatWithMessage($t('portal.pages.chat.generalHelpMessage'))"
               :loading="creatingChat"
             />
-          </q-card-section>
-
-          <!-- Rooms List -->
-          <q-scroll-area class="chat-rooms-list">
-            <q-list>
-              <q-item
-                v-for="room in chatRooms"
-                :key="room.id"
-                clickable
-                v-ripple
-                :active="selectedRoom?.id === room.id"
-                active-class="bg-blue-1"
-                @click="selectRoom(room)"
-                class="chat-room-item"
-              >
-                <q-item-section avatar>
-                  <q-avatar
-                    :color="room.room_type === 'ticket' ? 'orange' : 'primary'"
-                    text-color="white"
-                    :icon="room.room_type === 'ticket' ? 'confirmation_number' : 'support_agent'"
-                  />
-                </q-item-section>
-
-                <q-item-section>
-                  <q-item-label class="text-weight-medium">
-                    {{ getRoomTitle(room) }}
-                  </q-item-label>
-                  <q-item-label caption class="text-grey-7">
-                    {{ room.last_message_preview || $t('portal.pages.chat.noMessages') }}
-                  </q-item-label>
-                  <q-item-label caption class="text-grey-6">
-                    {{ formatRoomDate(room.last_message_at || room.created_at) }}
-                  </q-item-label>
-                </q-item-section>
-
-                <q-item-section side>
-                  <div class="column items-end">
-                    <!-- Unread badge -->
-                    <q-badge
-                      v-if="room.unread_staff_messages > 0"
-                      color="red"
-                      :label="room.unread_staff_messages"
-                      rounded
-                    />
-                    <!-- Online indicator -->
-                    <q-icon
-                      v-if="room.assigned_staff_name"
-                      name="circle"
-                      size="8px"
-                      :color="room.staff_online ? 'green' : 'grey'"
-                      class="q-mt-xs"
-                    />
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
-
-            <!-- Empty state -->
-            <div v-if="!loading && chatRooms.length === 0" class="text-center q-pa-md">
-              <q-icon name="chat" size="48px" color="grey-4" />
-              <div class="text-grey-6 q-mt-sm">{{ $t('portal.pages.chat.noChats') }}</div>
-            </div>
-          </q-scroll-area>
-        </q-card>
+            <q-btn
+              flat
+              color="primary"
+              icon="build"
+              :label="$t('portal.pages.chat.technicalIssue')"
+              @click="createChatWithMessage($t('portal.pages.chat.technicalIssueMessage'))"
+              :loading="creatingChat"
+            />
+            <q-btn
+              flat
+              color="primary"
+              icon="payment"
+              :label="$t('portal.pages.chat.billing')"
+              @click="createChatWithMessage($t('portal.pages.chat.billingMessage'))"
+              :loading="creatingChat"
+            />
+          </div>
+        </div>
       </div>
+    </div>
 
-      <!-- Chat Messages Area -->
-      <div class="col-8 chat-main">
-        <q-card flat class="full-height column">
-          <!-- Chat Header -->
-          <q-card-section
-            v-if="selectedRoom"
-            class="bg-grey-1 q-pa-md chat-header row items-center"
+    <!-- Active Chat Interface -->
+    <div v-else class="chat-interface full-height column">
+      <!-- Chat Header -->
+      <q-card-section class="bg-primary text-white q-pa-md chat-header">
+        <div class="row items-center">
+          <div class="col">
+            <div class="text-h6">
+              <q-icon name="support_agent" class="q-mr-sm" />
+              {{ $t('portal.pages.chat.supportChat') }}
+            </div>
+            <div class="text-caption">
+              <span v-if="activeRoom.assigned_staff_name">
+                {{ $t('portal.pages.chat.assignedTo') }}: {{ activeRoom.assigned_staff_name }}
+                <q-icon name="circle" size="8px" color="green" class="q-ml-xs" />
+                {{ $t('portal.pages.chat.online') }}
+              </span>
+              <span v-else>{{ $t('portal.pages.chat.waitingForAssignment') }}</span>
+            </div>
+          </div>
+          <div class="col-auto">
+            <q-btn flat round icon="refresh" @click="refreshMessages" :loading="loadingMessages">
+              <q-tooltip>{{ $t('common.refresh') }}</q-tooltip>
+            </q-btn>
+          </div>
+        </div>
+      </q-card-section>
+
+      <!-- Messages Area -->
+      <q-scroll-area ref="messagesScroll" class="col chat-messages-area" @scroll="onScroll">
+        <div class="q-pa-md">
+          <!-- Loading more messages -->
+          <div v-if="loadingMessages" class="text-center q-py-md">
+            <q-spinner size="24px" color="primary" />
+          </div>
+
+          <!-- Messages -->
+          <div
+            v-for="(message, msgIndex) in messages"
+            :key="message.id"
+            class="message-container"
+            :class="{ 'message-mine': message.sender_type === 'client' }"
           >
-            <div class="col">
-              <div class="text-h6">{{ getRoomTitle(selectedRoom) }}</div>
-              <div class="text-caption text-grey-7">
-                <span v-if="selectedRoom.assigned_staff_name">
-                  {{ $t('portal.pages.chat.assignedTo') }}: {{ selectedRoom.assigned_staff_name }}
+            <!-- Date separator -->
+            <div v-if="shouldShowDateSeparator(msgIndex)" class="text-center q-py-sm">
+              <q-chip
+                size="sm"
+                color="grey-4"
+                text-color="grey-8"
+                :label="formatMessageDate(message.created_at)"
+              />
+            </div>
+
+            <!-- Message bubble -->
+            <div class="message-bubble-container">
+              <div
+                class="message-bubble"
+                :class="{
+                  'message-bubble-mine': message.sender_type === 'client',
+                  'message-bubble-theirs': message.sender_type === 'staff',
+                }"
+              >
+                <!-- Sender name for staff messages -->
+                <div
+                  v-if="message.sender_type === 'staff' && message.sender_name"
+                  class="message-sender text-caption q-mb-xs"
+                >
+                  <q-icon name="support_agent" size="14px" class="q-mr-xs" />
+                  {{ message.sender_name }}
+                </div>
+
+                <!-- Message text -->
+                <div class="message-text">
+                  {{ message.message_text }}
+                </div>
+
+                <!-- Files -->
+                <div v-if="message.files_count > 0" class="message-files q-mt-sm">
+                  <q-chip
+                    v-for="file in message.files"
+                    :key="file.id"
+                    size="sm"
+                    color="blue-1"
+                    text-color="blue-8"
+                    icon="attach_file"
+                    :label="file.original_name"
+                    clickable
+                    @click="downloadFile(file)"
+                  />
+                </div>
+
+                <!-- Message time -->
+                <div class="message-time text-caption text-grey-6 q-mt-xs">
+                  {{ formatMessageTime(message.created_at) }}
                   <q-icon
-                    name="circle"
-                    size="8px"
-                    :color="selectedRoom.staff_online ? 'green' : 'grey'"
+                    v-if="message.sender_type === 'client'"
+                    :name="message.is_read ? 'done_all' : 'done'"
+                    size="14px"
+                    :color="message.is_read ? 'blue' : 'grey'"
                     class="q-ml-xs"
                   />
-                  {{
-                    selectedRoom.staff_online
-                      ? $t('portal.pages.chat.online')
-                      : $t('portal.pages.chat.offline')
-                  }}
-                </span>
-                <span v-else>{{ $t('portal.pages.chat.waitingForAssignment') }}</span>
-              </div>
-            </div>
-            <div class="col-auto">
-              <q-btn flat round icon="more_vert" @click="showRoomMenu = true">
-                <q-menu v-model="showRoomMenu">
-                  <q-list style="min-width: 200px">
-                    <q-item clickable @click="refreshMessages">
-                      <q-item-section avatar>
-                        <q-icon name="refresh" />
-                      </q-item-section>
-                      <q-item-section>{{ $t('common.refresh') }}</q-item-section>
-                    </q-item>
-                    <q-item
-                      v-if="selectedRoom.room_type === 'support'"
-                      clickable
-                      @click="convertToTicket"
-                    >
-                      <q-item-section avatar>
-                        <q-icon name="confirmation_number" />
-                      </q-item-section>
-                      <q-item-section>{{ $t('portal.pages.chat.convertToTicket') }}</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </q-btn>
-            </div>
-          </q-card-section>
-
-          <!-- Messages Area -->
-          <q-scroll-area ref="messagesScroll" class="col chat-messages-area" @scroll="onScroll">
-            <div v-if="selectedRoom" class="q-pa-md">
-              <!-- Loading more messages -->
-              <div v-if="loadingMessages" class="text-center q-py-md">
-                <q-spinner size="24px" color="primary" />
-              </div>
-
-              <!-- Messages -->
-              <div
-                v-for="(message, msgIndex) in messages"
-                :key="message.id"
-                class="message-container"
-                :class="{ 'message-mine': message.sender_type === 'client' }"
-              >
-                <!-- Date separator -->
-                <div v-if="shouldShowDateSeparator(msgIndex)" class="text-center q-py-sm">
-                  <q-chip
-                    size="sm"
-                    color="grey-4"
-                    text-color="grey-8"
-                    :label="formatMessageDate(message.created_at)"
-                  />
-                </div>
-
-                <!-- Message bubble -->
-                <div class="message-bubble-container">
-                  <div
-                    class="message-bubble"
-                    :class="{
-                      'message-bubble-mine': message.sender_type === 'client',
-                      'message-bubble-theirs': message.sender_type === 'staff',
-                    }"
-                  >
-                    <!-- Sender name for staff messages -->
-                    <div
-                      v-if="message.sender_type === 'staff' && message.sender_name"
-                      class="message-sender text-caption text-grey-7 q-mb-xs"
-                    >
-                      {{ message.sender_name }}
-                    </div>
-
-                    <!-- Message text -->
-                    <div class="message-text">
-                      {{ message.message_text }}
-                    </div>
-
-                    <!-- Files -->
-                    <div v-if="message.files_count > 0" class="message-files q-mt-sm">
-                      <q-chip
-                        v-for="file in message.files"
-                        :key="file.id"
-                        size="sm"
-                        color="blue-1"
-                        text-color="blue-8"
-                        icon="attach_file"
-                        :label="file.original_name"
-                        clickable
-                        @click="downloadFile(file)"
-                      />
-                    </div>
-
-                    <!-- Message time -->
-                    <div class="message-time text-caption text-grey-6 q-mt-xs">
-                      {{ formatMessageTime(message.created_at) }}
-                      <q-icon
-                        v-if="message.sender_type === 'client'"
-                        :name="message.is_read ? 'done_all' : 'done'"
-                        size="14px"
-                        :color="message.is_read ? 'blue' : 'grey'"
-                        class="q-ml-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Typing indicator -->
-              <div v-if="isTyping" class="typing-indicator q-pa-md">
-                <div class="typing-dots">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <span class="text-caption text-grey-6 q-ml-sm">
-                  {{ $t('portal.pages.chat.typing') }}
-                </span>
-              </div>
-
-              <!-- Empty messages state -->
-              <div v-if="!loadingMessages && messages.length === 0" class="text-center q-py-xl">
-                <q-icon name="chat_bubble_outline" size="64px" color="grey-4" />
-                <div class="text-grey-6 q-mt-md">
-                  {{ $t('portal.pages.chat.startConversation') }}
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- No room selected -->
-            <div v-else class="full-height flex flex-center">
-              <div class="text-center">
-                <q-icon name="forum" size="80px" color="grey-4" />
-                <div class="text-h6 text-grey-6 q-mt-md">
-                  {{ $t('portal.pages.chat.selectRoom') }}
-                </div>
-                <div class="text-grey-5 q-mt-sm">
-                  {{ $t('portal.pages.chat.selectRoomDesc') }}
-                </div>
-              </div>
+          <!-- Typing indicator -->
+          <div v-if="isTyping" class="typing-indicator q-pa-md">
+            <div class="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
-          </q-scroll-area>
+            <span class="text-caption text-grey-6 q-ml-sm">
+              {{ $t('portal.pages.chat.typing') }}
+            </span>
+          </div>
 
-          <!-- Message Input -->
-          <q-card-section v-if="selectedRoom" class="chat-input-section q-pa-md bg-white">
-            <div class="row q-gutter-sm">
-              <!-- File upload button -->
-              <div class="col-auto">
-                <q-btn
-                  flat
-                  round
-                  icon="attach_file"
-                  color="grey-7"
-                  @click="$refs.fileInput.click()"
-                  :disable="sendingMessage"
-                >
-                  <q-tooltip>{{ $t('portal.pages.chat.attachFile') }}</q-tooltip>
-                </q-btn>
-                <input
-                  ref="fileInput"
-                  type="file"
-                  multiple
-                  accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
-                  style="display: none"
-                  @change="handleFileSelect"
-                />
-              </div>
-
-              <!-- Message input -->
-              <div class="col">
-                <q-input
-                  v-model="newMessage"
-                  :placeholder="$t('portal.pages.chat.typeMessage')"
-                  outlined
-                  dense
-                  autogrow
-                  :max-height="100"
-                  @keydown.enter.prevent="sendMessage"
-                  @input="handleTyping"
-                  :disable="sendingMessage"
-                  class="chat-input"
-                />
-              </div>
-
-              <!-- Send button -->
-              <div class="col-auto">
-                <q-btn
-                  round
-                  color="primary"
-                  icon="send"
-                  @click="sendMessage"
-                  :disable="!newMessage.trim() || sendingMessage"
-                  :loading="sendingMessage"
-                />
-              </div>
+          <!-- Empty messages state -->
+          <div v-if="!loadingMessages && messages.length === 0" class="text-center q-py-xl">
+            <q-icon name="chat_bubble_outline" size="64px" color="grey-4" />
+            <div class="text-grey-6 q-mt-md">
+              {{ $t('portal.pages.chat.startConversation') }}
             </div>
+          </div>
+        </div>
+      </q-scroll-area>
 
-            <!-- Selected files preview -->
-            <div v-if="selectedFiles.length > 0" class="q-mt-sm">
-              <div class="text-caption text-grey-7 q-mb-xs">
-                {{ $t('portal.pages.chat.selectedFiles') }}:
-              </div>
-              <div class="row q-gutter-xs">
-                <q-chip
-                  v-for="(file, index) in selectedFiles"
-                  :key="index"
-                  removable
-                  @remove="removeFile(index)"
-                  color="blue-1"
-                  text-color="blue-8"
-                  icon="attach_file"
-                  :label="file.name"
-                  size="sm"
-                />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+      <!-- Message Input -->
+      <q-card-section class="chat-input-section q-pa-md bg-white">
+        <div class="row q-gutter-sm">
+          <!-- File upload button -->
+          <div class="col-auto">
+            <q-btn
+              flat
+              round
+              icon="attach_file"
+              color="grey-7"
+              @click="$refs.fileInput.click()"
+              :disable="sendingMessage"
+            >
+              <q-tooltip>{{ $t('portal.pages.chat.attachFile') }}</q-tooltip>
+            </q-btn>
+            <input
+              ref="fileInput"
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
+              style="display: none"
+              @change="handleFileSelect"
+            />
+          </div>
+
+          <!-- Message input -->
+          <div class="col">
+            <q-input
+              v-model="newMessage"
+              :placeholder="$t('portal.pages.chat.typeMessage')"
+              outlined
+              dense
+              autogrow
+              :max-height="100"
+              @keydown.enter.prevent="sendMessage"
+              @input="handleTyping"
+              :disable="sendingMessage"
+              class="chat-input"
+            />
+          </div>
+
+          <!-- Send button -->
+          <div class="col-auto">
+            <q-btn
+              round
+              color="primary"
+              icon="send"
+              @click="sendMessage"
+              :disable="!newMessage.trim() || sendingMessage"
+              :loading="sendingMessage"
+            />
+          </div>
+        </div>
+
+        <!-- Selected files preview -->
+        <div v-if="selectedFiles.length > 0" class="q-mt-sm">
+          <div class="text-caption text-grey-7 q-mb-xs">
+            {{ $t('portal.pages.chat.selectedFiles') }}:
+          </div>
+          <div class="row q-gutter-xs">
+            <q-chip
+              v-for="(file, index) in selectedFiles"
+              :key="index"
+              removable
+              @remove="removeFile(index)"
+              color="blue-1"
+              text-color="blue-8"
+              icon="attach_file"
+              :label="file.name"
+              size="sm"
+            />
+          </div>
+        </div>
+      </q-card-section>
     </div>
   </q-page>
 </template>
@@ -337,14 +271,12 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
-import { useRoute } from 'vue-router'
 import SocketService from 'src/services/socketService'
 
 const { t: $t } = useI18n()
 
 // Reactive data
-const chatRooms = ref([])
-const selectedRoom = ref(null)
+const activeRoom = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const selectedFiles = ref([])
@@ -352,7 +284,6 @@ const loading = ref(false)
 const loadingMessages = ref(false)
 const sendingMessage = ref(false)
 const creatingChat = ref(false)
-const showRoomMenu = ref(false)
 const isTyping = ref(false)
 
 // Refs
@@ -360,20 +291,29 @@ const messagesScroll = ref(null)
 const fileInput = ref(null)
 
 // Component ID для відписки від подій
-const componentId = 'chat-page-' + Date.now()
+const componentId = 'chat-page-portal-' + Date.now()
 let typingTimeout = null
 
 // Methods
-const loadChatRooms = async () => {
+const loadActiveChat = async () => {
   try {
     loading.value = true
-    const response = await ChatApi.getRooms()
+    const response = await ChatApi.getActiveChat()
 
     if (response.data.success) {
-      chatRooms.value = response.data.rooms
+      if (response.data.hasActiveChat) {
+        activeRoom.value = response.data.activeRoom
+        await loadMessages()
+
+        // Join chat room
+        SocketService.joinChatRoom(activeRoom.value.id)
+
+        // Mark messages as read
+        markRoomAsRead(activeRoom.value.id)
+      }
     }
   } catch (error) {
-    console.error('Error loading chat rooms:', error)
+    console.error('Error loading active chat:', error)
     Notify.create({
       type: 'negative',
       message: $t('portal.pages.chat.loadError'),
@@ -383,27 +323,59 @@ const loadChatRooms = async () => {
   }
 }
 
-const selectRoom = async (room) => {
-  if (selectedRoom.value?.id === room.id) return
+const createNewChat = async () => {
+  try {
+    creatingChat.value = true
 
-  // Покидаємо попередню кімнату
-  if (selectedRoom.value?.id) {
-    SocketService.leaveChatRoom(selectedRoom.value.id)
+    const response = await ChatApi.createRoom({
+      room_type: 'support',
+    })
+
+    if (response.data.success) {
+      activeRoom.value = response.data.room
+      messages.value = []
+
+      // Join new chat room
+      SocketService.joinChatRoom(activeRoom.value.id)
+
+      Notify.create({
+        type: 'positive',
+        message: $t('portal.pages.chat.chatCreated'),
+      })
+    }
+  } catch (error) {
+    console.error('Error creating chat:', error)
+
+    if (error.response?.status === 400 && error.response?.data?.existingRoomId) {
+      // Already has active chat, load it
+      await loadActiveChat()
+      Notify.create({
+        type: 'info',
+        message: $t('portal.pages.chat.alreadyHasChat'),
+      })
+    } else {
+      Notify.create({
+        type: 'negative',
+        message: $t('portal.pages.chat.createError'),
+      })
+    }
+  } finally {
+    creatingChat.value = false
   }
+}
 
-  selectedRoom.value = room
-  messages.value = []
-  await loadMessages()
+const createChatWithMessage = async (initialMessage) => {
+  await createNewChat()
 
-  // Приєднуємося до нової кімнати
-  SocketService.joinChatRoom(room.id)
-
-  // Mark messages as read
-  markRoomAsRead(room.id)
+  if (activeRoom.value && initialMessage) {
+    newMessage.value = initialMessage
+    await nextTick()
+    sendMessage()
+  }
 }
 
 const loadMessages = async (loadMore = false) => {
-  if (!selectedRoom.value) return
+  if (!activeRoom.value) return
 
   try {
     loadingMessages.value = true
@@ -413,7 +385,7 @@ const loadMessages = async (loadMore = false) => {
       limit: 20,
     }
 
-    const response = await ChatApi.getMessages(selectedRoom.value.id, params)
+    const response = await ChatApi.getMessages(activeRoom.value.id, params)
 
     if (response.data.success) {
       if (loadMore) {
@@ -433,7 +405,7 @@ const loadMessages = async (loadMore = false) => {
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() && selectedFiles.value.length === 0) return
-  if (!selectedRoom.value) return
+  if (!activeRoom.value) return
 
   try {
     sendingMessage.value = true
@@ -445,18 +417,13 @@ const sendMessage = async () => {
       formData.append(`files`, file)
     })
 
-    const response = await ChatApi.sendMessage(selectedRoom.value.id, formData)
+    const response = await ChatApi.sendMessage(activeRoom.value.id, formData)
 
     if (response.data.success) {
-      // Повідомлення додасться через Socket.io подію
+      // Clear input
       newMessage.value = ''
       selectedFiles.value = []
       scrollToBottom()
-
-      updateRoomInList(selectedRoom.value.id, {
-        last_message_at: response.data.message.created_at,
-        last_message_preview: response.data.message.message_text,
-      })
     }
   } catch (error) {
     console.error('Error sending message:', error)
@@ -466,34 +433,6 @@ const sendMessage = async () => {
     })
   } finally {
     sendingMessage.value = false
-  }
-}
-
-const createNewChat = async () => {
-  try {
-    creatingChat.value = true
-
-    const response = await ChatApi.createRoom({
-      room_type: 'support',
-    })
-
-    if (response.data.success) {
-      chatRooms.value.unshift(response.data.room)
-      selectRoom(response.data.room)
-
-      Notify.create({
-        type: 'positive',
-        message: $t('portal.pages.chat.chatCreated'),
-      })
-    }
-  } catch (error) {
-    console.error('Error creating chat:', error)
-    Notify.create({
-      type: 'negative',
-      message: $t('portal.pages.chat.createError'),
-    })
-  } finally {
-    creatingChat.value = false
   }
 }
 
@@ -508,13 +447,13 @@ const removeFile = (index) => {
 }
 
 const handleTyping = () => {
-  if (SocketService.isConnected() && selectedRoom.value?.id) {
-    SocketService.startTyping(selectedRoom.value.id)
+  if (SocketService.isConnected() && activeRoom.value?.id) {
+    SocketService.startTyping(activeRoom.value.id)
 
     clearTimeout(typingTimeout)
     typingTimeout = setTimeout(() => {
-      if (SocketService.isConnected() && selectedRoom.value?.id) {
-        SocketService.stopTyping(selectedRoom.value.id)
+      if (SocketService.isConnected() && activeRoom.value?.id) {
+        SocketService.stopTyping(activeRoom.value.id)
       }
     }, 3000)
   }
@@ -523,24 +462,17 @@ const handleTyping = () => {
 const markRoomAsRead = async (roomId) => {
   try {
     await ChatApi.markAsRead(roomId)
-
-    const room = chatRooms.value.find((r) => r.id === roomId)
-    if (room) {
-      room.unread_staff_messages = 0
-    }
   } catch (error) {
     console.error('Error marking room as read:', error)
   }
 }
 
-const updateRoomInList = (roomId, updates) => {
-  const roomIndex = chatRooms.value.findIndex((r) => r.id === roomId)
-  if (roomIndex !== -1) {
-    Object.assign(chatRooms.value[roomIndex], updates)
+const refreshMessages = () => {
+  loadMessages()
+}
 
-    const room = chatRooms.value.splice(roomIndex, 1)[0]
-    chatRooms.value.unshift(room)
-  }
+const downloadFile = (file) => {
+  ChatApi.downloadFile(file.id)
 }
 
 const scrollToBottom = () => {
@@ -559,38 +491,26 @@ const onScroll = (info) => {
   }
 }
 
-const refreshMessages = () => {
-  loadMessages()
-}
-
-const convertToTicket = async () => {
-  console.log('Convert to ticket:', selectedRoom.value)
-}
-
-const downloadFile = (file) => {
-  console.log('Download file:', file)
-}
-
-// Socket.io event handlers через SocketService
+// Socket.io event handlers
 const handleNewMessage = (data) => {
-  if (data.room_id === selectedRoom.value?.id) {
+  if (data.room_id === activeRoom.value?.id) {
     const existingMessage = messages.value.find((m) => m.id === data.message.id)
     if (!existingMessage) {
       messages.value.push(data.message)
       nextTick(() => {
         scrollToBottom()
       })
-    }
 
-    updateRoomInList(data.room_id, {
-      last_message_at: data.message.created_at,
-      last_message_preview: data.message.message_text,
-    })
+      // Auto-mark as read if from staff
+      if (data.message.sender_type === 'staff') {
+        markRoomAsRead(activeRoom.value.id)
+      }
+    }
   }
 }
 
 const handleUserTyping = (data) => {
-  if (data.userType === 'staff') {
+  if (data.userType === 'staff' && data.room_id === activeRoom.value?.id) {
     isTyping.value = true
     setTimeout(() => {
       isTyping.value = false
@@ -599,36 +519,23 @@ const handleUserTyping = (data) => {
 }
 
 const handleUserStoppedTyping = (data) => {
-  if (data.userType === 'staff') {
+  if (data.userType === 'staff' && data.room_id === activeRoom.value?.id) {
     isTyping.value = false
   }
 }
 
+const handleChatDeleted = (data) => {
+  if (data.room_id === activeRoom.value?.id) {
+    activeRoom.value = null
+    messages.value = []
+    Notify.create({
+      type: 'info',
+      message: $t('portal.pages.chat.chatDeleted'),
+    })
+  }
+}
+
 // Utility methods
-const getRoomTitle = (room) => {
-  if (room.room_type === 'ticket' && room.ticket_number) {
-    return `${$t('tickets.ticketNumber')} #${room.ticket_number}`
-  }
-  return $t('portal.pages.chat.supportChat')
-}
-
-const formatRoomDate = (dateString) => {
-  if (!dateString) return ''
-
-  const messageDate = new Date(dateString)
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  if (date.isSameDate(messageDate, today, 'day')) {
-    return date.formatDate(messageDate, 'HH:mm')
-  } else if (date.isSameDate(messageDate, yesterday, 'day')) {
-    return $t('common.yesterday')
-  } else {
-    return date.formatDate(messageDate, 'DD.MM')
-  }
-}
-
 const formatMessageDate = (dateString) => {
   const messageDate = new Date(dateString)
   const today = new Date()
@@ -656,84 +563,38 @@ const shouldShowDateSeparator = (messageIndex) => {
   return !date.isSameDate(currentDate, previousDate, 'day')
 }
 
+// Handle URL parameters for direct access
 const handleUrlParameters = () => {
-  const route = useRoute()
-
-  if (!route.query) {
-    console.log('No query parameters')
-    return
-  }
-
-  const openRoomId = route.query.openRoom
-
-  console.log('Handling URL params:', { openRoomId, roomsCount: chatRooms.value.length })
-
-  if (openRoomId) {
-    const room = chatRooms.value.find((r) => r.id == openRoomId)
-    console.log('Found room:', room)
-
-    if (room) {
-      selectRoom(room)
-    } else {
-      console.log(
-        'Room not found, available rooms:',
-        chatRooms.value.map((r) => r.id),
-      )
-
-      // Спробувати завантажити конкретну кімнату, якщо не знайдена
-      loadSpecificRoom(openRoomId)
-    }
-  }
-}
-
-const loadSpecificRoom = async (roomId) => {
-  try {
-    // Перезавантажуємо список кімнат і пробуємо знайти потрібну
-    await loadChatRooms()
-
-    const room = chatRooms.value.find((r) => r.id == roomId)
-    if (room) {
-      selectRoom(room)
-    } else {
-      Notify.create({
-        type: 'warning',
-        message: $t('portal.pages.chat.roomNotFound') || 'Chat room not found',
-      })
-    }
-  } catch (error) {
-    console.error('Error loading specific room:', error)
-    Notify.create({
-      type: 'negative',
-      message: $t('portal.pages.chat.loadError'),
-    })
-  }
+  // If has active chat, URL params are not needed
+  // The page will automatically load the active chat
 }
 
 // Lifecycle
 onMounted(async () => {
-  await loadChatRooms()
+  await loadActiveChat()
 
-  // Підписуємося на Socket.io події через SocketService
+  // Subscribe to Socket.io events
   SocketService.subscribe('chat:new_message', handleNewMessage, componentId)
   SocketService.subscribe('chat:user_typing', handleUserTyping, componentId)
   SocketService.subscribe('chat:user_stopped_typing', handleUserStoppedTyping, componentId)
+  SocketService.subscribe('chat:deleted', handleChatDeleted, componentId)
 
   await nextTick()
   handleUrlParameters()
 })
 
 onUnmounted(() => {
-  // Покидаємо поточну кімнату
-  if (selectedRoom.value?.id) {
-    SocketService.leaveChatRoom(selectedRoom.value.id)
+  // Leave current room
+  if (activeRoom.value?.id) {
+    SocketService.leaveChatRoom(activeRoom.value.id)
   }
 
-  // Очищуємо timeout
+  // Clear timeout
   if (typingTimeout) {
     clearTimeout(typingTimeout)
   }
 
-  // Відписуємося від всіх подій цього компонента
+  // Unsubscribe from all events
   SocketService.unsubscribeAll(componentId)
 })
 </script>
@@ -743,27 +604,13 @@ onUnmounted(() => {
   height: calc(100vh - 150px);
 }
 
-.chat-sidebar {
-  border-right: 1px solid #e0e0e0;
-  max-width: 320px;
-  min-width: 280px;
-}
-
-.chat-rooms-list {
-  height: calc(100% - 120px);
-}
-
-.chat-room-item {
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.chat-main {
-  min-height: 0;
+.chat-interface {
+  height: 100%;
 }
 
 .chat-header {
-  border-bottom: 1px solid #e0e0e0;
   min-height: 70px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .chat-messages-area {
@@ -809,6 +656,7 @@ onUnmounted(() => {
 
 .message-sender {
   font-weight: 500;
+  opacity: 0.8;
 }
 
 .message-text {
@@ -877,15 +725,6 @@ onUnmounted(() => {
 }
 
 /* Dark mode support */
-.body--dark .chat-sidebar {
-  border-right-color: #424242;
-}
-
-.body--dark .chat-header {
-  background: #424242 !important;
-  border-bottom-color: #616161;
-}
-
 .body--dark .chat-messages-area {
   background: #303030;
 }
@@ -899,17 +738,5 @@ onUnmounted(() => {
 .body--dark .chat-input-section {
   background: #424242 !important;
   border-top-color: #616161;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .chat-sidebar {
-    max-width: none;
-    min-width: none;
-  }
-
-  .message-bubble-container {
-    max-width: 85%;
-  }
 }
 </style>

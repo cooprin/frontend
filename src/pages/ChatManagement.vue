@@ -29,61 +29,73 @@
     <!-- Metrics Cards -->
     <div class="row q-gutter-md q-mb-md">
       <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered class="metrics-card">
+        <q-card flat bordered class="metrics-card bg-blue-1">
           <q-card-section class="text-center">
-            <div class="text-h4 text-primary">{{ metrics.active_chats || 0 }}</div>
-            <div class="text-caption text-grey-7">{{ $t('chat.management.activeChats') }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-h4 text-orange">{{ metrics.unassigned_chats || 0 }}</div>
-            <div class="text-caption text-grey-7">{{ $t('chat.management.unassignedChats') }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-h4 text-red">{{ metrics.unread_messages || 0 }}</div>
-            <div class="text-caption text-grey-7">{{ $t('chat.management.unreadMessages') }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-h4 text-green">{{ metrics.closed_today || 0 }}</div>
-            <div class="text-caption text-grey-7">{{ $t('chat.management.closedToday') }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-h4 text-blue">{{ metrics.created_today || 0 }}</div>
-            <div class="text-caption text-grey-7">{{ $t('chat.management.createdToday') }}</div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
-          <q-card-section class="text-center">
-            <div class="text-h4 text-purple">
-              {{
-                metrics.avg_resolution_time_minutes
-                  ? Math.round(metrics.avg_resolution_time_minutes)
-                  : 0
-              }}м
+            <q-icon name="forum" size="32px" color="blue" class="q-mb-sm" />
+            <div class="text-h4 text-blue">{{ metrics.active_chats || 0 }}</div>
+            <div class="text-caption text-blue-8 text-weight-medium">
+              {{ $t('chat.management.activeChats') }}
             </div>
-            <div class="text-caption text-grey-7">
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-md-2 col-sm-4 col-6">
+        <q-card flat bordered class="metrics-card bg-orange-1">
+          <q-card-section class="text-center">
+            <q-icon name="assignment_late" size="32px" color="orange" class="q-mb-sm" />
+            <div class="text-h4 text-orange">{{ metrics.unassigned_chats || 0 }}</div>
+            <div class="text-caption text-orange-8 text-weight-medium">
+              {{ $t('chat.management.unassignedChats') }}
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-md-2 col-sm-4 col-6">
+        <q-card flat bordered class="metrics-card bg-red-1">
+          <q-card-section class="text-center">
+            <q-icon name="mark_chat_unread" size="32px" color="red" class="q-mb-sm" />
+            <div class="text-h4 text-red">{{ metrics.unread_messages || 0 }}</div>
+            <div class="text-caption text-red-8 text-weight-medium">
+              {{ $t('chat.management.unreadMessages') }}
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-md-2 col-sm-4 col-6">
+        <q-card flat bordered class="metrics-card bg-green-1">
+          <q-card-section class="text-center">
+            <q-icon name="check_circle" size="32px" color="green" class="q-mb-sm" />
+            <div class="text-h4 text-green">{{ metrics.closed_today || 0 }}</div>
+            <div class="text-caption text-green-8 text-weight-medium">
+              {{ $t('chat.management.closedToday') }}
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-md-2 col-sm-4 col-6">
+        <q-card flat bordered class="metrics-card bg-purple-1">
+          <q-card-section class="text-center">
+            <q-icon name="schedule" size="32px" color="purple" class="q-mb-sm" />
+            <div class="text-h4 text-purple">{{ metrics.created_today || 0 }}</div>
+            <div class="text-caption text-purple-8 text-weight-medium">
+              {{ $t('chat.management.createdToday') }}
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-md-2 col-sm-4 col-6">
+        <q-card flat bordered class="metrics-card bg-indigo-1">
+          <q-card-section class="text-center">
+            <q-icon name="timer" size="32px" color="indigo" class="q-mb-sm" />
+            <div class="text-h4 text-indigo">
+              {{ Math.round(metrics.avg_resolution_time_minutes || 0) }}m
+            </div>
+            <div class="text-caption text-indigo-8 text-weight-medium">
               {{ $t('chat.management.avgResolutionTime') }}
             </div>
           </q-card-section>
@@ -91,256 +103,340 @@
       </div>
     </div>
 
-    <div class="row q-gutter-md">
-      <!-- Chat Rooms List -->
-      <div class="col-md-8 col-12">
-        <q-card flat bordered>
-          <!-- Filters -->
-          <q-card-section class="q-pb-none">
-            <div class="row q-gutter-md items-center">
-              <div class="col-md-3 col-sm-6 col-12">
-                <q-select
-                  v-model="filter.status"
-                  :options="statusOptions"
-                  :label="$t('chat.management.filter.status')"
-                  emit-value
-                  map-options
-                  clearable
-                  dense
-                  outlined
-                  @update:model-value="loadRooms"
-                />
-              </div>
+    <!-- Filters -->
+    <q-card flat bordered class="q-mb-md">
+      <q-card-section>
+        <div class="row q-gutter-md items-center">
+          <div class="col-md-3 col-sm-6 col-12">
+            <q-select
+              v-model="filter.status"
+              :options="statusOptions"
+              :label="$t('chat.management.filter.status')"
+              emit-value
+              map-options
+              clearable
+              dense
+              outlined
+              @update:model-value="loadRooms"
+            />
+          </div>
 
-              <div class="col-md-3 col-sm-6 col-12">
-                <q-select
-                  v-model="filter.assigned_to"
-                  :options="staffOptions"
-                  :label="$t('chat.management.filter.assignedTo')"
-                  emit-value
-                  map-options
-                  clearable
-                  dense
-                  outlined
-                  @update:model-value="loadRooms"
-                />
-              </div>
+          <div class="col-md-3 col-sm-6 col-12">
+            <q-select
+              v-model="filter.assigned_to"
+              :options="staffOptions"
+              :label="$t('chat.management.filter.assignedTo')"
+              emit-value
+              map-options
+              clearable
+              dense
+              outlined
+              @update:model-value="loadRooms"
+            />
+          </div>
 
-              <div class="col-md-3 col-sm-6 col-12">
-                <q-select
-                  v-model="filter.room_type"
-                  :options="roomTypeOptions"
-                  :label="$t('chat.management.filter.roomType')"
-                  emit-value
-                  map-options
-                  clearable
-                  dense
-                  outlined
-                  @update:model-value="loadRooms"
-                />
-              </div>
+          <div class="col-md-3 col-sm-6 col-12">
+            <q-select
+              v-model="filter.room_type"
+              :options="roomTypeOptions"
+              :label="$t('chat.management.filter.roomType')"
+              emit-value
+              map-options
+              clearable
+              dense
+              outlined
+              @update:model-value="loadRooms"
+            />
+          </div>
 
-              <div class="col-md-3 col-12">
-                <q-input
-                  v-model="filter.search"
-                  :label="$t('chat.management.filter.search')"
-                  dense
-                  outlined
-                  clearable
-                  @update:model-value="onSearchChange"
-                >
-                  <template v-slot:append>
-                    <q-icon name="search" />
-                  </template>
-                </q-input>
-              </div>
+          <div class="col-md-3 col-12">
+            <q-input
+              v-model="filter.search"
+              :label="$t('chat.management.filter.search')"
+              dense
+              outlined
+              clearable
+              @update:model-value="onSearchChange"
+            >
+              <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+
+    <!-- Bulk Actions -->
+    <div v-if="selectedRooms.length > 0" class="q-mb-md">
+      <q-card flat bordered class="bg-blue-1">
+        <q-card-section class="q-py-sm">
+          <div class="row items-center">
+            <div class="col">
+              <span class="text-weight-medium text-blue-8">
+                {{ $t('chat.management.selectedCount', { count: selectedRooms.length }) }}
+              </span>
             </div>
-          </q-card-section>
+            <div class="col-auto">
+              <q-btn
+                flat
+                dense
+                icon="person_add"
+                :label="$t('chat.management.bulkAssign')"
+                @click="showBulkAssignDialog = true"
+                color="blue"
+                class="q-mr-sm"
+              />
+              <q-btn
+                flat
+                dense
+                icon="close"
+                :label="$t('chat.management.bulkClose')"
+                @click="showBulkCloseDialog = true"
+                color="orange"
+                class="q-mr-sm"
+              />
+              <q-btn
+                flat
+                dense
+                icon="delete"
+                :label="$t('chat.management.bulkDelete')"
+                @click="showBulkDeleteDialog = true"
+                color="negative"
+              />
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
 
-          <!-- Bulk Actions -->
-          <q-card-section v-if="selectedRooms.length > 0" class="bg-blue-1 q-py-sm">
-            <div class="row items-center">
-              <div class="col">
-                <span class="text-weight-medium">
-                  {{ $t('chat.management.selectedCount', { count: selectedRooms.length }) }}
-                </span>
-              </div>
+    <!-- Loading -->
+    <div v-if="loading" class="text-center q-py-lg">
+      <q-spinner size="40px" color="primary" />
+      <div class="q-mt-sm">{{ $t('common.loading') }}</div>
+    </div>
+
+    <!-- Chat Rooms Cards -->
+    <div v-else-if="chatRooms.length > 0" class="row q-gutter-md">
+      <div
+        v-for="room in chatRooms"
+        :key="room.id"
+        class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12"
+      >
+        <q-card
+          flat
+          bordered
+          class="chat-room-card full-height"
+          :class="{ 'selected-card': selectedRooms.some((r) => r.id === room.id) }"
+        >
+          <q-card-section class="q-pb-sm">
+            <!-- Header with selection -->
+            <div class="row items-center q-mb-sm">
               <div class="col-auto">
-                <q-btn
-                  flat
-                  dense
-                  icon="person_add"
-                  :label="$t('chat.management.bulkAssign')"
-                  @click="showBulkAssignDialog = true"
-                  class="q-mr-sm"
-                />
-                <q-btn
-                  flat
-                  dense
-                  icon="close"
-                  :label="$t('chat.management.bulkClose')"
-                  @click="showBulkCloseDialog = true"
-                  color="negative"
+                <q-checkbox
+                  :model-value="selectedRooms.some((r) => r.id === room.id)"
+                  @update:model-value="toggleRoomSelection(room)"
                 />
               </div>
-            </div>
-          </q-card-section>
-
-          <!-- Rooms Table -->
-          <q-table
-            :rows="chatRooms"
-            :columns="tableColumns"
-            :loading="loading"
-            :pagination="tablePagination"
-            @request="onTableRequest"
-            selection="multiple"
-            v-model:selected="selectedRooms"
-            row-key="id"
-            flat
-            :rows-per-page-options="[10, 20, 50]"
-          >
-            <template v-slot:body-cell-client="props">
-              <q-td :props="props">
-                <div class="text-weight-medium">{{ props.row.client_name }}</div>
-                <div class="text-caption text-grey-7">{{ props.row.client_email }}</div>
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-type="props">
-              <q-td :props="props">
-                <q-chip
-                  :color="props.row.room_type === 'ticket' ? 'orange' : 'primary'"
-                  text-color="white"
-                  size="sm"
-                  :icon="props.row.room_type === 'ticket' ? 'confirmation_number' : 'support_agent'"
-                  :label="$t(`chat.management.roomTypes.${props.row.room_type}`)"
-                />
-                <div v-if="props.row.ticket_number" class="text-caption q-mt-xs">
-                  #{{ props.row.ticket_number }}
-                </div>
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-status="props">
-              <q-td :props="props">
-                <q-chip
-                  :color="getStatusColor(props.row.room_status)"
-                  text-color="white"
-                  size="sm"
-                  :label="$t(`chat.management.statuses.${props.row.room_status}`)"
-                />
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-assigned="props">
-              <q-td :props="props">
-                <div v-if="props.row.assigned_staff_name" class="text-weight-medium">
-                  {{ props.row.assigned_staff_name }}
-                </div>
-                <div v-else class="text-grey-6 text-italic">
-                  {{ $t('chat.management.unassigned') }}
-                </div>
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-messages="props">
-              <q-td :props="props">
-                <div class="text-center">
-                  <div class="text-weight-medium">{{ props.row.total_messages }}</div>
-                  <q-badge
-                    v-if="props.row.unread_client_messages > 0"
-                    color="red"
-                    :label="props.row.unread_client_messages"
-                    class="q-mt-xs"
+              <div class="col">
+                <div class="row items-center q-gutter-sm">
+                  <q-chip
+                    :color="room.room_type === 'ticket' ? 'orange' : 'primary'"
+                    text-color="white"
+                    size="sm"
+                    :icon="room.room_type === 'ticket' ? 'confirmation_number' : 'support_agent'"
+                    :label="$t(`chat.management.roomTypes.${room.room_type}`)"
+                  />
+                  <q-chip
+                    :color="getStatusColor(room.room_status)"
+                    text-color="white"
+                    size="sm"
+                    :label="$t(`chat.management.statuses.${room.room_status}`)"
                   />
                 </div>
-              </q-td>
-            </template>
+              </div>
+              <div class="col-auto">
+                <q-btn flat round dense icon="more_vert" size="sm">
+                  <q-menu>
+                    <q-list style="min-width: 180px">
+                      <q-item clickable @click="openChat(room)">
+                        <q-item-section avatar>
+                          <q-icon name="chat" color="primary" />
+                        </q-item-section>
+                        <q-item-section>{{ $t('chat.management.openChat') }}</q-item-section>
+                      </q-item>
 
-            <template v-slot:body-cell-last_message="props">
-              <q-td :props="props">
-                <div v-if="props.row.last_message" class="last-message">
-                  <div class="text-caption text-grey-8">
-                    {{ truncateText(props.row.last_message.message_text, 50) }}
-                  </div>
-                  <div class="text-caption text-grey-6">
-                    {{ formatDateTime(props.row.last_message.created_at) }}
-                  </div>
-                </div>
-                <div v-else class="text-grey-6 text-italic text-caption">
-                  {{ $t('chat.management.noMessages') }}
-                </div>
-              </q-td>
-            </template>
+                      <q-separator />
 
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props">
-                <q-btn flat round dense icon="chat" @click="openChat(props.row)" color="primary">
-                  <q-tooltip>{{ $t('chat.management.openChat') }}</q-tooltip>
+                      <q-item v-if="!room.assigned_staff_id" clickable @click="quickAssign(room)">
+                        <q-item-section avatar>
+                          <q-icon name="person_add" color="orange" />
+                        </q-item-section>
+                        <q-item-section>{{ $t('chat.management.assign') }}</q-item-section>
+                      </q-item>
+
+                      <q-item v-if="room.assigned_staff_id" clickable @click="quickReassign(room)">
+                        <q-item-section avatar>
+                          <q-icon name="swap_horiz" color="purple" />
+                        </q-item-section>
+                        <q-item-section>{{ $t('chat.management.reassign') }}</q-item-section>
+                      </q-item>
+
+                      <q-separator />
+
+                      <q-item
+                        v-if="room.room_status === 'active'"
+                        clickable
+                        @click="quickClose(room)"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="close" color="negative" />
+                        </q-item-section>
+                        <q-item-section>{{ $t('chat.management.close') }}</q-item-section>
+                      </q-item>
+
+                      <q-item clickable @click="quickDelete(room)">
+                        <q-item-section avatar>
+                          <q-icon name="delete" color="negative" />
+                        </q-item-section>
+                        <q-item-section>{{ $t('chat.management.delete') }}</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
                 </q-btn>
-                <q-btn
-                  v-if="!props.row.assigned_staff_id"
-                  flat
-                  round
-                  dense
-                  icon="person_add"
-                  @click="quickAssign(props.row)"
-                  color="orange"
-                >
-                  <q-tooltip>{{ $t('chat.management.assign') }}</q-tooltip>
-                </q-btn>
-                <q-btn
-                  v-if="props.row.room_status === 'active'"
-                  flat
-                  round
-                  dense
-                  icon="close"
-                  @click="quickClose(props.row)"
-                  color="negative"
-                >
-                  <q-tooltip>{{ $t('chat.management.close') }}</q-tooltip>
-                </q-btn>
-              </q-td>
-            </template>
-          </q-table>
-        </q-card>
-      </div>
+              </div>
+            </div>
 
-      <!-- Staff Workload -->
-      <div class="col-md-4 col-12">
-        <q-card flat bordered>
-          <q-card-section>
-            <div class="text-h6 q-mb-md">{{ $t('chat.management.staffWorkload') }}</div>
+            <!-- Client Info -->
+            <div class="row items-center q-mb-sm">
+              <q-avatar size="32px" color="primary" text-color="white" class="q-mr-sm">
+                <q-icon name="person" />
+              </q-avatar>
+              <div>
+                <div class="text-weight-medium">{{ room.client_name }}</div>
+                <div class="text-caption text-grey-6">{{ room.client_email }}</div>
+              </div>
+            </div>
 
-            <q-list>
-              <q-item v-for="staff in staffWorkload" :key="staff.id" dense>
-                <q-item-section avatar>
-                  <q-avatar size="32px" color="primary" text-color="white">
-                    {{ getInitials(staff.staff_name) }}
-                  </q-avatar>
-                </q-item-section>
+            <!-- Ticket Info -->
+            <div v-if="room.ticket_number" class="q-mb-sm">
+              <q-chip
+                color="orange"
+                text-color="white"
+                icon="confirmation_number"
+                size="sm"
+                :label="`#${room.ticket_number}`"
+              />
+              <div class="text-caption text-grey-7 q-mt-xs">{{ room.ticket_title }}</div>
+            </div>
 
-                <q-item-section>
-                  <q-item-label class="text-weight-medium">{{ staff.staff_name }}</q-item-label>
-                  <q-item-label caption>{{ staff.email }}</q-item-label>
-                </q-item-section>
+            <!-- Assignment -->
+            <div class="q-mb-sm">
+              <div v-if="room.assigned_staff_name" class="row items-center">
+                <q-icon name="support_agent" color="green" size="16px" class="q-mr-xs" />
+                <span class="text-caption text-green-8">{{ room.assigned_staff_name }}</span>
+              </div>
+              <div v-else class="row items-center">
+                <q-icon name="assignment_late" color="orange" size="16px" class="q-mr-xs" />
+                <span class="text-caption text-orange-8">{{
+                  $t('chat.management.unassigned')
+                }}</span>
+              </div>
+            </div>
 
-                <q-item-section side>
-                  <div class="text-right">
-                    <div class="text-weight-medium">{{ staff.active_chats }}</div>
-                    <q-badge
-                      v-if="staff.unread_messages > 0"
-                      color="red"
-                      :label="staff.unread_messages"
-                      class="q-mt-xs"
-                    />
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
+            <!-- Messages Info -->
+            <div class="row items-center justify-between q-mb-sm">
+              <div class="row items-center">
+                <q-icon name="chat" color="grey-6" size="16px" class="q-mr-xs" />
+                <span class="text-caption text-grey-6">
+                  {{ room.total_messages }} {{ $t('chat.management.messages') }}
+                </span>
+              </div>
+              <q-badge
+                v-if="room.unread_client_messages > 0"
+                color="red"
+                :label="room.unread_client_messages"
+              />
+            </div>
+
+            <!-- Last Message -->
+            <div v-if="room.last_message" class="q-mb-sm">
+              <div class="text-caption text-grey-8 last-message-preview">
+                <q-icon
+                  :name="room.last_message.sender_type === 'staff' ? 'support_agent' : 'person'"
+                  size="14px"
+                  class="q-mr-xs"
+                />
+                {{ truncateText(room.last_message.message_text, 60) }}
+              </div>
+            </div>
+
+            <!-- Timestamps -->
+            <div class="row items-center justify-between text-caption text-grey-6">
+              <div>
+                <q-icon name="schedule" size="14px" class="q-mr-xs" />
+                {{ formatDateTime(room.created_at) }}
+              </div>
+              <div v-if="room.last_message_at">
+                {{ formatRelativeTime(room.last_message_at) }}
+              </div>
+            </div>
           </q-card-section>
+
+          <!-- Quick Actions -->
+          <q-card-actions class="q-pt-none">
+            <q-btn
+              flat
+              size="sm"
+              icon="chat"
+              :label="$t('chat.management.openChat')"
+              @click="openChat(room)"
+              color="primary"
+            />
+            <q-space />
+            <q-btn
+              v-if="!room.assigned_staff_id"
+              flat
+              size="sm"
+              icon="person_add"
+              @click="quickAssign(room)"
+              color="orange"
+            >
+              <q-tooltip>{{ $t('chat.management.assign') }}</q-tooltip>
+            </q-btn>
+            <q-btn
+              v-if="room.room_status === 'active'"
+              flat
+              size="sm"
+              icon="close"
+              @click="quickClose(room)"
+              color="negative"
+            >
+              <q-tooltip>{{ $t('chat.management.close') }}</q-tooltip>
+            </q-btn>
+          </q-card-actions>
         </q-card>
       </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="text-center q-py-xl">
+      <q-icon name="forum" size="64px" color="grey-4" />
+      <div class="text-h6 text-grey-6 q-mt-md">
+        {{ $t('chat.management.noChats') }}
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div v-if="pagination.totalPages > 1" class="row justify-center q-mt-md">
+      <q-pagination
+        v-model="pagination.page"
+        :max="pagination.totalPages"
+        :max-pages="6"
+        direction-links
+        boundary-links
+        @update:model-value="onPageChange"
+      />
     </div>
 
     <!-- Chat Dialog -->
@@ -418,6 +514,28 @@
       </q-card>
     </q-dialog>
 
+    <!-- Bulk Delete Dialog -->
+    <q-dialog v-model="showBulkDeleteDialog">
+      <q-card style="min-width: 400px">
+        <q-card-section>
+          <div class="text-h6">{{ $t('chat.management.bulkDelete') }}</div>
+          <div class="text-body2 text-grey-7 q-mt-sm">
+            {{ $t('chat.management.bulkDeleteWarning') }}
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat :label="$t('common.cancel')" @click="showBulkDeleteDialog = false" />
+          <q-btn
+            color="negative"
+            :label="$t('common.delete')"
+            @click="performBulkDelete"
+            :loading="bulkDeleting"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
     <!-- Search Dialog -->
     <q-dialog v-model="showSearchDialog">
       <chat-search-dialog @close="showSearchDialog = false" @select-room="openChatFromSearch" />
@@ -440,16 +558,17 @@ const { t: $t } = useI18n()
 const chatRooms = ref([])
 const selectedRooms = ref([])
 const metrics = ref({})
-const staffWorkload = ref([])
 const availableStaff = ref([])
 const loading = ref(false)
 const chatDialog = ref(false)
 const selectedChatRoom = ref(null)
 const showBulkAssignDialog = ref(false)
 const showBulkCloseDialog = ref(false)
+const showBulkDeleteDialog = ref(false)
 const showSearchDialog = ref(false)
 const bulkAssigning = ref(false)
 const bulkClosing = ref(false)
+const bulkDeleting = ref(false)
 
 const filter = ref({
   status: null,
@@ -466,10 +585,11 @@ const bulkCloseData = ref({
   reason: '',
 })
 
-const tablePagination = ref({
+const pagination = ref({
   page: 1,
   rowsPerPage: 20,
   rowsNumber: 0,
+  totalPages: 0,
 })
 
 let searchTimeout = null
@@ -501,72 +621,12 @@ const availableStaffOptions = computed(() =>
   })),
 )
 
-const tableColumns = computed(() => [
-  {
-    name: 'client',
-    label: $t('chat.management.table.client'),
-    field: 'client_name',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'type',
-    label: $t('chat.management.table.type'),
-    field: 'room_type',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    name: 'status',
-    label: $t('chat.management.table.status'),
-    field: 'room_status',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    name: 'assigned',
-    label: $t('chat.management.table.assigned'),
-    field: 'assigned_staff_name',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'messages',
-    label: $t('chat.management.table.messages'),
-    field: 'total_messages',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    name: 'last_message',
-    label: $t('chat.management.table.lastMessage'),
-    field: 'last_message',
-    align: 'left',
-    style: 'max-width: 200px',
-  },
-  {
-    name: 'created_at',
-    label: $t('chat.management.table.created'),
-    field: 'created_at',
-    align: 'center',
-    sortable: true,
-    format: (val) => formatDateTime(val),
-  },
-  {
-    name: 'actions',
-    label: $t('common.actions'),
-    field: 'actions',
-    align: 'center',
-  },
-])
-
 // Methods
 const loadMetrics = async () => {
   try {
     const response = await ChatApi.getChatMetrics()
     if (response.data.success) {
       metrics.value = response.data.metrics
-      staffWorkload.value = response.data.staff_workload || []
     }
   } catch (error) {
     console.error('Error loading metrics:', error)
@@ -589,8 +649,8 @@ const loadRooms = async () => {
     loading.value = true
 
     const params = {
-      page: tablePagination.value.page,
-      limit: tablePagination.value.rowsPerPage,
+      page: pagination.value.page,
+      limit: pagination.value.rowsPerPage,
       ...filter.value,
     }
 
@@ -605,7 +665,8 @@ const loadRooms = async () => {
 
     if (response.data.success) {
       chatRooms.value = response.data.rooms
-      tablePagination.value.rowsNumber = response.data.pagination.total
+      pagination.value.rowsNumber = response.data.pagination.total
+      pagination.value.totalPages = response.data.pagination.totalPages
     }
   } catch (error) {
     console.error('Error loading rooms:', error)
@@ -618,16 +679,15 @@ const loadRooms = async () => {
   }
 }
 
-const onTableRequest = (props) => {
-  tablePagination.value.page = props.pagination.page
-  tablePagination.value.rowsPerPage = props.pagination.rowsPerPage
+const onPageChange = (page) => {
+  pagination.value.page = page
   loadRooms()
 }
 
 const onSearchChange = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    tablePagination.value.page = 1
+    pagination.value.page = 1
     loadRooms()
   }, 500)
 }
@@ -636,6 +696,16 @@ const refreshData = () => {
   loadMetrics()
   loadRooms()
   loadAvailableStaff()
+  selectedRooms.value = []
+}
+
+const toggleRoomSelection = (room) => {
+  const index = selectedRooms.value.findIndex((r) => r.id === room.id)
+  if (index >= 0) {
+    selectedRooms.value.splice(index, 1)
+  } else {
+    selectedRooms.value.push(room)
+  }
 }
 
 const openChat = (room) => {
@@ -663,9 +733,20 @@ const quickAssign = (room) => {
   showBulkAssignDialog.value = true
 }
 
+const quickReassign = (room) => {
+  selectedRooms.value = [room]
+  bulkAssignData.value.staff_id = room.assigned_staff_id
+  showBulkAssignDialog.value = true
+}
+
 const quickClose = (room) => {
   selectedRooms.value = [room]
   showBulkCloseDialog.value = true
+}
+
+const quickDelete = (room) => {
+  selectedRooms.value = [room]
+  showBulkDeleteDialog.value = true
 }
 
 const performBulkAssign = async () => {
@@ -730,6 +811,34 @@ const performBulkClose = async () => {
   }
 }
 
+const performBulkDelete = async () => {
+  try {
+    bulkDeleting.value = true
+
+    // Delete each room individually since we don't have bulk delete endpoint
+    const promises = selectedRooms.value.map((room) => ChatApi.deleteRoom(room.id))
+
+    await Promise.all(promises)
+
+    Notify.create({
+      type: 'positive',
+      message: $t('chat.management.bulkDeleteSuccess', { count: selectedRooms.value.length }),
+    })
+
+    showBulkDeleteDialog.value = false
+    selectedRooms.value = []
+    refreshData()
+  } catch (error) {
+    console.error('Error bulk deleting:', error)
+    Notify.create({
+      type: 'negative',
+      message: $t('chat.management.bulkDeleteError'),
+    })
+  } finally {
+    bulkDeleting.value = false
+  }
+}
+
 // Utility methods
 const getStatusColor = (status) => {
   const colors = {
@@ -744,17 +853,21 @@ const formatDateTime = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm')
 }
 
+const formatRelativeTime = (dateString) => {
+  const now = new Date()
+  const messageDate = new Date(dateString)
+  const diffMinutes = Math.floor((now - messageDate) / (1000 * 60))
+
+  if (diffMinutes < 1) return $t('common.justNow')
+  if (diffMinutes < 60) return $t('common.minutesAgo', { minutes: diffMinutes })
+  if (diffMinutes < 1440) return $t('common.hoursAgo', { hours: Math.floor(diffMinutes / 60) })
+
+  return date.formatDate(messageDate, 'DD.MM HH:mm')
+}
+
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
-}
-
-const getInitials = (name) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
 }
 
 // Handle URL parameters for direct room access
@@ -763,12 +876,10 @@ const handleUrlParameters = () => {
   const openRoomId = route.query.openRoom
 
   if (openRoomId) {
-    // Знайти кімнату в списку та відкрити її
     const room = chatRooms.value.find((r) => r.id == openRoomId)
     if (room) {
       openChat(room)
     } else {
-      // Якщо кімната не знайдена в поточному списку, спробувати завантажити її
       loadSpecificRoom(openRoomId)
     }
   }
@@ -776,7 +887,6 @@ const handleUrlParameters = () => {
 
 const loadSpecificRoom = async (roomId) => {
   try {
-    // Завантажити конкретну кімнату по ID
     const response = await ChatApi.getRoomsForStaff({
       room_id: roomId,
       limit: 1,
@@ -802,70 +912,52 @@ const loadSpecificRoom = async (roomId) => {
 
 // Lifecycle
 onMounted(async () => {
-  // Спочатку завантажуємо дані
-  await refreshData() // це завантажує loadRooms()
-
-  // Потім обробляємо URL параметри
+  await refreshData()
   await nextTick()
   handleUrlParameters()
 })
 </script>
 
 <style scoped>
-.last-message {
-  max-width: 200px;
-}
-
-.q-table tbody td {
-  vertical-align: top;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .last-message {
-    max-width: 150px;
-  }
-}
-/* Вирівнювання карток метрик */
-.row.q-gutter-md .col-md-2 {
-  display: flex;
-}
-
-.row.q-gutter-md .col-md-2 .q-card {
-  width: 100%;
-  min-height: 100px;
-  display: flex;
-  align-items: center;
-}
-
-.row.q-gutter-md .col-md-2 .q-card .q-card-section {
-  width: 100%;
-  padding: 16px;
-}
-
-/* Забезпечуємо однаковий розмір для всіх карток метрик */
 .metrics-card {
-  min-height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 120px;
+  transition: transform 0.2s;
 }
 
-.metrics-card .q-card-section {
-  width: 100%;
-  text-align: center;
+.metrics-card:hover {
+  transform: translateY(-2px);
 }
 
-/* Вирівнювання тексту в картках */
-.metrics-card .text-h4 {
-  font-size: 2rem;
-  font-weight: bold;
-  line-height: 1;
-  margin-bottom: 8px;
+.chat-room-card {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
 }
 
-.metrics-card .text-caption {
-  font-size: 0.75rem;
-  line-height: 1.2;
+.chat-room-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.selected-card {
+  border-color: #1976d2 !important;
+  background: #f3f8ff !important;
+}
+
+.last-message-preview {
+  background: #f8f9fa;
+  padding: 8px;
+  border-radius: 8px;
+  border-left: 3px solid #e0e0e0;
+}
+
+/* Dark mode support */
+.body--dark .selected-card {
+  border-color: #90caf9 !important;
+  background: rgba(25, 118, 210, 0.1) !important;
+}
+
+.body--dark .last-message-preview {
+  background: #424242;
+  border-left-color: #616161;
 }
 </style>
