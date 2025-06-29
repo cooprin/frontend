@@ -25,7 +25,13 @@
         <q-btn flat @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
-        <NotificationBell />
+        <q-btn flat round dense icon="notifications">
+          <q-menu>
+            <q-card style="min-width: 200px">
+              <q-card-section>Тестове меню сповіщень</q-card-section>
+            </q-card>
+          </q-menu>
+        </q-btn>
 
         <q-btn flat round dense icon="account_circle">
           <q-menu>
@@ -979,7 +985,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
 import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 import { CompanyApi } from 'src/api/company'
-import NotificationBell from 'src/components/notifications/NotificationBell.vue'
+//import NotificationBell from 'src/components/notifications/NotificationBell.vue'
 
 const companyName = ref('')
 
