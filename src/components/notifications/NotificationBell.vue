@@ -1,6 +1,6 @@
 <template>
   <div class="notification-bell">
-    <q-btn flat round dense icon="notifications" @click="toggleNotifications">
+    <q-btn flat round dense icon="notifications">
       <q-badge
         v-if="unreadCount > 0"
         color="red"
@@ -15,8 +15,7 @@
         anchor="bottom right"
         self="top right"
         :offset="[0, 8]"
-        no-focus
-        auto-close
+        @before-show="loadNotifications"
       >
         <q-card class="notification-menu">
           <q-card-section class="row items-center q-pb-none">
@@ -148,24 +147,7 @@ const loadUnreadCount = async () => {
   }
 }
 
-const toggleNotifications = async () => {
-  console.log('🔔 Toggle notifications clicked')
-  console.log('Current state:', showNotifications.value)
-
-  if (!showNotifications.value) {
-    console.log('📥 Loading notifications...')
-    try {
-      await loadNotifications()
-      console.log('✅ Notifications loaded successfully')
-    } catch (error) {
-      console.error('❌ Error loading notifications:', error)
-      return // Не відкриваємо меню якщо помилка
-    }
-  }
-
-  showNotifications.value = !showNotifications.value
-  console.log('New state:', showNotifications.value)
-}
+// Функція більше не потрібна, використовуємо @before-show
 
 const markAllAsRead = async () => {
   try {
