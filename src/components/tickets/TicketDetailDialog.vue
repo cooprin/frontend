@@ -501,7 +501,6 @@ const addComment = async () => {
     })
 
     if (response.data.success) {
-      comments.value.push(response.data.comment)
       newComment.value = { text: '', isInternal: false }
       showCommentDialog.value = false
 

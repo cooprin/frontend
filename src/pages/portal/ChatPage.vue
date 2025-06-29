@@ -673,11 +673,33 @@ const handleUrlParameters = () => {
         'Room not found, available rooms:',
         chatRooms.value.map((r) => r.id),
       )
+
+      // Спробувати завантажити конкретну кімнату, якщо не знайдена
+      loadSpecificRoom(openRoomId)
+    }
+  }
+}
+
+const loadSpecificRoom = async (roomId) => {
+  try {
+    // Перезавантажуємо список кімнат і пробуємо знайти потрібну
+    await loadChatRooms()
+
+    const room = chatRooms.value.find((r) => r.id == roomId)
+    if (room) {
+      selectRoom(room)
+    } else {
       Notify.create({
         type: 'warning',
         message: $t('portal.pages.chat.roomNotFound') || 'Chat room not found',
       })
     }
+  } catch (error) {
+    console.error('Error loading specific room:', error)
+    Notify.create({
+      type: 'negative',
+      message: $t('portal.pages.chat.loadError'),
+    })
   }
 }
 

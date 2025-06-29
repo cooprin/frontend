@@ -29,7 +29,7 @@
     <!-- Metrics Cards -->
     <div class="row q-gutter-md q-mb-md">
       <div class="col-md-2 col-sm-4 col-6">
-        <q-card flat bordered>
+        <q-card flat bordered class="metrics-card">
           <q-card-section class="text-center">
             <div class="text-h4 text-primary">{{ metrics.active_chats || 0 }}</div>
             <div class="text-caption text-grey-7">{{ $t('chat.management.activeChats') }}</div>
@@ -764,7 +764,7 @@ const handleUrlParameters = () => {
 
   if (openRoomId) {
     // Знайти кімнату в списку та відкрити її
-    const room = chatRooms.value.find((r) => r.id === openRoomId)
+    const room = chatRooms.value.find((r) => r.id == openRoomId)
     if (room) {
       openChat(room)
     } else {
@@ -825,5 +825,47 @@ onMounted(async () => {
   .last-message {
     max-width: 150px;
   }
+}
+/* Вирівнювання карток метрик */
+.row.q-gutter-md .col-md-2 {
+  display: flex;
+}
+
+.row.q-gutter-md .col-md-2 .q-card {
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.row.q-gutter-md .col-md-2 .q-card .q-card-section {
+  width: 100%;
+  padding: 16px;
+}
+
+/* Забезпечуємо однаковий розмір для всіх карток метрик */
+.metrics-card {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.metrics-card .q-card-section {
+  width: 100%;
+  text-align: center;
+}
+
+/* Вирівнювання тексту в картках */
+.metrics-card .text-h4 {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.metrics-card .text-caption {
+  font-size: 0.75rem;
+  line-height: 1.2;
 }
 </style>

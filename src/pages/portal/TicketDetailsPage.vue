@@ -444,9 +444,6 @@ const addComment = async () => {
     })
 
     if (response.data.success) {
-      // Add new comment to list
-      comments.value.push(response.data.comment)
-
       // Clear form and close dialog
       newComment.value = ''
       showCommentDialog.value = false
