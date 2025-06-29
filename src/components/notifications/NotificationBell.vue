@@ -229,7 +229,7 @@ const handleNotificationClick = async (notification) => {
     } else {
       // Адмінська частина - виправлено навігацію до чатів
       router.push({
-        name: 'chat-management',
+        name: 'chat',
         query: roomId ? { openRoom: roomId } : {},
       })
     }

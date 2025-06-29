@@ -658,6 +658,12 @@ const shouldShowDateSeparator = (messageIndex) => {
 
 const handleUrlParameters = () => {
   const route = useRoute()
+
+  if (!route.query) {
+    console.log('No query parameters')
+    return
+  }
+
   const openRoomId = route.query.openRoom
 
   console.log('Handling URL params:', { openRoomId, roomsCount: chatRooms.value.length })
