@@ -205,16 +205,16 @@ const handleNotificationClick = async (notification) => {
     if (notification.entity_id) {
       // Перевіряємо чи ми в клієнтській частині
       const currentRoute = router.currentRoute.value
-      const isClientPortal = currentRoute.path.startsWith('/portal')
+      const isClientPortal = currentRoute.path.includes('/portal')
 
       if (isClientPortal) {
-        // Клієнтська частина - переходимо на клієнтський тікет
+        // Клієнтська частина
         router.push({
           name: 'portal-ticket-details',
           params: { id: notification.entity_id },
         })
       } else {
-        // Адмінська частина - переходимо на адмінський тікет
+        // Адмінська частина
         router.push({
           name: 'ticket-details',
           params: { id: notification.entity_id },
@@ -226,24 +226,23 @@ const handleNotificationClick = async (notification) => {
 
     // Перевіряємо чи ми в клієнтській частині
     const currentRoute = router.currentRoute.value
-    const isClientPortal = currentRoute.path.startsWith('/portal')
+    const isClientPortal = currentRoute.path.includes('/portal')
 
     if (isClientPortal) {
-      // Клієнтська частина - переходимо на клієнтський чат (ChatPage.vue)
+      // Клієнтська частина
       router.push({
         name: 'portal-chat',
         query: roomId ? { openRoom: roomId } : {},
       })
     } else {
-      // Адмінська частина - переходимо на chat management з параметром для відкриття діалогу
+      // Адмінська частина
       router.push({
-        name: 'chat', // це ChatManagement.vue
+        name: 'chat',
         query: roomId ? { openRoom: roomId } : {},
       })
-      // ChatManagement.vue вже має логіку handleUrlParameters() для відкриття діалогу
     }
   } else {
-    // Для інших типів - на загальну сторінку сповіщень
+    // Для інших типів
     handleViewAllNotifications()
   }
 }
