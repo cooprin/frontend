@@ -338,6 +338,7 @@ import { useI18n } from 'vue-i18n'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
 import { io } from 'socket.io-client'
+import { useRoute } from 'vue-router'
 
 const { t: $t } = useI18n()
 
@@ -723,12 +724,43 @@ const leaveChatRoom = (roomId) => {
   }
 }
 
-// Lifecycle
-onMounted(() => {
-  loadChatRooms()
+const handleUrlParameters = () => {
+  const route = useRoute()
+  const openRoomId = route.query.openRoom
 
-  // Ініціалізація Socket.IO
+  console.log('Handling URL params:', { openRoomId, roomsCount: chatRooms.value.length }) // для дебагу
+
+  if (openRoomId) {
+    // Знайти кімнату в списку та відкрити її
+    const room = chatRooms.value.find((r) => r.id == openRoomId) // використовуємо == замість ===
+    console.log('Found room:', room) // для дебагу
+
+    if (room) {
+      selectRoom(room)
+    } else {
+      console.log(
+        'Room not found, available rooms:',
+        chatRooms.value.map((r) => r.id),
+      ) // для дебагу
+      Notify.create({
+        type: 'warning',
+        message: $t('portal.pages.chat.roomNotFound') || 'Chat room not found',
+      })
+    }
+  }
+}
+
+// Lifecycle
+onMounted(async () => {
+  // Спочатку завантажуємо дані
+  await loadChatRooms()
+
+  // Потім ініціалізуємо сокет
   initializeSocket()
+
+  // І тільки після завантаження даних обробляємо URL параметри
+  await nextTick()
+  handleUrlParameters()
 })
 
 onUnmounted(() => {

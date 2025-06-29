@@ -801,13 +801,13 @@ const loadSpecificRoom = async (roomId) => {
 }
 
 // Lifecycle
-onMounted(() => {
-  refreshData()
+onMounted(async () => {
+  // Спочатку завантажуємо дані
+  await refreshData() // це завантажує loadRooms()
 
-  // Обробити URL параметри після завантаження даних
-  nextTick(() => {
-    handleUrlParameters()
-  })
+  // Потім обробляємо URL параметри
+  await nextTick()
+  handleUrlParameters()
 })
 </script>
 
