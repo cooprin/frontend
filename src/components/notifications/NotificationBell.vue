@@ -146,16 +146,12 @@ const toggleNotifications = async () => {
   console.log('🔔 Toggle notifications clicked')
   console.log('Current state:', showNotifications.value)
 
-  if (!showNotifications.value) {
-    console.log('📥 Loading notifications...')
-    try {
-      await loadNotifications()
-      console.log('✅ Notifications loaded')
-    } catch (error) {
-      console.error('❌ Error loading notifications:', error)
-      return // Не змінюємо стан якщо помилка
-    }
-  }
+  // Тимчасово закоментуй loadNotifications
+  // if (!showNotifications.value) {
+  //   console.log('📥 Loading notifications...')
+  //   await loadNotifications()
+  //   console.log('✅ Notifications loaded')
+  // }
 
   showNotifications.value = !showNotifications.value
   console.log('New state:', showNotifications.value)
