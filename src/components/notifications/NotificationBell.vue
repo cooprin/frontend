@@ -103,7 +103,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { date, Notify } from 'quasar'
 import { NotificationsApi } from 'src/api/notifications'
-import { io } from 'socket.io-client'
+import SocketService from 'src/services/socketService'
 
 const { t: $t } = useI18n()
 const router = useRouter()
@@ -115,11 +115,8 @@ const loading = ref(false)
 const markingAllRead = ref(false)
 const showNotifications = ref(false)
 
-const socket = ref(null)
-const isConnected = ref(false)
-
-// Polling interval
-let pollInterval = null
+// Component ID для відписки від подій
+const componentId = 'notification-bell-' + Date.now()
 
 // Methods
 const loadNotifications = async () => {
@@ -197,16 +194,15 @@ const handleNotificationClick = async (notification) => {
   // Навігація залежно від типу сповіщення
   showNotifications.value = false
 
+  const currentRoute = router.currentRoute.value
+  const isClientPortal = currentRoute.path.startsWith('/portal')
+
   if (
     ['new_ticket', 'ticket_assigned', 'ticket_updated', 'ticket_comment'].includes(
       notification.notification_type,
     )
   ) {
     if (notification.entity_id) {
-      // Перевіряємо чи ми в клієнтській частині
-      const currentRoute = router.currentRoute.value
-      const isClientPortal = currentRoute.path.includes('/portal')
-
       if (isClientPortal) {
         // Клієнтська частина
         router.push({
@@ -214,19 +210,15 @@ const handleNotificationClick = async (notification) => {
           params: { id: notification.entity_id },
         })
       } else {
-        // Адмінська частина
+        // Адмінська частина - виправлено назву роуту
         router.push({
-          name: 'ticket-details',
-          params: { id: notification.entity_id },
+          name: 'tickets',
+          query: { ticketId: notification.entity_id },
         })
       }
     }
   } else if (['new_chat_message', 'chat_assigned'].includes(notification.notification_type)) {
     const roomId = notification.data?.room_id || notification.entity_id
-
-    // Перевіряємо чи ми в клієнтській частині
-    const currentRoute = router.currentRoute.value
-    const isClientPortal = currentRoute.path.includes('/portal')
 
     if (isClientPortal) {
       // Клієнтська частина
@@ -235,9 +227,9 @@ const handleNotificationClick = async (notification) => {
         query: roomId ? { openRoom: roomId } : {},
       })
     } else {
-      // Адмінська частина
+      // Адмінська частина - виправлено навігацію до чатів
       router.push({
-        name: 'chat',
+        name: 'chat-management',
         query: roomId ? { openRoom: roomId } : {},
       })
     }
@@ -250,17 +242,59 @@ const handleNotificationClick = async (notification) => {
 const handleViewAllNotifications = () => {
   showNotifications.value = false
 
-  // Перевіряємо чи ми в клієнтській частині
   const currentRoute = router.currentRoute.value
   const isClientPortal = currentRoute.path.startsWith('/portal')
 
   if (isClientPortal) {
-    // Клієнтська частина - переходимо на клієнтські сповіщення
     router.push({ name: 'portal-notifications' })
   } else {
-    // Адмінська частина - переходимо на адмінські сповіщення
     router.push({ name: 'notifications' })
   }
+}
+
+// Socket.io event handlers
+const handleNewNotification = (notification) => {
+  // Додаємо нове сповіщення на початок списку
+  notifications.value.unshift(notification)
+  unreadCount.value = notification.unread_count || unreadCount.value + 1
+
+  // Показуємо toast сповіщення
+  Notify.create({
+    type: 'info',
+    message: notification.title,
+    caption: notification.message,
+    position: 'top-right',
+    timeout: 5000,
+    actions: [
+      {
+        icon: 'close',
+        color: 'white',
+        round: true,
+        handler: () => {},
+      },
+    ],
+  })
+}
+
+const handleUnreadCountUpdate = (data) => {
+  unreadCount.value = data.count || data.unread_count || 0
+}
+
+const handleNotificationRead = (data) => {
+  const notification = notifications.value.find((n) => n.id === data.notificationId)
+  if (notification && !notification.is_read) {
+    notification.is_read = true
+    unreadCount.value = Math.max(0, unreadCount.value - 1)
+  }
+}
+
+const handleAllNotificationsRead = () => {
+  notifications.value.forEach((n) => {
+    if (!n.is_read) {
+      n.is_read = true
+    }
+  })
+  unreadCount.value = 0
 }
 
 const getNotificationIcon = (type) => {
@@ -307,102 +341,21 @@ const formatDate = (dateString) => {
   return date.formatDate(notificationDate, 'DD.MM.YYYY HH:mm')
 }
 
-const initializeSocket = () => {
-  const token = localStorage.getItem('auth_token')
-
-  socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
-    auth: {
-      token: token,
-    },
-  })
-
-  socket.value.on('connect', () => {
-    console.log('Notifications socket connected')
-    isConnected.value = true
-    // Запитуємо поточну кількість непрочитаних
-    socket.value.emit('get_unread_notifications')
-  })
-
-  socket.value.on('disconnect', () => {
-    console.log('Notifications socket disconnected')
-    isConnected.value = false
-  })
-
-  // Слухаємо нові сповіщення
-  socket.value.on('new_notification', (notification) => {
-    // Додаємо нове сповіщення на початок списку
-    notifications.value.unshift(notification)
-
-    // Оновлюємо лічильник
-    unreadCount.value = notification.unread_count || unreadCount.value + 1
-
-    // Показуємо toast сповіщення
-    Notify.create({
-      type: 'info',
-      message: notification.title,
-      caption: notification.message,
-      position: 'top-right',
-      timeout: 5000,
-      actions: [
-        {
-          icon: 'close',
-          color: 'white',
-          round: true,
-          handler: () => {},
-        },
-      ],
-    })
-  })
-
-  // Слухаємо оновлення лічильника
-  socket.value.on('unread_notifications_count', (data) => {
-    unreadCount.value = data.count
-  })
-
-  socket.value.on('notification_marked_read', (data) => {
-    // Знаходимо сповіщення та позначаємо як прочитане
-    const notification = notifications.value.find((n) => n.id === data.notificationId)
-    if (notification && !notification.is_read) {
-      notification.is_read = true
-      unreadCount.value = Math.max(0, unreadCount.value - 1)
-    }
-  })
-
-  socket.value.on('notifications_all_read', () => {
-    // Позначаємо всі сповіщення як прочитані
-    notifications.value.forEach((n) => {
-      if (!n.is_read) {
-        n.is_read = true
-      }
-    })
-    unreadCount.value = 0
-  })
-}
-
-const cleanupSocket = () => {
-  if (socket.value) {
-    socket.value.disconnect()
-  }
-}
-
 // Lifecycle
 onMounted(() => {
   loadUnreadCount()
-  initializeSocket()
 
-  // Polling кожні 30 секунд як fallback
-  pollInterval = setInterval(() => {
-    if (!isConnected.value) {
-      loadUnreadCount()
-    }
-  }, 30000)
+  // Підписуємося на Socket.io події через SocketService
+  SocketService.subscribe('notification:new', handleNewNotification, componentId)
+  SocketService.subscribe('notification:unread_count', handleUnreadCountUpdate, componentId)
+  SocketService.subscribe('notification:unread_count_updated', handleUnreadCountUpdate, componentId)
+  SocketService.subscribe('notification:read', handleNotificationRead, componentId)
+  SocketService.subscribe('notification:all_read', handleAllNotificationsRead, componentId)
 })
 
 onUnmounted(() => {
-  if (pollInterval) {
-    clearInterval(pollInterval)
-  }
-  cleanupSocket()
+  // Відписуємося від всіх подій цього компонента
+  SocketService.unsubscribeAll(componentId)
 })
 
 // Expose methods for parent components

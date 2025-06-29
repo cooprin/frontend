@@ -384,7 +384,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from 'stores/auth'
 import { date, Notify } from 'quasar'
 import { ChatApi } from 'src/api/chat'
-import { io } from 'socket.io-client'
+import SocketService from 'src/services/socketService'
 
 const { t: $t } = useI18n()
 const authStore = useAuthStore()
@@ -430,8 +430,9 @@ const closeData = ref({
 // Refs
 const messagesScroll = ref(null)
 const fileInput = ref(null)
-const socket = ref(null)
-const isConnected = ref(false)
+
+// Component ID для відписки від подій
+const componentId = 'staff-chat-dialog-' + Date.now()
 
 // Computed
 const availableStaffOptions = computed(() =>
@@ -455,10 +456,8 @@ const loadMessages = async (loadMore = false) => {
 
     if (response.data.success) {
       if (loadMore) {
-        // Для старіших повідомлень додаємо на початок
         messages.value = [...response.data.messages, ...messages.value]
       } else {
-        // Для нових повідомлень просто замінюємо (вони вже в правильному порядку)
         messages.value = response.data.messages
         await nextTick()
         scrollToBottom()
@@ -487,17 +486,11 @@ const sendMessage = async () => {
     const response = await ChatApi.sendMessage(props.room.id, formData)
 
     if (response.data.success) {
-      // Add message to local state immediately
-      messages.value.push(response.data.message)
-
-      // Clear input
+      // Повідомлення додасться через Socket.io подію
       newMessage.value = ''
       selectedFiles.value = []
-
-      // Scroll to bottom immediately
       scrollToBottom()
 
-      // Mark messages as read
       await ChatApi.markAsRead(props.room.id)
     }
   } catch (error) {
@@ -602,7 +595,6 @@ const closeChat = async () => {
 }
 
 const convertToTicket = () => {
-  // Implementation for converting to ticket
   console.log('Convert to ticket:', props.room)
 }
 
@@ -638,6 +630,27 @@ const onScroll = (info) => {
   if (info.verticalPercentage === 0 && messages.value.length >= 20 && !loadingMessages.value) {
     loadMessages(true)
   }
+}
+
+// Socket.io event handlers через SocketService
+const handleNewMessage = (data) => {
+  if (data.room_id === props.room.id) {
+    const existingMessage = messages.value.find((m) => m.id === data.message.id)
+    if (!existingMessage) {
+      messages.value.push(data.message)
+      nextTick(() => {
+        scrollToBottom()
+      })
+    }
+  }
+}
+
+const handleUserTyping = (data) => {
+  console.log(`${data.userName} is typing...`)
+}
+
+const handleUserStoppedTyping = (data) => {
+  console.log(`${data.userName} stopped typing`)
 }
 
 // Utility methods
@@ -679,72 +692,29 @@ const shouldShowDateSeparator = (messageIndex) => {
   return !date.isSameDate(currentDate, previousDate, 'day')
 }
 
-const initializeSocket = () => {
-  const token = localStorage.getItem('auth_token')
-
-  socket.value = io(process.env.VUE_APP_SOCKET_URL || 'http://localhost:3000', {
-    auth: {
-      token: token,
-    },
-  })
-
-  socket.value.on('connect', () => {
-    console.log('Staff chat socket connected')
-    isConnected.value = true
-    // Приєднуємося до кімнати чату
-    socket.value.emit('join_chat_room', props.room.id)
-  })
-
-  socket.value.on('disconnect', () => {
-    console.log('Staff chat socket disconnected')
-    isConnected.value = false
-  })
-
-  // Слухаємо нові повідомлення
-  socket.value.on('new_message', (data) => {
-    if (data.room_id === props.room.id) {
-      // Перевіряємо, чи повідомлення вже не існує (щоб уникнути дублікатів)
-      const existingMessage = messages.value.find((m) => m.id === data.message.id)
-      if (!existingMessage) {
-        // Додаємо нове повідомлення в кінець
-        messages.value.push(data.message)
-        nextTick(() => {
-          scrollToBottom()
-        })
-      }
-    }
-  })
-
-  // Слухаємо typing індикатори
-  socket.value.on('user_typing', (data) => {
-    console.log(`${data.userName} is typing...`)
-    // Можна додати typing індикатор
-  })
-
-  socket.value.on('user_stopped_typing', (data) => {
-    console.log(`${data.userName} stopped typing`)
-  })
-}
-
-const cleanupSocket = () => {
-  if (socket.value) {
-    socket.value.emit('leave_chat_room', props.room.id)
-    socket.value.disconnect()
-  }
-}
-
 // Lifecycle
 onMounted(() => {
   loadMessages()
   loadAvailableStaff()
-  initializeSocket()
+
+  // Підписуємося на Socket.io події через SocketService
+  SocketService.subscribe('chat:new_message', handleNewMessage, componentId)
+  SocketService.subscribe('chat:user_typing', handleUserTyping, componentId)
+  SocketService.subscribe('chat:user_stopped_typing', handleUserStoppedTyping, componentId)
+
+  // Приєднуємося до кімнати чату
+  SocketService.joinChatRoom(props.room.id)
 
   // Mark messages as read when opening
   ChatApi.markAsRead(props.room.id)
 })
 
 onUnmounted(() => {
-  cleanupSocket()
+  // Покидаємо кімнату чату
+  SocketService.leaveChatRoom(props.room.id)
+
+  // Відписуємося від всіх подій цього компонента
+  SocketService.unsubscribeAll(componentId)
 })
 </script>
 

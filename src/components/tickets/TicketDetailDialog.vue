@@ -343,11 +343,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
+import SocketService from 'src/services/socketService'
 
 const props = defineProps({
   ticketId: {
@@ -371,6 +372,7 @@ const submittingComment = ref(false)
 const showCommentDialog = ref(false)
 const showInternalComments = ref(true)
 const commentForm = ref(null)
+const componentId = 'ticket-detail-dialog-' + Date.now()
 
 // Form data
 const newComment = ref({
@@ -669,10 +671,58 @@ const formatDateTime = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm')
 }
 
+// Socket.io event handlers через SocketService
+const handleTicketCommentAdded = (data) => {
+  if (data.ticket_id === props.ticketId) {
+    const existingComment = comments.value.find((c) => c.id === data.comment.id)
+    if (!existingComment) {
+      comments.value.push(data.comment)
+
+      // Scroll to bottom
+      setTimeout(() => {
+        const commentsArea = document.querySelector('.comments-area')
+        if (commentsArea) {
+          commentsArea.scrollTop = commentsArea.scrollHeight
+        }
+      }, 100)
+    }
+  }
+}
+
+const handleTicketUpdated = (data) => {
+  if (data.ticket_id === props.ticketId) {
+    // Оновлюємо дані заявки
+    Object.assign(ticket.value, data.updates)
+    Object.assign(editableTicket.value, data.updates)
+
+    $q.notify({
+      color: 'info',
+      message: t('tickets.ticketUpdated'),
+      icon: 'info',
+      position: 'top-right',
+      timeout: 3000,
+    })
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadTicket()
   loadStaff()
+  // Підписуємося на Socket.io події через SocketService
+  SocketService.subscribe('ticket:comment_added', handleTicketCommentAdded, componentId)
+  SocketService.subscribe('ticket:updated', handleTicketUpdated, componentId)
+
+  // Підписуємося на оновлення конкретної заявки
+  SocketService.subscribeToTicket(props.ticketId)
+})
+
+onUnmounted(() => {
+  // Відписуємося від заявки
+  SocketService.unsubscribeFromTicket(props.ticketId)
+
+  // Відписуємося від всіх подій цього компонента
+  SocketService.unsubscribeAll(componentId)
 })
 
 // Watch for ticket ID changes

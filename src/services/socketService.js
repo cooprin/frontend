@@ -7,28 +7,23 @@ class SocketService {
     this.connected = false
     this.reconnectAttempts = 0
     this.maxReconnectAttempts = 5
+    this.eventListeners = new Map() // Для зберігання підписок компонентів
   }
 
   /**
    * Універсальне визначення Socket.io URL на основі поточного домену
    */
   getSocketUrl() {
-    // Отримуємо поточний домен з window.location
     const currentHost = window.location.hostname
     const currentProtocol = window.location.protocol === 'https:' ? 'https' : 'http'
 
-    // Визначаємо Socket.io URL на основі поточного домену
     if (currentHost.includes('localhost') || currentHost.includes('127.0.0.1')) {
-      // Локальна розробка
       return 'http://localhost:3000'
     } else if (currentHost.includes('test-erp.cooprin.com.ua')) {
-      // Тестове середовище
       return 'https://test-erp.cooprin.com.ua'
     } else if (currentHost.includes('erp.cooprin.com.ua')) {
-      // Production середовище
       return 'https://erp.cooprin.com.ua'
     } else {
-      // Fallback - використовуємо поточний протокол і хост
       return `${currentProtocol}://${currentHost}`
     }
   }
@@ -36,23 +31,18 @@ class SocketService {
   connect() {
     const authStore = useAuthStore()
 
-    // Перевіряємо чи є токен і чи вже підключені
     if (!authStore.token || this.connected) {
       return
     }
 
-    // Отримуємо правильний Socket.io URL
     const socketUrl = this.getSocketUrl()
-
     console.log('🔌 Connecting to Socket.io:', socketUrl)
 
     this.socket = io(socketUrl, {
       auth: {
         token: authStore.token,
       },
-      // Використовуємо обидва транспорти для надійності
       transports: ['websocket', 'polling'],
-      // Додаткові налаштування для стабільності
       timeout: 20000,
       reconnection: true,
       reconnectionDelay: 1000,
@@ -68,8 +58,6 @@ class SocketService {
       console.log('✅ Socket.io connected successfully')
       this.connected = true
       this.reconnectAttempts = 0
-
-      // Запитуємо непрочитані сповіщення при підключенні
       this.socket.emit('get_unread_notifications')
     })
 
@@ -82,7 +70,6 @@ class SocketService {
       console.error('🚫 Socket.io connection error:', error)
       this.connected = false
 
-      // Автореконнект з обмеженням спроб
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++
         console.log(`🔄 Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`)
@@ -97,120 +84,116 @@ class SocketService {
       }
     })
 
-    // Налаштування обробників подій
     this.setupNotificationHandlers()
     this.setupChatHandlers()
+    this.setupTicketHandlers()
   }
 
   setupNotificationHandlers() {
-    // Нове сповіщення
     this.socket.on('new_notification', (data) => {
       console.log('🔔 New notification received:', data)
-
-      // Емітимо custom event для компонентів
-      window.dispatchEvent(
-        new CustomEvent('socket:new_notification', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('notification:new', data)
     })
 
-    // Оновлення лічильника непрочитаних
     this.socket.on('unread_count_updated', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:unread_count_updated', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('notification:unread_count_updated', data)
     })
 
-    // Сповіщення прочитане
     this.socket.on('notification_read', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:notification_read', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('notification:read', data)
     })
 
-    // Всі сповіщення прочитані
     this.socket.on('notifications_all_read', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:notifications_all_read', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('notification:all_read', data)
     })
 
-    // Лічильник непрочитаних сповіщень
     this.socket.on('unread_notifications_count', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:unread_notifications_count', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('notification:unread_count', data)
     })
   }
 
   setupChatHandlers() {
-    // Нове повідомлення в чаті
     this.socket.on('new_message', (data) => {
       console.log('💬 New chat message received:', data)
-
-      window.dispatchEvent(
-        new CustomEvent('socket:new_message', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:new_message', data)
     })
 
-    // Користувач приєднався до кімнати
     this.socket.on('user_joined_room', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:user_joined_room', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:user_joined', data)
     })
 
-    // Користувач покинув кімнату
     this.socket.on('user_left_room', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:user_left_room', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:user_left', data)
     })
 
-    // Користувач набирає текст
     this.socket.on('user_typing', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:user_typing', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:user_typing', data)
     })
 
-    // Користувач припинив набирати
     this.socket.on('user_stopped_typing', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:user_stopped_typing', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:user_stopped_typing', data)
     })
 
-    // Чат призначений
     this.socket.on('chat_assigned', (data) => {
-      window.dispatchEvent(
-        new CustomEvent('socket:chat_assigned', {
-          detail: data,
-        }),
-      )
+      this.emitToListeners('chat:assigned', data)
     })
   }
 
-  // Методи для відправки подій
+  setupTicketHandlers() {
+    // Нові обробники для заявок
+    this.socket.on('ticket_comment_added', (data) => {
+      console.log('📝 New ticket comment:', data)
+      this.emitToListeners('ticket:comment_added', data)
+    })
+
+    this.socket.on('ticket_updated', (data) => {
+      console.log('🎫 Ticket updated:', data)
+      this.emitToListeners('ticket:updated', data)
+    })
+
+    this.socket.on('ticket_assigned', (data) => {
+      this.emitToListeners('ticket:assigned', data)
+    })
+  }
+
+  // Методи для підписки компонентів на події
+  subscribe(eventName, callback, componentId = null) {
+    if (!this.eventListeners.has(eventName)) {
+      this.eventListeners.set(eventName, new Map())
+    }
+
+    const listenerId = componentId || Date.now() + Math.random()
+    this.eventListeners.get(eventName).set(listenerId, callback)
+
+    return listenerId // Повертаємо ID для відписки
+  }
+
+  unsubscribe(eventName, listenerId) {
+    if (this.eventListeners.has(eventName)) {
+      this.eventListeners.get(eventName).delete(listenerId)
+    }
+  }
+
+  unsubscribeAll(componentId) {
+    // Відписати компонент від всіх подій
+    this.eventListeners.forEach((listeners) => {
+      listeners.delete(componentId)
+    })
+  }
+
+  emitToListeners(eventName, data) {
+    if (this.eventListeners.has(eventName)) {
+      this.eventListeners.get(eventName).forEach((callback) => {
+        try {
+          callback(data)
+        } catch (error) {
+          console.error(`Error in event listener for ${eventName}:`, error)
+        }
+      })
+    }
+  }
+
+  // Методи для відправки подій на сервер
   joinChatRoom(roomId) {
     if (this.socket && this.connected) {
       this.socket.emit('join_chat_room', roomId)
@@ -241,12 +224,25 @@ class SocketService {
     }
   }
 
+  // Нові методи для заявок
+  subscribeToTicket(ticketId) {
+    if (this.socket && this.connected) {
+      this.socket.emit('join_ticket_room', ticketId)
+    }
+  }
+
+  unsubscribeFromTicket(ticketId) {
+    if (this.socket && this.connected) {
+      this.socket.emit('leave_ticket_room', ticketId)
+    }
+  }
+
   // Перевірка стану підключення
   isConnected() {
     return this.connected && this.socket && this.socket.connected
   }
 
-  // Ручне переключення (для дебагу)
+  // Ручне переключення
   reconnect() {
     this.disconnect()
     setTimeout(() => {
@@ -261,6 +257,7 @@ class SocketService {
       this.socket.disconnect()
       this.socket = null
       this.connected = false
+      this.eventListeners.clear()
     }
   }
 }

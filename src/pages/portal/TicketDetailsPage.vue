@@ -355,12 +355,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
 import { date, Notify } from 'quasar'
 import { useQuasar } from 'quasar'
+import SocketService from 'src/services/socketService'
 
 const $q = useQuasar()
 
@@ -383,6 +384,7 @@ const showEditDialog = ref(false)
 const editingComment = ref({})
 const updatingComment = ref(false)
 const editCommentForm = ref(null)
+const componentId = 'ticket-details-' + Date.now()
 
 // Methods
 const loadTicket = async () => {
@@ -577,6 +579,39 @@ const deleteComment = async (commentId) => {
   }
 }
 
+// Socket.io event handlers через SocketService
+const handleTicketCommentAdded = (data) => {
+  if (data.ticket_id === ticket.value?.id) {
+    // Перевіряємо, чи коментар вже не існує
+    const existingComment = comments.value.find((c) => c.id === data.comment.id)
+    if (!existingComment) {
+      comments.value.push(data.comment)
+
+      // Scroll to bottom of comments
+      setTimeout(() => {
+        const commentsArea = document.querySelector('.comments-area')
+        if (commentsArea) {
+          commentsArea.scrollTop = commentsArea.scrollHeight
+        }
+      }, 100)
+    }
+  }
+}
+
+const handleTicketUpdated = (data) => {
+  if (data.ticket_id === ticket.value?.id) {
+    // Оновлюємо дані заявки
+    Object.assign(ticket.value, data.updates)
+
+    Notify.create({
+      type: 'info',
+      message: $t('tickets.ticketUpdated'),
+      position: 'top-right',
+      timeout: 3000,
+    })
+  }
+}
+
 const goBack = () => {
   router.push({ name: 'portal-tickets' })
 }
@@ -617,6 +652,23 @@ const formatDateTime = (dateString) => {
 // Lifecycle
 onMounted(() => {
   loadTicket()
+  // Підписуємося на Socket.io події через SocketService
+  SocketService.subscribe('ticket:comment_added', handleTicketCommentAdded, componentId)
+  SocketService.subscribe('ticket:updated', handleTicketUpdated, componentId)
+
+  // Підписуємося на оновлення конкретної заявки
+  if (route.params.id) {
+    SocketService.subscribeToTicket(route.params.id)
+  }
+})
+onUnmounted(() => {
+  // Відписуємося від заявки
+  if (route.params.id) {
+    SocketService.unsubscribeFromTicket(route.params.id)
+  }
+
+  // Відписуємося від всіх подій цього компонента
+  SocketService.unsubscribeAll(componentId)
 })
 </script>
 
