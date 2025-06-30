@@ -11,6 +11,7 @@ export default {
   myDocuments: 'Мої документи',
   myTickets: 'Мої заявки',
   chat: 'Чат підтримки',
+  notifications: 'Сповіщення',
 
   // Сторінки
   pages: {

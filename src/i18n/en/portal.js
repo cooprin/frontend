@@ -11,6 +11,7 @@ export default {
   myDocuments: 'My Documents',
   myTickets: 'My Tickets',
   chat: 'Support Chat',
+  notifications: 'Notifications',
 
   // Pages
   pages: {
