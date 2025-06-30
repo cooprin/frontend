@@ -294,11 +294,15 @@ const loadInitialClients = async () => {
   try {
     const response = await ClientsApi.searchClients('')
 
+    console.log('Raw response:', response.data) // додати цей рядок
+
     clientOptions.value = response.data.clients.map((client) => ({
       label: client.name,
       value: client.id,
       email: client.email || '',
     }))
+
+    console.log('Mapped clientOptions:', clientOptions.value) // додати цей рядок
   } catch (error) {
     console.error('Error loading initial clients:', error)
   } finally {
