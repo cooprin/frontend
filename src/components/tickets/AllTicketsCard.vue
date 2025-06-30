@@ -409,7 +409,11 @@
           <div class="text-weight-medium">{{ props.row.title }}</div>
           <div class="text-caption text-grey-6" v-if="props.row.category_name">
             <q-icon name="folder" size="xs" class="q-mr-xs" />
-            {{ props.row.category_name }}
+            {{
+              props.row.category_name.startsWith('tickets.categories.')
+                ? $t(props.row.category_name)
+                : props.row.category_name
+            }}
           </div>
         </q-td>
       </template>

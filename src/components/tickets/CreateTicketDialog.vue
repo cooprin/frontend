@@ -36,7 +36,6 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>{{ opt.label }}</q-item-label>
-                  <q-item-label caption v-if="opt.email">{{ opt.email }}</q-item-label>
                 </q-item-section>
               </q-item>
             </template>
@@ -290,6 +289,23 @@ const onDialogHide = () => {
   resetForm()
 }
 
+const loadInitialClients = async () => {
+  loadingClients.value = true
+  try {
+    const response = await ClientsApi.searchClients('')
+
+    clientOptions.value = response.data.clients.map((client) => ({
+      label: client.name,
+      value: client.id,
+      email: client.email || '',
+    }))
+  } catch (error) {
+    console.error('Error loading initial clients:', error)
+  } finally {
+    loadingClients.value = false
+  }
+}
+
 const filterClients = async (val, update) => {
   if (val.length < 2) {
     update(() => {
@@ -306,7 +322,7 @@ const filterClients = async (val, update) => {
       clientOptions.value = response.data.clients.map((client) => ({
         label: client.name,
         value: client.id,
-        email: client.email,
+        email: client.email || '',
       }))
     })
   } catch (error) {
@@ -362,24 +378,6 @@ const filterStaff = (val, update) => {
   })
 }
 
-const loadInitialClients = async () => {
-  loadingClients.value = true
-  try {
-    const response = await ClientsApi.searchClients('') // порожній запит для всіх клієнтів
-
-    clientOptions.value = response.data.clients.map((client) => ({
-      label: client.name,
-      value: client.id,
-      email: client.email,
-    }))
-  } catch (error) {
-    console.error('Error loading initial clients:', error)
-  } finally {
-    loadingClients.value = false
-  }
-}
-
-// Load data when dialog opens
 // Load data when dialog opens
 watch(
   () => props.modelValue,
@@ -387,7 +385,7 @@ watch(
     if (isOpen) {
       loadCategories()
       loadStaff()
-      loadInitialClients() // додати цей рядок
+      loadInitialClients()
     }
   },
 )
