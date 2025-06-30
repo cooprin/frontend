@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
@@ -393,6 +393,15 @@ watch(
     }
   },
 )
+
+// В кінці script після watch додати:
+onMounted(() => {
+  if (props.modelValue) {
+    loadCategories()
+    loadStaff()
+    loadInitialClients()
+  }
+})
 </script>
 
 <style scoped>
