@@ -27,12 +27,8 @@ export const ChatApi = {
   },
 
   // Відправка повідомлення
-  sendMessage(roomId, formData) {
-    return api.post(`/chat/rooms/${roomId}/messages`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+  sendMessage(roomId, messageData) {
+    return api.post(`/chat/rooms/${roomId}/messages`, messageData)
   },
 
   // Позначити як прочитане
