@@ -174,7 +174,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
@@ -216,10 +216,10 @@ const form = ref({
 })
 
 // Options
-const clientOptions = ref([])
-const categoryOptions = ref([])
-const staffOptions = ref([])
-const allStaffOptions = ref([])
+const clientOptions = reactive([])
+const categoryOptions = reactive([])
+const staffOptions = reactive([])
+const allStaffOptions = reactive([])
 
 // Computed
 const priorityOptions = computed(() => [
@@ -291,11 +291,14 @@ const loadInitialClients = async () => {
   try {
     const response = await ClientsApi.searchClients('')
 
-    clientOptions.value = response.data.clients.map((client) => ({
+    const mapped = response.data.clients.map((client) => ({
       label: client.name,
       value: client.id,
       email: client.email || '',
     }))
+
+    // Очищуємо і додаємо нові елементи
+    clientOptions.splice(0, clientOptions.length, ...mapped)
   } catch (error) {
     console.error('Error loading initial clients:', error)
   } finally {
@@ -306,12 +309,15 @@ const loadInitialClients = async () => {
 const loadCategories = async () => {
   try {
     const response = await TicketsApi.getCategories()
-    categoryOptions.value = response.data.categories.map((cat) => ({
+    const mapped = response.data.categories.map((cat) => ({
       label: cat.name.startsWith('tickets.categories.')
         ? t(cat.name)
         : t(`tickets.categories.${cat.name}`),
       value: cat.id,
     }))
+
+    // Очищуємо і додаємо нові елементи
+    categoryOptions.splice(0, categoryOptions.length, ...mapped)
   } catch (error) {
     console.error('Error loading categories:', error)
   }
@@ -321,12 +327,15 @@ const loadStaff = async () => {
   try {
     const response = await TicketsApi.getStaff()
     if (response.data.success) {
-      allStaffOptions.value = response.data.staff.map((user) => ({
+      const mapped = response.data.staff.map((user) => ({
         label: user.label || `${user.first_name} ${user.last_name}`,
         value: user.id,
         email: user.email,
       }))
-      staffOptions.value = [...allStaffOptions.value]
+
+      // Очищуємо і додаємо нові елементи
+      allStaffOptions.splice(0, allStaffOptions.length, ...mapped)
+      staffOptions.splice(0, staffOptions.length, ...mapped)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
@@ -336,12 +345,13 @@ const loadStaff = async () => {
 const filterStaff = (val, update) => {
   update(() => {
     if (val === '') {
-      staffOptions.value = allStaffOptions.value
+      staffOptions.splice(0, staffOptions.length, ...allStaffOptions)
     } else {
       const needle = val.toLowerCase()
-      staffOptions.value = allStaffOptions.value.filter(
+      const filtered = allStaffOptions.filter(
         (option) => option.label.toLowerCase().indexOf(needle) > -1,
       )
+      staffOptions.splice(0, staffOptions.length, ...filtered)
     }
   })
 }
