@@ -58,12 +58,7 @@
           @click="exportAllTickets"
           :loading="exporting"
         />
-        <q-btn
-          color="primary"
-          icon="add"
-          :label="$t('tickets.add')"
-          @click="showCreateDialog = true"
-        />
+        <q-btn color="primary" icon="add" :label="$t('tickets.add')" @click="showCreateDialog()" />
       </div>
     </div>
 
@@ -536,9 +531,6 @@
       </template>
     </q-table>
 
-    <!-- Create Ticket Dialog -->
-    <create-ticket-dialog v-model="showCreateDialog" @ticket-created="onTicketCreated" />
-
     <!-- Bulk Action Dialogs -->
     <bulk-assign-dialog
       v-model="showBulkAssignDialog"
@@ -568,7 +560,6 @@ import { useAuthStore } from 'stores/auth'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
 import { debounce } from 'quasar'
-import CreateTicketDialog from 'components/tickets/CreateTicketDialog.vue'
 import BulkAssignDialog from 'components/tickets/BulkAssignDialog.vue'
 import BulkStatusDialog from 'components/tickets/BulkStatusDialog.vue'
 import BulkPriorityDialog from 'components/tickets/BulkPriorityDialog.vue'
@@ -576,6 +567,7 @@ import BulkPriorityDialog from 'components/tickets/BulkPriorityDialog.vue'
 const $q = useQuasar()
 const { t } = useI18n()
 const authStore = useAuthStore()
+const showCreateDialog = inject('showCreateDialog')
 
 // Injected methods from parent
 const openTicketDetail = inject('openTicketDetail')
@@ -589,7 +581,6 @@ const showFilters = ref(false)
 const quickFilter = ref(null)
 
 // Dialog states
-const showCreateDialog = ref(false)
 const showBulkAssignDialog = ref(false)
 const showBulkStatusDialog = ref(false)
 const showBulkPriorityDialog = ref(false)
@@ -928,10 +919,6 @@ const exportSelected = async () => {
       icon: 'error',
     })
   }
-}
-
-const onTicketCreated = () => {
-  loadTickets()
 }
 
 const onBulkAction = () => {

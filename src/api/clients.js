@@ -54,4 +54,13 @@ export const ClientsApi = {
   getClientPaymentStatus: (clientId) => {
     return api.get(`/clients/${clientId}/payment-status`)
   },
+
+  searchClients: (query) => {
+    return api.get('/clients/search', {
+      params: {
+        query,
+        limit: 10,
+      },
+    })
+  },
 }
