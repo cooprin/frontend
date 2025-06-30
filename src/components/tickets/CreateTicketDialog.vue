@@ -20,10 +20,7 @@
             dense
             emit-value
             map-options
-            use-input
-            input-debounce="300"
             :loading="loadingClients"
-            @filter="filterClients"
             :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
             clearable
           >
@@ -294,47 +291,13 @@ const loadInitialClients = async () => {
   try {
     const response = await ClientsApi.searchClients('')
 
-    console.log('Raw response:', response.data) // додати цей рядок
-
     clientOptions.value = response.data.clients.map((client) => ({
       label: client.name,
       value: client.id,
       email: client.email || '',
     }))
-
-    console.log('Mapped clientOptions:', clientOptions.value) // додати цей рядок
   } catch (error) {
     console.error('Error loading initial clients:', error)
-  } finally {
-    loadingClients.value = false
-  }
-}
-
-const filterClients = async (val, update) => {
-  if (!val || val.length < 2) {
-    update(() => {
-      // Якщо немає пошукового запиту, показуємо початковий список
-      // Але не змінюємо clientOptions напряму
-    })
-    return
-  }
-
-  loadingClients.value = true
-  try {
-    const response = await ClientsApi.searchClients(val)
-
-    update(() => {
-      clientOptions.value = response.data.clients.map((client) => ({
-        label: client.name,
-        value: client.id,
-        email: client.email || '',
-      }))
-    })
-  } catch (error) {
-    console.error('Error searching clients:', error)
-    update(() => {
-      clientOptions.value = []
-    })
   } finally {
     loadingClients.value = false
   }
@@ -395,7 +358,7 @@ watch(
   },
 )
 
-// В кінці script після watch додати:
+// Load data on mount if dialog is already open
 onMounted(() => {
   if (props.modelValue) {
     loadCategories()
