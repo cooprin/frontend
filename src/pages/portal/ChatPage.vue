@@ -351,10 +351,11 @@ const sendMessage = async () => {
   try {
     sendingMessage.value = true
 
-    const formData = new FormData()
-    formData.append('message_text', newMessage.value.trim())
+    const messageData = {
+      message_text: newMessage.value.trim(),
+    }
 
-    const response = await ChatApi.sendMessage(activeRoom.value.id, formData)
+    const response = await ChatApi.sendMessage(activeRoom.value.id, messageData)
 
     if (response.data.success) {
       // Clear input
