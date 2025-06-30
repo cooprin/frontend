@@ -311,13 +311,10 @@ const loadInitialClients = async () => {
 }
 
 const filterClients = async (val, update) => {
-  // Якщо пошук порожній, показуємо початковий список
   if (!val || val.length < 2) {
     update(() => {
-      // Не очищуємо список, а залишаємо початковий
-      if (clientOptions.value.length === 0) {
-        loadInitialClients()
-      }
+      // Якщо немає пошукового запиту, показуємо початковий список
+      // Але не змінюємо clientOptions напряму
     })
     return
   }
