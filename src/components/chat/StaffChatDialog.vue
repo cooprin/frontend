@@ -159,21 +159,6 @@
                 {{ message.message_text }}
               </div>
 
-              <!-- Files -->
-              <div v-if="message.files_count > 0" class="message-files q-mt-sm">
-                <q-chip
-                  v-for="file in message.files"
-                  :key="file.id"
-                  size="sm"
-                  color="blue-1"
-                  text-color="blue-8"
-                  icon="attach_file"
-                  :label="file.original_name"
-                  clickable
-                  @click="downloadFile(file)"
-                />
-              </div>
-
               <!-- Message time and status -->
               <div class="message-time text-caption text-grey-6 q-mt-xs row items-center">
                 <span>{{ formatMessageTime(message.created_at) }}</span>
@@ -206,28 +191,6 @@
       class="chat-input-section q-pa-md bg-white"
     >
       <div class="row q-gutter-sm">
-        <!-- File upload button -->
-        <div class="col-auto">
-          <q-btn
-            flat
-            round
-            icon="attach_file"
-            color="grey-7"
-            @click="$refs.fileInput.click()"
-            :disable="sendingMessage"
-          >
-            <q-tooltip>{{ $t('chat.staff.attachFile') }}</q-tooltip>
-          </q-btn>
-          <input
-            ref="fileInput"
-            type="file"
-            multiple
-            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
-            style="display: none"
-            @change="handleFileSelect"
-          />
-        </div>
-
         <!-- Message input -->
         <div class="col">
           <q-input
@@ -251,24 +214,6 @@
             @click="sendMessage"
             :disable="!newMessage.trim() || sendingMessage"
             :loading="sendingMessage"
-          />
-        </div>
-      </div>
-
-      <!-- Selected files preview -->
-      <div v-if="selectedFiles.length > 0" class="q-mt-sm">
-        <div class="text-caption text-grey-7 q-mb-xs">{{ $t('chat.staff.selectedFiles') }}:</div>
-        <div class="row q-gutter-xs">
-          <q-chip
-            v-for="(file, index) in selectedFiles"
-            :key="index"
-            removable
-            @remove="removeFile(index)"
-            color="blue-1"
-            text-color="blue-8"
-            icon="attach_file"
-            :label="file.name"
-            size="sm"
           />
         </div>
       </div>
@@ -403,7 +348,6 @@ const emit = defineEmits(['close', 'room-updated'])
 // Reactive data
 const messages = ref([])
 const newMessage = ref('')
-const selectedFiles = ref([])
 const loadingMessages = ref(false)
 const sendingMessage = ref(false)
 const showRoomActions = ref(false)
@@ -429,7 +373,6 @@ const closeData = ref({
 
 // Refs
 const messagesScroll = ref(null)
-const fileInput = ref(null)
 
 // Component ID для відписки від подій
 const componentId = 'staff-chat-dialog-' + Date.now()
@@ -471,7 +414,7 @@ const loadMessages = async (loadMore = false) => {
 }
 
 const sendMessage = async () => {
-  if (!newMessage.value.trim() && selectedFiles.value.length === 0) return
+  if (!newMessage.value.trim()) return
 
   try {
     sendingMessage.value = true
@@ -479,16 +422,11 @@ const sendMessage = async () => {
     const formData = new FormData()
     formData.append('message_text', newMessage.value.trim())
 
-    selectedFiles.value.forEach((file) => {
-      formData.append(`files`, file)
-    })
-
     const response = await ChatApi.sendMessage(props.room.id, formData)
 
     if (response.data.success) {
       // Повідомлення додасться через Socket.io подію
       newMessage.value = ''
-      selectedFiles.value = []
       scrollToBottom()
 
       await ChatApi.markAsRead(props.room.id)
@@ -600,20 +538,6 @@ const convertToTicket = () => {
 
 const refreshMessages = () => {
   loadMessages()
-}
-
-const handleFileSelect = (event) => {
-  const files = Array.from(event.target.files)
-  selectedFiles.value = [...selectedFiles.value, ...files]
-  event.target.value = ''
-}
-
-const removeFile = (index) => {
-  selectedFiles.value.splice(index, 1)
-}
-
-const downloadFile = (file) => {
-  ChatApi.downloadFile(file.id)
 }
 
 const scrollToBottom = () => {

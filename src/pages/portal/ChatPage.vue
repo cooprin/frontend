@@ -136,21 +136,6 @@
                   {{ message.message_text }}
                 </div>
 
-                <!-- Files -->
-                <div v-if="message.files_count > 0" class="message-files q-mt-sm">
-                  <q-chip
-                    v-for="file in message.files"
-                    :key="file.id"
-                    size="sm"
-                    color="blue-1"
-                    text-color="blue-8"
-                    icon="attach_file"
-                    :label="file.original_name"
-                    clickable
-                    @click="downloadFile(file)"
-                  />
-                </div>
-
                 <!-- Message time -->
                 <div class="message-time text-caption text-grey-6 q-mt-xs">
                   {{ formatMessageTime(message.created_at) }}
@@ -191,28 +176,6 @@
       <!-- Message Input -->
       <q-card-section class="chat-input-section q-pa-md bg-white">
         <div class="row q-gutter-sm">
-          <!-- File upload button -->
-          <div class="col-auto">
-            <q-btn
-              flat
-              round
-              icon="attach_file"
-              color="grey-7"
-              @click="$refs.fileInput.click()"
-              :disable="sendingMessage"
-            >
-              <q-tooltip>{{ $t('portal.pages.chat.attachFile') }}</q-tooltip>
-            </q-btn>
-            <input
-              ref="fileInput"
-              type="file"
-              multiple
-              accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt"
-              style="display: none"
-              @change="handleFileSelect"
-            />
-          </div>
-
           <!-- Message input -->
           <div class="col">
             <q-input
@@ -241,26 +204,6 @@
             />
           </div>
         </div>
-
-        <!-- Selected files preview -->
-        <div v-if="selectedFiles.length > 0" class="q-mt-sm">
-          <div class="text-caption text-grey-7 q-mb-xs">
-            {{ $t('portal.pages.chat.selectedFiles') }}:
-          </div>
-          <div class="row q-gutter-xs">
-            <q-chip
-              v-for="(file, index) in selectedFiles"
-              :key="index"
-              removable
-              @remove="removeFile(index)"
-              color="blue-1"
-              text-color="blue-8"
-              icon="attach_file"
-              :label="file.name"
-              size="sm"
-            />
-          </div>
-        </div>
       </q-card-section>
     </div>
   </q-page>
@@ -279,7 +222,6 @@ const { t: $t } = useI18n()
 const activeRoom = ref(null)
 const messages = ref([])
 const newMessage = ref('')
-const selectedFiles = ref([])
 const loading = ref(false)
 const loadingMessages = ref(false)
 const sendingMessage = ref(false)
@@ -288,7 +230,6 @@ const isTyping = ref(false)
 
 // Refs
 const messagesScroll = ref(null)
-const fileInput = ref(null)
 
 // Component ID для відписки від подій
 const componentId = 'chat-page-portal-' + Date.now()
@@ -404,7 +345,7 @@ const loadMessages = async (loadMore = false) => {
 }
 
 const sendMessage = async () => {
-  if (!newMessage.value.trim() && selectedFiles.value.length === 0) return
+  if (!newMessage.value.trim()) return
   if (!activeRoom.value) return
 
   try {
@@ -413,16 +354,11 @@ const sendMessage = async () => {
     const formData = new FormData()
     formData.append('message_text', newMessage.value.trim())
 
-    selectedFiles.value.forEach((file) => {
-      formData.append(`files`, file)
-    })
-
     const response = await ChatApi.sendMessage(activeRoom.value.id, formData)
 
     if (response.data.success) {
       // Clear input
       newMessage.value = ''
-      selectedFiles.value = []
       scrollToBottom()
     }
   } catch (error) {
@@ -434,16 +370,6 @@ const sendMessage = async () => {
   } finally {
     sendingMessage.value = false
   }
-}
-
-const handleFileSelect = (event) => {
-  const files = Array.from(event.target.files)
-  selectedFiles.value = [...selectedFiles.value, ...files]
-  event.target.value = ''
-}
-
-const removeFile = (index) => {
-  selectedFiles.value.splice(index, 1)
 }
 
 const handleTyping = () => {
@@ -469,10 +395,6 @@ const markRoomAsRead = async (roomId) => {
 
 const refreshMessages = () => {
   loadMessages()
-}
-
-const downloadFile = (file) => {
-  ChatApi.downloadFile(file.id)
 }
 
 const scrollToBottom = () => {

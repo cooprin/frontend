@@ -40,13 +40,6 @@ export const ChatApi = {
     return api.patch(`/chat/rooms/${roomId}/read`)
   },
 
-  // Завантаження файлу
-  downloadFile(fileId) {
-    return api.get(`/chat/files/${fileId}/download`, {
-      responseType: 'blob',
-    })
-  },
-
   // Статус співробітників (для клієнтів)
   getStaffStatus() {
     return api.get('/chat/staff-status')
