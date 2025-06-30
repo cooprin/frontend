@@ -415,6 +415,7 @@ const loadMessages = async (loadMore = false) => {
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
+  if (!props.room) return
 
   try {
     sendingMessage.value = true
