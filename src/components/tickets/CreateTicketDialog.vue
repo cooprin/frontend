@@ -16,10 +16,10 @@
             v-model="form.client_id"
             :options="clientOptions"
             :label="$t('tickets.createTicket.client')"
-            option-value="value"
-            option-label="label"
             outlined
             dense
+            emit-value
+            map-options
             :loading="loadingClients"
             :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
             clearable
@@ -109,14 +109,11 @@
                 v-model="form.assigned_to"
                 :options="staffOptions"
                 :label="$t('tickets.createTicket.assignTo')"
-                option-value="value"
-                option-label="label"
                 outlined
                 dense
+                emit-value
+                map-options
                 clearable
-                use-input
-                input-debounce="300"
-                @filter="filterStaff"
               >
                 <template v-slot:option="{ opt }">
                   <q-item>
@@ -331,19 +328,6 @@ const loadStaff = async () => {
   } catch (error) {
     console.error('Error loading staff:', error)
   }
-}
-
-const filterStaff = (val, update) => {
-  update(() => {
-    if (val === '') {
-      staffOptions.value = allStaffOptions.value
-    } else {
-      const needle = val.toLowerCase()
-      staffOptions.value = allStaffOptions.value.filter(
-        (option) => option.label.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
 }
 
 // Load data when dialog opens
