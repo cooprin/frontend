@@ -362,6 +362,24 @@ const filterStaff = (val, update) => {
   })
 }
 
+const loadInitialClients = async () => {
+  loadingClients.value = true
+  try {
+    const response = await ClientsApi.searchClients('') // порожній запит для всіх клієнтів
+
+    clientOptions.value = response.data.clients.map((client) => ({
+      label: client.name,
+      value: client.id,
+      email: client.email,
+    }))
+  } catch (error) {
+    console.error('Error loading initial clients:', error)
+  } finally {
+    loadingClients.value = false
+  }
+}
+
+// Load data when dialog opens
 // Load data when dialog opens
 watch(
   () => props.modelValue,
@@ -369,6 +387,7 @@ watch(
     if (isOpen) {
       loadCategories()
       loadStaff()
+      loadInitialClients() // додати цей рядок
     }
   },
 )
