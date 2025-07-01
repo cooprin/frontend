@@ -769,6 +769,14 @@ const deletingDocument = ref(false)
 const clientInvoices = ref({ invoices: [], total: 0 })
 const loadingInvoices = ref(false)
 const showInvoiceDialog = ref(false)
+
+const paymentTypeOptions = [
+  { label: t('invoices.paymentTypes.regular'), value: 'regular' },
+  { label: t('invoices.paymentTypes.advance'), value: 'advance' },
+  { label: t('invoices.paymentTypes.debt'), value: 'debt' },
+  { label: t('invoices.paymentTypes.adjustment'), value: 'adjustment' },
+]
+
 // Searchable selects
 const paymentTypeSearch = useSearchableSelect(ref(paymentTypeOptions))
 
@@ -829,13 +837,6 @@ const getInvoiceStatusColor = (status) => {
   }
   return colors[status] || 'grey'
 }
-
-const paymentTypeOptions = [
-  { label: t('invoices.paymentTypes.regular'), value: 'regular' },
-  { label: t('invoices.paymentTypes.advance'), value: 'advance' },
-  { label: t('invoices.paymentTypes.debt'), value: 'debt' },
-  { label: t('invoices.paymentTypes.adjustment'), value: 'adjustment' },
-]
 
 // Функція для форматування дати
 const formatDate = (dateString, format = 'DD.MM.YYYY') => {
