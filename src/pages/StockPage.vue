@@ -147,12 +147,20 @@
             <!-- Склад призначення -->
             <q-select
               v-model="transferForm.to_warehouse_id"
-              :options="warehouseOptions.filter((w) => w.value !== selectedStock?.warehouse_id)"
+              :options="
+                warehouseSearch.filteredOptions.value.filter(
+                  (w) => w.value !== selectedStock?.warehouse_id,
+                )
+              "
               :label="$t('stock.toWarehouse')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => warehouseSearch.filterOptions(val, update)"
+              @popup-show="warehouseSearch.resetFilter"
             />
 
             <!-- Коментар -->
@@ -191,12 +199,16 @@
             <!-- Вибір об'єкту -->
             <q-select
               v-model="installForm.object_id"
-              :options="objectOptions"
+              :options="objectSearch.filteredOptions.value"
               :label="$t('stock.object')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => objectSearch.filterOptions(val, update)"
+              @popup-show="objectSearch.resetFilter"
             />
 
             <!-- Коментар -->
@@ -235,12 +247,16 @@
             <!-- Вибір складу -->
             <q-select
               v-model="uninstallForm.warehouse_id"
-              :options="warehouseOptions"
+              :options="warehouseSearch.filteredOptions.value"
               :label="$t('stock.warehouse')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => warehouseSearch.filterOptions(val, update)"
+              @popup-show="warehouseSearch.resetFilter"
             />
 
             <!-- Коментар -->
@@ -312,12 +328,16 @@
             <!-- Вибір складу -->
             <q-select
               v-model="returnFromRepairForm.warehouse_id"
-              :options="warehouseOptions"
+              :options="warehouseSearch.filteredOptions.value"
               :label="$t('stock.warehouse')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => warehouseSearch.filterOptions(val, update)"
+              @popup-show="warehouseSearch.resetFilter"
             />
 
             <!-- Коментар -->
@@ -379,7 +399,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
 import { WialonApi } from 'src/api/wialon'
-import { WarehousesApi } from 'src/api/warehouses' // API для об'єктів Wialon
+import { WarehousesApi } from 'src/api/warehouses'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -391,6 +412,9 @@ const stock = ref([])
 const selectedStock = ref(null)
 const warehouseOptions = ref([])
 const objectOptions = ref([])
+// Searchable selects
+const warehouseSearch = useSearchableSelect(warehouseOptions)
+const objectSearch = useSearchableSelect(objectOptions)
 
 // Dialog visibility
 const showTransferDialog = ref(false)
@@ -513,6 +537,7 @@ const loadObjects = async () => {
       label: obj.name,
       value: obj.id,
     }))
+    objectSearch.initializeOptions(objectOptions.value)
   } catch (error) {
     console.error('Error loading objects:', error)
     $q.notify({
@@ -533,6 +558,7 @@ const loadWarehouses = async () => {
       label: w.name,
       value: w.id,
     }))
+    warehouseSearch.initializeOptions(warehouseOptions.value)
   } catch (error) {
     console.error('Error loading warehouses:', error)
     $q.notify({

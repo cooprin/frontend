@@ -21,13 +21,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.serviceType"
-                  :options="serviceTypeOptions"
+                  :options="serviceTypeSearch.filteredOptions.value"
                   :label="$t('services.filters.type')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => serviceTypeSearch.filterOptions(val, update)"
+                  @popup-show="serviceTypeSearch.resetFilter"
                 />
               </div>
 
@@ -198,6 +202,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -213,6 +218,8 @@ const editService = ref(null)
 const services = ref([])
 const deleteDialog = ref(false)
 const serviceToDelete = ref(null)
+// Searchable selects
+const serviceTypeSearch = useSearchableSelect(serviceTypeOptions)
 
 const pagination = ref({
   sortBy: 'name',
@@ -414,9 +421,6 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadServices()
+  serviceTypeSearch.initializeOptions(serviceTypeOptions.value)
 })
 </script>
-
-<style scoped>
-/* Тут можна додати специфічні стилі для цієї сторінки */
-</style>
