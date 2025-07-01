@@ -21,20 +21,24 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.manufacturer"
-                  :options="manufacturerOptions"
+                  :options="manufacturerSearch.filteredOptions.value"
                   :label="$t('products.manufacturer')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => manufacturerSearch.filterOptions(val, update)"
+                  @popup-show="manufacturerSearch.resetFilter"
                 />
               </div>
               <!-- Модель -->
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.model"
-                  :options="modelOptions"
+                  :options="modelSearch.filteredOptions.value"
                   :label="$t('products.model')"
                   :disable="!filters.manufacturer"
                   outlined
@@ -42,6 +46,10 @@
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => modelSearch.filterOptions(val, update)"
+                  @popup-show="modelSearch.resetFilter"
                 />
               </div>
 
@@ -216,6 +224,7 @@ import { ProductsApi } from 'src/api/products'
 import ProductDialog from 'components/products/ProductDialog.vue'
 import { date } from 'quasar'
 import { ModelsApi } from 'src/api/models'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -232,6 +241,9 @@ const deleteDialog = ref(false)
 const productToDelete = ref(null)
 const manufacturerOptions = ref([])
 const modelOptions = ref([])
+// Searchable selects
+const manufacturerSearch = useSearchableSelect(manufacturerOptions)
+const modelSearch = useSearchableSelect(modelOptions)
 
 const pagination = ref({
   sortBy: 'sku',
@@ -260,7 +272,6 @@ const loadModels = async (manufacturerId = null) => {
     })
 
     if (response.data && Array.isArray(response.data.models)) {
-      // Фільтруємо моделі на стороні клієнта аналогічно до ProductDialog
       const filteredModels = manufacturerId
         ? response.data.models.filter((m) => m.manufacturer_id == manufacturerId)
         : response.data.models
@@ -273,8 +284,10 @@ const loadModels = async (manufacturerId = null) => {
         manufacturer_id: m.manufacturer_id,
         manufacturer_name: m.manufacturer_name,
       }))
+      modelSearch.initializeOptions(modelOptions.value)
     } else {
       modelOptions.value = []
+      modelSearch.initializeOptions([])
     }
   } catch {
     $q.notify({
@@ -282,6 +295,7 @@ const loadModels = async (manufacturerId = null) => {
       message: t('common.errors.loading'),
     })
     modelOptions.value = []
+    modelSearch.initializeOptions([])
   }
 }
 
@@ -399,6 +413,7 @@ const loadManufacturers = async () => {
       label: m.name,
       value: m.id,
     }))
+    manufacturerSearch.initializeOptions(manufacturerOptions.value)
   } catch {
     $q.notify({
       type: 'negative',
@@ -582,80 +597,10 @@ onUnmounted(() => {
   background: #1d1d1d;
   color: #fff;
 }
-</style>
 
-<style scoped>
 /* Стилі таблиці */
 .groups-table {
   max-height: 400px;
   overflow-y: auto;
-}
-
-/* Стилі заголовків таблиці */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 8px 16px;
-}
-
-/* Стилі для темної теми */
-.body--dark :deep(.q-table) thead tr {
-  background: var(--q-dark);
-}
-
-.body--dark :deep(.q-table) thead tr th {
-  color: white !important;
-}
-
-/* Стилі для рядків при наведенні */
-:deep(.q-table) tbody tr:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-/* Стилі для парних рядків */
-:deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.body--dark :deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* Стилі для границь таблиці */
-:deep(.q-table) {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Додаткові стилі з AuditLogsPage */
-:deep(.q-chip) {
-  transition: all 0.3s ease;
-}
-
-:deep(.q-chip):hover {
-  opacity: 0.9;
-}
-
-:deep(.q-btn) {
-  transition: transform 0.2s ease;
-}
-
-:deep(.q-btn):hover {
-  transform: scale(1.1);
-}
-
-/* Адаптивність */
-@media (max-width: 600px) {
-  :deep(.q-table) td,
-  :deep(.q-table) th {
-    padding: 6px 8px;
-  }
 }
 </style>

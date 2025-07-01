@@ -114,22 +114,30 @@
             <!-- Виробник -->
             <q-select
               v-model="form.manufacturer_id"
-              :options="manufacturerOptions"
+              :options="manufacturerSearch.filteredOptions.value"
               :label="$t('models.manufacturer')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => manufacturerSearch.filterOptions(val, update)"
+              @popup-show="manufacturerSearch.resetFilter"
             />
             <!-- Тип продукту -->
             <q-select
               v-model="form.product_type_id"
-              :options="productTypeOptions"
+              :options="productTypeSearch.filteredOptions.value"
               :label="$t('models.productType')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => productTypeSearch.filterOptions(val, update)"
+              @popup-show="productTypeSearch.resetFilter"
             />
 
             <!-- Опис -->
@@ -240,6 +248,7 @@ import { ManufacturersApi } from 'src/api/manufacturers'
 import { debounce } from 'lodash'
 import { ProductTypesApi } from 'src/api/product-types'
 import ModelFilesManager from 'src/components/models/ModelFilesManager.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -257,6 +266,9 @@ const manufacturerOptions = ref([])
 const imageFile = ref(null)
 const imagePreview = ref(null)
 const productTypeOptions = ref([])
+// Searchable selects
+const manufacturerSearch = useSearchableSelect(manufacturerOptions)
+const productTypeSearch = useSearchableSelect(productTypeOptions)
 const showImageDialog = ref(false)
 const selectedImage = ref('')
 
@@ -279,7 +291,6 @@ const loadProductTypes = async () => {
   try {
     console.log('Starting loadProductTypes')
 
-    // Спрощений запит без параметрів
     const response = await ProductTypesApi.getProductTypes()
 
     console.log('Product types response:', response)
@@ -289,15 +300,17 @@ const loadProductTypes = async () => {
         label: t.name,
         value: t.id,
       }))
+      productTypeSearch.initializeOptions(productTypeOptions.value)
       console.log('Product type options:', productTypeOptions.value)
     } else {
       console.error('Unexpected API response structure:', response)
+      productTypeOptions.value = []
+      productTypeSearch.initializeOptions([])
     }
   } catch (error) {
     console.error('Error loading product types:', error)
-
-    // Створимо запасний варіант, якщо API не працює
     productTypeOptions.value = [{ label: 'Завантаження типів не вдалося', value: null }]
+    productTypeSearch.initializeOptions(productTypeOptions.value)
   }
 }
 
@@ -447,6 +460,7 @@ const loadManufacturers = async () => {
       label: m.name,
       value: m.id,
     }))
+    manufacturerSearch.initializeOptions(manufacturerOptions.value)
   } catch (error) {
     console.error('Error loading manufacturers:', error)
   }
@@ -619,65 +633,6 @@ onMounted(() => {
 })
 </script>
 <style scoped>
-/* Стилі для світлої теми */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 8px 16px;
-}
-
-/* Стилі для темної теми */
-.body--dark :deep(.q-table) thead tr {
-  background: var(--q-dark);
-}
-
-.body--dark :deep(.q-table) thead tr th {
-  color: white !important;
-}
-
-/* Стилі для ховера рядків */
-:deep(.q-table) tbody tr:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-/* Стилі для парних рядків */
-:deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.body--dark :deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* Стилі для клітинок таблиці */
-:deep(.q-table) td {
-  padding: 8px 16px;
-}
-
-/* Стилі для границь таблиці */
-:deep(.q-table) {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Стилі для розділових ліній */
-:deep(.q-table) th,
-:deep(.q-table) td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) th,
-.body--dark :deep(.q-table) td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
 /* Додаткові стилі для зображень */
 .image-preview {
   width: 100px;
