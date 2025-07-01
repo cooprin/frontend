@@ -32,50 +32,55 @@
               />
 
               <!-- Код -->
-              <q-select
-                v-if="!isEdit"
-                v-model="form.code"
-                :options="productTypeCodes"
-                :label="$t('productTypes.code')"
-                :rules="[
-                  (val) => !!val || $t('common.validation.required'),
-                  (val) => /^[A-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
-                ]"
-                :loading="loadingCodes"
-                option-label="label"
-                option-value="value"
-                emit-value
-                map-options
-                outlined
-                use-input
-                hide-selected
-                fill-input
-                input-debounce="0"
-                @filter="filterFn"
-                @input-value="updateCode"
-              >
-                <template v-slot:no-option>
-                  <q-item>
-                    <q-item-section class="text-grey">
-                      {{ $t('common.noResults') }}
-                    </q-item-section>
-                  </q-item>
-                </template>
-                <template v-slot:option="{ opt, selected }">
-                  <q-item v-bind="opt.props" :active="selected">
-                    <q-item-section>
-                      <q-item-label>{{ opt.label }}</q-item-label>
-                      <q-item-label caption>{{ opt.description }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
-              <div v-else class="row items-center q-gutter-sm">
-                <q-chip square color="primary" text-color="white">
-                  {{ form.code }}
-                </q-chip>
-                <span class="text-caption">{{ form.code_description }}</span>
-              </div>
+              <template v-if="!isEdit">
+                <q-select
+                  v-model="form.code"
+                  :options="codesSearch.filteredOptions.value"
+                  :label="$t('productTypes.code')"
+                  :rules="[
+                    (val) => !!val || $t('common.validation.required'),
+                    (val) => /^[A-Z0-9_-]+$/.test(val) || $t('common.validation.codeFormat'),
+                  ]"
+                  :loading="loadingCodes"
+                  option-label="label"
+                  option-value="value"
+                  emit-value
+                  map-options
+                  outlined
+                  use-input
+                  hide-selected
+                  fill-input
+                  input-debounce="300"
+                  @filter="(val, update) => codesSearch.filterOptions(val, update)"
+                  @popup-show="codesSearch.resetFilter"
+                  @input-value="updateCode"
+                >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        {{ $t('common.noResults') }}
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                  <template v-slot:option="{ opt, selected }">
+                    <q-item v-bind="opt.props" :active="selected">
+                      <q-item-section>
+                        <q-item-label>{{ opt.label }}</q-item-label>
+                        <q-item-label caption>{{ opt.description }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </template>
+
+              <template v-else>
+                <div class="row items-center q-gutter-sm">
+                  <q-chip square color="primary" text-color="white">
+                    {{ form.code }}
+                  </q-chip>
+                  <span class="text-caption">{{ form.code_description }}</span>
+                </div>
+              </template>
 
               <!-- Опис -->
               <q-input
@@ -190,6 +195,7 @@ import { CharacteristicTypesApi } from 'src/api/characteristic-types'
 import { DEFAULT_CHARACTERISTIC_VALIDATION } from 'src/constants/productTypes'
 import CharacteristicsList from 'src/components/ProductTypes/CharacteristicsList.vue'
 import CharacteristicForm from 'src/components/ProductTypes/CharacteristicForm.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const route = useRoute()
 const router = useRouter()
@@ -208,6 +214,8 @@ const characteristicToDelete = ref(null)
 const selectedCharacteristic = ref(null)
 const productTypeCodes = ref([])
 const originalCodes = ref([])
+// Searchable selects
+const codesSearch = useSearchableSelect(ref([]))
 
 // Default forms
 const defaultForm = {
@@ -290,6 +298,7 @@ const loadProductTypeCodes = async () => {
     const response = await ProductTypesApi.getProductTypeCodes()
     productTypeCodes.value = response.data.codes
     originalCodes.value = response.data.codes
+    codesSearch.initializeOptions(response.data.codes)
   } catch (error) {
     console.error('Error loading product type codes:', error)
     productTypeCodes.value = []
@@ -326,22 +335,6 @@ const loadProductType = async () => {
   } finally {
     loading.value = false
   }
-}
-
-const filterFn = (val, update) => {
-  update(() => {
-    if (val === '') {
-      productTypeCodes.value = [...originalCodes.value]
-    } else {
-      const needle = val.toLowerCase()
-      productTypeCodes.value = originalCodes.value.filter(
-        (v) =>
-          v.label.toLowerCase().indexOf(needle) > -1 ||
-          v.value.toLowerCase().indexOf(needle) > -1 ||
-          v.description.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
 }
 
 const updateCode = (val) => {
@@ -447,39 +440,6 @@ const updateCharacteristicsOrder = async (newCharacteristics) => {
 onMounted(() => {
   loadProductTypeCodes()
   loadProductType()
+  codesSearch.initializeOptions([])
 })
 </script>
-<style scoped>
-.characteristics-section {
-  transition: all 0.3s ease;
-}
-
-/* Стилі для світлої теми */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 8px 16px;
-}
-
-/* Стилі для темної теми */
-.body--dark :deep(.q-table) thead tr {
-  background: var(--q-dark);
-}
-
-.body--dark :deep(.q-table) thead tr th {
-  color: white !important;
-}
-
-/* Стилі для границь */
-:deep(.q-card) {
-  transition: all 0.3s ease;
-}
-
-.body--dark :deep(.q-card) {
-  background: var(--q-dark);
-}
-</style>

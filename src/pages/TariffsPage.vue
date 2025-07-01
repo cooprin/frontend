@@ -21,13 +21,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.isActive"
-                  :options="statusOptions"
+                  :options="statusSearch.filteredOptions.value"
                   :label="$t('tariffs.filters.status')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
+                  @popup-show="statusSearch.resetFilter"
                 />
               </div>
 
@@ -189,6 +193,7 @@ import { useI18n } from 'vue-i18n'
 import { TariffsApi } from 'src/api/tariffs'
 import TariffDialog from 'components/tariffs/TariffDialog.vue'
 import TariffAssignDialog from 'components/tariffs/TariffAssignDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -204,6 +209,8 @@ const tariffToAssign = ref(null)
 const tariffs = ref([])
 const deleteDialog = ref(false)
 const tariffToDelete = ref(null)
+// Searchable selects
+const statusSearch = useSearchableSelect(ref([]))
 
 const pagination = ref({
   sortBy: 'name',
@@ -385,9 +392,6 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadTariffs()
+  statusSearch.initializeOptions(statusOptions.value)
 })
 </script>
-
-<style scoped>
-/* Тут можна додати специфічні стилі для цієї сторінки */
-</style>

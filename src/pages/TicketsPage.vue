@@ -138,13 +138,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background: transparent;
-}
-
-.q-tab-panel {
-  padding: 16px 0;
-}
-</style>

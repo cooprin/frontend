@@ -21,13 +21,17 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.status"
-                  :options="statusOptions"
+                  :options="statusSearch.filteredOptions.value"
                   :label="$t('invoices.filters.status')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
+                  @popup-show="statusSearch.resetFilter"
                 />
               </div>
 
@@ -35,13 +39,17 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.year"
-                  :options="yearOptions"
+                  :options="yearSearch.filteredOptions.value"
                   :label="$t('invoices.filters.year')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => yearSearch.filterOptions(val, update)"
+                  @popup-show="yearSearch.resetFilter"
                 />
               </div>
 
@@ -49,13 +57,17 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.month"
-                  :options="monthOptions"
+                  :options="monthSearch.filteredOptions.value"
                   :label="$t('invoices.filters.month')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => monthSearch.filterOptions(val, update)"
+                  @popup-show="monthSearch.resetFilter"
                 />
               </div>
 
@@ -185,6 +197,7 @@ import { InvoicesApi } from 'src/api/invoices'
 import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import { date } from 'quasar'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -215,6 +228,10 @@ const showDialog = ref(false)
 const showFilters = ref(false)
 const invoices = ref([])
 const showGenerateDialog = ref(false)
+// Searchable selects
+const statusSearch = useSearchableSelect(ref([]))
+const yearSearch = useSearchableSelect(ref([]))
+const monthSearch = useSearchableSelect(ref([]))
 
 const onInvoicesGenerated = (invoices) => {
   // Перезавантажити дані
@@ -429,11 +446,8 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadInvoices()
+  statusSearch.initializeOptions(statusOptions.value)
+  yearSearch.initializeOptions(yearOptions.value)
+  monthSearch.initializeOptions(monthOptions.value)
 })
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background-color: transparent;
-}
-</style>

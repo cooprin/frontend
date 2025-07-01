@@ -21,12 +21,16 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.isActive"
-                  :options="statusOptions"
+                  :options="statusSearch.filteredOptions.value"
                   :label="$t('clients.filters.status')"
                   outlined
                   dense
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
+                  @popup-show="statusSearch.resetFilter"
                 />
               </div>
 
@@ -164,6 +168,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -178,6 +183,8 @@ const editClient = ref(null)
 const clients = ref([])
 const deleteDialog = ref(false)
 const clientToDelete = ref(null)
+// Searchable selects
+const statusSearch = useSearchableSelect(ref([]))
 
 const pagination = ref({
   sortBy: 'name',
@@ -382,10 +389,6 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadClients()
+  statusSearch.initializeOptions(statusOptions.value)
 })
 </script>
-
-<style scoped>
-/* Тут можна додати специфічні стилі для цієї сторінки */
-/* Успадковуються стилі таблиці з інших компонентів */
-</style>

@@ -15,6 +15,8 @@
           @request="onRequest"
           row-key="id"
           :rows-per-page-options="pagination.rowsPerPageOptions"
+          :rows-per-page-label="$t('common.rowsPerPage')"
+          :pagination-label="paginationLabel"
         >
           <template v-slot:top-right>
             <q-input
@@ -394,13 +396,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { StockApi } from 'src/api/stock'
 import { WialonApi } from 'src/api/wialon'
 import { WarehousesApi } from 'src/api/warehouses'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { debounce } from 'lodash'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -423,6 +426,10 @@ const showUninstallDialog = ref(false)
 const showRepairDialog = ref(false)
 const showReturnFromRepairDialog = ref(false)
 const showWriteOffDialog = ref(false)
+
+const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
+  return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
 
 // Transfer form
 const transferForm = ref({
@@ -525,6 +532,20 @@ const loadStock = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const onRequest = async (props) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination
+
+  pagination.value = {
+    ...pagination.value,
+    page,
+    rowsPerPage,
+    sortBy,
+    descending,
+  }
+
+  await loadStock()
 }
 
 const loadObjects = async () => {
@@ -796,6 +817,20 @@ const onWriteOff = async () => {
     saving.value = false
   }
 }
+// Watcher for filters
+watch(
+  () => ({
+    ...filters.value,
+    page: pagination.value.page,
+    rowsPerPage: pagination.value.rowsPerPage,
+    sortBy: pagination.value.sortBy,
+    descending: pagination.value.descending,
+  }),
+  debounce(() => {
+    loadStock()
+  }, 300),
+  { deep: true },
+)
 
 onMounted(() => {
   loadStock()

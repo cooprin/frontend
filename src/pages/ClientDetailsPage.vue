@@ -623,11 +623,15 @@
             <!-- Тип платежу -->
             <q-select
               v-model="paymentForm.payment_type"
-              :options="paymentTypeOptions"
+              :options="paymentTypeSearch.filteredOptions.value"
               :label="$t('invoices.paymentType')"
               outlined
               map-options
               emit-value
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => paymentTypeSearch.filterOptions(val, update)"
+              @popup-show="paymentTypeSearch.resetFilter"
             />
 
             <!-- Примітки -->
@@ -700,6 +704,7 @@ import { ServicesApi } from 'src/api/services'
 import { InvoicesApi } from 'src/api/invoices'
 import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -764,6 +769,8 @@ const deletingDocument = ref(false)
 const clientInvoices = ref({ invoices: [], total: 0 })
 const loadingInvoices = ref(false)
 const showInvoiceDialog = ref(false)
+// Searchable selects
+const paymentTypeSearch = useSearchableSelect(ref(paymentTypeOptions))
 
 const loadClientInvoices = async () => {
   if (!client.value) return
@@ -1182,11 +1189,6 @@ const getDaysLeftColor = (daysLeft) => {
 // Життєвий цикл
 onMounted(() => {
   loadClient()
+  paymentTypeSearch.initializeOptions(paymentTypeOptions)
 })
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background-color: transparent;
-}
-</style>

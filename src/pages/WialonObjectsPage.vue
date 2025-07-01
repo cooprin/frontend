@@ -21,13 +21,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.client"
-                  :options="clientOptions"
+                  :options="clientSearch.filteredOptions.value"
                   :label="$t('wialonObjects.filters.client')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => clientSearch.filterOptions(val, update)"
+                  @popup-show="clientSearch.resetFilter"
                   :loading="loadingClients"
                 />
               </div>
@@ -206,6 +210,7 @@ import { WialonApi } from 'src/api/wialon'
 import { ClientsApi } from 'src/api/clients'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -223,6 +228,8 @@ const objects = ref([])
 const deleteDialog = ref(false)
 const objectToDelete = ref(null)
 const clientOptions = ref([])
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
 
 const pagination = ref({
   sortBy: 'name',
@@ -317,6 +324,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({

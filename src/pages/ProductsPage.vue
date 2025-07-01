@@ -566,38 +566,6 @@ onUnmounted(() => {
 </script>
 
 <style>
-/* Загальні стилі для pre блоків з змінами */
-.changes-pre {
-  padding: 1rem;
-  border-radius: 8px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 400px;
-  overflow-y: auto;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* Стилі для світлої теми */
-.body--light .changes-pre {
-  background-color: #f5f5f5;
-  color: #000;
-  border: 1px solid #e0e0e0;
-}
-
-/* Стилі для темної теми */
-.body--dark .changes-pre {
-  background-color: #1d1d1d;
-  color: #fff;
-  border: 1px solid #333;
-}
-
-.body--dark .q-card {
-  background: #1d1d1d;
-  color: #fff;
-}
-
 /* Стилі таблиці */
 .groups-table {
   max-height: 400px;

@@ -162,12 +162,16 @@
 
             <q-select
               v-model="editedUser.role_id"
-              :options="roleOptions"
+              :options="roleSearch.filteredOptions.value"
               :label="$t('pages.users.role')"
               outlined
               dense
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => roleSearch.filterOptions(val, update)"
+              @popup-show="roleSearch.resetFilter"
               :rules="[(val) => !!val || $t('pages.users.required')]"
             />
 
@@ -191,7 +195,7 @@
               <div class="col-4">
                 <q-select
                   v-model="selectedCountryCode"
-                  :options="countryCodes"
+                  :options="countrySearch.filteredOptions.value"
                   option-label="country"
                   option-value="code"
                   :label="$t('pages.users.countryCode')"
@@ -199,6 +203,10 @@
                   dense
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => countrySearch.filterOptions(val, update, countryCodes)"
+                  @popup-show="() => countrySearch.resetFilter(countryCodes)"
                   class="country-select"
                 >
                   <template v-slot:option="{ opt }">
@@ -299,6 +307,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { UsersApi } from 'src/api/users'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const selectedCountryCode = ref('+380')
 const phoneNumber = ref('')
@@ -346,6 +355,9 @@ const passwordData = ref({
 const saving = ref(false)
 const savingPassword = ref(false)
 const roleOptions = ref([])
+// Searchable selects
+const roleSearch = useSearchableSelect(roleOptions)
+const countrySearch = useSearchableSelect(ref(countryCodes))
 
 const columns = computed(() => [
   {
@@ -423,6 +435,7 @@ const fetchRoles = async () => {
       label: role.name,
       value: role.id,
     }))
+    roleSearch.initializeOptions(roleOptions.value)
   } catch {
     $q.notify({
       type: 'negative',
@@ -646,124 +659,6 @@ watch(search, () => {
 onMounted(() => {
   fetchRoles()
   fetchUsers()
+  countrySearch.initializeOptions(countryCodes)
 })
 </script>
-<style>
-.changes-pre {
-  padding: 10px;
-  border-radius: 4px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.body--light .changes-pre {
-  background-color: #f5f5f5;
-  color: #000;
-}
-
-.body--dark .changes-pre {
-  background-color: #1d1d1d;
-  color: #fff;
-}
-
-.body--dark .q-card {
-  background: #1d1d1d;
-  color: #fff;
-}
-
-.body--dark .q-item {
-  color: #fff;
-}
-
-.body--dark .q-item__label--caption {
-  color: #9e9e9e;
-}
-
-.body--dark .text-subtitle1 {
-  color: #fff;
-  opacity: 0.9;
-}
-</style>
-
-<style scoped>
-.groups-table {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-/* Стилі для світлої теми */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 8px 16px;
-}
-
-/* Стилі для темної теми */
-.body--dark :deep(.q-table) thead tr {
-  background: var(--q-dark);
-}
-
-.body--dark :deep(.q-table) thead tr th {
-  color: white !important;
-}
-
-/* Стилі для ховера рядків */
-:deep(.q-table) tbody tr:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-/* Стилі для парних рядків */
-:deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.body--dark :deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* Стилі для клітинок таблиці */
-:deep(.q-table) td {
-  padding: 8px 16px;
-}
-
-/* Стилі для границь таблиці */
-:deep(.q-table) {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Стилі для розділових ліній */
-:deep(.q-table) th,
-:deep(.q-table) td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) th,
-.body--dark :deep(.q-table) td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-.country-select {
-  min-width: 120px;
-}
-
-:deep(.q-field__native > span) {
-  opacity: 1 !important;
-}
-
-:deep(.q-select__dropdown-icon) {
-  margin-left: 4px;
-}
-
-:deep(.q-field__prefix) {
-  padding-right: 6px;
-}
-</style>

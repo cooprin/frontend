@@ -202,11 +202,15 @@
         <q-card-section>
           <q-select
             v-model="newStatus"
-            :options="statusOptions"
+            :options="statusSearch.filteredOptions.value"
             :label="$t('products.status')"
             outlined
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => statusSearch.filterOptions(val, update)"
+            @popup-show="statusSearch.resetFilter"
           />
 
           <q-input
@@ -243,6 +247,7 @@ import { ProductsApi } from 'src/api/products'
 import { WialonApi } from 'src/api/wialon'
 import ProductDialog from 'components/products/ProductDialog.vue'
 import { SuppliersApi } from 'src/api/suppliers'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const route = useRoute()
 const $q = useQuasar()
@@ -261,6 +266,8 @@ const currentLocation = ref(null)
 // Новий стан для об'єкта Wialon
 const wialonObject = ref(null)
 const loadingWialonObject = ref(false)
+// Searchable selects
+const statusSearch = useSearchableSelect(ref([]))
 
 const hasCharacteristics = computed(() => {
   return (
@@ -506,5 +513,6 @@ const updateStatus = async () => {
 // Lifecycle
 onMounted(() => {
   loadProduct()
+  statusSearch.initializeOptions(statusOptions)
 })
 </script>

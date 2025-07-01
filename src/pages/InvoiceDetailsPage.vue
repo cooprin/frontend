@@ -725,9 +725,3 @@ onMounted(() => {
   loadInvoice()
 })
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background-color: transparent;
-}
-</style>
