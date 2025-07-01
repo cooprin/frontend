@@ -18,7 +18,7 @@
           :loading="markingAllRead"
           class="q-mr-sm"
         />
-        <q-btn flat icon="refresh" @click="loadNotifications" :loading="loading" />
+        <q-btn flat icon="refresh" @click="refreshNotifications" :loading="loading" />
       </div>
     </div>
 
@@ -36,7 +36,7 @@
               clearable
               dense
               outlined
-              @update:model-value="loadNotifications"
+              @update:model-value="onFilterChange"
             />
           </div>
           <div class="col-md-3 col-sm-6 col-12">
@@ -49,7 +49,7 @@
               clearable
               dense
               outlined
-              @update:model-value="loadNotifications"
+              @update:model-value="onFilterChange"
             />
           </div>
           <div class="col-md-4 col-12">
@@ -239,7 +239,8 @@ const loadNotifications = async (page = 1) => {
 
     if (filter.value.type) params.type = filter.value.type
     if (filter.value.status) params.status = filter.value.status
-    if (filter.value.search) params.search = filter.value.search
+    if (filter.value.search && filter.value.search.trim())
+      params.search = filter.value.search.trim()
 
     const response = await NotificationsApi.getNotifications(params)
 
@@ -259,6 +260,15 @@ const loadNotifications = async (page = 1) => {
   } finally {
     loading.value = false
   }
+}
+
+const refreshNotifications = () => {
+  loadNotifications(pagination.value.page)
+}
+
+const onFilterChange = () => {
+  pagination.value.page = 1
+  loadNotifications(1)
 }
 
 const markAllAsRead = async () => {
@@ -334,6 +344,7 @@ const onPageChange = (page) => {
 const onSearchChange = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    pagination.value.page = 1
     loadNotifications(1)
   }, 500)
 }
