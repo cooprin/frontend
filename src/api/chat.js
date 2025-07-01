@@ -1,6 +1,11 @@
 import { api } from 'boot/axios'
 
 export const ChatApi = {
+  // NEW: Get active chat for client
+  getActiveChat() {
+    return api.get('/chat/active')
+  },
+
   // Отримання кімнат чату
   getRooms() {
     return api.get('/chat/rooms')
@@ -11,30 +16,24 @@ export const ChatApi = {
     return api.post('/chat/rooms', data)
   },
 
+  // NEW: Delete chat room (staff only)
+  deleteRoom(roomId) {
+    return api.delete(`/chat/rooms/${roomId}`)
+  },
+
   // Отримання повідомлень
   getMessages(roomId, params = {}) {
     return api.get(`/chat/rooms/${roomId}/messages`, { params })
   },
 
   // Відправка повідомлення
-  sendMessage(roomId, formData) {
-    return api.post(`/chat/rooms/${roomId}/messages`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+  sendMessage(roomId, messageData) {
+    return api.post(`/chat/rooms/${roomId}/messages`, messageData)
   },
 
   // Позначити як прочитане
   markAsRead(roomId) {
     return api.patch(`/chat/rooms/${roomId}/read`)
-  },
-
-  // Завантаження файлу
-  downloadFile(fileId) {
-    return api.get(`/chat/files/${fileId}/download`, {
-      responseType: 'blob',
-    })
   },
 
   // Статус співробітників (для клієнтів)
@@ -51,6 +50,7 @@ export const ChatApi = {
   assignRoom(roomId, staffId) {
     return api.patch(`/chat/rooms/${roomId}/assign`, { staffId })
   },
+
   // ===========================================
   // STAFF CHAT MANAGEMENT API METHODS
   // ===========================================

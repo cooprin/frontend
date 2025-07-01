@@ -75,4 +75,8 @@ export const InvoicesApi = {
   updateInvoice: (id, data) => {
     return api.put(`/services/invoices/${id}`, data)
   },
+  // Додати метод
+  async deleteInvoiceDocument(invoiceId, documentId) {
+    return await api.delete(`/services/invoices/${invoiceId}/documents/${documentId}`)
+  },
 }

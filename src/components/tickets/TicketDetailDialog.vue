@@ -120,7 +120,11 @@
           <div class="q-mb-md" v-if="ticket.category_name">
             <div class="text-subtitle2 q-mb-sm">{{ $t('tickets.category') }}</div>
             <q-chip :color="ticket.category_color" text-color="white" dense>
-              {{ ticket.category_name }}
+              {{
+                ticket.category_name.startsWith('tickets.categories.')
+                  ? $t(ticket.category_name)
+                  : ticket.category_name
+              }}
             </q-chip>
           </div>
 

@@ -266,6 +266,15 @@ const routes = [
         },
       },
       {
+        path: 'chat/:roomId',
+        name: 'chat-room',
+        component: () => import('pages/ChatRoomPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'chat.read',
+        },
+      },
+      {
         path: 'notifications',
         name: 'notifications',
         component: () => import('pages/NotificationsPage.vue'),

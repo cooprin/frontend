@@ -1,18 +1,19 @@
 export default {
-  // Загальні
+  // General
   title: 'Customer Portal',
   dashboard: 'Dashboard',
   profile: 'Profile',
   logout: 'Logout',
 
-  // Меню
+  // Menu
   myObjects: 'My Objects',
   myInvoices: 'My Invoices',
   myDocuments: 'My Documents',
   myTickets: 'My Tickets',
   chat: 'Support Chat',
+  notifications: 'Notifications',
 
-  // Сторінки
+  // Pages
   pages: {
     dashboard: {
       title: 'Customer Portal',
@@ -121,6 +122,18 @@ export default {
       fileTooBig: 'File too big',
       invalidFileType: 'Invalid file type',
       maxFilesExceeded: 'Maximum files exceeded',
+      welcome: 'Welcome to Support Chat',
+      welcomeDesc: "Start a conversation with our support team. We're here to help!",
+      commonQuestions: 'Common Questions',
+      generalHelp: 'General Help',
+      generalHelpMessage: 'Hi! I need general assistance with your services.',
+      technicalIssue: 'Technical Issue',
+      technicalIssueMessage: "Hi! I'm experiencing a technical issue and need help.",
+      billing: 'Billing Question',
+      billingMessage: 'Hi! I have a question about my billing or payments.',
+      loading: 'Loading...',
+      alreadyHasChat: 'You already have an active chat',
+      chatDeleted: 'Chat has been deleted by staff',
     },
     profile: {
       title: 'My Profile',
@@ -131,7 +144,7 @@ export default {
     },
   },
 
-  // Статуси
+  // Statuses
   statuses: {
     active: 'Active',
     inactive: 'Inactive',
@@ -143,7 +156,7 @@ export default {
     overdue: 'Overdue',
   },
 
-  // Повідомлення
+  // Messages
   messages: {
     loading: 'Loading...',
     noData: 'No data',

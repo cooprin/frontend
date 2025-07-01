@@ -68,9 +68,9 @@ export default {
     upload: 'Upload Document',
     selectFile: 'Select file',
     description: 'Description',
-    deleteConfirmation: 'Are you sure you want to delete this document?',
     uploadSuccess: 'Document uploaded successfully',
-    deleteSuccess: 'Document deleted successfully',
+    confirmDelete: 'Are you sure you want to delete this document?',
+    deleteSuccess: 'Document successfully deleted',
   },
 
   // Загальне

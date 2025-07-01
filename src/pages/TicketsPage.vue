@@ -37,7 +37,6 @@
     </q-card>
 
     <!-- Ticket Detail Dialog -->
-
     <q-dialog
       v-model="ticketDetailDialog"
       maximized
@@ -51,6 +50,9 @@
         @ticket-updated="onTicketUpdated"
       />
     </q-dialog>
+
+    <!-- Create Ticket Dialog -->
+    <create-ticket-dialog v-model="createTicketDialog" @ticket-created="onTicketCreated" />
   </q-page>
 </template>
 
@@ -61,10 +63,12 @@ import NewTicketsCard from 'components/tickets/NewTicketsCard.vue'
 import InProgressTicketsCard from 'components/tickets/InProgressTicketsCard.vue'
 import AllTicketsCard from 'components/tickets/AllTicketsCard.vue'
 import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
+import CreateTicketDialog from 'components/tickets/CreateTicketDialog.vue'
 
 defineOptions({
   components: {
     TicketDetailDialog,
+    CreateTicketDialog,
   },
 })
 
@@ -75,6 +79,7 @@ const router = useRouter()
 const tab = ref('new')
 const ticketDetailDialog = ref(false)
 const selectedTicket = ref(null)
+const createTicketDialog = ref(false)
 
 // Methods
 const openTicketDetail = (ticketId) => {
@@ -82,17 +87,28 @@ const openTicketDetail = (ticketId) => {
   ticketDetailDialog.value = true
 }
 
+const showCreateDialog = () => {
+  createTicketDialog.value = true
+}
+
 const onTicketUpdated = () => {
   // Refresh current tab data by emitting event to child components
   // This will be handled by each card component
+}
+
+const onTicketCreated = () => {
+  createTicketDialog.value = false
+  onTicketUpdated()
 }
 
 const closeTicketDetail = () => {
   ticketDetailDialog.value = false
   selectedTicket.value = null
 }
+
 // Provide methods to child components
 provide('openTicketDetail', openTicketDetail)
+provide('showCreateDialog', showCreateDialog)
 provide('refreshTickets', onTicketUpdated)
 
 // Handle URL parameters for direct ticket access

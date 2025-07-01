@@ -18,12 +18,6 @@
           </template>
         </q-input>
         <q-btn
-          color="primary"
-          icon="add"
-          :label="$t('tickets.add')"
-          @click="showCreateDialog = true"
-        />
-        <q-btn
           color="secondary"
           icon="refresh"
           :label="$t('common.refresh')"
@@ -74,7 +68,11 @@
           <div class="text-weight-medium">{{ props.row.title }}</div>
           <div class="text-caption text-grey-6" v-if="props.row.category_name">
             <q-icon name="folder" size="xs" class="q-mr-xs" />
-            {{ props.row.category_name }}
+            {{
+              props.row.category_name.startsWith('tickets.categories.')
+                ? $t(props.row.category_name)
+                : props.row.category_name
+            }}
           </div>
         </q-td>
       </template>
@@ -183,93 +181,6 @@
         </q-td>
       </template>
     </q-table>
-
-    <!-- Create Ticket Dialog -->
-    <q-dialog v-model="showCreateDialog" persistent>
-      <q-card style="min-width: 500px; max-width: 600px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">{{ $t('tickets.add') }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="q-pa-lg">
-          <q-form @submit="createTicket" class="q-gutter-md">
-            <q-select
-              v-model="newTicket.client_id"
-              :options="clientOptions"
-              :label="$t('tickets.client')"
-              outlined
-              dense
-              emit-value
-              map-options
-              use-input
-              input-debounce="300"
-              @filter="filterClients"
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-            />
-
-            <q-input
-              v-model="newTicket.title"
-              :label="$t('tickets.title')"
-              outlined
-              dense
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-            />
-
-            <q-input
-              v-model="newTicket.description"
-              :label="$t('tickets.description')"
-              outlined
-              dense
-              type="textarea"
-              rows="4"
-              :rules="[(val) => !!val || $t('common.validation.required')]"
-            />
-
-            <div class="row q-gutter-md">
-              <div class="col">
-                <q-select
-                  v-model="newTicket.priority"
-                  :options="priorityOptions"
-                  :label="$t('tickets.priority')"
-                  outlined
-                  dense
-                  emit-value
-                  map-options
-                />
-              </div>
-              <div class="col">
-                <q-select
-                  v-model="newTicket.category_id"
-                  :options="categoryOptions"
-                  :label="$t('tickets.category')"
-                  outlined
-                  dense
-                  emit-value
-                  map-options
-                  clearable
-                />
-              </div>
-            </div>
-          </q-form>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn :label="$t('common.cancel')" color="grey" v-close-popup />
-          <q-btn
-            :label="$t('common.create')"
-            color="primary"
-            @click="createTicket"
-            :loading="creating"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
@@ -290,10 +201,8 @@ const openTicketDetail = inject('openTicketDetail')
 
 // State
 const loading = ref(false)
-const creating = ref(false)
 const tickets = ref([])
 const searchQuery = ref('')
-const showCreateDialog = ref(false)
 const assigningTickets = ref([])
 const startingTickets = ref([])
 
@@ -306,18 +215,7 @@ const pagination = ref({
   total: 0,
 })
 
-// New ticket form
-const newTicket = ref({
-  client_id: '',
-  title: '',
-  description: '',
-  priority: 'medium',
-  category_id: '',
-})
-
 // Options
-const clientOptions = ref([])
-const categoryOptions = ref([])
 const allStaffOptions = ref([])
 
 // Computed
@@ -328,13 +226,6 @@ const urgentCount = computed(() => {
 const highPriorityCount = computed(() => {
   return tickets.value.filter((ticket) => ticket.priority === 'high').length
 })
-
-const priorityOptions = computed(() => [
-  { label: t('tickets.priorities.low'), value: 'low' },
-  { label: t('tickets.priorities.medium'), value: 'medium' },
-  { label: t('tickets.priorities.high'), value: 'high' },
-  { label: t('tickets.priorities.urgent'), value: 'urgent' },
-])
 
 // Table columns
 const columns = computed(() => [
@@ -509,71 +400,6 @@ const changePriority = async (ticket, priority) => {
   }
 }
 
-const createTicket = async () => {
-  creating.value = true
-  try {
-    await TicketsApi.createTicket(newTicket.value)
-
-    showCreateDialog.value = false
-    newTicket.value = {
-      client_id: '',
-      title: '',
-      description: '',
-      priority: 'medium',
-      category_id: '',
-    }
-
-    $q.notify({
-      color: 'positive',
-      message: t('tickets.createSuccess'),
-      icon: 'check',
-    })
-
-    await loadTickets()
-  } catch (error) {
-    console.error('Error creating ticket:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('tickets.createError'),
-      icon: 'error',
-    })
-  } finally {
-    creating.value = false
-  }
-}
-
-const filterClients = async (val, update) => {
-  if (val.length < 2) {
-    update(() => {
-      clientOptions.value = []
-    })
-    return
-  }
-
-  try {
-    // This would be a clients search API call
-    update(() => {
-      clientOptions.value = [{ label: `Client ${val}`, value: 'client1' }]
-    })
-  } catch (error) {
-    console.error('Error searching clients:', error)
-  }
-}
-
-const loadCategories = async () => {
-  try {
-    const response = await TicketsApi.getCategories()
-    categoryOptions.value = response.data.categories.map((cat) => ({
-      label: cat.name.startsWith('tickets.categories.')
-        ? t(cat.name)
-        : t(`tickets.categories.${cat.name}`),
-      value: cat.id,
-    }))
-  } catch (error) {
-    console.error('Error loading categories:', error)
-  }
-}
-
 const loadStaff = async () => {
   try {
     const response = await TicketsApi.getStaff()
@@ -627,7 +453,6 @@ const formatTime = (dateString) => {
 // Lifecycle
 onMounted(() => {
   loadTickets()
-  loadCategories()
   loadStaff()
 })
 </script>

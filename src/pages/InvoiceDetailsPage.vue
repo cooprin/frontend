@@ -264,6 +264,14 @@
                     flat
                     dense
                     round
+                    icon="delete"
+                    color="negative"
+                    @click.stop="confirmDeleteDocument(doc)"
+                  />
+                  <q-btn
+                    flat
+                    dense
+                    round
                     icon="download"
                     color="primary"
                     @click.stop="downloadDocument(doc)"
@@ -677,6 +685,38 @@ const updateStatus = async (status) => {
     })
   } finally {
     updatingStatus.value = false
+  }
+}
+
+const confirmDeleteDocument = (document) => {
+  $q.dialog({
+    title: t('common.confirm'),
+    message: t('invoices.documents.confirmDelete'),
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    deleteDocument(document)
+  })
+}
+
+const deleteDocument = async (document) => {
+  try {
+    await InvoicesApi.deleteInvoiceDocument(invoice.value.id, document.id)
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.documents.deleteSuccess'),
+      icon: 'check',
+    })
+
+    loadInvoice() // Перезавантажуємо дані
+  } catch (error) {
+    console.error('Error deleting document:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.deleting'),
+      icon: 'error',
+    })
   }
 }
 

@@ -221,17 +221,22 @@ const handleNotificationClick = async (notification) => {
     const roomId = notification.data?.room_id || notification.entity_id
 
     if (isClientPortal) {
-      // Клієнтська частина
+      // Клієнтська частина - просто перейти на чат
       router.push({
         name: 'portal-chat',
-        query: roomId ? { openRoom: roomId } : {},
       })
     } else {
-      // Адмінська частина - виправлено навігацію до чатів
-      router.push({
-        name: 'chat',
-        query: roomId ? { openRoom: roomId } : {},
-      })
+      // Адмінська частина - перейти на конкретний чат
+      if (roomId) {
+        router.push({
+          name: 'chat-room',
+          params: { roomId },
+        })
+      } else {
+        router.push({
+          name: 'chat',
+        })
+      }
     }
   } else {
     // Для інших типів

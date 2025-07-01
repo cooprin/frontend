@@ -11,6 +11,7 @@ export default {
   myDocuments: 'Мої документи',
   myTickets: 'Мої заявки',
   chat: 'Чат підтримки',
+  notifications: 'Сповіщення',
 
   // Сторінки
   pages: {
@@ -121,6 +122,18 @@ export default {
       fileTooBig: 'Файл занадто великий',
       invalidFileType: 'Невірний тип файлу',
       maxFilesExceeded: 'Перевищено максимальну кількість файлів',
+      welcome: 'Ласкаво просимо до чату підтримки',
+      welcomeDesc: 'Почніть розмову з нашою командою підтримки. Ми тут, щоб допомогти!',
+      commonQuestions: 'Часті питання',
+      generalHelp: 'Загальна допомога',
+      generalHelpMessage: 'Привіт! Мені потрібна загальна допомога з вашими послугами.',
+      technicalIssue: 'Технічна проблема',
+      technicalIssueMessage: 'Привіт! У мене технічна проблема і мені потрібна допомога.',
+      billing: 'Питання щодо оплати',
+      billingMessage: 'Привіт! У мене є питання щодо рахунків або платежів.',
+      loading: 'Завантаження...',
+      alreadyHasChat: 'У вас вже є активний чат',
+      chatDeleted: 'Чат було видалено співробітником',
     },
     profile: {
       title: 'Мій профіль',
