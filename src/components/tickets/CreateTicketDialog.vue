@@ -20,6 +20,8 @@
             dense
             emit-value
             map-options
+            option-label="label"
+            option-value="value"
             use-input
             input-debounce="300"
             @filter="(val, update) => clientSearch.filterOptions(val, update)"
@@ -92,6 +94,8 @@
                 dense
                 emit-value
                 map-options
+                option-label="label"
+                option-value="value"
                 use-input
                 input-debounce="300"
                 @filter="(val, update) => categorySearch.filterOptions(val, update)"
@@ -121,6 +125,8 @@
                 dense
                 emit-value
                 map-options
+                option-label="label"
+                option-value="value"
                 use-input
                 input-debounce="300"
                 @filter="(val, update) => staffSearch.filterOptions(val, update)"
