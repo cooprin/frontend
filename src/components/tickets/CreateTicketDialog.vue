@@ -222,12 +222,12 @@ const ticketForm = ref(null)
 
 // Form data
 const form = ref({
-  client_id: '',
+  client_id: null,
   title: '',
   description: '',
-  category_id: '',
+  category_id: null,
   priority: 'medium',
-  assigned_to: '',
+  assigned_to: null,
   due_date: '',
 })
 
@@ -289,12 +289,12 @@ const createTicket = async () => {
 
 const resetForm = () => {
   form.value = {
-    client_id: '',
+    client_id: null,
     title: '',
     description: '',
-    category_id: '',
+    category_id: null,
     priority: 'medium',
-    assigned_to: '',
+    assigned_to: null,
     due_date: '',
   }
 
@@ -310,16 +310,23 @@ const onDialogHide = () => {
 const loadInitialClients = async () => {
   loadingClients.value = true
   try {
-    const response = await ClientsApi.searchClients('')
+    const response = await ClientsApi.getClients({
+      is_active: true,
+      perPage: 'All',
+    })
 
     clientOptions.value = response.data.clients.map((client) => ({
       label: client.name,
       value: client.id,
-      email: client.email || '',
     }))
     clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading initial clients:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   } finally {
     loadingClients.value = false
   }
@@ -337,6 +344,11 @@ const loadCategories = async () => {
     categorySearch.initializeOptions(categoryOptions.value)
   } catch (error) {
     console.error('Error loading categories:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
@@ -354,6 +366,11 @@ const loadStaff = async () => {
     }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
