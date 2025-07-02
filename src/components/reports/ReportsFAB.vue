@@ -19,7 +19,7 @@
 
       <!-- Кнопка управления звітами (только для персонала) -->
       <q-fab-action
-        v-if="authStore.userType === 'staff' && authStore.hasPermission('reports.read')"
+        v-if="authStore.userType === 'staff' && authStore.hasAnyPermission(['reports.read'])"
         icon="settings"
         color="primary"
         @click="openReportsManagement"
