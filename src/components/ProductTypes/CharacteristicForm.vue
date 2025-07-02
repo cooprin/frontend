@@ -24,7 +24,7 @@
     <!-- Тип -->
     <q-select
       v-model="form.type"
-      :options="characteristicTypes"
+      :options="characteristicTypesSearch.filteredOptions.value"
       :label="$t('productTypes.characteristicType')"
       :rules="[(val) => !!val || $t('common.validation.required')]"
       :disable="isEdit"
@@ -33,6 +33,10 @@
       option-value="value"
       emit-value
       map-options
+      use-input
+      input-debounce="300"
+      @filter="(val, update) => characteristicTypesSearch.filterOptions(val, update)"
+      @popup-show="characteristicTypesSearch.resetFilter"
       behavior="menu"
     >
       <template v-slot:option="{ opt }">
@@ -110,6 +114,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { CharacteristicTypesApi } from 'src/api/characteristic-types'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -142,12 +147,15 @@ const loadCharacteristicTypes = async () => {
   try {
     const response = await CharacteristicTypesApi.getCharacteristicTypes()
     characteristicTypes.value = response.data.types
+    characteristicTypesSearch.initializeOptions(characteristicTypes.value)
     console.log('Loaded types:', characteristicTypes.value)
   } catch (error) {
     console.error('Error loading characteristic types:', error)
   }
 }
 
+// Searchable select for characteristic types
+const characteristicTypesSearch = useSearchableSelect(characteristicTypes)
 // Default validation rules for each type
 const defaultValidationRules = {
   string: {
@@ -248,9 +256,3 @@ onMounted(() => {
   loadCharacteristicTypes()
 })
 </script>
-
-<style scoped>
-.option-input {
-  flex: 1;
-}
-</style>

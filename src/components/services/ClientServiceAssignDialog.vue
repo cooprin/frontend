@@ -10,12 +10,16 @@
           <!-- Вибір послуги -->
           <q-select
             v-model="form.service_id"
-            :options="serviceOptions"
+            :options="serviceSearch.filteredOptions.value"
             :label="$t('services.assignment.selectService')"
             :rules="[(val) => !!val || t('common.validation.required')]"
             outlined
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => serviceSearch.filterOptions(val, update)"
+            @popup-show="serviceSearch.resetFilter"
             :loading="loadingServices"
           />
 
@@ -59,6 +63,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -80,6 +85,8 @@ const { t } = useI18n()
 const loading = ref(false)
 const loadingServices = ref(false)
 const serviceOptions = ref([])
+// Searchable select for services
+const serviceSearch = useSearchableSelect(serviceOptions)
 
 // Default form
 const defaultForm = {
@@ -113,6 +120,7 @@ const loadServices = async () => {
         label: `${service.name} (${formatCurrency(service.fixed_price)})`,
         value: service.id,
       }))
+    serviceSearch.initializeOptions(serviceOptions.value)
   } catch (error) {
     console.error('Error loading services:', error)
     $q.notify({

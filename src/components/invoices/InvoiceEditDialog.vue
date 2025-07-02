@@ -231,9 +231,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.q-banner {
-  border-radius: 4px;
-}
-</style>

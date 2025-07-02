@@ -14,12 +14,16 @@
           <!-- Client Selection -->
           <q-select
             v-model="form.client_id"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="$t('tickets.createTicket.client')"
             outlined
             dense
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :loading="loadingClients"
             :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
             clearable
@@ -82,12 +86,16 @@
             <div class="col-4">
               <q-select
                 v-model="form.category_id"
-                :options="categoryOptions"
+                :options="categorySearch.filteredOptions.value"
                 :label="$t('tickets.createTicket.category')"
                 outlined
                 dense
                 emit-value
                 map-options
+                use-input
+                input-debounce="300"
+                @filter="(val, update) => categorySearch.filterOptions(val, update)"
+                @popup-show="categorySearch.resetFilter"
                 clearable
               />
             </div>
@@ -107,12 +115,16 @@
             <div class="col-4">
               <q-select
                 v-model="form.assigned_to"
-                :options="staffOptions"
+                :options="staffSearch.filteredOptions.value"
                 :label="$t('tickets.createTicket.assignTo')"
                 outlined
                 dense
                 emit-value
                 map-options
+                use-input
+                input-debounce="300"
+                @filter="(val, update) => staffSearch.filterOptions(val, update)"
+                @popup-show="staffSearch.resetFilter"
                 clearable
               >
                 <template v-slot:option="{ opt }">
@@ -177,6 +189,7 @@ import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
 import { ClientsApi } from 'src/api/clients'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -217,6 +230,11 @@ const clientOptions = ref([])
 const categoryOptions = ref([])
 const staffOptions = ref([])
 const allStaffOptions = ref([])
+
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
+const categorySearch = useSearchableSelect(categoryOptions)
+const staffSearch = useSearchableSelect(staffOptions)
 
 // Computed
 const priorityOptions = computed(() => [
@@ -293,6 +311,7 @@ const loadInitialClients = async () => {
       value: client.id,
       email: client.email || '',
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading initial clients:', error)
   } finally {
@@ -309,6 +328,7 @@ const loadCategories = async () => {
         : t(`tickets.categories.${cat.name}`),
       value: cat.id,
     }))
+    categorySearch.initializeOptions(categoryOptions.value)
   } catch (error) {
     console.error('Error loading categories:', error)
   }
@@ -324,6 +344,7 @@ const loadStaff = async () => {
         email: user.email,
       }))
       staffOptions.value = [...allStaffOptions.value]
+      staffSearch.initializeOptions(staffOptions.value)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
@@ -351,9 +372,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style scoped>
-:deep(.q-field__counter) {
-  color: var(--q-primary);
-}
-</style>

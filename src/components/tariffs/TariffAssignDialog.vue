@@ -15,12 +15,16 @@
           <!-- Вибір об'єкта -->
           <q-select
             v-model="form.object_id"
-            :options="objectOptions"
+            :options="objectSearch.filteredOptions.value"
             :label="$t('tariffs.assignment.selectObject')"
             :rules="[(val) => !!val || t('common.validation.required')]"
             outlined
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => objectSearch.filterOptions(val, update)"
+            @popup-show="objectSearch.resetFilter"
             :loading="loadingObjects"
             @update:model-value="onObjectSelected"
           >
@@ -105,6 +109,7 @@ import { TariffsApi } from 'src/api/tariffs'
 import { PaymentsApi } from 'src/api/payments'
 import { date } from 'quasar'
 import { WialonApi } from 'src/api/wialon'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -126,6 +131,9 @@ const { t } = useI18n()
 const loading = ref(false)
 const loadingObjects = ref(false)
 const objectOptions = ref([])
+
+// Searchable select for objects
+const objectSearch = useSearchableSelect(objectOptions)
 const paymentInfo = ref({
   hasPaidPeriods: false,
   paidPeriods: [],
@@ -178,6 +186,7 @@ const loadObjects = async () => {
       value: obj.id,
       client_name: obj.client_name,
     }))
+    objectSearch.initializeOptions(objectOptions.value)
   } catch (error) {
     console.error('Error loading objects:', error)
     $q.notify({

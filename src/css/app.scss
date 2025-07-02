@@ -253,3 +253,145 @@
 .q-tab-panel {
   padding: 16px 0;
 }
+/* Country select styles */
+.country-select {
+  min-width: 120px;
+}
+
+.country-select :deep(.q-field__native > span) {
+  opacity: 1 !important;
+}
+
+.country-select :deep(.q-select__dropdown-icon) {
+  margin-left: 4px;
+}
+
+.country-select :deep(.q-field__prefix) {
+  padding-right: 6px;
+}
+/* Banner styles */
+.q-banner {
+  border-radius: 4px;
+}
+/* Model files styles */
+.model-files {
+  max-width: 100%;
+}
+
+.file-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.body--dark .file-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+/* Option input styles */
+.option-input {
+  flex: 1;
+}
+/* Characteristics list styles */
+.characteristic-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.characteristic-item:hover {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.ghost {
+  opacity: 0.5;
+  background: var(--q-primary) !important;
+}
+
+.drag-handle {
+  cursor: move;
+  opacity: 0.5;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+}
+
+.body--dark .characteristic-item:hover {
+  box-shadow: 0 1px 5px rgba(255, 255, 255, 0.2);
+}
+/* Tickets styles */
+:deep(.q-table) tbody tr:hover {
+  background: rgba(25, 118, 210, 0.04);
+}
+
+.q-chip {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.q-chip:hover {
+  transform: scale(1.05);
+}
+
+:deep(.q-table__top) {
+  padding: 8px 16px;
+}
+
+:deep(.q-table__bottom) {
+  padding: 8px 16px;
+}
+/* Field counter styles */
+:deep(.q-field__counter) {
+  color: var(--q-primary);
+}
+/* Field counter styles */
+:deep(.q-field__counter) {
+  color: var(--q-primary);
+}
+/* Ticket detail dialog styles */
+.ticket-detail-dialog {
+  width: 95vw;
+  height: 85vh;
+  max-width: none;
+  max-height: none;
+}
+
+.comments-area {
+  border-top: 1px solid #e0e0e0;
+}
+
+.comment-item {
+  position: relative;
+}
+
+.comment-mine .comment-text {
+  background-color: #e3f2fd !important;
+}
+
+.comment-internal .comment-text {
+  background-color: #fff3e0 !important;
+  border-left: 4px solid #ff9800;
+}
+
+.comment-text {
+  max-width: 100%;
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.comment-header {
+  margin-bottom: 8px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .comment-text {
+    font-size: 14px;
+  }
+
+  .comment-body {
+    margin-left: 40px !important;
+  }
+}
+/* Expansion item styles */
+.q-expansion-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}

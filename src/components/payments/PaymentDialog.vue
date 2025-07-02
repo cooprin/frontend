@@ -12,15 +12,20 @@
           <!-- Клієнт -->
           <q-select
             v-model="form.client_id"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="$t('payments.client')"
             :rules="[(val) => !!val || $t('common.validation.required')]"
             option-label="label"
             option-value="value"
             outlined
+            emit-value
+            map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :readonly="isEdit"
             :loading="loadingClients"
-            @filter="filterClients"
             @update:model-value="onClientSelected"
           />
 
@@ -73,12 +78,18 @@
           <q-select
             v-if="!isEdit"
             v-model="form.invoice_id"
-            :options="invoiceOptions"
+            :options="invoiceSearch.filteredOptions.value"
             :label="$t('payments.invoice')"
             option-label="label"
             option-value="value"
             outlined
             clearable
+            emit-value
+            map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => invoiceSearch.filterOptions(val, update)"
+            @popup-show="invoiceSearch.resetFilter"
             :loading="loadingInvoices"
             @update:model-value="onInvoiceSelected"
           />
@@ -199,6 +210,7 @@ import { PaymentsApi } from 'src/api/payments'
 import { ClientsApi } from 'src/api/clients'
 import { InvoicesApi } from 'src/api/invoices'
 import { WialonApi } from 'src/api/wialon'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -239,6 +251,9 @@ const periodAmounts = ref({})
 const objectPeriodsMap = ref({}) // Періоди для кожного об'єкта
 const loadingObjectPeriods = ref({}) // Стан завантаження для кожного об'єкта
 const selectedPeriodsByObject = ref({}) // Вибрані періоди для кожного об'єкта
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
+const invoiceSearch = useSearchableSelect(invoiceOptions)
 
 const isValidUUID = (str) => {
   // Регулярний вираз для перевірки UUID формату
@@ -554,6 +569,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({
@@ -564,22 +580,6 @@ const loadClients = async () => {
   } finally {
     loadingClients.value = false
   }
-}
-
-const filterClients = (val, update) => {
-  if (val === '') {
-    update(() => {
-      // Do nothing, keep full list
-    })
-    return
-  }
-
-  update(() => {
-    const needle = val.toLowerCase()
-    clientOptions.value = clientOptions.value.filter(
-      (v) => v.label.toLowerCase().indexOf(needle) > -1,
-    )
-  })
 }
 
 const onClientSelected = async (clientId) => {
@@ -617,6 +617,7 @@ const onClientSelected = async (clientId) => {
   // Завантажуємо об'єкти клієнта
   await loadClientObjects(actualClientId)
 }
+
 const loadClientInvoices = async (clientId) => {
   if (!clientId) return
 
@@ -635,6 +636,7 @@ const loadClientInvoices = async (clientId) => {
       billing_year: invoice.billing_year,
       has_objects: invoice.items_count > 0,
     }))
+    invoiceSearch.initializeOptions(invoiceOptions.value)
   } catch (error) {
     console.error('Error loading invoices:', error)
     $q.notify({

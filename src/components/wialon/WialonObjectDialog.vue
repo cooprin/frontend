@@ -29,12 +29,16 @@
           <!-- Клієнт -->
           <q-select
             v-model="form.client_id"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="t('wialonObjects.client')"
             :rules="[(val) => !!val || t('common.validation.required')]"
             outlined
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :loading="loadingClients"
           />
 
@@ -79,11 +83,15 @@
           <template v-if="form.status === 'active'">
             <q-select
               v-model="form.tariff_id"
-              :options="tariffOptions"
+              :options="tariffSearch.filteredOptions.value"
               :label="t('wialonObjects.tariff')"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => tariffSearch.filterOptions(val, update)"
+              @popup-show="tariffSearch.resetFilter"
               :loading="loadingTariffs"
             />
 
@@ -149,6 +157,7 @@ import { WialonApi } from 'src/api/wialon'
 import { ClientsApi } from 'src/api/clients'
 import { TariffsApi } from 'src/api/tariffs'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -175,6 +184,9 @@ const loadingClients = ref(false)
 const loadingTariffs = ref(false)
 const clientOptions = ref([])
 const tariffOptions = ref([])
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
+const tariffSearch = useSearchableSelect(tariffOptions)
 
 // Обмеження дати - не можна вибрати дату з майбутнього
 const maxDate = date.formatDate(new Date(), 'YYYY/MM/DD')
@@ -225,6 +237,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({
@@ -249,6 +262,7 @@ const loadTariffs = async () => {
       label: `${tariff.name} (${formatCurrency(tariff.price)})`,
       value: tariff.id,
     }))
+    tariffSearch.initializeOptions(tariffOptions.value)
   } catch (error) {
     console.error('Error loading tariffs:', error)
     $q.notify({
