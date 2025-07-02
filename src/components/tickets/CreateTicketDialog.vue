@@ -20,8 +20,6 @@
             dense
             emit-value
             map-options
-            option-label="label"
-            option-value="value"
             use-input
             input-debounce="300"
             @filter="(val, update) => clientSearch.filterOptions(val, update)"
@@ -29,28 +27,7 @@
             :loading="loadingClients"
             :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
             clearable
-          >
-            <template v-slot:option="{ opt }">
-              <q-item>
-                <q-item-section avatar>
-                  <q-avatar size="32px">
-                    <q-icon name="person" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ opt.label }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{ $t('tickets.createTicket.noClientsFound') }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          />
 
           <!-- Title -->
           <q-input
@@ -125,28 +102,12 @@
                 dense
                 emit-value
                 map-options
-                option-label="label"
-                option-value="value"
                 use-input
                 input-debounce="300"
                 @filter="(val, update) => staffSearch.filterOptions(val, update)"
                 @popup-show="staffSearch.resetFilter"
                 clearable
-              >
-                <template v-slot:option="{ opt }">
-                  <q-item>
-                    <q-item-section avatar>
-                      <q-avatar size="24px">
-                        <q-icon name="person" />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>{{ opt.label }}</q-item-label>
-                      <q-item-label caption v-if="opt.email">{{ opt.email }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
+              />
             </div>
           </div>
 
@@ -359,7 +320,6 @@ const loadStaff = async () => {
       allStaffOptions.value = response.data.staff.map((user) => ({
         label: user.label || `${user.first_name} ${user.last_name}`,
         value: user.id,
-        email: user.email,
       }))
       staffOptions.value = [...allStaffOptions.value]
       staffSearch.initializeOptions(staffOptions.value)
