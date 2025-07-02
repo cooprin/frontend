@@ -289,6 +289,42 @@ const routes = [
           permissions: ['company_profile.read'],
         },
       },
+      {
+        path: 'reports',
+        name: 'reports',
+        component: () => import('pages/ReportsPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'reports.read',
+        },
+      },
+      {
+        path: 'reports/create',
+        name: 'report-create',
+        component: () => import('pages/ReportEditPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'reports.create',
+        },
+      },
+      {
+        path: 'reports/:id',
+        name: 'report-edit',
+        component: () => import('pages/ReportEditPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'reports.update',
+        },
+      },
+      {
+        path: 'reports/:id/history',
+        name: 'report-history',
+        component: () => import('pages/ReportHistoryPage.vue'),
+        meta: {
+          requiresAuth: true,
+          permission: 'reports.read',
+        },
+      },
     ],
   },
 

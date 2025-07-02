@@ -21,6 +21,7 @@ import portal from './portal'
 import tickets from './tickets'
 import chat from './chat'
 import notifications from './notifications'
+import reports from './reports'
 
 export default {
   layouts,
@@ -46,4 +47,5 @@ export default {
   tickets,
   chat,
   notifications,
+  reports,
 }

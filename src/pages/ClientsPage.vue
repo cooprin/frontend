@@ -159,6 +159,8 @@
 
     <client-dialog v-model="showDialog" :edit-data="editClient" @saved="loadClients" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="clients" />
 </template>
 
 <script setup>
@@ -169,6 +171,7 @@ import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()

@@ -37,5 +37,6 @@ export default {
     tickets: 'Заявки',
     chat: 'Чат',
     notifications: 'Сповіщення',
+    reports: 'Звіти',
   },
 }
