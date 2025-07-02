@@ -622,24 +622,57 @@ const clearCache = async () => {
   }
 }
 
-const loadFromFiles = async () => {
-  loadingFromFiles.value = true
-  try {
-    const response = await ReportsApi.loadReportsFromFiles()
-    $q.notify({
-      type: 'positive',
-      message: response.data.result?.message || t('reports.loadFromFilesSuccess'),
-    })
-    loadReports()
-  } catch (error) {
-    console.error('Error loading from files:', error)
-    $q.notify({
-      type: 'negative',
-      message: t('reports.loadFromFilesError'),
-    })
-  } finally {
-    loadingFromFiles.value = false
+// Замінити існуючий метод loadFromFiles
+const loadFromFiles = () => {
+  // Створюємо invisible input для вибору файлів
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.multiple = true
+  input.accept = '.json,.yaml,.yml'
+
+  input.onchange = async (event) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+
+    loadingFromFiles.value = true
+    try {
+      const formData = new FormData()
+
+      // Додаємо всі файли до FormData
+      for (const file of files) {
+        formData.append('reports', file)
+      }
+
+      const response = await ReportsApi.loadReportsFromFiles(formData)
+
+      // Показуємо детальні результати
+      const result = response.data.result
+      let message = result.message
+
+      if (result.errors && result.errors.length > 0) {
+        message += `\nПомилки: ${result.errors.length}`
+        console.log('Upload errors:', result.errors)
+      }
+
+      $q.notify({
+        type: result.loaded > 0 ? 'positive' : 'warning',
+        message: message,
+        timeout: 5000,
+      })
+
+      loadReports()
+    } catch (error) {
+      console.error('Error loading from files:', error)
+      $q.notify({
+        type: 'negative',
+        message: error.response?.data?.message || t('reports.loadFromFilesError'),
+      })
+    } finally {
+      loadingFromFiles.value = false
+    }
   }
+
+  input.click()
 }
 
 const getFormatIcon = (format) => {

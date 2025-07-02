@@ -53,10 +53,12 @@ export const ReportsApi = {
     return api.post('/reports/cache/clear')
   },
 
-  // Загрузка звітов из файлов
-  loadReportsFromFiles: (reportsDir = null) => {
-    return api.post('/reports/load-from-files', {
-      reportsDir: reportsDir || undefined,
+  // Завантаження звітів з файлів (замінити існуючий метод)
+  loadReportsFromFiles: (formData) => {
+    return api.post('/reports/load-from-files', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     })
   },
 
