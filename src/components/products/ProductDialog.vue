@@ -52,26 +52,34 @@
                   <!-- Виробник -->
                   <q-select
                     v-model="form.manufacturer_id"
-                    :options="manufacturerOptions"
+                    :options="manufacturerSearch.filteredOptions.value"
                     :label="t('products.manufacturer')"
                     :rules="[(val) => !!val || t('validation.required')]"
                     :loading="loadingManufacturers"
                     outlined
                     emit-value
                     map-options
+                    use-input
+                    input-debounce="300"
+                    @filter="(val, update) => manufacturerSearch.filterOptions(val, update)"
+                    @popup-show="manufacturerSearch.resetFilter"
                     :disable="isEdit"
                   />
 
                   <!-- Модель -->
                   <q-select
                     v-model="form.model_id"
-                    :options="modelOptions"
+                    :options="modelSearch.filteredOptions.value"
                     :label="t('products.model')"
                     :rules="[(val) => !!val || t('validation.required')]"
                     :loading="loadingModels"
                     outlined
                     emit-value
                     map-options
+                    use-input
+                    input-debounce="300"
+                    @filter="(val, update) => modelSearch.filterOptions(val, update)"
+                    @popup-show="modelSearch.resetFilter"
                     :disable="isEdit || !form.manufacturer_id"
                   />
                   <div v-if="productTypeName" class="text-caption q-ml-sm q-mb-md">
@@ -81,25 +89,33 @@
                   <!-- Постачальник -->
                   <q-select
                     v-model="form.supplier_id"
-                    :options="supplierOptions"
+                    :options="supplierSearch.filteredOptions.value"
                     :label="t('products.supplier')"
                     :rules="[(val) => !!val || t('validation.required')]"
                     :loading="loadingSuppliers"
                     outlined
                     emit-value
                     map-options
+                    use-input
+                    input-debounce="300"
+                    @filter="(val, update) => supplierSearch.filterOptions(val, update)"
+                    @popup-show="supplierSearch.resetFilter"
                     :disable="isEdit"
                   />
 
                   <q-select
                     v-model="form.warehouse_id"
-                    :options="warehouseOptions"
+                    :options="warehouseSearch.filteredOptions.value"
                     :label="t('products.warehouse')"
                     :rules="[(val) => !!val || t('validation.required')]"
                     :loading="loadingWarehouses"
                     outlined
                     emit-value
                     map-options
+                    use-input
+                    input-debounce="300"
+                    @filter="(val, update) => warehouseSearch.filterOptions(val, update)"
+                    @popup-show="warehouseSearch.resetFilter"
                     :disable="isEdit"
                   />
                   <q-toggle v-model="form.is_own" :label="t('products.isOwn')" />
@@ -220,6 +236,7 @@ import { SuppliersApi } from 'src/api/suppliers'
 import { ProductTypesApi } from 'src/api/product-types'
 import { WarehousesApi } from 'src/api/warehouses'
 import { useAuthStore } from 'src/stores/auth'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -252,6 +269,11 @@ const supplierOptions = ref([])
 const characteristics = ref([])
 const warehouseOptions = ref([])
 const loadingWarehouses = ref(false)
+// Searchable selects
+const manufacturerSearch = useSearchableSelect(manufacturerOptions)
+const modelSearch = useSearchableSelect(modelOptions)
+const supplierSearch = useSearchableSelect(supplierOptions)
+const warehouseSearch = useSearchableSelect(warehouseOptions)
 
 // Default form
 const defaultForm = {
@@ -327,6 +349,7 @@ const loadWarehouses = async () => {
       label: w.name,
       value: w.id,
     }))
+    warehouseSearch.initializeOptions(warehouseOptions.value)
   } catch {
     $q.notify({
       color: 'negative',
@@ -396,6 +419,7 @@ const loadManufacturers = async () => {
       label: m.name,
       value: m.id,
     }))
+    manufacturerSearch.initializeOptions(manufacturerOptions.value)
   } catch {
     $q.notify({
       color: 'negative',
@@ -417,6 +441,7 @@ const loadModels = async (manufacturerId = null) => {
     modelOptions.value = []
 
     if (!selectedManufacturer) {
+      modelSearch.initializeOptions([])
       return
     }
 
@@ -437,6 +462,7 @@ const loadModels = async (manufacturerId = null) => {
         product_type_id: m.product_type_id,
         product_type_name: m.product_type_name,
       }))
+      modelSearch.initializeOptions(modelOptions.value)
     }
   } catch {
     $q.notify({
@@ -460,6 +486,7 @@ const loadSuppliers = async () => {
       label: s.name,
       value: s.id,
     }))
+    supplierSearch.initializeOptions(supplierOptions.value)
   } catch {
     $q.notify({
       color: 'negative',
