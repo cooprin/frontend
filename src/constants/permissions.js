@@ -182,7 +182,7 @@ export const MENU_PERMISSIONS = {
 // Групи прав для відображення секцій меню
 const getListPermissions = (section) => {
   return Object.values(section)
-    .map((subsection) => subsection.LIST || subsection.READ)
+    .map((subsection) => subsection.LIST) // || subsection.READ
     .filter(Boolean)
 }
 

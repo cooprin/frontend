@@ -199,6 +199,8 @@
       @saved="loadObjects"
     />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="wialon-objects" />
 </template>
 
 <script setup>
@@ -211,6 +213,7 @@ import { ClientsApi } from 'src/api/clients'
 import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()
