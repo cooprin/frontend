@@ -221,8 +221,6 @@ const editService = ref(null)
 const services = ref([])
 const deleteDialog = ref(false)
 const serviceToDelete = ref(null)
-// Searchable selects
-const serviceTypeSearch = useSearchableSelect(serviceTypeOptions)
 
 const pagination = ref({
   sortBy: 'name',
@@ -245,6 +243,8 @@ const serviceTypeOptions = computed(() => [
   { label: t('services.types.fixed'), value: 'fixed' },
   { label: t('services.types.object_based'), value: 'object_based' },
 ])
+// Searchable selects
+const serviceTypeSearch = useSearchableSelect(serviceTypeOptions)
 
 const statusOptions = computed(() => [
   { label: t('common.all'), value: null },
