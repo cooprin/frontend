@@ -135,13 +135,11 @@ export const MENU_PERMISSIONS = {
 
   // Звіти - ВИПРАВЛЕНО: винесено в окрему секцію
   REPORTS: {
-    VIEW: {
-      LIST: 'reports.read',
-      CREATE: 'reports.create',
-      UPDATE: 'reports.update',
-      DELETE: 'reports.delete',
-      EXECUTE: 'reports.read', // Виконання звітів доступне при читанні
-    },
+    LIST: 'reports.read',
+    CREATE: 'reports.create',
+    UPDATE: 'reports.update',
+    DELETE: 'reports.delete',
+    EXECUTE: 'reports.read', // Виконання звітів доступне при читанні
   },
 
   // Адміністративне меню - відповідає SQL
