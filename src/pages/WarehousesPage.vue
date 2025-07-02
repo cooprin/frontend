@@ -177,6 +177,8 @@
       </q-card>
     </q-dialog>
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="warehouses" />
 </template>
 
 <script setup>
@@ -187,6 +189,7 @@ import { useI18n } from 'vue-i18n'
 import { WarehousesApi } from 'src/api/warehouses'
 import { UsersApi } from 'src/api/users'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()

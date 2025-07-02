@@ -193,6 +193,8 @@
     <service-dialog v-model="showDialog" :edit-data="editService" @saved="loadServices" />
     <!-- Видалено діалог призначення послуги -->
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="services" />
 </template>
 
 <script setup>
@@ -203,6 +205,7 @@ import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()

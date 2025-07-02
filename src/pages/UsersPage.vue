@@ -299,6 +299,8 @@
       </q-card>
     </q-dialog>
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="users" />
 </template>
 
 <script setup>
@@ -308,6 +310,7 @@ import { useI18n } from 'vue-i18n'
 import { UsersApi } from 'src/api/users'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const selectedCountryCode = ref('+380')
 const phoneNumber = ref('')

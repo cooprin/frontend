@@ -431,6 +431,8 @@
     <!-- Діалог створення/редагування платежу -->
     <payment-dialog v-model="showDialog" :edit-data="editPayment" @saved="loadPayments" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="billing" />
 </template>
 
 <script setup>
@@ -442,6 +444,7 @@ import { PaymentsApi } from 'src/api/payments'
 import { ClientsApi } from 'src/api/clients'
 import PaymentDialog from 'components/payments/PaymentDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()

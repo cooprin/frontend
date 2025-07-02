@@ -213,6 +213,8 @@
 
     <ProductDialog v-model="showDialog" :edit-data="editProduct" @saved="loadProducts" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="products" />
 </template>
 
 <script setup>
@@ -225,6 +227,7 @@ import ProductDialog from 'components/products/ProductDialog.vue'
 import { date } from 'quasar'
 import { ModelsApi } from 'src/api/models'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()

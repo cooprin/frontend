@@ -447,6 +447,8 @@
       </q-card>
     </q-dialog>
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="audit" />
 </template>
 
 <script setup>
@@ -456,6 +458,7 @@ import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { AuditApi } from 'src/api/audit'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const showFilters = ref(false)
 
