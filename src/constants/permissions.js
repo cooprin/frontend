@@ -125,14 +125,6 @@ export const MENU_PERMISSIONS = {
       UPDATE: 'tickets.update',
       DELETE: 'tickets.delete',
     },
-    // Звіти
-    REPORTS: {
-      LIST: 'reports.read',
-      CREATE: 'reports.create',
-      UPDATE: 'reports.update',
-      DELETE: 'reports.delete',
-      EXECUTE: 'reports.read', // Виконання звітів доступне при читанні
-    },
     CHAT: {
       LIST: 'chat.read',
       CREATE: 'chat.create',
@@ -140,6 +132,18 @@ export const MENU_PERMISSIONS = {
       DELETE: 'chat.delete',
     },
   },
+
+  // Звіти - ВИПРАВЛЕНО: винесено в окрему секцію
+  REPORTS: {
+    VIEW: {
+      LIST: 'reports.read',
+      CREATE: 'reports.create',
+      UPDATE: 'reports.update',
+      DELETE: 'reports.delete',
+      EXECUTE: 'reports.read', // Виконання звітів доступне при читанні
+    },
+  },
+
   // Адміністративне меню - відповідає SQL
   SETTINGS: {
     USERS: {
@@ -181,8 +185,20 @@ export const MENU_PERMISSIONS = {
 
 // Групи прав для відображення секцій меню
 const getListPermissions = (section) => {
+  // ВИПРАВЛЕНО: додано перевірку на існування section
+  if (!section || typeof section !== 'object') {
+    console.warn('getListPermissions: section is not an object', section)
+    return []
+  }
+
   return Object.values(section)
-    .map((subsection) => subsection.LIST) // || subsection.READ
+    .map((subsection) => {
+      // ВИПРАВЛЕНО: додано перевірку на існування subsection
+      if (!subsection || typeof subsection !== 'object') {
+        return null
+      }
+      return subsection.LIST || subsection.READ
+    })
     .filter(Boolean)
 }
 
@@ -193,6 +209,6 @@ export const MENU_SECTIONS_PERMISSIONS = {
   SERVICES: getListPermissions(MENU_PERMISSIONS.SERVICES),
   WIALON: getListPermissions(MENU_PERMISSIONS.WIALON),
   SUPPORT: getListPermissions(MENU_PERMISSIONS.SUPPORT),
-  REPORTS: getListPermissions(MENU_PERMISSIONS.REPORTS),
+  REPORTS: getListPermissions(MENU_PERMISSIONS.REPORTS), // ВИПРАВЛЕНО: тепер існує
   SETTINGS: getListPermissions(MENU_PERMISSIONS.SETTINGS),
 }
