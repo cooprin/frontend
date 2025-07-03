@@ -373,7 +373,3 @@ onMounted(() => {
   loadPayment()
 })
 </script>
-
-<style scoped>
-/* Тут можна додати специфічні стилі для цієї сторінки */
-</style>

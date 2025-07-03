@@ -21,13 +21,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.serviceType"
-                  :options="serviceTypeOptions"
+                  :options="serviceTypeSearch.filteredOptions.value"
                   :label="$t('services.filters.type')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => serviceTypeSearch.filterOptions(val, update)"
+                  @popup-show="serviceTypeSearch.resetFilter"
                 />
               </div>
 
@@ -189,6 +193,8 @@
     <service-dialog v-model="showDialog" :edit-data="editService" @saved="loadServices" />
     <!-- Видалено діалог призначення послуги -->
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="services" />
 </template>
 
 <script setup>
@@ -198,6 +204,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -235,6 +243,8 @@ const serviceTypeOptions = computed(() => [
   { label: t('services.types.fixed'), value: 'fixed' },
   { label: t('services.types.object_based'), value: 'object_based' },
 ])
+// Searchable selects
+const serviceTypeSearch = useSearchableSelect(serviceTypeOptions)
 
 const statusOptions = computed(() => [
   { label: t('common.all'), value: null },
@@ -414,9 +424,6 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadServices()
+  serviceTypeSearch.initializeOptions(serviceTypeOptions.value)
 })
 </script>
-
-<style scoped>
-/* Тут можна додати специфічні стилі для цієї сторінки */
-</style>

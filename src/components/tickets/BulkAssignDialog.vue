@@ -38,7 +38,7 @@
           <!-- Assignee Selection -->
           <q-select
             v-model="form.assigned_to"
-            :options="staffOptions"
+            :options="staffSearch.filteredOptions.value"
             :label="$t('tickets.bulk.assign.assignTo')"
             :hint="$t('tickets.bulk.assign.assignToHint')"
             outlined
@@ -47,7 +47,8 @@
             map-options
             use-input
             input-debounce="300"
-            @filter="filterStaff"
+            @filter="(val, update) => staffSearch.filterOptions(val, update)"
+            @popup-show="staffSearch.resetFilter"
             :rules="[(val) => !!val || $t('tickets.bulk.assign.assigneeRequired')]"
             clearable
           >
@@ -277,6 +278,7 @@ import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -317,6 +319,8 @@ const form = ref({
 // Options
 const staffOptions = ref([])
 const allStaffOptions = ref([])
+// Searchable select for staff
+const staffSearch = useSearchableSelect(staffOptions)
 
 // Computed
 const statusOptions = computed(() => [
@@ -409,6 +413,7 @@ const loadStaff = async () => {
         online: true, // TODO: Add online status
       }))
       staffOptions.value = [...allStaffOptions.value]
+      staffSearch.initializeOptions(staffOptions.value)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
@@ -418,19 +423,6 @@ const loadStaff = async () => {
       icon: 'error',
     })
   }
-}
-
-const filterStaff = (val, update) => {
-  update(() => {
-    if (val === '') {
-      staffOptions.value = allStaffOptions.value
-    } else {
-      const needle = val.toLowerCase()
-      staffOptions.value = allStaffOptions.value.filter(
-        (option) => option.label.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
 }
 
 const getAssigneeName = () => {
@@ -479,10 +471,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.q-expansion-item {
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-</style>

@@ -32,14 +32,19 @@
           <!-- Клієнт (опціонально) -->
           <q-select
             v-model="form.clientId"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="$t('invoices.client') + ' (' + $t('common.optional') + ')'"
             option-label="label"
             option-value="value"
             outlined
             clearable
+            emit-value
+            map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :loading="loadingClients"
-            @filter="filterClients"
           />
           <!-- Попередження, якщо всі періоди оплачені -->
           <q-banner v-if="showPendingWarning" class="bg-yellow-2 q-my-md">
@@ -91,6 +96,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import { ClientsApi } from 'src/api/clients'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -112,6 +118,8 @@ const pendingObjects = ref([])
 
 const checkingPending = ref(false)
 const showPendingWarning = ref(false)
+// Searchable select for clients
+const clientSearch = useSearchableSelect(clientOptions)
 
 // Створюємо масив опцій місяців
 const createMonthOptions = (t) => [
@@ -361,6 +369,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({
@@ -371,22 +380,6 @@ const loadClients = async () => {
   } finally {
     loadingClients.value = false
   }
-}
-
-const filterClients = (val, update) => {
-  if (val === '') {
-    update(() => {
-      // Do nothing, keep full list
-    })
-    return
-  }
-
-  update(() => {
-    const needle = val.toLowerCase()
-    clientOptions.value = clientOptions.value.filter(
-      (v) => v.label.toLowerCase().indexOf(needle) > -1,
-    )
-  })
 }
 
 // Додаємо спостерігач за показом діалогу

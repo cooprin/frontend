@@ -36,13 +36,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.fromWarehouse"
-                  :options="warehouseOptions"
+                  :options="fromWarehouseSearch.filteredOptions.value"
                   :label="$t('stock.filters.fromWarehouse')"
                   dense
                   outlined
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => fromWarehouseSearch.filterOptions(val, update)"
+                  @popup-show="fromWarehouseSearch.resetFilter"
                 />
               </div>
 
@@ -50,13 +54,17 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.toWarehouse"
-                  :options="warehouseOptions"
+                  :options="toWarehouseSearch.filteredOptions.value"
                   :label="$t('stock.filters.toWarehouse')"
                   dense
                   outlined
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => toWarehouseSearch.filterOptions(val, update)"
+                  @popup-show="toWarehouseSearch.resetFilter"
                 />
               </div>
 
@@ -174,6 +182,7 @@ import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { StockApi } from 'src/api/stock'
 import { WarehousesApi } from 'src/api/warehouses'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -183,6 +192,9 @@ const loading = ref(false)
 const exporting = ref(false)
 const movements = ref([])
 const warehouseOptions = ref([])
+// Searchable selects
+const fromWarehouseSearch = useSearchableSelect(warehouseOptions)
+const toWarehouseSearch = useSearchableSelect(warehouseOptions)
 
 const showFilters = ref(false)
 
@@ -374,6 +386,8 @@ const loadWarehouses = async () => {
       label: w.name,
       value: w.id,
     }))
+    fromWarehouseSearch.initializeOptions(warehouseOptions.value)
+    toWarehouseSearch.initializeOptions(warehouseOptions.value)
   } catch (error) {
     console.error('Error loading warehouses:', error)
   }

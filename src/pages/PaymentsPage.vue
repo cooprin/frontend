@@ -21,7 +21,7 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.clientId"
-                  :options="clientOptions"
+                  :options="clientSearch.filteredOptions.value"
                   :label="$t('payments.filters.client')"
                   option-label="label"
                   option-value="value"
@@ -29,7 +29,10 @@
                   dense
                   clearable
                   :loading="loadingClients"
-                  @filter="filterClients"
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => clientSearch.filterOptions(val, update)"
+                  @popup-show="clientSearch.resetFilter"
                 />
               </div>
 
@@ -428,6 +431,8 @@
     <!-- Діалог створення/редагування платежу -->
     <payment-dialog v-model="showDialog" :edit-data="editPayment" @saved="loadPayments" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="billing" />
 </template>
 
 <script setup>
@@ -438,6 +443,8 @@ import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import { ClientsApi } from 'src/api/clients'
 import PaymentDialog from 'components/payments/PaymentDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -456,6 +463,8 @@ const payments = ref([])
 const deleteDialog = ref(false)
 const paymentToDelete = ref(null)
 const clientOptions = ref([])
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
 const statistics = ref({
   summary: null,
   monthly: [],
@@ -786,6 +795,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({
@@ -796,22 +806,6 @@ const loadClients = async () => {
   } finally {
     loadingClients.value = false
   }
-}
-
-const filterClients = (val, update) => {
-  if (val === '') {
-    update(() => {
-      // Do nothing, keep full list
-    })
-    return
-  }
-
-  update(() => {
-    const needle = val.toLowerCase()
-    clientOptions.value = clientOptions.value.filter(
-      (v) => v.label.toLowerCase().indexOf(needle) > -1,
-    )
-  })
 }
 
 // Watchers

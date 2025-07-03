@@ -76,7 +76,7 @@
             <div class="text-subtitle2 q-mb-sm">{{ $t('tickets.assignedTo') }}</div>
             <q-select
               v-model="editableTicket.assigned_to"
-              :options="staffOptions"
+              :options="staffSearch.filteredOptions.value"
               option-value="value"
               option-label="label"
               emit-value
@@ -86,7 +86,8 @@
               clearable
               use-input
               input-debounce="300"
-              @filter="filterStaff"
+              @filter="(val, update) => staffSearch.filterOptions(val, update)"
+              @popup-show="staffSearch.resetFilter"
               @update:model-value="updateTicketField('assigned_to', $event)"
             >
               <template v-slot:option="{ opt, itemProps }">
@@ -353,6 +354,7 @@ import { useQuasar } from 'quasar'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
 import SocketService from 'src/services/socketService'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   ticketId: {
@@ -387,6 +389,8 @@ const newComment = ref({
 // Options
 const staffOptions = ref([])
 const allStaffOptions = ref([])
+// Searchable select for staff
+const staffSearch = useSearchableSelect(staffOptions)
 
 // Computed
 const statusOptions = computed(() => [
@@ -596,6 +600,7 @@ const loadStaff = async () => {
         email: user.email,
       }))
       staffOptions.value = [...allStaffOptions.value]
+      staffSearch.initializeOptions(staffOptions.value)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
@@ -605,19 +610,6 @@ const loadStaff = async () => {
       icon: 'error',
     })
   }
-}
-
-const filterStaff = (val, update) => {
-  update(() => {
-    if (val === '') {
-      staffOptions.value = allStaffOptions.value
-    } else {
-      const needle = val.toLowerCase()
-      staffOptions.value = allStaffOptions.value.filter(
-        (option) => option.label.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
 }
 
 const closeDialog = () => {
@@ -738,50 +730,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.ticket-detail-dialog {
-  width: 95vw;
-  height: 85vh;
-  max-width: none;
-  max-height: none;
-}
-
-.comments-area {
-  border-top: 1px solid #e0e0e0;
-}
-
-.comment-item {
-  position: relative;
-}
-
-.comment-mine .comment-text {
-  background-color: #e3f2fd !important;
-}
-
-.comment-internal .comment-text {
-  background-color: #fff3e0 !important;
-  border-left: 4px solid #ff9800;
-}
-
-.comment-text {
-  max-width: 100%;
-  word-wrap: break-word;
-  line-height: 1.5;
-}
-
-.comment-header {
-  margin-bottom: 8px;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .comment-text {
-    font-size: 14px;
-  }
-
-  .comment-body {
-    margin-left: 40px !important;
-  }
-}
-</style>

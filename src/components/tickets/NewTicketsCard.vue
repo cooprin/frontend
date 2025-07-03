@@ -456,13 +456,3 @@ onMounted(() => {
   loadStaff()
 })
 </script>
-
-<style scoped>
-:deep(.q-table) tbody tr:hover {
-  background: rgba(25, 118, 210, 0.04);
-}
-
-.q-chip {
-  font-weight: 500;
-}
-</style>

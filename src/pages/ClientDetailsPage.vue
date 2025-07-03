@@ -623,11 +623,15 @@
             <!-- Тип платежу -->
             <q-select
               v-model="paymentForm.payment_type"
-              :options="paymentTypeOptions"
+              :options="paymentTypeSearch.filteredOptions.value"
               :label="$t('invoices.paymentType')"
               outlined
               map-options
               emit-value
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => paymentTypeSearch.filterOptions(val, update)"
+              @popup-show="paymentTypeSearch.resetFilter"
             />
 
             <!-- Примітки -->
@@ -700,6 +704,7 @@ import { ServicesApi } from 'src/api/services'
 import { InvoicesApi } from 'src/api/invoices'
 import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -765,6 +770,16 @@ const clientInvoices = ref({ invoices: [], total: 0 })
 const loadingInvoices = ref(false)
 const showInvoiceDialog = ref(false)
 
+const paymentTypeOptions = [
+  { label: t('invoices.paymentTypes.regular'), value: 'regular' },
+  { label: t('invoices.paymentTypes.advance'), value: 'advance' },
+  { label: t('invoices.paymentTypes.debt'), value: 'debt' },
+  { label: t('invoices.paymentTypes.adjustment'), value: 'adjustment' },
+]
+
+// Searchable selects
+const paymentTypeSearch = useSearchableSelect(ref(paymentTypeOptions))
+
 const loadClientInvoices = async () => {
   if (!client.value) return
 
@@ -822,13 +837,6 @@ const getInvoiceStatusColor = (status) => {
   }
   return colors[status] || 'grey'
 }
-
-const paymentTypeOptions = [
-  { label: t('invoices.paymentTypes.regular'), value: 'regular' },
-  { label: t('invoices.paymentTypes.advance'), value: 'advance' },
-  { label: t('invoices.paymentTypes.debt'), value: 'debt' },
-  { label: t('invoices.paymentTypes.adjustment'), value: 'adjustment' },
-]
 
 // Функція для форматування дати
 const formatDate = (dateString, format = 'DD.MM.YYYY') => {
@@ -1182,11 +1190,6 @@ const getDaysLeftColor = (daysLeft) => {
 // Життєвий цикл
 onMounted(() => {
   loadClient()
+  paymentTypeSearch.initializeOptions(paymentTypeOptions)
 })
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background-color: transparent;
-}
-</style>

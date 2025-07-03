@@ -54,6 +54,8 @@
     <!-- Create Ticket Dialog -->
     <create-ticket-dialog v-model="createTicketDialog" @ticket-created="onTicketCreated" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="tickets" />
 </template>
 
 <script setup>
@@ -64,6 +66,7 @@ import InProgressTicketsCard from 'components/tickets/InProgressTicketsCard.vue'
 import AllTicketsCard from 'components/tickets/AllTicketsCard.vue'
 import TicketDetailDialog from 'components/tickets/TicketDetailDialog.vue'
 import CreateTicketDialog from 'components/tickets/CreateTicketDialog.vue'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 defineOptions({
   components: {
@@ -138,13 +141,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background: transparent;
-}
-
-.q-tab-panel {
-  padding: 16px 0;
-}
-</style>

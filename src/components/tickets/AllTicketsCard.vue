@@ -146,7 +146,7 @@
               <div class="col-12 col-md-3">
                 <q-select
                   v-model="filters.category_id"
-                  :options="categoryOptions"
+                  :options="categorySearch.filteredOptions.value"
                   :label="$t('tickets.category')"
                   outlined
                   dense
@@ -154,6 +154,10 @@
                   map-options
                   multiple
                   clearable
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => categorySearch.filterOptions(val, update)"
+                  @popup-show="categorySearch.resetFilter"
                   @update:model-value="applyFilters"
                 />
               </div>
@@ -162,7 +166,7 @@
               <div class="col-12 col-md-2">
                 <q-select
                   v-model="filters.assigned_to"
-                  :options="assigneeOptions"
+                  :options="assigneeSearch.filteredOptions.value"
                   :label="$t('tickets.assignedTo')"
                   outlined
                   dense
@@ -171,7 +175,8 @@
                   clearable
                   use-input
                   input-debounce="300"
-                  @filter="filterStaff"
+                  @filter="(val, update) => assigneeSearch.filterOptions(val, update)"
+                  @popup-show="assigneeSearch.resetFilter"
                   @update:model-value="applyFilters"
                 />
               </div>
@@ -283,7 +288,7 @@
               <div class="col-12 col-md-3">
                 <q-select
                   v-model="filters.client_id"
-                  :options="clientOptions"
+                  :options="clientSearch.filteredOptions.value"
                   :label="$t('tickets.client')"
                   outlined
                   dense
@@ -292,7 +297,8 @@
                   clearable
                   use-input
                   input-debounce="300"
-                  @filter="filterClients"
+                  @filter="(val, update) => clientSearch.filterOptions(val, update)"
+                  @popup-show="clientSearch.resetFilter"
                   @update:model-value="applyFilters"
                 />
               </div>
@@ -567,6 +573,7 @@ import { debounce } from 'quasar'
 import BulkAssignDialog from 'components/tickets/BulkAssignDialog.vue'
 import BulkStatusDialog from 'components/tickets/BulkStatusDialog.vue'
 import BulkPriorityDialog from 'components/tickets/BulkPriorityDialog.vue'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -618,6 +625,11 @@ const assigneeOptions = ref([])
 
 const allAssigneeOptions = ref([])
 const clientOptions = ref([])
+
+// Searchable selects
+const assigneeSearch = useSearchableSelect(assigneeOptions)
+const clientSearch = useSearchableSelect(clientOptions)
+const categorySearch = useSearchableSelect(categoryOptions)
 
 // Computed
 const statusOptions = computed(() => [
@@ -939,6 +951,7 @@ const loadCategories = async () => {
         : t(`tickets.categories.${cat.name}`),
       value: cat.id,
     }))
+    categorySearch.initializeOptions(categoryOptions.value)
   } catch (error) {
     console.error('Error loading categories:', error)
   }
@@ -957,6 +970,7 @@ const loadStaff = async () => {
         })),
       ]
       assigneeOptions.value = [...allAssigneeOptions.value]
+      assigneeSearch.initializeOptions(assigneeOptions.value)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
@@ -965,37 +979,6 @@ const loadStaff = async () => {
       message: t('common.errors.loading'),
       icon: 'error',
     })
-  }
-}
-
-const filterStaff = (val, update) => {
-  update(() => {
-    if (val === '') {
-      assigneeOptions.value = [...allAssigneeOptions.value]
-    } else {
-      const needle = val.toLowerCase()
-      assigneeOptions.value = allAssigneeOptions.value.filter(
-        (option) => option.label && option.label.toLowerCase().indexOf(needle) > -1,
-      )
-    }
-  })
-}
-
-const filterClients = async (val, update) => {
-  if (val.length < 2) {
-    update(() => {
-      clientOptions.value = []
-    })
-    return
-  }
-
-  try {
-    // This would be a clients search API call
-    update(() => {
-      clientOptions.value = [{ label: `Client ${val}`, value: 'client1' }]
-    })
-  } catch (error) {
-    console.error('Error searching clients:', error)
   }
 }
 
@@ -1090,26 +1073,3 @@ onMounted(() => {
   loadStaff()
 })
 </script>
-
-<style scoped>
-:deep(.q-table) tbody tr:hover {
-  background: rgba(25, 118, 210, 0.04);
-}
-
-.q-chip {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.q-chip:hover {
-  transform: scale(1.05);
-}
-
-:deep(.q-table__top) {
-  padding: 8px 16px;
-}
-
-:deep(.q-table__bottom) {
-  padding: 8px 16px;
-}
-</style>

@@ -50,7 +50,7 @@
                     <div class="col-4">
                       <q-select
                         v-model="selectedCountryCode"
-                        :options="countryCodes"
+                        :options="countrySearch.filteredOptions.value"
                         option-label="country"
                         option-value="code"
                         :label="$t('clients.countryCode')"
@@ -58,6 +58,10 @@
                         dense
                         emit-value
                         map-options
+                        use-input
+                        input-debounce="300"
+                        @filter="(val, update) => countrySearch.filterOptions(val, update)"
+                        @popup-show="countrySearch.resetFilter"
                         class="country-select"
                       >
                         <template v-slot:option="{ opt }">
@@ -231,11 +235,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import { countryCodes, getPhoneWithoutCode, formatPhoneWithCode } from 'src/constants/countryCodes'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -262,6 +267,9 @@ const loading = ref(false)
 // Phone variables
 const selectedCountryCode = ref('+380')
 const phoneNumber = ref('')
+// Searchable select for country codes
+const countryCodesRef = ref(countryCodes)
+const countrySearch = useSearchableSelect(countryCodesRef)
 
 const selectedCountryMask = computed(() => {
   const country = countryCodes.find((c) => c.code === selectedCountryCode.value)
@@ -363,22 +371,8 @@ watch(
   },
   { immediate: true, deep: true },
 )
+// Initialize country search
+onMounted(() => {
+  countrySearch.initializeOptions(countryCodes)
+})
 </script>
-
-<style scoped>
-.country-select {
-  min-width: 120px;
-}
-
-:deep(.q-field__native > span) {
-  opacity: 1 !important;
-}
-
-:deep(.q-select__dropdown-icon) {
-  margin-left: 4px;
-}
-
-:deep(.q-field__prefix) {
-  padding-right: 6px;
-}
-</style>

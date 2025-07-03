@@ -132,12 +132,16 @@
             <!-- Відповідальна особа -->
             <q-select
               v-model="form.responsible_person_id"
-              :options="userOptions"
+              :options="userSearch.filteredOptions.value"
               :label="$t('warehouses.responsiblePerson')"
               :rules="[(val) => !!val || $t('common.validation.required')]"
               outlined
               emit-value
               map-options
+              use-input
+              input-debounce="300"
+              @filter="(val, update) => userSearch.filterOptions(val, update)"
+              @popup-show="userSearch.resetFilter"
             />
 
             <!-- Статус -->
@@ -173,6 +177,8 @@
       </q-card>
     </q-dialog>
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="warehouses" />
 </template>
 
 <script setup>
@@ -182,6 +188,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { WarehousesApi } from 'src/api/warehouses'
 import { UsersApi } from 'src/api/users'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -195,6 +203,8 @@ const deleteDialog = ref(false)
 const warehouseToDelete = ref(null)
 const isEdit = ref(false)
 const userOptions = ref([])
+// Searchable selects
+const userSearch = useSearchableSelect(userOptions)
 
 // Form
 const defaultForm = {
@@ -303,6 +313,7 @@ const loadUsers = async () => {
       label: `${u.first_name} ${u.last_name}`,
       value: u.id,
     }))
+    userSearch.initializeOptions(userOptions.value)
   } catch (error) {
     console.error('Error loading users:', error)
     $q.notify({

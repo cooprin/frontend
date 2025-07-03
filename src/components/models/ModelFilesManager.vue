@@ -301,17 +301,3 @@ watch(
   },
 )
 </script>
-
-<style scoped>
-.model-files {
-  max-width: 100%;
-}
-
-.file-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark .file-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-</style>

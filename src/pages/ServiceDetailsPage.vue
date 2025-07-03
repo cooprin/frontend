@@ -445,9 +445,3 @@ onMounted(() => {
   loadService()
 })
 </script>
-
-<style scoped>
-.q-tab-panels {
-  background-color: transparent;
-}
-</style>

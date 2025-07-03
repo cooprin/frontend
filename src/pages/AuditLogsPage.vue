@@ -38,13 +38,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.actionType"
-                  :options="actionTypeOptions"
+                  :options="actionTypeSearch.filteredOptions.value"
                   :label="$t('pages.auditLogs.actionType')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => actionTypeSearch.filterOptions(val, update)"
+                  @popup-show="actionTypeSearch.resetFilter"
                 />
               </div>
 
@@ -52,13 +56,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.entityType"
-                  :options="entityTypeOptions"
+                  :options="entityTypeSearch.filteredOptions.value"
                   :label="$t('pages.auditLogs.entityType')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => entityTypeSearch.filterOptions(val, update)"
+                  @popup-show="entityTypeSearch.resetFilter"
                 />
               </div>
 
@@ -66,13 +74,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.tableSchema"
-                  :options="schemaOptions"
+                  :options="schemaSearch.filteredOptions.value"
                   :label="$t('pages.auditLogs.schema')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => schemaSearch.filterOptions(val, update)"
+                  @popup-show="schemaSearch.resetFilter"
                   @update:model-value="onSchemaChange"
                 />
               </div>
@@ -81,13 +93,17 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.tableName"
-                  :options="tableOptions"
+                  :options="tableSearch.filteredOptions.value"
                   :label="$t('pages.auditLogs.table')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
+                  use-input
+                  input-debounce="300"
+                  @filter="(val, update) => tableSearch.filterOptions(val, update)"
+                  @popup-show="tableSearch.resetFilter"
                   :disable="!filters.tableSchema"
                 />
               </div>
@@ -431,6 +447,8 @@
       </q-card>
     </q-dialog>
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="audit" />
 </template>
 
 <script setup>
@@ -439,6 +457,8 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { date } from 'quasar'
 import { AuditApi } from 'src/api/audit'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const showFilters = ref(false)
 
@@ -459,7 +479,12 @@ const actionTypeOptions = ref([])
 const entityTypeOptions = ref([])
 const schemaOptions = ref([])
 const tableOptions = ref([])
-const schemasData = ref({}) // Зберігає повну інформацію про схеми і таблиці
+const schemasData = ref({})
+// Searchable selects
+const actionTypeSearch = useSearchableSelect(actionTypeOptions)
+const entityTypeSearch = useSearchableSelect(entityTypeOptions)
+const schemaSearch = useSearchableSelect(schemaOptions)
+const tableSearch = useSearchableSelect(ref([]))
 
 // Pagination
 const pagination = ref({
@@ -634,6 +659,11 @@ const fetchLogTypes = async () => {
         label: schema.schema,
         value: schema.schema,
       }))
+
+      // Ініціалізуємо searchable select-и
+      actionTypeSearch.initializeOptions(actionTypeOptions.value)
+      entityTypeSearch.initializeOptions(entityTypeOptions.value)
+      schemaSearch.initializeOptions(schemaOptions.value)
     }
   } catch (error) {
     console.error('Error fetching log types:', error)
@@ -691,8 +721,10 @@ const onSchemaChange = () => {
         label: table,
         value: table,
       })) || []
+    tableSearch.initializeOptions(tableOptions.value)
   } else {
     tableOptions.value = []
+    tableSearch.initializeOptions([])
   }
 }
 
@@ -778,220 +810,3 @@ onMounted(async () => {
   await fetchLogs()
 })
 </script>
-<style>
-/* Загальні стилі для pre блоків з змінами */
-.changes-pre {
-  padding: 1rem;
-  border-radius: 8px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 400px;
-  overflow-y: auto;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-/* Стилі для світлої теми */
-.body--light .changes-pre {
-  background-color: #f5f5f5;
-  color: #000;
-  border: 1px solid #e0e0e0;
-}
-
-/* Стилі для темної теми */
-.body--dark .changes-pre {
-  background-color: #1d1d1d;
-  color: #fff;
-  border: 1px solid #333;
-}
-
-.body--dark .q-card {
-  background: #1d1d1d;
-  color: #fff;
-}
-
-.body--dark .q-item {
-  color: #fff;
-}
-
-.body--dark .q-item__label--caption {
-  color: #9e9e9e;
-}
-
-.body--dark .text-subtitle1 {
-  color: #fff;
-  opacity: 0.9;
-}
-
-/* Анімації для діалогів */
-.q-dialog-plugin {
-  transition:
-    transform 0.3s,
-    opacity 0.3s;
-}
-
-.q-dialog-plugin--entering,
-.q-dialog-plugin--leaving {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>
-
-<style scoped>
-/* Стилі таблиці */
-.groups-table {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-/* Стилі заголовків таблиці */
-:deep(.q-table) thead tr {
-  background: var(--q-primary);
-}
-
-:deep(.q-table) thead tr th {
-  color: white !important;
-  font-weight: 600 !important;
-  padding: 8px 16px;
-}
-
-/* Стилі заголовків для темної теми */
-.body--dark :deep(.q-table) thead tr {
-  background: var(--q-dark);
-}
-
-.body--dark :deep(.q-table) thead tr th {
-  color: white !important;
-}
-
-/* Стилі для рядків при наведенні */
-:deep(.q-table) tbody tr:hover {
-  background: rgba(var(--q-primary), 0.1);
-}
-
-/* Стилі для парних рядків */
-:deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.body--dark :deep(.q-table) tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* Стилі для комірок */
-:deep(.q-table) td {
-  padding: 8px 16px;
-}
-
-/* Стилі для границь таблиці */
-:deep(.q-table) {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Стилі для границь комірок */
-:deep(.q-table) th,
-:deep(.q-table) td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.body--dark :deep(.q-table) th,
-.body--dark :deep(.q-table) td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Стилі для фільтрів */
-.filter-section {
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.body--dark .filter-section {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Стилі для чіпів */
-:deep(.q-chip) {
-  transition: all 0.3s ease;
-}
-
-:deep(.q-chip):hover {
-  opacity: 0.9;
-}
-
-/* Стилі для кнопок в таблиці */
-:deep(.q-btn) {
-  transition: transform 0.2s ease;
-}
-
-:deep(.q-btn):hover {
-  transform: scale(1.1);
-}
-
-/* Стилі для вкладок */
-:deep(.q-tabs) {
-  background: transparent;
-}
-
-:deep(.q-tab) {
-  padding: 8px 16px;
-  min-height: 40px;
-}
-
-:deep(.q-tab__label) {
-  font-size: 14px;
-}
-
-/* Стилі для скролбару */
-.changes-pre::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.changes-pre::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.changes-pre::-webkit-scrollbar-thumb {
-  background: var(--q-primary);
-  border-radius: 4px;
-}
-
-.body--dark .changes-pre::-webkit-scrollbar-thumb {
-  background: #666;
-}
-
-/* Адаптивність для малих екранів */
-@media (max-width: 600px) {
-  .changes-pre {
-    max-height: 300px;
-  }
-
-  :deep(.q-table) td,
-  :deep(.q-table) th {
-    padding: 6px 8px;
-  }
-}
-
-/* Стилі для анімації фільтрів */
-.q-slide-transition-enter-active,
-.q-slide-transition-leave-active {
-  transition: max-height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-.q-slide-transition-enter-from,
-.q-slide-transition-leave-to {
-  max-height: 0;
-}
-
-.q-slide-transition-enter-to,
-.q-slide-transition-leave-from {
-  max-height: 1000px; /* Достатньо велике значення для вашого контенту */
-}
-</style>

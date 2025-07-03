@@ -102,4 +102,6 @@ export default {
   hoursShort: 'год',
   daysShort: 'дн',
   currency: 'грн',
+  days: 'днів',
+  day: 'день',
 }

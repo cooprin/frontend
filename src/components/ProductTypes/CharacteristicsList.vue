@@ -93,31 +93,3 @@ const onDragChange = ({ moved }) => {
   }
 }
 </script>
-
-<style scoped>
-.characteristic-item {
-  transition: all 0.2s ease-in-out;
-}
-
-.characteristic-item:hover {
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
-}
-
-.ghost {
-  opacity: 0.5;
-  background: var(--q-primary) !important;
-}
-
-.drag-handle {
-  cursor: move;
-  opacity: 0.5;
-}
-
-.drag-handle:hover {
-  opacity: 1;
-}
-
-.body--dark .characteristic-item:hover {
-  box-shadow: 0 1px 5px rgba(255, 255, 255, 0.2);
-}
-</style>

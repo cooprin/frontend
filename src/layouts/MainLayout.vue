@@ -530,6 +530,20 @@
                   {{ $t('layouts.mainLayout.auditLogs') }}
                 </q-item-section>
               </q-item>
+              <q-item
+                v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.REPORTS.LIST])"
+                clickable
+                v-ripple
+                :to="{ name: 'reports' }"
+                dense
+              >
+                <q-item-section avatar>
+                  <q-icon name="assessment" />
+                </q-item-section>
+                <q-item-section>
+                  {{ $t('layouts.mainLayout.reports') }}
+                </q-item-section>
+              </q-item>
             </q-expansion-item>
           </template>
           <q-item clickable v-ripple :to="{ name: 'notifications' }" dense>
@@ -949,6 +963,19 @@
                           {{ $t('layouts.mainLayout.auditLogs') }}
                         </q-item-section>
                       </q-item>
+                      <q-item
+                        v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.REPORTS.LIST])"
+                        clickable
+                        v-ripple
+                        :to="{ name: 'reports' }"
+                      >
+                        <q-item-section avatar>
+                          <q-icon name="assessment" />
+                        </q-item-section>
+                        <q-item-section>
+                          {{ $t('layouts.mainLayout.reports') }}
+                        </q-item-section>
+                      </q-item>
                     </q-list>
                   </q-menu>
                 </q-icon>
@@ -977,9 +1004,9 @@ import { useI18n } from 'vue-i18n'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
-import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 import { CompanyApi } from 'src/api/company'
 import NotificationBell from 'src/components/notifications/NotificationBell.vue'
+import { MENU_PERMISSIONS, MENU_SECTIONS_PERMISSIONS } from 'src/constants/permissions'
 
 const companyName = ref('')
 

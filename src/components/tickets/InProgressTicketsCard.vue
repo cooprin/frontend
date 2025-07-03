@@ -671,22 +671,3 @@ onMounted(() => {
   loadStaff()
 })
 </script>
-
-<style scoped>
-:deep(.q-table) tbody tr:hover {
-  background: rgba(25, 118, 210, 0.04);
-}
-
-.q-chip {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.q-chip:hover {
-  transform: scale(1.05);
-}
-
-.last-comment {
-  max-width: 200px;
-}
-</style>

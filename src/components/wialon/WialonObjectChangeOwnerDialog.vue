@@ -26,12 +26,16 @@
           <!-- Вибір нового власника -->
           <q-select
             v-model="form.client_id"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="$t('wialonObjects.ownership.selectClient')"
             :rules="[(val) => !!val || t('common.validation.required')]"
             outlined
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :loading="loadingClients"
           />
 
@@ -81,6 +85,7 @@ import { useI18n } from 'vue-i18n'
 import { WialonApi } from 'src/api/wialon'
 import { ClientsApi } from 'src/api/clients'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -102,6 +107,8 @@ const { t } = useI18n()
 const loading = ref(false)
 const loadingClients = ref(false)
 const clientOptions = ref([])
+// Searchable select for clients
+const clientSearch = useSearchableSelect(clientOptions)
 
 // Обмеження дати - не можна вибрати дату з майбутнього
 const maxDate = date.formatDate(new Date(), 'YYYY/MM/DD')
@@ -137,6 +144,7 @@ const loadClients = async () => {
         label: client.name,
         value: client.id,
       }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({

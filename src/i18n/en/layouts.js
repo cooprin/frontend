@@ -37,5 +37,6 @@ export default {
     tickets: 'Tickets',
     chat: 'Chat',
     notifications: 'Notifications',
+    reports: 'Reports',
   },
 }

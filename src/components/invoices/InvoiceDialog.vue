@@ -21,13 +21,17 @@
                   <!-- Клієнт -->
                   <q-select
                     v-model="form.client_id"
-                    :options="clientOptions"
+                    :options="clientSearch.filteredOptions.value"
                     :label="$t('invoices.client')"
                     :rules="[(val) => !!val || t('common.validation.required')]"
                     :loading="loadingClients"
                     outlined
                     emit-value
                     map-options
+                    use-input
+                    input-debounce="300"
+                    @filter="(val, update) => clientSearch.filterOptions(val, update)"
+                    @popup-show="clientSearch.resetFilter"
                     @update:model-value="onClientChange"
                   />
 
@@ -140,6 +144,8 @@
                               dense
                               emit-value
                               map-options
+                              use-input
+                              input-debounce="300"
                               @update:model-value="updateItemPrice(item)"
                             />
                           </div>
@@ -239,6 +245,7 @@ import { InvoicesApi } from 'src/api/invoices'
 import { ClientsApi } from 'src/api/clients'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -263,6 +270,10 @@ const clientServices = ref([])
 // Додайте нові стани
 const paidPeriods = ref([])
 const loadingPaidPeriods = ref(false)
+
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
+const serviceSearch = useSearchableSelect(serviceOptions)
 
 // Метод для перевірки оплачених періодів
 const checkPaidPeriods = async (clientId) => {
@@ -359,6 +370,7 @@ const loadClients = async () => {
       label: client.name,
       value: client.id,
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading clients:', error)
     $q.notify({
@@ -385,6 +397,7 @@ const loadServices = async () => {
       type: service.service_type,
       price: service.fixed_price,
     }))
+    serviceSearch.initializeOptions(serviceOptions.value)
   } catch (error) {
     console.error('Error loading services:', error)
     $q.notify({

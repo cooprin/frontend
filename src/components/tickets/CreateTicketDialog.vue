@@ -14,37 +14,20 @@
           <!-- Client Selection -->
           <q-select
             v-model="form.client_id"
-            :options="clientOptions"
+            :options="clientSearch.filteredOptions.value"
             :label="$t('tickets.createTicket.client')"
             outlined
             dense
             emit-value
             map-options
+            use-input
+            input-debounce="300"
+            @filter="(val, update) => clientSearch.filterOptions(val, update)"
+            @popup-show="clientSearch.resetFilter"
             :loading="loadingClients"
             :rules="[(val) => !!val || $t('tickets.createTicket.clientRequired')]"
             clearable
-          >
-            <template v-slot:option="{ opt }">
-              <q-item>
-                <q-item-section avatar>
-                  <q-avatar size="32px">
-                    <q-icon name="person" />
-                  </q-avatar>
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ opt.label }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </template>
-
-            <template v-slot:no-option>
-              <q-item>
-                <q-item-section class="text-grey">
-                  {{ $t('tickets.createTicket.noClientsFound') }}
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-select>
+          />
 
           <!-- Title -->
           <q-input
@@ -82,12 +65,18 @@
             <div class="col-4">
               <q-select
                 v-model="form.category_id"
-                :options="categoryOptions"
+                :options="categorySearch.filteredOptions.value"
                 :label="$t('tickets.createTicket.category')"
                 outlined
                 dense
                 emit-value
                 map-options
+                option-label="label"
+                option-value="value"
+                use-input
+                input-debounce="300"
+                @filter="(val, update) => categorySearch.filterOptions(val, update)"
+                @popup-show="categorySearch.resetFilter"
                 clearable
               />
             </div>
@@ -107,28 +96,18 @@
             <div class="col-4">
               <q-select
                 v-model="form.assigned_to"
-                :options="staffOptions"
+                :options="staffSearch.filteredOptions.value"
                 :label="$t('tickets.createTicket.assignTo')"
                 outlined
                 dense
                 emit-value
                 map-options
+                use-input
+                input-debounce="300"
+                @filter="(val, update) => staffSearch.filterOptions(val, update)"
+                @popup-show="staffSearch.resetFilter"
                 clearable
-              >
-                <template v-slot:option="{ opt }">
-                  <q-item>
-                    <q-item-section avatar>
-                      <q-avatar size="24px">
-                        <q-icon name="person" />
-                      </q-avatar>
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label>{{ opt.label }}</q-item-label>
-                      <q-item-label caption v-if="opt.email">{{ opt.email }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </template>
-              </q-select>
+              />
             </div>
           </div>
 
@@ -177,6 +156,7 @@ import { useI18n } from 'vue-i18n'
 import { TicketsApi } from 'src/api/tickets'
 import { ClientsApi } from 'src/api/clients'
 import { date } from 'quasar'
+import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 
 const props = defineProps({
   modelValue: {
@@ -203,12 +183,12 @@ const ticketForm = ref(null)
 
 // Form data
 const form = ref({
-  client_id: '',
+  client_id: null,
   title: '',
   description: '',
-  category_id: '',
+  category_id: null,
   priority: 'medium',
-  assigned_to: '',
+  assigned_to: null,
   due_date: '',
 })
 
@@ -217,6 +197,11 @@ const clientOptions = ref([])
 const categoryOptions = ref([])
 const staffOptions = ref([])
 const allStaffOptions = ref([])
+
+// Searchable selects
+const clientSearch = useSearchableSelect(clientOptions)
+const categorySearch = useSearchableSelect(categoryOptions)
+const staffSearch = useSearchableSelect(staffOptions)
 
 // Computed
 const priorityOptions = computed(() => [
@@ -265,12 +250,12 @@ const createTicket = async () => {
 
 const resetForm = () => {
   form.value = {
-    client_id: '',
+    client_id: null,
     title: '',
     description: '',
-    category_id: '',
+    category_id: null,
     priority: 'medium',
-    assigned_to: '',
+    assigned_to: null,
     due_date: '',
   }
 
@@ -286,15 +271,23 @@ const onDialogHide = () => {
 const loadInitialClients = async () => {
   loadingClients.value = true
   try {
-    const response = await ClientsApi.searchClients('')
+    const response = await ClientsApi.getClients({
+      is_active: true,
+      perPage: 'All',
+    })
 
     clientOptions.value = response.data.clients.map((client) => ({
       label: client.name,
       value: client.id,
-      email: client.email || '',
     }))
+    clientSearch.initializeOptions(clientOptions.value)
   } catch (error) {
     console.error('Error loading initial clients:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   } finally {
     loadingClients.value = false
   }
@@ -309,8 +302,14 @@ const loadCategories = async () => {
         : t(`tickets.categories.${cat.name}`),
       value: cat.id,
     }))
+    categorySearch.initializeOptions(categoryOptions.value)
   } catch (error) {
     console.error('Error loading categories:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
@@ -321,12 +320,17 @@ const loadStaff = async () => {
       allStaffOptions.value = response.data.staff.map((user) => ({
         label: user.label || `${user.first_name} ${user.last_name}`,
         value: user.id,
-        email: user.email,
       }))
       staffOptions.value = [...allStaffOptions.value]
+      staffSearch.initializeOptions(staffOptions.value)
     }
   } catch (error) {
     console.error('Error loading staff:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.loading'),
+      icon: 'error',
+    })
   }
 }
 
@@ -351,9 +355,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style scoped>
-:deep(.q-field__counter) {
-  color: var(--q-primary);
-}
-</style>
