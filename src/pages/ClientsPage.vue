@@ -309,8 +309,9 @@ const loadClients = async () => {
 const clearFilters = () => {
   filters.value = {
     search: '',
-    isActive: undefined,
+    isActive: null,
   }
+  statusSearch.resetFilter(statusOptions.value)
 }
 
 const onRequest = async (props) => {

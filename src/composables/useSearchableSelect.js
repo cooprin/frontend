@@ -34,8 +34,9 @@ export function useSearchableSelect(originalOptions) {
   }
 
   // Скидаємо фільтр при відкритті
-  const resetFilter = () => {
-    filteredOptions.value = originalOptions.value || []
+  const resetFilter = (options) => {
+    const optionsToReset = options || originalOptions.value || []
+    filteredOptions.value = optionsToReset
     searchText.value = ''
   }
 
