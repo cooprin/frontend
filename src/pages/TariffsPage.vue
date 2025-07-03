@@ -21,17 +21,13 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.isActive"
-                  :options="statusSearch.filteredOptions.value"
+                  :options="statusOptions"
                   :label="$t('tariffs.filters.status')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
-                  use-input
-                  input-debounce="300"
-                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
-                  @popup-show="statusSearch.resetFilter"
                 />
               </div>
 
