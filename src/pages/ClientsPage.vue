@@ -27,6 +27,7 @@
                   dense
                   emit-value
                   map-options
+                  clearable
                   use-input
                   input-debounce="300"
                   @filter="
@@ -308,7 +309,7 @@ const loadClients = async () => {
 const clearFilters = () => {
   filters.value = {
     search: '',
-    isActive: null,
+    isActive: undefined,
   }
 }
 
