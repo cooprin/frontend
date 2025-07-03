@@ -228,7 +228,6 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from 'stores/auth'
 import { ReportsApi } from 'src/api/reports'
-import { ClientsApi } from 'src/api/clients'
 
 const props = defineProps({
   pageIdentifier: {
@@ -256,7 +255,7 @@ const reportResults = ref(null)
 const clientOptions = ref([])
 
 // Computed
-const hasReports = computed(() => pageReports.value.length > 0)
+const hasReports = computed(() => pageReports.value.length > 0 && authStore.userType === 'staff')
 
 const canExecuteReport = computed(() => {
   if (!selectedReport.value || executing.value) return false
@@ -286,12 +285,25 @@ const resultColumns = computed(() => {
 
 // Methods
 const loadPageReports = async () => {
+  // Звіти доступні тільки для персоналу
+  if (authStore.userType !== 'staff') {
+    pageReports.value = []
+    return
+  }
+
+  // Перевіряємо дозволи на читання звітів
+  if (!authStore.hasAnyPermission(['reports.read'])) {
+    pageReports.value = []
+    return
+  }
+
   loading.value = true
   try {
     const response = await ReportsApi.getPageReports(props.pageIdentifier)
     pageReports.value = response.data.reports || []
   } catch (error) {
     console.error('Error loading page reports:', error)
+    pageReports.value = []
   } finally {
     loading.value = false
   }
@@ -392,27 +404,10 @@ const closeReportDialog = () => {
 }
 
 const searchClients = async (val, update) => {
-  if (val.length < 2) {
-    update(() => {
-      clientOptions.value = []
-    })
-    return
-  }
-
-  try {
-    const response = await ClientsApi.searchClients(val)
-    update(() => {
-      clientOptions.value = response.data.clients.map((client) => ({
-        label: client.name,
-        value: client.id,
-      }))
-    })
-  } catch (error) {
-    console.error('Error searching clients:', error)
-    update(() => {
-      clientOptions.value = []
-    })
-  }
+  // Заглушка для пошуку клієнтів - реалізувати при необхідності
+  update(() => {
+    clientOptions.value = []
+  })
 }
 
 const exportResults = async () => {
@@ -423,14 +418,14 @@ const exportResults = async () => {
         parameters: parameterValues.value,
         pageIdentifier: props.pageIdentifier,
       },
-      'xlsx',
+      'csv',
     )
 
-    // Создаем ссылку для скачивания
+    // Створюємо посилання для завантаження
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `${selectedReport.value.report_code}.xlsx`)
+    link.setAttribute('download', `${selectedReport.value.report_code}.csv`)
     document.body.appendChild(link)
     link.click()
     link.remove()

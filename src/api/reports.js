@@ -1,9 +1,9 @@
 import { api } from 'boot/axios'
 
 export const ReportsApi = {
-  // === ПУБЛИЧНЫЕ МЕТОДЫ (для всех авторизованных пользователей) ===
+  // === МЕТОДИ ДЛЯ ПЕРСОНАЛУ (тільки staff користувачі) ===
 
-  // Получение звітов для конкретной страницы
+  // Отримання звітів для конкретної сторінки (тільки персонал)
   getPageReports: (pageIdentifier) => {
     return api.get(`/reports/page/${pageIdentifier}`)
   },
@@ -91,10 +91,20 @@ export const ReportsApi = {
   getOutputFormats: () => {
     return Promise.resolve({
       data: [
-        { value: 'table', label: 'Таблица' },
-        { value: 'chart', label: 'График' },
-        { value: 'export', label: 'Только экспорт' },
-        { value: 'both', label: 'Таблица + График' },
+        { value: 'table', label: 'Таблиця' },
+        { value: 'chart', label: 'Графік' },
+        { value: 'export', label: 'Тільки експорт' },
+        { value: 'both', label: 'Таблиця + Графік' },
+      ],
+    })
+  },
+
+  // Отримання доступних форматів експорту
+  getExportFormats: () => {
+    return Promise.resolve({
+      data: [
+        { value: 'csv', label: 'CSV' },
+        { value: 'json', label: 'JSON' },
       ],
     })
   },
@@ -119,8 +129,8 @@ export const ReportsApi = {
     })
   },
 
-  // Экспорт результатов звіта (будущая функциональность)
-  exportReportResults: (reportId, params = {}, format = 'xlsx') => {
+  // Експорт результатів звіту
+  exportReportResults: (reportId, params = {}, format = 'csv') => {
     return api.post(
       `/reports/${reportId}/export`,
       {

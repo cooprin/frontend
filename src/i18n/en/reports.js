@@ -183,4 +183,5 @@ export default {
   status: 'Status',
   active: 'Active',
   inactive: 'Inactive',
+  schemaNotImplemented: 'Database schema view not implemented yet',
 }
