@@ -383,15 +383,18 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useAuthStore } from 'stores/auth'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { ReportsApi } from 'src/api/reports'
 import { date } from 'quasar'
 
 const route = useRoute()
+const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 // State
 const loading = ref(false)
@@ -476,6 +479,17 @@ const columns = computed(() => [
 
 // Methods
 const loadHistory = async () => {
+  // Перевіряємо дозволи на читання звітів
+  if (!authStore.hasAnyPermission(['reports.read'])) {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.noPermission'),
+      icon: 'error',
+    })
+    router.push({ name: 'reports' })
+    return
+  }
+
   loading.value = true
   try {
     const params = {
@@ -509,6 +523,11 @@ const loadHistory = async () => {
 }
 
 const loadReportName = async () => {
+  // Перевіряємо дозволи
+  if (!authStore.hasAnyPermission(['reports.read'])) {
+    return
+  }
+
   try {
     const response = await ReportsApi.getReport(route.params.id)
     reportName.value = response.data.report.name
@@ -577,14 +596,14 @@ const downloadResults = async (execution) => {
         parameters: execution.parameters || {},
         pageIdentifier: execution.page_identifier,
       },
-      'xlsx',
+      'csv',
     )
 
-    // Создаем ссылку для скачивания
+    // Створюємо посилання для завантаження
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `report_results_${execution.id}.xlsx`)
+    link.setAttribute('download', `report_results_${execution.id}.csv`)
     document.body.appendChild(link)
     link.click()
     link.remove()

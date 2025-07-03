@@ -192,6 +192,16 @@
                   flat
                   round
                   dense
+                  color="info"
+                  icon="download"
+                  @click="exportResultsFromTable(props.row)"
+                >
+                  <q-tooltip>{{ $t('reports.export') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
                   color="negative"
                   icon="delete"
                   @click="confirmDelete(props.row)"
@@ -317,6 +327,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useAuthStore } from 'stores/auth'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -326,7 +337,7 @@ import { date } from 'quasar'
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
-
+const authStore = useAuthStore()
 // State
 const loading = ref(false)
 const executing = ref(false)
@@ -441,6 +452,16 @@ const resultColumns = computed(() => {
 
 // Methods
 const loadReports = async () => {
+  // Перевіряємо дозволи на читання звітів
+  if (!authStore.hasAnyPermission(['reports.read'])) {
+    $q.notify({
+      color: 'negative',
+      message: t('common.errors.noPermission'),
+      icon: 'error',
+    })
+    router.push({ name: 'dashboard' })
+    return
+  }
   loading.value = true
   try {
     const params = {
@@ -599,6 +620,32 @@ const deleteReport = async () => {
     $q.notify({
       type: 'negative',
       message: error.response?.data?.message || t('common.errors.deleting'),
+    })
+  }
+}
+
+const exportResultsFromTable = async (report) => {
+  try {
+    const response = await ReportsApi.exportReportResults(report.id, {}, 'csv')
+
+    // Створюємо посилання для завантаження
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `${report.code}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    $q.notify({
+      type: 'positive',
+      message: t('reports.exportSuccess'),
+    })
+  } catch (error) {
+    console.error('Error exporting report:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('reports.exportError'),
     })
   }
 }

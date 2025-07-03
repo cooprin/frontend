@@ -449,6 +449,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useAuthStore } from 'stores/auth'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
@@ -458,6 +459,7 @@ const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 // State
 const loading = ref(false)
@@ -569,6 +571,16 @@ const previewColumns = computed(() => {
 const loadReport = async () => {
   if (!isEdit.value) return
 
+  // Перевіряємо дозволи
+  if (!authStore.hasAnyPermission(['reports.read'])) {
+    $q.notify({
+      type: 'negative',
+      message: t('common.errors.noPermission'),
+    })
+    router.back()
+    return
+  }
+
   loading.value = true
   try {
     const response = await ReportsApi.getReport(route.params.id)
@@ -600,6 +612,16 @@ const loadReport = async () => {
 }
 
 const saveReport = async () => {
+  // Перевіряємо дозволи
+  const requiredPermission = isEdit.value ? 'reports.update' : 'reports.create'
+  if (!authStore.hasAnyPermission([requiredPermission])) {
+    $q.notify({
+      type: 'negative',
+      message: t('common.errors.noPermission'),
+    })
+    return
+  }
+
   saving.value = true
   try {
     const data = { ...form.value }
@@ -653,7 +675,7 @@ const testExecute = async () => {
 const previewQuery = async () => {
   previewing.value = true
   try {
-    const response = await ReportsApi.previewSqlQuery(form.value.sql_query)
+    const response = await ReportsApi.previewSqlQuery(form.value.sql_query, {})
     previewResults.value = response.data.data || []
     previewDialog.value = true
   } catch (error) {
@@ -732,13 +754,10 @@ const removePageAssignment = (index) => {
 }
 
 const viewDatabaseSchema = async () => {
-  try {
-    const response = await ReportsApi.getDatabaseSchema()
-    // TODO: Show database schema in a dialog
-    console.log('Database schema:', response.data)
-  } catch (error) {
-    console.error('Error loading database schema:', error)
-  }
+  $q.notify({
+    type: 'info',
+    message: t('reports.schemaNotImplemented'),
+  })
 }
 
 // Auto-fill page title when identifier changes

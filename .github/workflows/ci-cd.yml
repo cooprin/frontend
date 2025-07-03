@@ -55,7 +55,6 @@ jobs:
             VUE_APP_CORS_ORIGIN=https://erp.cooprin.com.ua
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:${{ steps.params.outputs.tag }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:prod-${{ github.sha }}
 
       # Збірка для development (Node.js-based, великий образ)
       - name: Build and push development image
@@ -68,7 +67,6 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:${{ steps.params.outputs.tag }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/crm_frontend:dev-${{ github.sha }}
 
       # Виводимо інформацію про створений образ
       - name: Image info

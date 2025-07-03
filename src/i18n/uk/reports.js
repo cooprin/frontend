@@ -183,4 +183,5 @@ export default {
   status: 'Статус',
   active: 'Активний',
   inactive: 'Неактивний',
+  schemaNotImplemented: 'Перегляд схеми БД ще не реалізований',
 }

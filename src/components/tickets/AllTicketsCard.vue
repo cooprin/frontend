@@ -574,6 +574,7 @@ import BulkAssignDialog from 'components/tickets/BulkAssignDialog.vue'
 import BulkStatusDialog from 'components/tickets/BulkStatusDialog.vue'
 import BulkPriorityDialog from 'components/tickets/BulkPriorityDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { ClientsApi } from 'src/api/clients'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -982,6 +983,19 @@ const loadStaff = async () => {
   }
 }
 
+const loadClients = async () => {
+  try {
+    const response = await ClientsApi.getClients({ perPage: 'All' })
+    clientOptions.value = response.data.clients.map((client) => ({
+      label: client.name,
+      value: client.id,
+    }))
+    clientSearch.initializeOptions(clientOptions.value)
+  } catch (error) {
+    console.error('Error loading clients:', error)
+  }
+}
+
 // Statistics helpers
 const getCountByStatus = (statuses) => {
   const statusArray = Array.isArray(statuses) ? statuses : [statuses]
@@ -1071,5 +1085,6 @@ onMounted(() => {
   loadTickets()
   loadCategories()
   loadStaff()
+  loadClients()
 })
 </script>

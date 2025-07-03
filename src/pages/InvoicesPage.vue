@@ -21,17 +21,13 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.status"
-                  :options="statusSearch.filteredOptions.value"
+                  :options="statusOptions"
                   :label="$t('invoices.filters.status')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
-                  use-input
-                  input-debounce="300"
-                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
-                  @popup-show="statusSearch.resetFilter"
                 />
               </div>
 
@@ -39,17 +35,13 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.year"
-                  :options="yearSearch.filteredOptions.value"
+                  :options="yearOptions"
                   :label="$t('invoices.filters.year')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
-                  use-input
-                  input-debounce="300"
-                  @filter="(val, update) => yearSearch.filterOptions(val, update)"
-                  @popup-show="yearSearch.resetFilter"
                 />
               </div>
 
@@ -57,17 +49,13 @@
               <div class="col-12 col-sm-3">
                 <q-select
                   v-model="filters.month"
-                  :options="monthSearch.filteredOptions.value"
+                  :options="monthOptions"
                   :label="$t('invoices.filters.month')"
                   outlined
                   dense
                   clearable
                   emit-value
                   map-options
-                  use-input
-                  input-debounce="300"
-                  @filter="(val, update) => monthSearch.filterOptions(val, update)"
-                  @popup-show="monthSearch.resetFilter"
                 />
               </div>
 

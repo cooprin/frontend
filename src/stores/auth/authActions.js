@@ -2,27 +2,6 @@ import { Notify } from 'quasar'
 import { AuthApi } from 'src/api/auth' // Змінюємо імпорт
 
 export const useAuthActions = () => ({
-  // Метод реєстрації
-  async register(credentials) {
-    try {
-      this.loading = true
-      await AuthApi.register(credentials) // Використовуємо AuthApi
-      Notify.create({
-        type: 'positive',
-        message: 'Реєстрація успішна! Тепер ви можете увійти.',
-      })
-      return true
-    } catch (error) {
-      Notify.create({
-        type: 'negative',
-        message: error.response?.data?.message || 'Помилка реєстрації',
-      })
-      return false
-    } finally {
-      this.loading = false
-    }
-  },
-
   // Метод входу
   async login(credentials) {
     try {
@@ -35,25 +14,22 @@ export const useAuthActions = () => ({
       if (data.userType === 'staff') {
         this.user = data.user
         this.userType = 'staff'
-        localStorage.setItem('user', JSON.stringify(data.user))
       } else if (data.userType === 'client') {
         this.user = data.client
         this.userType = 'client'
-        localStorage.setItem('user', JSON.stringify(data.client))
       }
 
       localStorage.setItem('token', data.token)
-      localStorage.setItem('userType', data.userType)
 
       Notify.create({
         type: 'positive',
-        message: data.userType === 'staff' ? 'Ласкаво просимо!' : 'Вітаємо в особистому кабінеті!',
+        message: data.userType === 'staff' ? 'Welcome!' : 'Welcome to your personal account!',
       })
       return { success: true, userType: data.userType }
     } catch (error) {
       Notify.create({
         type: 'negative',
-        message: error.response?.data?.message || 'Помилка входу',
+        message: error.response?.data?.message || 'Login error',
       })
       return { success: false }
     } finally {
@@ -64,9 +40,16 @@ export const useAuthActions = () => ({
   // Метод отримання даних користувача
   async fetchUser() {
     try {
-      const { data } = await AuthApi.fetchUser() // Використовуємо AuthApi
-      this.user = data
-      localStorage.setItem('user', JSON.stringify(data))
+      const { data } = await AuthApi.fetchUser()
+
+      // Handle different user types
+      if (data.userType === 'staff') {
+        this.user = data
+        this.userType = 'staff'
+      } else if (data.userType === 'client') {
+        this.user = data
+        this.userType = 'client'
+      }
     } catch {
       this.logout()
     }
@@ -77,23 +60,21 @@ export const useAuthActions = () => ({
     try {
       await AuthApi.logout()
     } catch (error) {
-      console.error('Помилка при виході:', error)
+      console.error('Error on exit:', error)
     } finally {
       this.token = null
       this.user = null
       this.userType = null
       localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.removeItem('userType')
       Notify.create({
         type: 'info',
-        message: 'Ви вийшли з системи',
+        message: 'You are logged out',
       })
     }
   },
 
   // Метод ініціалізації
-  initializeStore() {
+  async initializeStore() {
     // Перевіряємо валідність токена при ініціалізації
     const token = this.token
     if (token) {
@@ -106,16 +87,16 @@ export const useAuthActions = () => ({
 
           // Якщо токен вже закінчився, розлогінюємося
           if (payload.exp && payload.exp < now) {
-            console.log('Токен закінчився при ініціалізації. Автоматичний вихід.')
+            console.log('The token expired during initialization. Automatic logout.')
             this.logout()
             return
           }
         }
 
         // Якщо токен валідний, оновлюємо дані користувача
-        this.fetchUser()
+        await this.fetchUser()
       } catch (e) {
-        console.error('Помилка при перевірці токена при ініціалізації:', e)
+        console.error('Error checking the token during initialization:', e)
         this.logout()
       }
     }

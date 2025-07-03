@@ -1,8 +1,18 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export function useSearchableSelect(originalOptions) {
   const searchText = ref('')
   const filteredOptions = ref([])
+  // Автоматично оновлюємо filteredOptions при зміні originalOptions
+  watch(
+    originalOptions,
+    (newOptions) => {
+      if (newOptions && newOptions.length > 0) {
+        filteredOptions.value = newOptions
+      }
+    },
+    { immediate: true },
+  )
 
   // Ініціалізуємо фільтровані опції
   const initializeOptions = (options) => {
@@ -24,8 +34,9 @@ export function useSearchableSelect(originalOptions) {
   }
 
   // Скидаємо фільтр при відкритті
-  const resetFilter = (options = originalOptions.value) => {
-    filteredOptions.value = options
+  const resetFilter = (options) => {
+    const optionsToReset = options || originalOptions.value || []
+    filteredOptions.value = optionsToReset
     searchText.value = ''
   }
 

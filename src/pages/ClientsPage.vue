@@ -21,16 +21,13 @@
               <div class="col-12 col-sm-4">
                 <q-select
                   v-model="filters.isActive"
-                  :options="statusSearch.filteredOptions.value"
+                  :options="statusOptions"
                   :label="$t('clients.filters.status')"
                   outlined
                   dense
                   emit-value
                   map-options
-                  use-input
-                  input-debounce="300"
-                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
-                  @popup-show="statusSearch.resetFilter"
+                  clearable
                 />
               </div>
 
@@ -170,7 +167,6 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
-import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
@@ -186,8 +182,6 @@ const editClient = ref(null)
 const clients = ref([])
 const deleteDialog = ref(false)
 const clientToDelete = ref(null)
-// Searchable selects
-const statusSearch = useSearchableSelect(ref([]))
 
 const pagination = ref({
   sortBy: 'name',
@@ -392,6 +386,5 @@ watch(
 // Lifecycle
 onMounted(() => {
   loadClients()
-  statusSearch.initializeOptions(statusOptions.value)
 })
 </script>

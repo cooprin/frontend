@@ -87,6 +87,7 @@ export default {
     noComments: 'No comments yet',
     unknown: 'Unknown',
     loadError: 'Error loading comments',
+    all: 'All Comments',
   },
 
   // Files
@@ -115,6 +116,7 @@ export default {
   startWorkError: 'Error starting work',
   markUrgent: 'Mark as Urgent',
   markHigh: 'Mark as High Priority',
+  ticketUpdated: 'Ticket updated by another user',
 
   // Filters
   filters: {
@@ -244,6 +246,10 @@ export default {
     exportError: 'Error exporting tickets',
     exportSelectedSuccess: 'Selected tickets exported successfully',
     exportSelectedError: 'Error exporting selected tickets',
+    urgentOnly: 'Urgent Only',
+    recent: 'Recent',
+    inProgress: 'In Progress',
+    resolved: 'Resolved',
   },
 
   // Bulk operations
@@ -438,4 +444,10 @@ export default {
     errorDetails: 'Please check the form and try again',
   },
   markAsInternal: 'Mark as internal',
+  actions: {
+    start: 'Start',
+    stop: 'Stop',
+    resume: 'Resume',
+    complete: 'Complete',
+  },
 }
