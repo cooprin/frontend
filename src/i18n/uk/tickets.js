@@ -87,6 +87,7 @@ export default {
     noComments: 'Коментарів поки немає',
     unknown: 'Невідомо',
     loadError: 'Помилка завантаження коментарів',
+    all: 'Всі коментарі',
   },
 
   // Файли
@@ -115,6 +116,7 @@ export default {
   startWorkError: 'Помилка початку роботи',
   markUrgent: 'Позначити як термінову',
   markHigh: 'Позначити як високий пріоритет',
+  ticketUpdated: 'Заявку оновлено іншим користувачем',
 
   // Фільтри
   filters: {
@@ -244,6 +246,10 @@ export default {
     exportError: 'Помилка експорту заявок',
     exportSelectedSuccess: 'Обрані заявки успішно експортовано',
     exportSelectedError: 'Помилка експорту обраних заявок',
+    urgentOnly: 'Тільки термінові',
+    recent: 'Нещодавні',
+    inProgress: 'В роботі',
+    resolved: 'Вирішені',
   },
 
   // Масові операції
@@ -438,4 +444,10 @@ export default {
     errorDetails: 'Перевірте форму та спробуйте знову',
   },
   markAsInternal: 'Позначити як внутрішній',
+  actions: {
+    start: 'Почати',
+    stop: 'Зупинити',
+    resume: 'Продовжити',
+    complete: 'Завершити',
+  },
 }
