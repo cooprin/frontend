@@ -29,8 +29,10 @@
                   map-options
                   use-input
                   input-debounce="300"
-                  @filter="(val, update) => statusSearch.filterOptions(val, update)"
-                  @popup-show="statusSearch.resetFilter"
+                  @filter="
+                    (val, update) => statusSearch.filterOptions(val, update, statusOptions.value)
+                  "
+                  @popup-show="() => statusSearch.resetFilter(statusOptions.value)"
                 />
               </div>
 
