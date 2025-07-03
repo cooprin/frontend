@@ -24,8 +24,8 @@ export function useSearchableSelect(originalOptions) {
   }
 
   // Скидаємо фільтр при відкритті
-  const resetFilter = (options = originalOptions.value) => {
-    filteredOptions.value = options
+  const resetFilter = () => {
+    filteredOptions.value = originalOptions.value || []
     searchText.value = ''
   }
 
