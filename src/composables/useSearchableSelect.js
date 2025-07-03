@@ -1,8 +1,18 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export function useSearchableSelect(originalOptions) {
   const searchText = ref('')
   const filteredOptions = ref([])
+  // Автоматично оновлюємо filteredOptions при зміні originalOptions
+  watch(
+    originalOptions,
+    (newOptions) => {
+      if (newOptions && newOptions.length > 0) {
+        filteredOptions.value = newOptions
+      }
+    },
+    { immediate: true },
+  )
 
   // Ініціалізуємо фільтровані опції
   const initializeOptions = (options) => {
