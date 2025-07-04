@@ -541,9 +541,9 @@ const parameterTypeOptions = computed(() => [
 ])
 
 const pageIdentifierOptions = computed(() => [
-  { label: t('reports.pages.dashboard'), value: 'dashboard' },
   { label: t('reports.pages.clients'), value: 'clients' },
   { label: t('reports.pages.wialonObjects'), value: 'wialon-objects' },
+  { label: t('reports.pages.invoices'), value: 'invoices' },
   { label: t('reports.pages.billing'), value: 'billing' },
   { label: t('reports.pages.products'), value: 'products' },
   { label: t('reports.pages.warehouses'), value: 'warehouses' },

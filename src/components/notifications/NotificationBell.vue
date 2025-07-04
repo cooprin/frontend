@@ -1,6 +1,6 @@
 <template>
   <div class="notification-bell">
-    <q-btn flat round dense icon="notifications">
+    <q-btn flat dense icon="notifications">
       <q-badge
         v-if="unreadCount > 0"
         color="red"

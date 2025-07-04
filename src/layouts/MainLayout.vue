@@ -8,7 +8,7 @@
           {{ companyName || $t('layouts.mainLayout.hello') }}
         </q-toolbar-title>
 
-        <q-btn flat>
+        <q-btn flat dense>
           <q-icon name="language" />
           <q-menu>
             <q-list style="min-width: 100px">
@@ -22,12 +22,12 @@
           </q-menu>
         </q-btn>
 
-        <q-btn flat @click="toggleDarkMode">
+        <q-btn flat dense @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
         <NotificationBell />
 
-        <q-btn flat round dense icon="account_circle">
+        <q-btn flat dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
               <q-item>
@@ -546,7 +546,13 @@
               </q-item>
             </q-expansion-item>
           </template>
-          <q-item clickable v-ripple :to="{ name: 'notifications' }" dense>
+          <q-item
+            v-if="!miniState || $q.screen.xs"
+            clickable
+            v-ripple
+            :to="{ name: 'notifications' }"
+            dense
+          >
             <q-item-section avatar>
               <q-icon name="notifications" />
             </q-item-section>
@@ -981,6 +987,14 @@
                 </q-icon>
               </q-item-section>
             </q-item>
+            <!-- Notifications Menu - Mini Mode -->
+            <q-item dense>
+              <q-item-section avatar>
+                <q-icon name="notifications" @click="$router.push({ name: 'notifications' })">
+                  <q-tooltip>{{ $t('layouts.mainLayout.notifications') }}</q-tooltip>
+                </q-icon>
+              </q-item-section>
+            </q-item>
           </template>
         </q-list>
       </q-scroll-area>
@@ -1155,25 +1169,26 @@ watch(
 /* Стилі для світлої теми */
 .body--light .drawer-menu .q-item,
 .body--light .drawer-menu .q-icon {
-  color: #ffffff !important; /* Білий текст для контрасту з кольоровим фоном */
+  color: #ffffff !important;
   transition: all 0.3s ease;
+  font-weight: 500; /* Однаковий шрифт */
 }
 
 .body--light .drawer-menu .q-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1); /* М'якший фон */
 }
 
 .body--light .drawer-menu .q-item:hover .q-icon {
-  transform: scale(1.1);
+  transform: scale(1.05); /* Менше збільшення */
 }
 
 .body--light .drawer-menu .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.3);
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.15); /* М'якше виділення */
+  font-weight: 600;
 }
 
 .body--light .drawer-menu .q-item.q-router-link-active .q-icon {
-  transform: scale(1.1);
+  transform: scale(1.05);
   color: var(--q-primary) !important;
 }
 
@@ -1186,23 +1201,24 @@ watch(
 .body--dark .drawer-menu .q-icon {
   color: #ffffff !important;
   transition: all 0.3s ease;
+  font-weight: 500; /* Однаковий шрифт */
 }
 
 .body--dark .drawer-menu .q-item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1); /* М'якший фон */
 }
 
 .body--dark .drawer-menu .q-item:hover .q-icon {
-  transform: scale(1.1);
+  transform: scale(1.05); /* Менше збільшення */
 }
 
 .body--dark .drawer-menu .q-item.q-router-link-active {
-  background: rgba(255, 255, 255, 0.25);
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.15); /* М'якше виділення */
+  font-weight: 600;
 }
 
 .body--dark .drawer-menu .q-item.q-router-link-active .q-icon {
-  transform: scale(1.1);
+  transform: scale(1.05);
   color: var(--q-primary) !important;
 }
 
@@ -1210,6 +1226,7 @@ watch(
 .q-expansion-item__content .q-item {
   padding-left: 48px;
   min-height: 40px;
+  font-weight: 500 !important; /* Однаковий шрифт для підпунктів */
 }
 
 /* Стилі для меню */
@@ -1247,7 +1264,7 @@ watch(
 .q-expansion-item__content .q-item {
   padding-left: 48px;
   min-height: 40px;
-  font-weight: normal;
+  font-weight: 500 !important;
 }
 
 /* Стилі для лівого меню - колір як у футера */

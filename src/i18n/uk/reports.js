@@ -74,10 +74,10 @@ export default {
 
   // Ідентифікатори сторінок
   pages: {
-    dashboard: 'Панель керування',
+    invoices: 'Рахунки',
     clients: 'Клієнти',
     wialonObjects: "Об'єкти Wialon",
-    billing: 'Біллінг',
+    billing: 'Оплати',
     products: 'Продукти',
     warehouses: 'Склади',
     services: 'Послуги',

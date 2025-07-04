@@ -174,6 +174,8 @@
     <invoice-dialog v-model="showDialog" @saved="loadInvoices" />
     <invoice-generator-dialog v-model="showGenerateDialog" @generated="onInvoicesGenerated" />
   </q-page>
+  <!-- Reports FAB -->
+  <ReportsFAB page-identifier="invoices" />
 </template>
 
 <script setup>
@@ -186,6 +188,7 @@ import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import { date } from 'quasar'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 
 const $q = useQuasar()
 const router = useRouter()
