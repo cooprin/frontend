@@ -547,10 +547,7 @@
             </q-expansion-item>
           </template>
           <q-item
-            v-if="
-              (!miniState || $q.screen.xs) &&
-              authStore.hasAnyPermission([MENU_PERMISSIONS.NOTIFICATIONS.LIST])
-            "
+            v-if="!miniState || $q.screen.xs"
             clickable
             v-ripple
             :to="{ name: 'notifications' }"
@@ -991,7 +988,7 @@
               </q-item-section>
             </q-item>
             <!-- Notifications Menu - Mini Mode -->
-            <q-item v-if="authStore.hasAnyPermission([MENU_PERMISSIONS.NOTIFICATIONS.LIST])" dense>
+            <q-item dense>
               <q-item-section avatar>
                 <q-icon name="notifications" @click="$router.push({ name: 'notifications' })">
                   <q-tooltip>{{ $t('layouts.mainLayout.notifications') }}</q-tooltip>
