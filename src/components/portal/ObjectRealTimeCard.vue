@@ -157,17 +157,27 @@
               <span class="chart-title">{{ $t('portal.pages.objects.chartSatellites') }}</span>
               <span class="chart-label-right">25</span>
             </div>
-            <div class="mini-chart-bars">
-              <div
-                v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
-                :key="index"
-                class="chart-bar"
-              >
+            <div class="mini-chart-horizontal">
+              <div class="chart-times">
                 <div
-                  class="bar-fill satellite-bar"
-                  :style="`height: ${(point.count / 25) * 100}%`"
-                ></div>
-                <div class="bar-time">{{ point.time }}</div>
+                  v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
+                  :key="index"
+                  class="time-label"
+                >
+                  {{ point.time }}
+                </div>
+              </div>
+              <div class="chart-bars-horizontal">
+                <div
+                  v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
+                  :key="index"
+                  class="horizontal-bar"
+                >
+                  <div
+                    class="bar-fill-horizontal satellite-bar"
+                    :style="`width: ${(point.count / 25) * 100}%`"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -275,7 +285,7 @@ const systemStatus = computed(() => props.baseObjectData.status || 'inactive')
 const hasAlert = computed(() => {
   if (systemStatus.value !== 'active' || props.objectData.error) return false
 
-  const lowSatellites = props.objectData.satellites < 25
+  const lowSatellites = props.objectData.satellites < 5
   const oldMessage = getLastMessageMinutes() > 15
 
   return lowSatellites || oldMessage
