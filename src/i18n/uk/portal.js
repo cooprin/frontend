@@ -51,6 +51,8 @@ export default {
       hoursAgo: 'год назад',
       currency: 'грн',
       inactiveObject: "Об'єкт неактивний",
+      chartSpeed: 'км/год',
+      chartSatellites: 'супутники',
     },
     invoices: {
       title: 'Мої рахунки',

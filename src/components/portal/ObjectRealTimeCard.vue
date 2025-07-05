@@ -90,53 +90,76 @@
 
         <div class="row q-gutter-xs q-mb-md">
           <div class="col">
-            <q-card flat class="bg-orange-1 text-center q-pa-xs">
-              <div class="text-weight-bold text-orange-8">{{ objectData.last30min.distance }}</div>
-              <div class="text-caption">{{ $t('portal.pages.objects.km') }}</div>
+            <q-card flat class="stats-mini-card distance-card text-center q-pa-xs">
+              <div class="text-weight-bold stats-value">{{ objectData.last30min.distance }}</div>
+              <div class="text-caption stats-label">{{ $t('portal.pages.objects.km') }}</div>
             </q-card>
           </div>
           <div class="col">
-            <q-card flat class="bg-purple-1 text-center q-pa-xs">
-              <div class="text-weight-bold text-purple-8">
+            <q-card flat class="stats-mini-card changes-card text-center q-pa-xs">
+              <div class="text-weight-bold stats-value">
                 {{ objectData.last30min.satelliteChanges }}
               </div>
-              <div class="text-caption">{{ $t('portal.pages.objects.gpsChanges') }}</div>
+              <div class="text-caption stats-label">
+                {{ $t('portal.pages.objects.gpsChanges') }}
+              </div>
             </q-card>
           </div>
           <div class="col">
-            <q-card flat class="bg-teal-1 text-center q-pa-xs">
-              <div class="text-weight-bold text-teal-8">
+            <q-card flat class="stats-mini-card messages-card text-center q-pa-xs">
+              <div class="text-weight-bold stats-value">
                 {{ objectData.last30min.messageCount }}
               </div>
-              <div class="text-caption">{{ $t('portal.pages.objects.messages') }}</div>
+              <div class="text-caption stats-label">{{ $t('portal.pages.objects.messages') }}</div>
             </q-card>
           </div>
         </div>
+        <!-- Mini Charts with labels -->
         <div v-if="objectData.last30min.speedChart.length > 0" class="q-mb-sm">
           <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.speed') }}:</div>
-          <div class="mini-chart">
-            <q-linear-progress
-              v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
-              :key="index"
-              :value="point.speed / 100"
-              color="blue"
-              size="4px"
-              class="q-mb-xs"
-            />
+          <div class="chart-container">
+            <div class="chart-header">
+              <span class="chart-label-left">0</span>
+              <span class="chart-title">{{ $t('portal.pages.objects.chartSpeed') }}</span>
+              <span class="chart-label-right">{{ getMaxSpeed() }}</span>
+            </div>
+            <div class="mini-chart-bars">
+              <div
+                v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
+                :key="index"
+                class="chart-bar"
+              >
+                <div
+                  class="bar-fill speed-bar"
+                  :style="`height: ${(point.speed / getMaxSpeed()) * 100}%`"
+                ></div>
+                <div class="bar-time">{{ point.time }}</div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div v-if="objectData.last30min.satelliteChart.length > 0">
           <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.satellites') }}:</div>
-          <div class="mini-chart">
-            <q-linear-progress
-              v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
-              :key="index"
-              :value="point.count / 20"
-              color="green"
-              size="4px"
-              class="q-mb-xs"
-            />
+          <div class="chart-container">
+            <div class="chart-header">
+              <span class="chart-label-left">0</span>
+              <span class="chart-title">{{ $t('portal.pages.objects.chartSatellites') }}</span>
+              <span class="chart-label-right">25</span>
+            </div>
+            <div class="mini-chart-bars">
+              <div
+                v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
+                :key="index"
+                class="chart-bar"
+              >
+                <div
+                  class="bar-fill satellite-bar"
+                  :style="`height: ${(point.count / 25) * 100}%`"
+                ></div>
+                <div class="bar-time">{{ point.time }}</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -290,6 +313,12 @@ const getSystemStatusColor = (status) => {
   return colors[status] || 'grey'
 }
 
+const getMaxSpeed = () => {
+  if (!props.objectData.last30min.speedChart.length) return 100
+  const maxSpeed = Math.max(...props.objectData.last30min.speedChart.map((p) => p.speed))
+  return Math.max(maxSpeed, 60) // мінімум 60 для шкали
+}
+
 // Helper functions
 const formatDateTime = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY HH:mm')
@@ -378,5 +407,107 @@ const createTicket = () => {
 .body--dark .stat-card .text-h5,
 .body--dark .stat-card .text-caption {
   color: white !important;
+}
+/* Stats mini cards */
+.stats-mini-card {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  min-height: 60px;
+}
+
+.distance-card {
+  background: rgba(255, 152, 0, 0.1) !important;
+}
+
+.changes-card {
+  background: rgba(156, 39, 176, 0.1) !important;
+}
+
+.messages-card {
+  background: rgba(0, 150, 136, 0.1) !important;
+}
+
+.stats-value {
+  font-size: 1.2rem;
+  color: inherit;
+}
+
+.stats-label {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* Dark theme for stats */
+.body--dark .stats-mini-card {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.body--dark .stats-value,
+.body--dark .stats-label {
+  color: white !important;
+}
+
+/* Charts */
+.chart-container {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.body--dark .chart-container {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.chart-title {
+  font-weight: bold;
+}
+
+.mini-chart-bars {
+  display: flex;
+  gap: 2px;
+  height: 40px;
+  align-items: flex-end;
+}
+
+.chart-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.bar-fill {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+}
+
+.speed-bar {
+  background: #1976d2;
+}
+
+.satellite-bar {
+  background: #388e3c;
+}
+
+.bar-time {
+  font-size: 0.6rem;
+  margin-top: 2px;
+  opacity: 0.6;
+}
+
+.body--dark .bar-time,
+.body--dark .chart-header {
+  color: white;
 }
 </style>

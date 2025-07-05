@@ -51,6 +51,8 @@ export default {
       hoursAgo: 'h ago',
       currency: 'UAH',
       inactiveObject: 'Object inactive',
+      chartSpeed: 'km/h',
+      chartSatellites: 'satellites',
     },
     invoices: {
       title: 'My Invoices',
