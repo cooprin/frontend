@@ -193,6 +193,8 @@
 <script setup>
 import { computed } from 'vue'
 import { date } from 'quasar'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const props = defineProps({
   objectData: {
@@ -246,10 +248,10 @@ const getLastMessageColor = () => {
 const getLastMessageAgo = () => {
   const minutes = getLastMessageMinutes()
   if (minutes < 60) {
-    return `${minutes} хв назад`
+    return `${minutes} ${t('portal.pages.objects.minutesAgo')}`
   }
   const hours = Math.floor(minutes / 60)
-  return `${hours} год назад`
+  return `${hours} ${t('portal.pages.objects.hoursAgo')}`
 }
 
 // System status color
@@ -272,11 +274,7 @@ const formatDate = (dateString) => {
 }
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency: 'UAH',
-    minimumFractionDigits: 0,
-  }).format(price)
+  return `${price} ${t('portal.pages.objects.currency')}`
 }
 
 const createTicket = () => {

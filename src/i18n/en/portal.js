@@ -46,6 +46,11 @@ export default {
       autoRefresh: 'Auto-refresh enabled',
       refreshData: 'Refresh data',
       realTimeError: 'Real-time data error',
+      systemInfo: 'System Information',
+      minutesAgo: 'min ago',
+      hoursAgo: 'h ago',
+      currency: 'UAH',
+      inactiveObject: 'Object inactive',
     },
     invoices: {
       title: 'My Invoices',

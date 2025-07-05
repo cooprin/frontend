@@ -112,8 +112,10 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { PortalApi } from 'src/api/portal'
 import ObjectRealTimeCard from 'src/components/portal/ObjectRealTimeCard.vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { t } = useI18n()
 
 // Reactive data
 const objects = ref([])
@@ -212,7 +214,7 @@ const createEmptyRealTimeData = (object) => {
     isMoving: false,
     speed: 0,
     satellites: 0,
-    address: "Об'єкт неактивний",
+    address: t('portal.pages.objects.inactiveObject'),
     coordinates: { lat: 0, lon: 0 },
     last30min: {
       distance: 0,

@@ -46,6 +46,11 @@ export default {
       autoRefresh: 'Автооновлення увімкнено',
       refreshData: 'Оновити дані',
       realTimeError: 'Помилка real-time даних',
+      systemInfo: 'Системна інформація',
+      minutesAgo: 'хв назад',
+      hoursAgo: 'год назад',
+      currency: 'грн',
+      inactiveObject: "Об'єкт неактивний",
     },
     invoices: {
       title: 'Мої рахунки',
