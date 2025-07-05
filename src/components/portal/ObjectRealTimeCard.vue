@@ -130,7 +130,7 @@
                   :key="index"
                   class="time-label"
                 >
-                  {{ point.time }}
+                  {{ formatChartTime(point.timestamp) }}
                 </div>
               </div>
               <div class="chart-bars-horizontal">
@@ -164,7 +164,7 @@
                   :key="index"
                   class="time-label"
                 >
-                  {{ point.time }}
+                  {{ formatChartTime(point.timestamp) }}
                 </div>
               </div>
               <div class="chart-bars-horizontal">
@@ -277,6 +277,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['create-ticket'])
+
+const formatChartTime = (timestamp) => {
+  const date = new Date(timestamp)
+  return (
+    date.getHours().toString().padStart(2, '0') +
+    ':' +
+    date.getMinutes().toString().padStart(2, '0')
+  )
+}
 
 // System status from base object data
 const systemStatus = computed(() => props.baseObjectData.status || 'inactive')
