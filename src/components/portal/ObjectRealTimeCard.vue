@@ -106,7 +106,7 @@
         </div>
 
         <!-- Mini Charts -->
-        <div v-if="objectData.last30min.speedChart.length > 0" class="q-mb-sm">
+        <!-- <div v-if="objectData.last30min.speedChart.length > 0" class="q-mb-sm">
           <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.speed') }}:</div>
           <div class="chart-container">
             <ResponsiveContainer width="100%" height="{60}">
@@ -142,7 +142,7 @@
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </div> -->
       </div>
     </q-card-section>
 
@@ -161,7 +161,7 @@
 
 <script setup>
 import { date } from 'quasar'
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts'
+//import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 
 const props = defineProps({
   objectData: {
