@@ -33,18 +33,18 @@
 
       <!-- Real-time Data (only for active objects without errors) -->
       <div v-if="systemStatus === 'active' && !objectData.error">
-        <!-- Current Status -->
+        <!-- Current Status - side by side -->
         <div class="row q-gutter-sm q-mb-md">
-          <div class="col-6">
+          <div class="col">
             <q-card flat class="stat-card speed-card text-center q-pa-sm">
               <div class="text-h5 text-weight-bold">{{ objectData.speed }}</div>
               <div class="text-caption">{{ $t('portal.pages.objects.kmh') }}</div>
             </q-card>
           </div>
-          <div class="col-6">
+          <div class="col">
             <q-card
               flat
-              class="stat-card satellite-card text-center q-pa-sm"
+              class="stat-card text-center q-pa-sm"
               :class="`satellite-${getSatelliteColor()}`"
             >
               <div class="text-h5 text-weight-bold">{{ objectData.satellites }}</div>
@@ -123,17 +123,27 @@
               <span class="chart-title">{{ $t('portal.pages.objects.chartSpeed') }}</span>
               <span class="chart-label-right">{{ getMaxSpeed() }}</span>
             </div>
-            <div class="mini-chart-bars">
-              <div
-                v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
-                :key="index"
-                class="chart-bar"
-              >
+            <div class="mini-chart-horizontal">
+              <div class="chart-times">
                 <div
-                  class="bar-fill speed-bar"
-                  :style="`height: ${(point.speed / getMaxSpeed()) * 100}%`"
-                ></div>
-                <div class="bar-time">{{ point.time }}</div>
+                  v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
+                  :key="index"
+                  class="time-label"
+                >
+                  {{ point.time }}
+                </div>
+              </div>
+              <div class="chart-bars-horizontal">
+                <div
+                  v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
+                  :key="index"
+                  class="horizontal-bar"
+                >
+                  <div
+                    class="bar-fill-horizontal speed-bar"
+                    :style="`width: ${Math.max((point.speed / getMaxSpeed()) * 100, 2)}%`"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -265,7 +275,7 @@ const systemStatus = computed(() => props.baseObjectData.status || 'inactive')
 const hasAlert = computed(() => {
   if (systemStatus.value !== 'active' || props.objectData.error) return false
 
-  const lowSatellites = props.objectData.satellites < 4
+  const lowSatellites = props.objectData.satellites < 25
   const oldMessage = getLastMessageMinutes() > 15
 
   return lowSatellites || oldMessage
@@ -373,6 +383,8 @@ const createTicket = () => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* Main stat cards */
 .stat-card {
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: var(--q-primary-1) !important;
@@ -383,21 +395,38 @@ const createTicket = () => {
   color: var(--q-blue-8) !important;
 }
 
-.satellite-green {
-  background: var(--q-green-1) !important;
-  color: var(--q-green-8) !important;
+/* Satellite colors based on count */
+.stat-card.satellite-green {
+  background: rgba(76, 175, 80, 0.15) !important;
+  border: 1px solid rgba(76, 175, 80, 0.3) !important;
 }
 
-.satellite-orange {
-  background: var(--q-orange-1) !important;
-  color: var(--q-orange-8) !important;
+.stat-card.satellite-green .text-h5,
+.stat-card.satellite-green .text-caption {
+  color: #2e7d32 !important;
 }
 
-.satellite-red {
-  background: var(--q-red-1) !important;
-  color: var(--q-red-8) !important;
+.stat-card.satellite-orange {
+  background: rgba(255, 152, 0, 0.15) !important;
+  border: 1px solid rgba(255, 152, 0, 0.3) !important;
 }
 
+.stat-card.satellite-orange .text-h5,
+.stat-card.satellite-orange .text-caption {
+  color: #ef6c00 !important;
+}
+
+.stat-card.satellite-red {
+  background: rgba(244, 67, 54, 0.15) !important;
+  border: 1px solid rgba(244, 67, 54, 0.3) !important;
+}
+
+.stat-card.satellite-red .text-h5,
+.stat-card.satellite-red .text-caption {
+  color: #c62828 !important;
+}
+
+/* Dark theme for main stat cards */
 .body--dark .stat-card {
   background: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
@@ -408,6 +437,24 @@ const createTicket = () => {
 .body--dark .stat-card .text-caption {
   color: white !important;
 }
+
+/* Dark theme satellite color overrides */
+.body--dark .stat-card.satellite-green,
+.body--dark .stat-card.satellite-orange,
+.body--dark .stat-card.satellite-red {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.body--dark .stat-card.satellite-green .text-h5,
+.body--dark .stat-card.satellite-green .text-caption,
+.body--dark .stat-card.satellite-orange .text-h5,
+.body--dark .stat-card.satellite-orange .text-caption,
+.body--dark .stat-card.satellite-red .text-h5,
+.body--dark .stat-card.satellite-red .text-caption {
+  color: white !important;
+}
+
 /* Stats mini cards */
 .stats-mini-card {
   border: 1px solid rgba(0, 0, 0, 0.12);
@@ -436,7 +483,7 @@ const createTicket = () => {
   opacity: 0.8;
 }
 
-/* Dark theme for stats */
+/* Dark theme for stats mini cards */
 .body--dark .stats-mini-card {
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -471,25 +518,50 @@ const createTicket = () => {
   font-weight: bold;
 }
 
-.mini-chart-bars {
+/* Horizontal Charts */
+.mini-chart-horizontal {
   display: flex;
-  gap: 2px;
-  height: 40px;
-  align-items: flex-end;
+  gap: 8px;
 }
 
-.chart-bar {
-  flex: 1;
+.chart-times {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 100%;
+  gap: 4px;
+  min-width: 40px;
 }
 
-.bar-fill {
-  width: 100%;
-  border-radius: 2px 2px 0 0;
-  min-height: 2px;
+.time-label {
+  font-size: 0.6rem;
+  opacity: 0.6;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.chart-bars-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.horizontal-bar {
+  height: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.body--dark .horizontal-bar {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bar-fill-horizontal {
+  height: 100%;
+  border-radius: 2px;
+  min-width: 2px;
+  transition: width 0.3s ease;
 }
 
 .speed-bar {
@@ -500,13 +572,7 @@ const createTicket = () => {
   background: #388e3c;
 }
 
-.bar-time {
-  font-size: 0.6rem;
-  margin-top: 2px;
-  opacity: 0.6;
-}
-
-.body--dark .bar-time,
+.body--dark .time-label,
 .body--dark .chart-header {
   color: white;
 }
