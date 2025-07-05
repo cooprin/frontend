@@ -315,11 +315,33 @@ const onSubmit = async () => {
     console.error('Error assigning tariff:', error)
     const errorMessage = error.response?.data?.message || t('common.errors.saving')
 
-    $q.notify({
-      color: 'negative',
-      message: errorMessage,
-      icon: 'error',
-    })
+    if (
+      errorMessage.includes('вже оплачений') ||
+      errorMessage.includes('існує тариф') ||
+      errorMessage.includes('вже є оплата')
+    ) {
+      $q.notify({
+        color: 'warning',
+        message: errorMessage,
+        icon: 'warning',
+        timeout: 12000,
+        actions: [
+          {
+            label: t('common.understand'),
+            color: 'white',
+            handler: () => {
+              // Просто закриваємо повідомлення
+            },
+          },
+        ],
+      })
+    } else {
+      $q.notify({
+        color: 'negative',
+        message: errorMessage,
+        icon: 'error',
+      })
+    }
   } finally {
     loading.value = false
   }

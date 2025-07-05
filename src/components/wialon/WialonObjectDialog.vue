@@ -341,12 +341,16 @@ const onSubmit = async () => {
     const errorMessage =
       error.response?.data?.message || t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`)
 
-    if (errorMessage.includes('вже оплачений')) {
+    if (
+      errorMessage.includes('вже оплачений') ||
+      errorMessage.includes('існує тариф') ||
+      errorMessage.includes('вже є оплата')
+    ) {
       $q.notify({
         color: 'warning',
         message: errorMessage,
         icon: 'warning',
-        timeout: 10000,
+        timeout: 12000,
         actions: [
           {
             label: t('common.understand'),
