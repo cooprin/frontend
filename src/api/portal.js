@@ -11,6 +11,11 @@ export const PortalApi = {
     return api.get('/portal/objects')
   },
 
+  // Get client objects real-time data
+  getObjectsRealTimeData: () => {
+    return api.get('/portal/objects/real-time-data')
+  },
+
   // Get client invoices
   getInvoices: (params) => {
     return api.get('/portal/invoices', { params })

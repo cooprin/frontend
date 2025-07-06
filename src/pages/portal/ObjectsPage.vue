@@ -6,6 +6,51 @@
           {{ $t('portal.pages.objects.title') }}
         </div>
 
+        <!-- Auto-refresh indicator -->
+        <div class="row items-center q-mb-md">
+          <div class="col">
+            <q-chip
+              v-if="autoRefreshInterval"
+              color="positive"
+              text-color="white"
+              icon="autorenew"
+              dense
+            >
+              {{ $t('portal.pages.objects.autoRefresh') }}
+            </q-chip>
+          </div>
+          <div class="col-auto">
+            <q-btn
+              flat
+              round
+              color="primary"
+              icon="refresh"
+              :loading="loadingRealTime"
+              @click="loadObjectsRealTimeData"
+              size="sm"
+            >
+              <q-tooltip>{{ $t('portal.pages.objects.refreshData') }}</q-tooltip>
+            </q-btn>
+          </div>
+        </div>
+        <!-- Real-time Error State -->
+        <div v-if="realTimeError && objects.length > 0" class="q-mt-md">
+          <q-banner class="bg-warning text-dark" rounded>
+            <template v-slot:avatar>
+              <q-icon name="warning" />
+            </template>
+            {{ $t('portal.pages.objects.realTimeError') }}: {{ realTimeError }}
+            <template v-slot:action>
+              <q-btn
+                flat
+                color="dark"
+                :label="$t('common.retry')"
+                @click="loadObjectsRealTimeData"
+                :loading="loadingRealTime"
+              />
+            </template>
+          </q-banner>
+        </div>
         <!-- Loading -->
         <div v-if="loading" class="text-center q-py-lg">
           <q-spinner size="40px" color="primary" />
@@ -14,89 +59,30 @@
 
         <!-- Objects List -->
         <div v-else-if="objects.length > 0" class="row q-gutter-md">
-          <div v-for="object in objects" :key="object.id" class="col-12 col-md-6 col-lg-4">
-            <q-card class="object-card" bordered>
-              <q-card-section>
-                <div class="row items-center q-mb-sm">
-                  <div class="col">
-                    <div class="text-h6 text-weight-bold">
-                      {{ object.name }}
-                    </div>
-                  </div>
-                  <div class="col-auto">
-                    <q-chip
-                      :color="getStatusColor(object.status)"
-                      text-color="white"
-                      :label="$t(`portal.statuses.${object.status}`)"
-                      dense
-                    />
-                  </div>
-                </div>
+          <!-- Real-time Cards for active objects -->
+          <div
+            v-for="objectData in objectsRealTimeData"
+            :key="objectData.objectId"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <ObjectRealTimeCard
+              :object-data="objectData"
+              :base-object-data="getBaseObjectData(objectData.objectId)"
+              @create-ticket="createTicketForObject"
+            />
+          </div>
 
-                <q-separator class="q-mb-md" />
-
-                <!-- Object Details -->
-                <q-list dense>
-                  <q-item>
-                    <q-item-section avatar>
-                      <q-icon name="fingerprint" color="grey-6" size="20px" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>Wialon ID</q-item-label>
-                      <q-item-label>{{ object.wialon_id }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-
-                  <q-item v-if="object.description">
-                    <q-item-section avatar>
-                      <q-icon name="description" color="grey-6" size="20px" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>{{ $t('common.description') }}</q-item-label>
-                      <q-item-label>{{ object.description }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-
-                  <!-- Tariff Info -->
-                  <q-item v-if="object.tariff_name">
-                    <q-item-section avatar>
-                      <q-icon name="attach_money" color="green-6" size="20px" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>{{ $t('portal.pages.objects.tariff') }}</q-item-label>
-                      <q-item-label>
-                        {{ object.tariff_name }}
-                        <span v-if="object.tariff_price" class="text-weight-bold text-green-8">
-                          ({{ formatPrice(object.tariff_price) }}
-                          {{ $t('portal.pages.objects.monthly') }})
-                        </span>
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-
-                  <q-item v-if="object.tariff_from">
-                    <q-item-section avatar>
-                      <q-icon name="event" color="grey-6" size="20px" />
-                    </q-item-section>
-                    <q-item-section>
-                      <q-item-label caption>{{ $t('common.from') }}</q-item-label>
-                      <q-item-label>{{ formatDate(object.tariff_from) }}</q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </q-card-section>
-
-              <!-- Actions -->
-              <q-card-actions align="right" class="q-pa-md">
-                <q-btn
-                  flat
-                  color="primary"
-                  icon="support_agent"
-                  :label="$t('tickets.createNew')"
-                  @click="createTicketForObject(object)"
-                />
-              </q-card-actions>
-            </q-card>
+          <!-- Basic cards for inactive objects (without real-time data) -->
+          <div
+            v-for="object in inactiveObjects"
+            :key="'inactive-' + object.id"
+            class="col-12 col-md-6 col-lg-4"
+          >
+            <ObjectRealTimeCard
+              :object-data="createEmptyRealTimeData(object)"
+              :base-object-data="object"
+              @create-ticket="createTicketForObjectBasic"
+            />
           </div>
         </div>
 
@@ -120,50 +106,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { PortalApi } from 'src/api/portal'
-import { date } from 'quasar'
+import ObjectRealTimeCard from 'src/components/portal/ObjectRealTimeCard.vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { t } = useI18n()
 
+// Reactive data
 const objects = ref([])
 const loading = ref(false)
 const error = ref(null)
+const objectsRealTimeData = ref([])
+const loadingRealTime = ref(false)
+const realTimeError = ref(null)
+const autoRefreshInterval = ref(null)
 
-const getStatusColor = (status) => {
-  const colors = {
-    active: 'green',
-    inactive: 'red',
-    suspended: 'orange',
-  }
-  return colors[status] || 'grey'
-}
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency: 'UAH',
-    minimumFractionDigits: 0,
-  }).format(price)
-}
-
-const formatDate = (dateString) => {
-  return date.formatDate(dateString, 'DD.MM.YYYY')
-}
-
-const createTicketForObject = (object) => {
-  // Navigate to ticket creation with pre-selected object
-  router.push({
-    name: 'portal-tickets',
-    query: {
-      action: 'create',
-      object_id: object.id,
-      object_name: object.name,
-    },
-  })
-}
-
+// Load basic objects data
 const loadObjects = async () => {
   try {
     loading.value = true
@@ -184,8 +145,131 @@ const loadObjects = async () => {
   }
 }
 
-onMounted(() => {
-  loadObjects()
+// Load real-time data for active objects
+const loadObjectsRealTimeData = async () => {
+  try {
+    loadingRealTime.value = true
+    realTimeError.value = null
+
+    const response = await PortalApi.getObjectsRealTimeData()
+
+    if (response.data.success) {
+      objectsRealTimeData.value = response.data.objectsData
+    } else {
+      realTimeError.value = response.data.message || 'Помилка завантаження real-time даних'
+    }
+  } catch (err) {
+    console.error('Error loading objects real-time data:', err)
+    realTimeError.value = err.response?.data?.message || 'Помилка завантаження real-time даних'
+  } finally {
+    loadingRealTime.value = false
+  }
+}
+
+// Auto-refresh management
+const startAutoRefresh = () => {
+  // Clear previous interval if exists
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+  }
+
+  // Start auto-refresh every minute
+  autoRefreshInterval.value = setInterval(() => {
+    const activeObjects = objects.value.filter((obj) => obj.status === 'active')
+    if (activeObjects.length > 0) {
+      loadObjectsRealTimeData()
+    }
+  }, 60000) // 60 seconds
+}
+
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval.value) {
+    clearInterval(autoRefreshInterval.value)
+    autoRefreshInterval.value = null
+  }
+}
+
+// Computed properties
+const inactiveObjects = computed(() => {
+  const realTimeObjectIds = objectsRealTimeData.value.map((rtd) => rtd.objectId)
+  return objects.value
+    .filter((obj) => obj.status !== 'active' || !realTimeObjectIds.includes(obj.id))
+    .filter((obj) => !realTimeObjectIds.includes(obj.id))
+})
+
+// Helper methods
+const getBaseObjectData = (objectId) => {
+  return objects.value.find((obj) => obj.id === objectId) || {}
+}
+
+const createEmptyRealTimeData = (object) => {
+  return {
+    objectId: object.id,
+    wialonId: object.wialon_id,
+    name: object.name,
+    error: 'inactive_object',
+    lastMessage: null,
+    isMoving: false,
+    speed: 0,
+    satellites: 0,
+    address: t('portal.pages.objects.inactiveObject'),
+    coordinates: { lat: 0, lon: 0 },
+    last30min: {
+      distance: 0,
+      satelliteChanges: 0,
+      messageCount: 0,
+      speedChart: [],
+      satelliteChart: [],
+    },
+  }
+}
+
+// Ticket creation methods
+const createTicketForObject = (objectData) => {
+  // Find corresponding base object
+  const baseObject = objects.value.find((obj) => obj.id === objectData.objectId)
+
+  if (baseObject) {
+    router.push({
+      name: 'portal-tickets',
+      query: {
+        action: 'create',
+        object_id: baseObject.id,
+        object_name: baseObject.name,
+      },
+    })
+  }
+}
+
+const createTicketForObjectBasic = (objectData) => {
+  const baseObject = objects.value.find((obj) => obj.id === objectData.objectId)
+
+  if (baseObject) {
+    router.push({
+      name: 'portal-tickets',
+      query: {
+        action: 'create',
+        object_id: baseObject.id,
+        object_name: baseObject.name,
+      },
+    })
+  }
+}
+
+// Lifecycle hooks
+onMounted(async () => {
+  await loadObjects()
+
+  // Load real-time data only for active objects
+  const activeObjects = objects.value.filter((obj) => obj.status === 'active')
+  if (activeObjects.length > 0) {
+    await loadObjectsRealTimeData()
+    startAutoRefresh()
+  }
+})
+
+onUnmounted(() => {
+  stopAutoRefresh()
 })
 </script>
 

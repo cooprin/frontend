@@ -8,7 +8,7 @@
           {{ $t('portal.title') }}
         </q-toolbar-title>
 
-        <q-btn flat>
+        <q-btn flat dense>
           <q-icon name="language" />
           <q-menu>
             <q-list style="min-width: 100px">
@@ -22,12 +22,12 @@
           </q-menu>
         </q-btn>
 
-        <q-btn flat @click="toggleDarkMode">
+        <q-btn flat dense @click="toggleDarkMode">
           <q-icon :name="$q.dark.isActive ? 'dark_mode' : 'light_mode'" />
         </q-btn>
         <NotificationBell />
 
-        <q-btn flat round dense icon="account_circle">
+        <q-btn flat dense icon="account_circle">
           <q-menu>
             <q-list style="min-width: 200px">
               <q-item>

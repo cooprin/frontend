@@ -35,6 +35,7 @@ export default {
   deleteSuccess: 'Object deleted successfully',
   deleteConfirmation: 'Are you sure you want to delete this object?',
   cannotDelete: 'Cannot delete object with installed products',
+  statusWarning: 'Note: Objects with non-active status will not have tariff assignments',
 
   // Фільтри
   filters: {
