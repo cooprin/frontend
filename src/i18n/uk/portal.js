@@ -43,7 +43,7 @@ export default {
       gpsChanges: 'зміни GPS',
       messages: 'повідомлень',
       speed: 'Швидкість',
-      autoRefresh: 'Автооновлення увімкнено',
+      liveConnection: "Онлайн з'єднання",
       refreshData: 'Оновити дані',
       realTimeError: 'Помилка real-time даних',
       systemInfo: 'Системна інформація',

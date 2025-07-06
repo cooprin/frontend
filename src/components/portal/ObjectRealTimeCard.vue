@@ -54,13 +54,16 @@
         </div>
 
         <!-- Location -->
-        <q-item dense class="q-pa-none q-mb-sm">
+        <q-item dense class="q-pa-none q-mb-sm cursor-pointer" clickable @click="openLocationOnMap">
           <q-item-section avatar>
             <q-icon name="location_on" color="red" size="20px" />
           </q-item-section>
           <q-item-section>
             <q-item-label caption>{{ $t('portal.pages.objects.currentLocation') }}</q-item-label>
             <q-item-label class="text-caption">{{ objectData.address }}</q-item-label>
+          </q-item-section>
+          <q-item-section side>
+            <q-icon name="open_in_new" color="primary" size="16px" />
           </q-item-section>
         </q-item>
 
@@ -285,6 +288,21 @@ const formatChartTime = (timestamp) => {
     ':' +
     date.getMinutes().toString().padStart(2, '0')
   )
+}
+
+const openLocationOnMap = () => {
+  const { lat, lon } = props.objectData.coordinates
+
+  if (lat && lon && lat !== 0 && lon !== 0) {
+    // Google Maps URL
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}&z=15`
+
+    // Відкриваємо в новій вкладці
+    window.open(googleMapsUrl, '_blank')
+  } else {
+    // Якщо координати недоступні
+    console.warn('Coordinates not available for this object')
+  }
 }
 
 // System status from base object data

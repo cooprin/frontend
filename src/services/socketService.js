@@ -59,11 +59,13 @@ class SocketService {
       this.connected = true
       this.reconnectAttempts = 0
       this.socket.emit('get_unread_notifications')
+      this.emitToListeners('connection:status_changed', { connected: true })
     })
 
     this.socket.on('disconnect', (reason) => {
       console.log('❌ Socket.io disconnected:', reason)
       this.connected = false
+      this.emitToListeners('connection:status_changed', { connected: false })
     })
 
     this.socket.on('connect_error', (error) => {
@@ -87,6 +89,7 @@ class SocketService {
     this.setupNotificationHandlers()
     this.setupChatHandlers()
     this.setupTicketHandlers()
+    this.setupObjectHandlers()
   }
 
   setupNotificationHandlers() {
@@ -153,6 +156,20 @@ class SocketService {
 
     this.socket.on('ticket_assigned', (data) => {
       this.emitToListeners('ticket:assigned', data)
+    })
+  }
+
+  setupObjectHandlers() {
+    // Обробник для real-time оновлень об'єктів
+    this.socket.on('objects_realtime_updated', (data) => {
+      console.log('🚗 Objects real-time data updated:', data)
+      this.emitToListeners('objects:realtime_updated', data) //
+    })
+
+    // Обробник для зміни статусу об'єкта
+    this.socket.on('object_status_changed', (data) => {
+      console.log('🔄 Object status changed:', data)
+      this.emitToListeners('objects:status_changed', data)
     })
   }
 
@@ -258,6 +275,12 @@ class SocketService {
       this.socket = null
       this.connected = false
       this.eventListeners.clear()
+    }
+  }
+
+  requestObjectsUpdate() {
+    if (this.socket && this.connected) {
+      this.socket.emit('request_objects_update')
     }
   }
 }

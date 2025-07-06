@@ -43,7 +43,7 @@ export default {
       gpsChanges: 'GPS changes',
       messages: 'messages',
       speed: 'Speed',
-      autoRefresh: 'Auto-refresh enabled',
+      liveConnection: 'Live connection',
       refreshData: 'Refresh data',
       realTimeError: 'Real-time data error',
       systemInfo: 'System Information',
