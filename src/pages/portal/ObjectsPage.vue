@@ -33,7 +33,24 @@
             </q-btn>
           </div>
         </div>
-
+        <!-- Real-time Error State -->
+        <div v-if="realTimeError && objects.length > 0" class="q-mt-md">
+          <q-banner class="bg-warning text-dark" rounded>
+            <template v-slot:avatar>
+              <q-icon name="warning" />
+            </template>
+            {{ $t('portal.pages.objects.realTimeError') }}: {{ realTimeError }}
+            <template v-slot:action>
+              <q-btn
+                flat
+                color="dark"
+                :label="$t('common.retry')"
+                @click="loadObjectsRealTimeData"
+                :loading="loadingRealTime"
+              />
+            </template>
+          </q-banner>
+        </div>
         <!-- Loading -->
         <div v-if="loading" class="text-center q-py-lg">
           <q-spinner size="40px" color="primary" />
@@ -75,25 +92,6 @@
           <div class="text-h6 text-grey-6 q-mt-md">
             {{ $t('portal.pages.objects.noObjects') }}
           </div>
-        </div>
-
-        <!-- Real-time Error State -->
-        <div v-if="realTimeError && objects.length > 0" class="q-mt-md">
-          <q-banner class="bg-warning text-dark" rounded>
-            <template v-slot:avatar>
-              <q-icon name="warning" />
-            </template>
-            {{ $t('portal.pages.objects.realTimeError') }}: {{ realTimeError }}
-            <template v-slot:action>
-              <q-btn
-                flat
-                color="dark"
-                :label="$t('common.retry')"
-                @click="loadObjectsRealTimeData"
-                :loading="loadingRealTime"
-              />
-            </template>
-          </q-banner>
         </div>
 
         <!-- Error State -->
