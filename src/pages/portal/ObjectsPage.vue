@@ -13,37 +13,7 @@
               {{ $t('portal.pages.objects.liveConnection') }}
             </q-chip>
           </div>
-          <div class="col-auto">
-            <q-btn
-              flat
-              round
-              color="primary"
-              icon="refresh"
-              :loading="loadingRealTime"
-              @click="loadObjectsRealTimeData"
-              size="sm"
-            >
-              <q-tooltip>{{ $t('portal.pages.objects.refreshData') }}</q-tooltip>
-            </q-btn>
-          </div>
-        </div>
-        <!-- Real-time Error State -->
-        <div v-if="realTimeError && objects.length > 0" class="q-mt-md">
-          <q-banner class="bg-warning text-dark" rounded>
-            <template v-slot:avatar>
-              <q-icon name="warning" />
-            </template>
-            {{ $t('portal.pages.objects.realTimeError') }}: {{ realTimeError }}
-            <template v-slot:action>
-              <q-btn
-                flat
-                color="dark"
-                :label="$t('common.retry')"
-                @click="loadObjectsRealTimeData"
-                :loading="loadingRealTime"
-              />
-            </template>
-          </q-banner>
+          <div class="col-auto"></div>
         </div>
         <!-- Loading -->
         <div v-if="loading" class="text-center q-py-lg">
@@ -75,7 +45,7 @@
             <ObjectRealTimeCard
               :object-data="createEmptyRealTimeData(object)"
               :base-object-data="object"
-              @create-ticket="createTicketForObjectBasic"
+              @create-ticket="createTicketForObject"
             />
           </div>
         </div>
@@ -115,9 +85,6 @@ const objects = ref([])
 const loading = ref(false)
 const error = ref(null)
 const objectsRealTimeData = ref([])
-const loadingRealTime = ref(false)
-const realTimeError = ref(null)
-
 const isSocketConnected = ref(false)
 const componentId = 'objects-page-' + Date.now()
 
@@ -158,35 +125,11 @@ const loadObjects = async () => {
   }
 }
 
-// Load real-time data for active objects
-const loadObjectsRealTimeData = async () => {
-  try {
-    loadingRealTime.value = true
-    realTimeError.value = null
-
-    const response = await PortalApi.getObjectsRealTimeData()
-
-    if (response.data.success) {
-      objectsRealTimeData.value = response.data.objectsData
-    } else {
-      realTimeError.value = response.data.message || 'Помилка завантаження real-time даних'
-    }
-  } catch (err) {
-    console.error('Error loading objects real-time data:', err)
-    realTimeError.value = err.response?.data?.message || 'Помилка завантаження real-time даних'
-  } finally {
-    loadingRealTime.value = false
-  }
-}
-
 // Computed properties
 const inactiveObjects = computed(() => {
   const realTimeObjectIds = objectsRealTimeData.value.map((rtd) => rtd.objectId)
-  return objects.value
-    .filter((obj) => obj.status !== 'active' || !realTimeObjectIds.includes(obj.id))
-    .filter((obj) => !realTimeObjectIds.includes(obj.id))
+  return objects.value.filter((obj) => !realTimeObjectIds.includes(obj.id))
 })
-
 // Helper methods
 const getBaseObjectData = (objectId) => {
   return objects.value.find((obj) => obj.id === objectId) || {}
@@ -231,21 +174,6 @@ const createTicketForObject = (objectData) => {
   }
 }
 
-const createTicketForObjectBasic = (objectData) => {
-  const baseObject = objects.value.find((obj) => obj.id === objectData.objectId)
-
-  if (baseObject) {
-    router.push({
-      name: 'portal-tickets',
-      query: {
-        action: 'create',
-        object_id: baseObject.id,
-        object_name: baseObject.name,
-      },
-    })
-  }
-}
-
 // Lifecycle hooks
 onMounted(async () => {
   await loadObjects()
@@ -253,13 +181,13 @@ onMounted(async () => {
   // Load real-time data only for active objects
   const activeObjects = objects.value.filter((obj) => obj.status === 'active')
   if (activeObjects.length > 0) {
-    await loadObjectsRealTimeData()
     connectToSocket()
   }
 })
 
-onUnmounted(() => {})
-disconnectFromSocket()
+onUnmounted(() => {
+  disconnectFromSocket()
+})
 </script>
 
 <style scoped>

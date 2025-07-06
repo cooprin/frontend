@@ -161,7 +161,7 @@ class SocketService {
     // Обробник для real-time оновлень об'єктів
     this.socket.on('objects_realtime_updated', (data) => {
       console.log('🚗 Objects real-time data updated:', data)
-      this.emitToListeners('objects:realtime_updated', data)
+      this.emitToListeners('objects:realtime_updated', data) //
     })
 
     // Обробник для зміни статусу об'єкта
