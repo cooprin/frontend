@@ -9,14 +9,8 @@
         <!-- Auto-refresh indicator -->
         <div class="row items-center q-mb-md">
           <div class="col">
-            <q-chip
-              v-if="autoRefreshInterval"
-              color="positive"
-              text-color="white"
-              icon="autorenew"
-              dense
-            >
-              {{ $t('portal.pages.objects.autoRefresh') }}
+            <q-chip v-if="isSocketConnected" color="positive" text-color="white" icon="wifi" dense>
+              {{ $t('portal.pages.objects.liveConnection') }}
             </q-chip>
           </div>
           <div class="col-auto">
@@ -111,6 +105,7 @@ import { useRouter } from 'vue-router'
 import { PortalApi } from 'src/api/portal'
 import ObjectRealTimeCard from 'src/components/portal/ObjectRealTimeCard.vue'
 import { useI18n } from 'vue-i18n'
+import SocketService from 'src/services/socketService'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -122,7 +117,25 @@ const error = ref(null)
 const objectsRealTimeData = ref([])
 const loadingRealTime = ref(false)
 const realTimeError = ref(null)
-const autoRefreshInterval = ref(null)
+
+const isSocketConnected = ref(false)
+const componentId = 'objects-page-' + Date.now()
+
+const handleObjectsRealTimeUpdate = (data) => {
+  if (data && data.objectsData) {
+    objectsRealTimeData.value = data.objectsData
+  }
+}
+
+const connectToSocket = () => {
+  isSocketConnected.value = SocketService.isConnected()
+  SocketService.subscribe('objects:realtime_updated', handleObjectsRealTimeUpdate, componentId)
+}
+
+const disconnectFromSocket = () => {
+  SocketService.unsubscribeAll(componentId)
+  isSocketConnected.value = false
+}
 
 // Load basic objects data
 const loadObjects = async () => {
@@ -163,29 +176,6 @@ const loadObjectsRealTimeData = async () => {
     realTimeError.value = err.response?.data?.message || 'Помилка завантаження real-time даних'
   } finally {
     loadingRealTime.value = false
-  }
-}
-
-// Auto-refresh management
-const startAutoRefresh = () => {
-  // Clear previous interval if exists
-  if (autoRefreshInterval.value) {
-    clearInterval(autoRefreshInterval.value)
-  }
-
-  // Start auto-refresh every minute
-  autoRefreshInterval.value = setInterval(() => {
-    const activeObjects = objects.value.filter((obj) => obj.status === 'active')
-    if (activeObjects.length > 0) {
-      loadObjectsRealTimeData()
-    }
-  }, 60000) // 60 seconds
-}
-
-const stopAutoRefresh = () => {
-  if (autoRefreshInterval.value) {
-    clearInterval(autoRefreshInterval.value)
-    autoRefreshInterval.value = null
   }
 }
 
@@ -264,13 +254,12 @@ onMounted(async () => {
   const activeObjects = objects.value.filter((obj) => obj.status === 'active')
   if (activeObjects.length > 0) {
     await loadObjectsRealTimeData()
-    startAutoRefresh()
+    connectToSocket()
   }
 })
 
-onUnmounted(() => {
-  stopAutoRefresh()
-})
+onUnmounted(() => {})
+disconnectFromSocket()
 </script>
 
 <style scoped>

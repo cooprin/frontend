@@ -87,6 +87,7 @@ class SocketService {
     this.setupNotificationHandlers()
     this.setupChatHandlers()
     this.setupTicketHandlers()
+    this.setupObjectHandlers()
   }
 
   setupNotificationHandlers() {
@@ -153,6 +154,20 @@ class SocketService {
 
     this.socket.on('ticket_assigned', (data) => {
       this.emitToListeners('ticket:assigned', data)
+    })
+  }
+
+  setupObjectHandlers() {
+    // Обробник для real-time оновлень об'єктів
+    this.socket.on('objects_realtime_updated', (data) => {
+      console.log('🚗 Objects real-time data updated:', data)
+      this.emitToListeners('objects:realtime_updated', data)
+    })
+
+    // Обробник для зміни статусу об'єкта
+    this.socket.on('object_status_changed', (data) => {
+      console.log('🔄 Object status changed:', data)
+      this.emitToListeners('objects:status_changed', data)
     })
   }
 
@@ -258,6 +273,12 @@ class SocketService {
       this.socket = null
       this.connected = false
       this.eventListeners.clear()
+    }
+  }
+
+  requestObjectsUpdate() {
+    if (this.socket && this.connected) {
+      this.socket.emit('request_objects_update')
     }
   }
 }
