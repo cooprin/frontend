@@ -97,6 +97,13 @@ const handleObjectsRealTimeUpdate = (data) => {
 const connectToSocket = () => {
   isSocketConnected.value = SocketService.isConnected()
   SocketService.subscribe('objects:realtime_updated', handleObjectsRealTimeUpdate, componentId)
+  SocketService.subscribe(
+    'connection:status_changed',
+    (data) => {
+      isSocketConnected.value = data.connected
+    },
+    componentId,
+  )
 }
 
 const disconnectFromSocket = () => {

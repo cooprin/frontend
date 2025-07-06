@@ -59,11 +59,13 @@ class SocketService {
       this.connected = true
       this.reconnectAttempts = 0
       this.socket.emit('get_unread_notifications')
+      this.emitToListeners('connection:status_changed', { connected: true })
     })
 
     this.socket.on('disconnect', (reason) => {
       console.log('❌ Socket.io disconnected:', reason)
       this.connected = false
+      this.emitToListeners('connection:status_changed', { connected: false })
     })
 
     this.socket.on('connect_error', (error) => {
