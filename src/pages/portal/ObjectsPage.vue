@@ -15,7 +15,7 @@
           </div>
           <div class="col-auto">
             <!-- Filter buttons group -->
-            <q-btn-group>
+            <q-btn-group class="filter-buttons">
               <q-btn
                 :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
                 :flat="showOnlyProblematic"
@@ -23,6 +23,7 @@
                 :label="$t('portal.pages.objects.filterAll')"
                 @click="showOnlyProblematic = false"
                 dense
+                class="filter-btn"
               />
               <q-btn
                 :color="showOnlyProblematic ? 'negative' : 'grey-6'"
@@ -31,6 +32,7 @@
                 :label="$t('portal.pages.objects.filterProblematic')"
                 @click="showOnlyProblematic = true"
                 dense
+                class="filter-btn"
               />
             </q-btn-group>
           </div>
@@ -97,11 +99,20 @@
           </div>
         </div>
 
-        <!-- Error State -->
-        <div v-if="error" class="text-center q-py-md">
-          <q-icon name="error" size="48px" color="negative" />
-          <div class="q-mt-sm text-negative">{{ error }}</div>
-          <q-btn color="primary" :label="$t('common.retry')" @click="loadObjects" class="q-mt-md" />
+        <!-- Loading State (for objects with loading flag) -->
+        <div v-if="systemStatus === 'active' && objectData.loading" class="text-center q-py-md">
+          <q-spinner color="primary" size="32px" />
+          <div class="text-caption text-primary q-mt-xs">
+            {{ $t('portal.messages.loading') }}
+          </div>
+        </div>
+
+        <!-- Error State (for active objects with errors) -->
+        <div v-else-if="systemStatus === 'active' && objectData.error" class="text-center q-py-md">
+          <q-icon name="error" color="negative" size="32px" />
+          <div class="text-caption text-negative q-mt-xs">
+            {{ $t('portal.pages.objects.dataUnavailable') }}
+          </div>
         </div>
       </div>
     </div>
@@ -335,5 +346,17 @@ onUnmounted(() => {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Filter buttons styling */
+.filter-buttons .filter-btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-right: 1px;
+}
+
+.filter-buttons .filter-btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 </style>

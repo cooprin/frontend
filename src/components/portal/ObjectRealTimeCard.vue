@@ -310,7 +310,8 @@ const systemStatus = computed(() => props.baseObjectData.status || 'inactive')
 
 // Alert conditions
 const hasAlert = computed(() => {
-  if (systemStatus.value !== 'active' || props.objectData.error) return false
+  if (systemStatus.value !== 'active' || props.objectData.error || props.objectData.loading)
+    return false
 
   const lowSatellites = props.objectData.satellites < 5
   const oldMessage = getLastMessageMinutes() > 15

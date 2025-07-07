@@ -15,67 +15,79 @@
         </q-card>
       </div>
 
-      <!-- Statistics Cards -->
-      <div class="col-12 col-md-3">
-        <q-card class="stat-card" :class="{ 'problematic-card': hasProblematicObjects }">
-          <q-card-section class="text-center">
-            <q-icon name="directions_car" size="48px" color="primary" />
-            <div class="text-h4 text-weight-bold q-mt-sm">
-              {{ statistics.objectsCount || 0 }}
-            </div>
-            <div class="text-subtitle2 text-grey-7">
-              {{ $t('portal.pages.dashboard.objectsCount') }}
-            </div>
-            <!-- Problematic objects indicator -->
-            <div v-if="problematicObjectsCount > 0" class="q-mt-xs">
-              <q-chip color="negative" text-color="white" icon="warning" size="sm" dense>
-                {{ problematicObjectsCount }} {{ $t('portal.pages.dashboard.problematicObjects') }}
-              </q-chip>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+      <!-- Statistics Cards Row -->
+      <div class="col-12">
+        <div class="row q-gutter-md">
+          <!-- Objects Card -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-card
+              class="stat-card stat-card-size"
+              :class="{ 'problematic-card': hasProblematicObjects }"
+            >
+              <q-card-section class="stat-card-content">
+                <q-icon name="directions_car" size="48px" color="primary" />
+                <div class="text-h4 text-weight-bold q-mt-sm">
+                  {{ statistics.objectsCount || 0 }}
+                </div>
+                <div class="text-subtitle2 text-grey-7">
+                  {{ $t('portal.pages.dashboard.objectsCount') }}
+                </div>
+                <!-- Problematic objects indicator -->
+                <div v-if="problematicObjectsCount > 0" class="q-mt-xs">
+                  <q-chip color="negative" text-color="white" icon="warning" size="sm" dense>
+                    {{ problematicObjectsCount }}
+                    {{ $t('portal.pages.dashboard.problematicObjects') }}
+                  </q-chip>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="stat-card">
-          <q-card-section class="text-center">
-            <q-icon name="receipt" size="48px" color="orange" />
-            <div class="text-h4 text-weight-bold q-mt-sm">
-              {{ statistics.unpaidInvoices || 0 }}
-            </div>
-            <div class="text-subtitle2 text-grey-7">
-              {{ $t('portal.pages.dashboard.unpaidInvoices') }}
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+          <!-- Unpaid Invoices Card -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-card class="stat-card stat-card-size">
+              <q-card-section class="stat-card-content">
+                <q-icon name="receipt" size="48px" color="orange" />
+                <div class="text-h4 text-weight-bold q-mt-sm">
+                  {{ statistics.unpaidInvoices || 0 }}
+                </div>
+                <div class="text-subtitle2 text-grey-7">
+                  {{ $t('portal.pages.dashboard.unpaidInvoices') }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="stat-card">
-          <q-card-section class="text-center">
-            <q-icon name="support_agent" size="48px" color="green" />
-            <div class="text-h4 text-weight-bold q-mt-sm">
-              {{ statistics.openTickets || 0 }}
-            </div>
-            <div class="text-subtitle2 text-grey-7">
-              {{ $t('portal.pages.dashboard.openTickets') }}
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+          <!-- Open Tickets Card -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-card class="stat-card stat-card-size">
+              <q-card-section class="stat-card-content">
+                <q-icon name="support_agent" size="48px" color="green" />
+                <div class="text-h4 text-weight-bold q-mt-sm">
+                  {{ statistics.openTickets || 0 }}
+                </div>
+                <div class="text-subtitle2 text-grey-7">
+                  {{ $t('portal.pages.dashboard.openTickets') }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
 
-      <div class="col-12 col-md-3">
-        <q-card class="stat-card">
-          <q-card-section class="text-center">
-            <q-icon name="schedule" size="48px" color="purple" />
-            <div class="text-h4 text-weight-bold q-mt-sm">
-              {{ lastActivity }}
-            </div>
-            <div class="text-subtitle2 text-grey-7">
-              {{ $t('portal.pages.dashboard.lastActivity') }}
-            </div>
-          </q-card-section>
-        </q-card>
+          <!-- Last Activity Card -->
+          <div class="col-12 col-sm-6 col-md-3">
+            <q-card class="stat-card stat-card-size">
+              <q-card-section class="stat-card-content">
+                <q-icon name="schedule" size="48px" color="purple" />
+                <div class="text-h4 text-weight-bold q-mt-sm">
+                  {{ lastActivity }}
+                </div>
+                <div class="text-subtitle2 text-grey-7">
+                  {{ $t('portal.pages.dashboard.lastActivity') }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
       </div>
 
       <!-- Quick Actions -->
@@ -154,6 +166,7 @@ const loading = ref(false)
 const objectsRealTimeData = ref([])
 const objects = ref([])
 const componentId = 'dashboard-page-' + Date.now()
+const realTimeDataLoaded = ref(false)
 
 // Helper function to check if object is problematic
 const isObjectProblematic = (objectData, baseObjectData) => {
@@ -221,7 +234,7 @@ const problematicObjectsCount = computed(() => {
 
 // Computed property to check if objects card should blink
 const hasProblematicObjects = computed(() => {
-  return !loading.value && problematicObjectsCount.value > 0
+  return realTimeDataLoaded.value && problematicObjectsCount.value > 0
 })
 
 const handleObjectsRealTimeUpdate = (data) => {
@@ -247,6 +260,8 @@ const loadRealTimeData = async () => {
     }
   } catch (err) {
     console.error('Error loading real-time data:', err)
+  } finally {
+    realTimeDataLoaded.value = true
   }
 }
 
@@ -333,6 +348,7 @@ onUnmounted(() => {
   disconnectFromSocket()
 })
 </script>
+
 <style scoped>
 .welcome-card {
   background: linear-gradient(135deg, var(--q-primary) 0%, var(--q-secondary) 100%);
@@ -345,6 +361,21 @@ onUnmounted(() => {
 
 .stat-card:hover {
   transform: translateY(-4px);
+}
+
+/* Фіксовані розміри для всіх статистичних карток */
+.stat-card-size {
+  width: 100%;
+  height: 200px;
+}
+
+.stat-card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .problematic-card {
@@ -361,6 +392,19 @@ onUnmounted(() => {
   }
   100% {
     box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 599px) {
+  .stat-card-size {
+    height: 160px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .stat-card-size {
+    height: 180px;
   }
 }
 </style>
