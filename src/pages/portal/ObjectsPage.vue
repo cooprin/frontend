@@ -9,32 +9,42 @@
         <!-- Controls row -->
         <div class="row items-center q-mb-md">
           <div class="col">
-            <q-chip v-if="isSocketConnected" color="positive" text-color="white" icon="wifi" dense>
-              {{ $t('portal.pages.objects.liveConnection') }}
-            </q-chip>
+            <div class="controls-container">
+              <q-chip
+                v-if="isSocketConnected"
+                color="positive"
+                text-color="white"
+                icon="wifi"
+                dense
+              >
+                {{ $t('portal.pages.objects.liveConnection') }}
+              </q-chip>
+
+              <!-- Filter buttons group - перенесено під статус -->
+              <div v-if="isSocketConnected" class="filter-buttons-wrapper q-mt-sm">
+                <q-btn
+                  :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
+                  :flat="showOnlyProblematic"
+                  icon="view_list"
+                  :label="$t('portal.pages.objects.filterAll')"
+                  @click="showOnlyProblematic = false"
+                  dense
+                  class="filter-btn-left"
+                />
+                <q-btn
+                  :color="showOnlyProblematic ? 'negative' : 'grey-6'"
+                  :flat="!showOnlyProblematic"
+                  icon="warning"
+                  :label="$t('portal.pages.objects.filterProblematic')"
+                  @click="showOnlyProblematic = true"
+                  dense
+                  class="filter-btn-right"
+                />
+              </div>
+            </div>
           </div>
           <div class="col-auto">
-            <!-- Filter buttons group -->
-            <div class="filter-buttons-wrapper">
-              <q-btn
-                :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
-                :flat="showOnlyProblematic"
-                icon="view_list"
-                :label="$t('portal.pages.objects.filterAll')"
-                @click="showOnlyProblematic = false"
-                dense
-                class="filter-btn-left"
-              />
-              <q-btn
-                :color="showOnlyProblematic ? 'negative' : 'grey-6'"
-                :flat="!showOnlyProblematic"
-                icon="warning"
-                :label="$t('portal.pages.objects.filterProblematic')"
-                @click="showOnlyProblematic = true"
-                dense
-                class="filter-btn-right"
-              />
-            </div>
+            <!-- Можна додати інші контроли сюди якщо потрібно -->
           </div>
         </div>
 
@@ -343,6 +353,13 @@ onUnmounted(() => {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Controls container */
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 /* Filter buttons styling - ВИПРАВЛЕНО */
