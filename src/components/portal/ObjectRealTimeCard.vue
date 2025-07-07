@@ -301,12 +301,20 @@ const props = defineProps({
 const emit = defineEmits(['create-ticket'])
 
 const formatChartTime = (timestamp) => {
-  const date = new Date(timestamp)
-  return (
-    date.getHours().toString().padStart(2, '0') +
-    ':' +
-    date.getMinutes().toString().padStart(2, '0')
-  )
+  const messageTime = new Date(timestamp)
+  const now = new Date()
+  const diffMinutes = Math.floor((now - messageTime) / (1000 * 60))
+
+  // Показуємо "скільки хвилин тому"
+  if (diffMinutes < 1) {
+    return 'зараз'
+  } else if (diffMinutes < 60) {
+    return `-${diffMinutes}хв`
+  } else {
+    const hours = Math.floor(diffMinutes / 60)
+    const minutes = diffMinutes % 60
+    return `-${hours}г${minutes}хв`
+  }
 }
 
 const openLocationOnMap = () => {
