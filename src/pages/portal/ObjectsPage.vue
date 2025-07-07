@@ -15,7 +15,7 @@
           </div>
           <div class="col-auto">
             <!-- Filter buttons group -->
-            <q-btn-group class="filter-buttons">
+            <div class="filter-buttons-wrapper">
               <q-btn
                 :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
                 :flat="showOnlyProblematic"
@@ -23,7 +23,7 @@
                 :label="$t('portal.pages.objects.filterAll')"
                 @click="showOnlyProblematic = false"
                 dense
-                class="filter-btn"
+                class="filter-btn-left"
               />
               <q-btn
                 :color="showOnlyProblematic ? 'negative' : 'grey-6'"
@@ -32,9 +32,9 @@
                 :label="$t('portal.pages.objects.filterProblematic')"
                 @click="showOnlyProblematic = true"
                 dense
-                class="filter-btn"
+                class="filter-btn-right"
               />
-            </q-btn-group>
+            </div>
           </div>
         </div>
 
@@ -349,14 +349,24 @@ onUnmounted(() => {
 }
 
 /* Filter buttons styling */
-.filter-buttons .filter-btn:first-child {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+.filter-buttons-wrapper {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.filter-btn-left {
+  border-radius: 4px 0 0 4px !important;
   margin-right: 1px;
 }
 
-.filter-buttons .filter-btn:last-child {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+.filter-btn-right {
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.filter-btn-left:not(.q-btn--flat),
+.filter-btn-right:not(.q-btn--flat) {
+  box-shadow: none;
 }
 </style>

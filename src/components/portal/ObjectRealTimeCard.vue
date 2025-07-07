@@ -17,7 +17,7 @@
           />
           <!-- Movement Status (only for active objects with real-time data) -->
           <q-chip
-            v-if="!objectData.error"
+            v-if="!objectData.error && !objectData.loading"
             :color="objectData.isMoving ? 'green' : 'grey'"
             text-color="white"
             :icon="objectData.isMoving ? 'directions_car' : 'stop'"
@@ -31,167 +31,186 @@
         </div>
       </div>
 
-      <!-- Real-time Data (only for active objects without errors) -->
-      <div v-if="systemStatus === 'active' && !objectData.error">
-        <!-- Current Status - side by side -->
-        <div class="row q-gutter-sm q-mb-md">
-          <div class="col">
-            <q-card flat class="stat-card speed-card text-center q-pa-sm">
-              <div class="text-h5 text-weight-bold">{{ objectData.speed }}</div>
-              <div class="text-caption">{{ $t('portal.pages.objects.kmh') }}</div>
-            </q-card>
-          </div>
-          <div class="col">
-            <q-card
-              flat
-              class="stat-card text-center q-pa-sm"
-              :class="`satellite-${getSatelliteColor()}`"
-            >
-              <div class="text-h5 text-weight-bold">{{ objectData.satellites }}</div>
-              <div class="text-caption">{{ $t('portal.pages.objects.satellites') }}</div>
-            </q-card>
+      <!-- Real-time Data section -->
+      <div v-if="systemStatus === 'active'">
+        <!-- Loading State -->
+        <div v-if="objectData.loading" class="text-center q-py-md">
+          <q-spinner color="primary" size="32px" />
+          <div class="text-caption text-primary q-mt-xs">
+            {{ $t('portal.messages.loading') }}
           </div>
         </div>
 
-        <!-- Location -->
-        <q-item dense class="q-pa-none q-mb-sm cursor-pointer" clickable @click="openLocationOnMap">
-          <q-item-section avatar>
-            <q-icon name="location_on" color="red" size="20px" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label caption>{{ $t('portal.pages.objects.currentLocation') }}</q-item-label>
-            <q-item-label class="text-caption">{{ objectData.address }}</q-item-label>
-          </q-item-section>
-          <q-item-section side>
-            <q-icon name="open_in_new" color="primary" size="16px" />
-          </q-item-section>
-        </q-item>
-
-        <!-- Last Message -->
-        <q-item dense class="q-pa-none q-mb-md">
-          <q-item-section avatar>
-            <q-icon name="schedule" :color="getLastMessageColor()" size="20px" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label caption>{{ $t('portal.pages.objects.lastMessage') }}</q-item-label>
-            <q-item-label class="text-caption" :class="`text-${getLastMessageColor()}`">
-              {{
-                objectData.lastMessage
-                  ? formatDateTime(objectData.lastMessage)
-                  : $t('portal.pages.objects.noData')
-              }}
-              <span v-if="objectData.lastMessage" class="text-weight-bold">
-                ({{ getLastMessageAgo() }})
-              </span>
-            </q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <!-- 30 Minutes Stats -->
-        <q-separator class="q-mb-md" />
-        <div class="text-subtitle2 q-mb-sm">{{ $t('portal.pages.objects.stats30min') }}:</div>
-
-        <div class="row q-gutter-xs q-mb-md">
-          <div class="col">
-            <q-card flat class="stats-mini-card distance-card text-center q-pa-xs">
-              <div class="text-weight-bold stats-value">{{ objectData.last30min.distance }}</div>
-              <div class="text-caption stats-label">{{ $t('portal.pages.objects.km') }}</div>
-            </q-card>
-          </div>
-          <div class="col">
-            <q-card flat class="stats-mini-card changes-card text-center q-pa-xs">
-              <div class="text-weight-bold stats-value">
-                {{ objectData.last30min.satelliteChanges }}
-              </div>
-              <div class="text-caption stats-label">
-                {{ $t('portal.pages.objects.gpsChanges') }}
-              </div>
-            </q-card>
-          </div>
-          <div class="col">
-            <q-card flat class="stats-mini-card messages-card text-center q-pa-xs">
-              <div class="text-weight-bold stats-value">
-                {{ objectData.last30min.messageCount }}
-              </div>
-              <div class="text-caption stats-label">{{ $t('portal.pages.objects.messages') }}</div>
-            </q-card>
+        <!-- Error State -->
+        <div v-else-if="objectData.error" class="text-center q-py-md">
+          <q-icon name="error" color="negative" size="32px" />
+          <div class="text-caption text-negative q-mt-xs">
+            {{ $t('portal.pages.objects.dataUnavailable') }}
           </div>
         </div>
-        <!-- Mini Charts with labels -->
-        <div v-if="objectData.last30min.speedChart.length > 0" class="q-mb-sm">
-          <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.speed') }}:</div>
-          <div class="chart-container">
-            <div class="chart-header">
-              <span class="chart-label-left">0</span>
-              <span class="chart-title">{{ $t('portal.pages.objects.chartSpeed') }}</span>
-              <span class="chart-label-right">{{ getMaxSpeed() }}</span>
+
+        <!-- Normal Real-time Data -->
+        <div v-else>
+          <!-- Current Status - side by side -->
+          <div class="row q-gutter-sm q-mb-md">
+            <div class="col">
+              <q-card flat class="stat-card speed-card text-center q-pa-sm">
+                <div class="text-h5 text-weight-bold">{{ objectData.speed }}</div>
+                <div class="text-caption">{{ $t('portal.pages.objects.kmh') }}</div>
+              </q-card>
             </div>
-            <div class="mini-chart-horizontal">
-              <div class="chart-times">
-                <div
-                  v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
-                  :key="index"
-                  class="time-label"
-                >
-                  {{ formatChartTime(point.timestamp) }}
+            <div class="col">
+              <q-card
+                flat
+                class="stat-card text-center q-pa-sm"
+                :class="`satellite-${getSatelliteColor()}`"
+              >
+                <div class="text-h5 text-weight-bold">{{ objectData.satellites }}</div>
+                <div class="text-caption">{{ $t('portal.pages.objects.satellites') }}</div>
+              </q-card>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <q-item
+            dense
+            class="q-pa-none q-mb-sm cursor-pointer"
+            clickable
+            @click="openLocationOnMap"
+          >
+            <q-item-section avatar>
+              <q-icon name="location_on" color="red" size="20px" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label caption>{{ $t('portal.pages.objects.currentLocation') }}</q-item-label>
+              <q-item-label class="text-caption">{{ objectData.address }}</q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-icon name="open_in_new" color="primary" size="16px" />
+            </q-item-section>
+          </q-item>
+
+          <!-- Last Message -->
+          <q-item dense class="q-pa-none q-mb-md">
+            <q-item-section avatar>
+              <q-icon name="schedule" :color="getLastMessageColor()" size="20px" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label caption>{{ $t('portal.pages.objects.lastMessage') }}</q-item-label>
+              <q-item-label class="text-caption" :class="`text-${getLastMessageColor()}`">
+                {{
+                  objectData.lastMessage
+                    ? formatDateTime(objectData.lastMessage)
+                    : $t('portal.pages.objects.noData')
+                }}
+                <span v-if="objectData.lastMessage" class="text-weight-bold">
+                  ({{ getLastMessageAgo() }})
+                </span>
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+
+          <!-- 30 Minutes Stats -->
+          <q-separator class="q-mb-md" />
+          <div class="text-subtitle2 q-mb-sm">{{ $t('portal.pages.objects.stats30min') }}:</div>
+
+          <div class="row q-gutter-xs q-mb-md">
+            <div class="col">
+              <q-card flat class="stats-mini-card distance-card text-center q-pa-xs">
+                <div class="text-weight-bold stats-value">{{ objectData.last30min.distance }}</div>
+                <div class="text-caption stats-label">{{ $t('portal.pages.objects.km') }}</div>
+              </q-card>
+            </div>
+            <div class="col">
+              <q-card flat class="stats-mini-card changes-card text-center q-pa-xs">
+                <div class="text-weight-bold stats-value">
+                  {{ objectData.last30min.satelliteChanges }}
                 </div>
+                <div class="text-caption stats-label">
+                  {{ $t('portal.pages.objects.gpsChanges') }}
+                </div>
+              </q-card>
+            </div>
+            <div class="col">
+              <q-card flat class="stats-mini-card messages-card text-center q-pa-xs">
+                <div class="text-weight-bold stats-value">
+                  {{ objectData.last30min.messageCount }}
+                </div>
+                <div class="text-caption stats-label">
+                  {{ $t('portal.pages.objects.messages') }}
+                </div>
+              </q-card>
+            </div>
+          </div>
+
+          <!-- Mini Charts with labels -->
+          <div v-if="objectData.last30min.speedChart.length > 0" class="q-mb-sm">
+            <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.speed') }}:</div>
+            <div class="chart-container">
+              <div class="chart-header">
+                <span class="chart-label-left">0</span>
+                <span class="chart-title">{{ $t('portal.pages.objects.chartSpeed') }}</span>
+                <span class="chart-label-right">{{ getMaxSpeed() }}</span>
               </div>
-              <div class="chart-bars-horizontal">
-                <div
-                  v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
-                  :key="index"
-                  class="horizontal-bar"
-                >
+              <div class="mini-chart-horizontal">
+                <div class="chart-times">
                   <div
-                    class="bar-fill-horizontal speed-bar"
-                    :style="`width: ${Math.max((point.speed / getMaxSpeed()) * 100, 2)}%`"
-                  ></div>
+                    v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
+                    :key="index"
+                    class="time-label"
+                  >
+                    {{ formatChartTime(point.timestamp) }}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="objectData.last30min.satelliteChart.length > 0">
-          <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.satellites') }}:</div>
-          <div class="chart-container">
-            <div class="chart-header">
-              <span class="chart-label-left">0</span>
-              <span class="chart-title">{{ $t('portal.pages.objects.chartSatellites') }}</span>
-              <span class="chart-label-right">25</span>
-            </div>
-            <div class="mini-chart-horizontal">
-              <div class="chart-times">
-                <div
-                  v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
-                  :key="index"
-                  class="time-label"
-                >
-                  {{ formatChartTime(point.timestamp) }}
-                </div>
-              </div>
-              <div class="chart-bars-horizontal">
-                <div
-                  v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
-                  :key="index"
-                  class="horizontal-bar"
-                >
+                <div class="chart-bars-horizontal">
                   <div
-                    class="bar-fill-horizontal satellite-bar"
-                    :style="`width: ${(point.count / 25) * 100}%`"
-                  ></div>
+                    v-for="(point, index) in objectData.last30min.speedChart.slice(-6)"
+                    :key="index"
+                    class="horizontal-bar"
+                  >
+                    <div
+                      class="bar-fill-horizontal speed-bar"
+                      :style="`width: ${Math.max((point.speed / getMaxSpeed()) * 100, 2)}%`"
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Error State (for active objects with errors) -->
-      <div v-else-if="systemStatus === 'active' && objectData.error" class="text-center q-py-md">
-        <q-icon name="error" color="negative" size="32px" />
-        <div class="text-caption text-negative q-mt-xs">
-          {{ $t('portal.pages.objects.dataUnavailable') }}
+          <div v-if="objectData.last30min.satelliteChart.length > 0">
+            <div class="text-caption q-mb-xs">{{ $t('portal.pages.objects.satellites') }}:</div>
+            <div class="chart-container">
+              <div class="chart-header">
+                <span class="chart-label-left">0</span>
+                <span class="chart-title">{{ $t('portal.pages.objects.chartSatellites') }}</span>
+                <span class="chart-label-right">25</span>
+              </div>
+              <div class="mini-chart-horizontal">
+                <div class="chart-times">
+                  <div
+                    v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
+                    :key="index"
+                    class="time-label"
+                  >
+                    {{ formatChartTime(point.timestamp) }}
+                  </div>
+                </div>
+                <div class="chart-bars-horizontal">
+                  <div
+                    v-for="(point, index) in objectData.last30min.satelliteChart.slice(-6)"
+                    :key="index"
+                    class="horizontal-bar"
+                  >
+                    <div
+                      class="bar-fill-horizontal satellite-bar"
+                      :style="`width: ${(point.count / 25) * 100}%`"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -310,6 +329,7 @@ const systemStatus = computed(() => props.baseObjectData.status || 'inactive')
 
 // Alert conditions
 const hasAlert = computed(() => {
+  // Не показуємо alert під час завантаження
   if (systemStatus.value !== 'active' || props.objectData.error || props.objectData.loading)
     return false
 

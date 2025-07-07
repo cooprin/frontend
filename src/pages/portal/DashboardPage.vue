@@ -32,8 +32,8 @@
                 <div class="text-subtitle2 text-grey-7">
                   {{ $t('portal.pages.dashboard.objectsCount') }}
                 </div>
-                <!-- Problematic objects indicator -->
-                <div v-if="problematicObjectsCount > 0" class="q-mt-xs">
+                <!-- Problematic objects indicator - показуємо тільки після завантаження -->
+                <div v-if="realTimeDataLoaded && problematicObjectsCount > 0" class="q-mt-xs">
                   <q-chip color="negative" text-color="white" icon="warning" size="sm" dense>
                     {{ problematicObjectsCount }}
                     {{ $t('portal.pages.dashboard.problematicObjects') }}
@@ -92,7 +92,7 @@
 
       <!-- Quick Actions -->
       <div class="col-12 col-md-6">
-        <q-card>
+        <q-card class="content-card">
           <q-card-section>
             <div class="text-h6 q-mb-md">{{ $t('common.quickActions') }}</div>
             <div class="row q-gutter-sm">
@@ -121,10 +121,10 @@
 
       <!-- Recent Activity -->
       <div class="col-12 col-md-6">
-        <q-card>
+        <q-card class="content-card">
           <q-card-section>
             <div class="text-h6 q-mb-md">{{ $t('common.recentActivity') }}</div>
-            <q-list v-if="recentActivity.length > 0">
+            <q-list v-if="recentActivity.length > 0" class="activity-list">
               <q-item v-for="item in recentActivity" :key="item.id">
                 <q-item-section avatar>
                   <q-icon :name="item.icon" :color="item.color" />
@@ -378,6 +378,17 @@ onUnmounted(() => {
   text-align: center;
 }
 
+/* Фіксовані розміри для контентних карток */
+.content-card {
+  height: 300px;
+  width: 100%;
+}
+
+.activity-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
 .problematic-card {
   animation: problematicPulse 2s infinite;
   border: 2px solid #f44336;
@@ -400,11 +411,17 @@ onUnmounted(() => {
   .stat-card-size {
     height: 160px;
   }
+  .content-card {
+    height: 250px;
+  }
 }
 
 @media (min-width: 600px) and (max-width: 959px) {
   .stat-card-size {
     height: 180px;
+  }
+  .content-card {
+    height: 280px;
   }
 }
 </style>
