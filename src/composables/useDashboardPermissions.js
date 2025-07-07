@@ -1,9 +1,11 @@
 import { computed } from 'vue'
 import { useAuthStore } from 'stores/auth'
+import { useI18n } from 'vue-i18n'
 import { MENU_PERMISSIONS } from 'src/constants/permissions'
 
 export function useDashboardPermissions() {
   const authStore = useAuthStore()
+  const { t } = useI18n()
 
   // Мапінг дозволів для кожного типу дашборду
   const dashboardPermissions = {
@@ -25,10 +27,10 @@ export function useDashboardPermissions() {
   // Список доступних дашбордів
   const availableDashboards = computed(() => {
     const allDashboards = [
-      { label: 'dashboard.types.welcome', value: 'welcome' },
-      { label: 'dashboard.types.overduePayments', value: 'overdue' },
-      { label: 'dashboard.types.tickets', value: 'tickets' },
-      { label: 'dashboard.types.inventory', value: 'inventory' },
+      { label: t('dashboard.types.welcome'), value: 'welcome' },
+      { label: t('dashboard.types.overduePayments'), value: 'overdue' },
+      { label: t('dashboard.types.tickets'), value: 'tickets' },
+      { label: t('dashboard.types.inventory'), value: 'inventory' },
     ]
 
     return allDashboards.filter((dashboard) => hasAccessToDashboard(dashboard.value))
