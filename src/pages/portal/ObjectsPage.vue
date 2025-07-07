@@ -14,19 +14,25 @@
             </q-chip>
           </div>
           <div class="col-auto">
-            <!-- Filter button -->
-            <q-btn
-              :color="showOnlyProblematic ? 'negative' : 'grey-6'"
-              :icon="showOnlyProblematic ? 'warning' : 'filter_list'"
-              :label="
-                showOnlyProblematic
-                  ? $t('portal.pages.objects.filterProblematic')
-                  : $t('portal.pages.objects.filterAll')
-              "
-              @click="toggleProblematicFilter"
-              outline
-              dense
-            />
+            <!-- Filter buttons group -->
+            <q-btn-group>
+              <q-btn
+                :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
+                :flat="showOnlyProblematic"
+                icon="view_list"
+                :label="$t('portal.pages.objects.filterAll')"
+                @click="showOnlyProblematic = false"
+                dense
+              />
+              <q-btn
+                :color="showOnlyProblematic ? 'negative' : 'grey-6'"
+                :flat="!showOnlyProblematic"
+                icon="warning"
+                :label="$t('portal.pages.objects.filterProblematic')"
+                @click="showOnlyProblematic = true"
+                dense
+              />
+            </q-btn-group>
           </div>
         </div>
 
@@ -120,6 +126,7 @@ const objectsRealTimeData = ref([])
 const isSocketConnected = ref(false)
 const showOnlyProblematic = ref(false)
 const componentId = 'objects-page-' + Date.now()
+const loadingRealTimeData = ref(false)
 
 // Helper function to check if object is problematic
 const isObjectProblematic = (objectData, baseObjectData) => {
@@ -186,12 +193,15 @@ const disconnectFromSocket = () => {
 // Load real-time data via HTTP
 const loadRealTimeData = async () => {
   try {
+    loadingRealTimeData.value = true
     const response = await PortalApi.getObjectsRealTimeData()
     if (response.data.success) {
       objectsRealTimeData.value = response.data.objectsData
     }
   } catch (err) {
     console.error('Error loading real-time data:', err)
+  } finally {
+    loadingRealTimeData.value = false
   }
 }
 
@@ -228,6 +238,29 @@ const getBaseObjectData = (objectId) => {
 }
 
 const createEmptyRealTimeData = (object) => {
+  // Якщо є Socket з'єднання і ще завантажуємо дані - показуємо loading
+  if (isSocketConnected.value && loadingRealTimeData.value) {
+    return {
+      objectId: object.id,
+      wialonId: object.wialon_id,
+      name: object.name,
+      loading: true, // Додаємо прапор loading
+      lastMessage: null,
+      isMoving: false,
+      speed: 0,
+      satellites: 0,
+      address: 'Loading...',
+      coordinates: { lat: 0, lon: 0 },
+      last30min: {
+        distance: 0,
+        satelliteChanges: 0,
+        messageCount: 0,
+        speedChart: [],
+        satelliteChart: [],
+      },
+    }
+  }
+
   return {
     objectId: object.id,
     wialonId: object.wialon_id,
@@ -247,11 +280,6 @@ const createEmptyRealTimeData = (object) => {
       satelliteChart: [],
     },
   }
-}
-
-// Toggle filter
-const toggleProblematicFilter = () => {
-  showOnlyProblematic.value = !showOnlyProblematic.value
 }
 
 // Ticket creation methods

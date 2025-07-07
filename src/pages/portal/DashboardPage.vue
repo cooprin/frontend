@@ -221,7 +221,7 @@ const problematicObjectsCount = computed(() => {
 
 // Computed property to check if objects card should blink
 const hasProblematicObjects = computed(() => {
-  return problematicObjectsCount.value > 0
+  return !loading.value && problematicObjectsCount.value > 0
 })
 
 const handleObjectsRealTimeUpdate = (data) => {
