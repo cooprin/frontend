@@ -17,7 +17,9 @@ export function useDashboardPermissions() {
   const hasAccessToDashboard = (dashboardType) => {
     const permission = dashboardPermissions[dashboardType]
     if (!permission) return true // Welcome доступний всім
-    return authStore.hasPermission(permission)
+
+    // Використовуємо hasAnyPermission замість hasPermission
+    return authStore.hasAnyPermission([permission])
   }
 
   // Список доступних дашбордів
