@@ -327,12 +327,49 @@ const onSubmit = async () => {
       })
     } else {
       response = await WialonApi.createObject(data)
+
       $q.notify({
         color: 'positive',
         message: t('wialonObjects.createSuccess'),
         icon: 'check',
       })
     }
+
+    // Перевіряємо наявність license warning у відповіді
+    if (response.data.licenseWarning) {
+      const warning = response.data.licenseWarning
+
+      // Різні кольори залежно від типу попередження
+      let notifyColor = 'info'
+      let notifyIcon = 'info'
+
+      if (warning.type === 'offline') {
+        notifyColor = 'orange'
+        notifyIcon = 'cloud_off'
+      } else if (warning.type === 'critical') {
+        notifyColor = 'deep-orange'
+        notifyIcon = 'warning'
+      } else if (warning.type === 'error') {
+        notifyColor = 'negative'
+        notifyIcon = 'error'
+      }
+
+      $q.notify({
+        color: notifyColor,
+        message: warning.message,
+        caption: warning.description,
+        icon: notifyIcon,
+        timeout: 8000,
+        actions: [
+          {
+            label: t('common.understand'),
+            color: 'white',
+            handler: () => {},
+          },
+        ],
+      })
+    }
+
     show.value = false
     emit('saved')
   } catch (error) {
@@ -340,7 +377,61 @@ const onSubmit = async () => {
 
     const errorMessage =
       error.response?.data?.message || t(`common.errors.${isEdit.value ? 'updating' : 'creating'}`)
+    const errorCode = error.response?.data?.code
+    const errorData = error.response?.data
 
+    // Спеціальна обробка помилок ліцензії
+    if (errorCode === 'OBJECT_LIMIT_REACHED') {
+      $q.notify({
+        color: 'negative',
+        message: errorMessage,
+        caption: errorData.description,
+        icon: 'block',
+        timeout: 15000,
+        actions: [
+          {
+            label: t('common.contactSupport'),
+            color: 'white',
+            handler: () => {
+              // Можна додати логіку відкриття форми зв'язку з підтримкою
+            },
+          },
+          {
+            label: t('common.understand'),
+            color: 'white',
+            handler: () => {},
+          },
+        ],
+      })
+      return // Не показуємо стандартну помилку
+    }
+
+    if (errorCode === 'OFFLINE_DAILY_LIMIT_REACHED') {
+      const offlineInfo = errorData.offlineInfo || {}
+
+      $q.notify({
+        color: 'deep-orange',
+        message: errorMessage,
+        caption: `${errorData.description}. Наступне скидання: ${offlineInfo.nextResetTime || 'завтра о 00:00'}`,
+        icon: 'cloud_off',
+        timeout: 15000,
+        actions: [
+          {
+            label: t('common.tryTomorrow'),
+            color: 'white',
+            handler: () => {},
+          },
+          {
+            label: t('common.understand'),
+            color: 'white',
+            handler: () => {},
+          },
+        ],
+      })
+      return // Не показуємо стандартну помилку
+    }
+
+    // Стандартна обробка інших помилок
     if (
       errorMessage.includes('вже оплачений') ||
       errorMessage.includes('існує тариф') ||

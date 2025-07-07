@@ -30,6 +30,8 @@ export default {
   optional: "Необов'язково",
   generating: 'Генерація...',
   exporting: 'Експорт...',
+  contactSupport: "Зв'язатися з підтримкою",
+  tryTomorrow: 'Спробувати завтра',
 
   validation: {
     required: "Це поле є обов'язковим",
