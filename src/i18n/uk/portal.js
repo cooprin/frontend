@@ -22,6 +22,7 @@ export default {
       unpaidInvoices: 'Неоплачені рахунки',
       openTickets: 'Відкриті заявки',
       lastActivity: 'Остання активність',
+      problematicObjects: "Проблемні об'єкти",
     },
     objects: {
       title: "Мої об'єкти",
@@ -53,6 +54,9 @@ export default {
       inactiveObject: "Об'єкт неактивний",
       chartSpeed: 'км/год',
       chartSatellites: 'супутники',
+      filterProblematic: 'Показати тільки проблемні',
+      filterAll: "Показати всі об'єкти",
+      noProblematicObjects: "Проблемних об'єктів не знайдено",
     },
     invoices: {
       title: 'Мої рахунки',

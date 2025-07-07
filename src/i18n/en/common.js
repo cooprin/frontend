@@ -30,6 +30,8 @@ export default {
   optional: 'Optional',
   generating: 'Generating...',
   exporting: 'Exporting...',
+  contactSupport: 'Contact Support',
+  tryTomorrow: 'Try Tomorrow',
 
   validation: {
     required: 'This field is required',

@@ -5,6 +5,7 @@ export default {
     financial: 'Фінансова статистика',
     inventory: 'Залишки товарів',
     tickets: 'Заявки підтримки',
+    welcome: 'Ласкаво просимо',
   },
   metrics: {
     totalOverdue: 'Загальна заборгованість',
@@ -111,4 +112,18 @@ export default {
   resolvedToday: 'Вирішено сьогодні',
   totalTickets: 'Всього',
   avgResolutionTime: 'Сер. час вирішення',
+  // Welcome dashboard
+  welcome: {
+    greeting: 'Ласкаво просимо',
+    currentTime: 'Поточний час',
+    today: 'Сьогодні',
+    goodMorning: 'Доброго ранку',
+    goodAfternoon: 'Доброго дня',
+    goodEvening: 'Доброго вечора',
+    haveNiceDay: 'Гарного дня!',
+  },
+  // Dashboard access
+  accessDenied: 'Немає доступу до дашборду',
+  accessDeniedMessage: 'У вас немає дозволу для перегляду цього дашборду',
+  goToAvailableDashboards: 'Перейти до доступних дашбордів',
 }

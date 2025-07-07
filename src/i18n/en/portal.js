@@ -22,6 +22,7 @@ export default {
       unpaidInvoices: 'Unpaid Invoices',
       openTickets: 'Open Tickets',
       lastActivity: 'Last Activity',
+      problematicObjects: 'Problematic Objects',
     },
     objects: {
       title: 'My Objects',
@@ -53,6 +54,9 @@ export default {
       inactiveObject: 'Object inactive',
       chartSpeed: 'km/h',
       chartSatellites: 'satellites',
+      filterProblematic: 'Show only problematic',
+      filterAll: 'Show all objects',
+      noProblematicObjects: 'No problematic objects found',
     },
     invoices: {
       title: 'My Invoices',

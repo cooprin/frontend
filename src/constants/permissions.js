@@ -141,7 +141,18 @@ export const MENU_PERMISSIONS = {
     DELETE: 'reports.delete',
     EXECUTE: 'reports.read', // Виконання звітів доступне при читанні
   },
-
+  // Дашборди
+  DASHBOARDS: {
+    OVERDUE: {
+      READ: 'dashboards.overdue.read',
+    },
+    TICKETS: {
+      READ: 'dashboards.tickets.read',
+    },
+    INVENTORY: {
+      READ: 'dashboards.inventory.read',
+    },
+  },
   // Адміністративне меню - відповідає SQL
   SETTINGS: {
     USERS: {
@@ -207,6 +218,7 @@ export const MENU_SECTIONS_PERMISSIONS = {
   SERVICES: getListPermissions(MENU_PERMISSIONS.SERVICES),
   WIALON: getListPermissions(MENU_PERMISSIONS.WIALON),
   SUPPORT: getListPermissions(MENU_PERMISSIONS.SUPPORT),
-  REPORTS: getListPermissions(MENU_PERMISSIONS.REPORTS), // ВИПРАВЛЕНО: тепер існує
+  REPORTS: getListPermissions(MENU_PERMISSIONS.REPORTS),
+  DASHBOARDS: getListPermissions(MENU_PERMISSIONS.DASHBOARDS),
   SETTINGS: getListPermissions(MENU_PERMISSIONS.SETTINGS),
 }

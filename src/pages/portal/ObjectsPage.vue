@@ -6,15 +6,48 @@
           {{ $t('portal.pages.objects.title') }}
         </div>
 
-        <!-- Auto-refresh indicator -->
+        <!-- Controls row -->
         <div class="row items-center q-mb-md">
           <div class="col">
-            <q-chip v-if="isSocketConnected" color="positive" text-color="white" icon="wifi" dense>
-              {{ $t('portal.pages.objects.liveConnection') }}
-            </q-chip>
+            <div class="controls-container">
+              <q-chip
+                v-if="isSocketConnected"
+                color="positive"
+                text-color="white"
+                icon="wifi"
+                dense
+              >
+                {{ $t('portal.pages.objects.liveConnection') }}
+              </q-chip>
+
+              <!-- Filter buttons group - перенесено під статус -->
+              <div v-if="isSocketConnected" class="filter-buttons-wrapper q-mt-sm">
+                <q-btn
+                  :color="!showOnlyProblematic ? 'primary' : 'grey-6'"
+                  :flat="showOnlyProblematic"
+                  icon="view_list"
+                  :label="$t('portal.pages.objects.filterAll')"
+                  @click="showOnlyProblematic = false"
+                  dense
+                  class="filter-btn-left"
+                />
+                <q-btn
+                  :color="showOnlyProblematic ? 'negative' : 'grey-6'"
+                  :flat="!showOnlyProblematic"
+                  icon="warning"
+                  :label="$t('portal.pages.objects.filterProblematic')"
+                  @click="showOnlyProblematic = true"
+                  dense
+                  class="filter-btn-right"
+                />
+              </div>
+            </div>
           </div>
-          <div class="col-auto"></div>
+          <div class="col-auto">
+            <!-- Можна додати інші контроли сюди якщо потрібно -->
+          </div>
         </div>
+
         <!-- Loading -->
         <div v-if="loading" class="text-center q-py-lg">
           <q-spinner size="40px" color="primary" />
@@ -22,31 +55,49 @@
         </div>
 
         <!-- Objects List -->
-        <div v-else-if="objects.length > 0" class="row q-gutter-md">
-          <!-- Real-time Cards for active objects -->
+        <div v-else-if="objects.length > 0">
+          <!-- Check if we have any objects to show after filtering -->
           <div
-            v-for="objectData in objectsRealTimeData"
-            :key="objectData.objectId"
-            class="col-12 col-md-6 col-lg-4"
+            v-if="
+              filteredObjectsRealTimeData.length === 0 &&
+              filteredInactiveObjects.length === 0 &&
+              showOnlyProblematic
+            "
+            class="text-center q-py-xl"
           >
-            <ObjectRealTimeCard
-              :object-data="objectData"
-              :base-object-data="getBaseObjectData(objectData.objectId)"
-              @create-ticket="createTicketForObject"
-            />
+            <q-icon name="check_circle" size="80px" color="positive" />
+            <div class="text-h6 text-positive q-mt-md">
+              {{ $t('portal.pages.objects.noProblematicObjects') }}
+            </div>
           </div>
 
-          <!-- Basic cards for inactive objects (without real-time data) -->
-          <div
-            v-for="object in inactiveObjects"
-            :key="'inactive-' + object.id"
-            class="col-12 col-md-6 col-lg-4"
-          >
-            <ObjectRealTimeCard
-              :object-data="createEmptyRealTimeData(object)"
-              :base-object-data="object"
-              @create-ticket="createTicketForObject"
-            />
+          <!-- Show filtered objects -->
+          <div v-else class="row q-gutter-md">
+            <!-- Real-time Cards for active objects -->
+            <div
+              v-for="objectData in filteredObjectsRealTimeData"
+              :key="objectData.objectId"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <ObjectRealTimeCard
+                :object-data="objectData"
+                :base-object-data="getBaseObjectData(objectData.objectId)"
+                @create-ticket="createTicketForObject"
+              />
+            </div>
+
+            <!-- Basic cards for inactive objects (without real-time data) -->
+            <div
+              v-for="object in filteredInactiveObjects"
+              :key="'inactive-' + object.id"
+              class="col-12 col-md-6 col-lg-4"
+            >
+              <ObjectRealTimeCard
+                :object-data="createEmptyRealTimeData(object)"
+                :base-object-data="object"
+                @create-ticket="createTicketForObject"
+              />
+            </div>
           </div>
         </div>
 
@@ -70,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { PortalApi } from 'src/api/portal'
 import ObjectRealTimeCard from 'src/components/portal/ObjectRealTimeCard.vue'
@@ -86,7 +137,48 @@ const loading = ref(false)
 const error = ref(null)
 const objectsRealTimeData = ref([])
 const isSocketConnected = ref(false)
+const showOnlyProblematic = ref(false)
 const componentId = 'objects-page-' + Date.now()
+const loadingRealTimeData = ref(false)
+
+// Helper function to check if object is problematic
+const isObjectProblematic = (objectData, baseObjectData) => {
+  if (baseObjectData.status !== 'active' || objectData.error) return true
+  const lowSatellites = objectData.satellites < 5
+  const lastMessageMinutes = getLastMessageMinutes(objectData.lastMessage)
+  const oldMessage = lastMessageMinutes > 15
+  return lowSatellites || oldMessage
+}
+
+const getLastMessageMinutes = (lastMessage) => {
+  if (!lastMessage) return 999
+  const now = new Date()
+  const lastMsg = new Date(lastMessage)
+  return Math.floor((now - lastMsg) / (1000 * 60))
+}
+
+// Computed filtered objects
+const filteredObjectsRealTimeData = computed(() => {
+  if (!showOnlyProblematic.value) {
+    return objectsRealTimeData.value
+  }
+
+  return objectsRealTimeData.value.filter((objectData) => {
+    const baseObject = getBaseObjectData(objectData.objectId)
+    return isObjectProblematic(objectData, baseObject)
+  })
+})
+
+const filteredInactiveObjects = computed(() => {
+  if (!showOnlyProblematic.value) {
+    return inactiveObjects.value
+  }
+
+  return inactiveObjects.value.filter((object) => {
+    const emptyData = createEmptyRealTimeData(object)
+    return isObjectProblematic(emptyData, object)
+  })
+})
 
 const handleObjectsRealTimeUpdate = (data) => {
   if (data && data.objectsData) {
@@ -109,6 +201,21 @@ const connectToSocket = () => {
 const disconnectFromSocket = () => {
   SocketService.unsubscribeAll(componentId)
   isSocketConnected.value = false
+}
+
+// Load real-time data via HTTP
+const loadRealTimeData = async () => {
+  try {
+    loadingRealTimeData.value = true
+    const response = await PortalApi.getObjectsRealTimeData()
+    if (response.data.success) {
+      objectsRealTimeData.value = response.data.objectsData
+    }
+  } catch (err) {
+    console.error('Error loading real-time data:', err)
+  } finally {
+    loadingRealTimeData.value = false
+  }
 }
 
 // Load basic objects data
@@ -137,12 +244,36 @@ const inactiveObjects = computed(() => {
   const realTimeObjectIds = objectsRealTimeData.value.map((rtd) => rtd.objectId)
   return objects.value.filter((obj) => !realTimeObjectIds.includes(obj.id))
 })
+
 // Helper methods
 const getBaseObjectData = (objectId) => {
   return objects.value.find((obj) => obj.id === objectId) || {}
 }
 
 const createEmptyRealTimeData = (object) => {
+  // Якщо це активний об'єкт і ще завантажуємо дані - показуємо loading
+  if (object.status === 'active' && loadingRealTimeData.value) {
+    return {
+      objectId: object.id,
+      wialonId: object.wialon_id,
+      name: object.name,
+      loading: true, // Додаємо прапор loading
+      lastMessage: null,
+      isMoving: false,
+      speed: 0,
+      satellites: 0,
+      address: 'Loading...',
+      coordinates: { lat: 0, lon: 0 },
+      last30min: {
+        distance: 0,
+        satelliteChanges: 0,
+        messageCount: 0,
+        speedChart: [],
+        satelliteChart: [],
+      },
+    }
+  }
+
   return {
     objectId: object.id,
     wialonId: object.wialon_id,
@@ -164,9 +295,13 @@ const createEmptyRealTimeData = (object) => {
   }
 }
 
+// Watcher для оновлення об'єктів під час завантаження
+watch(loadingRealTimeData, () => {
+  // Коли змінюється стан завантаження, Vue автоматично перерахує computed properties
+})
+
 // Ticket creation methods
 const createTicketForObject = (objectData) => {
-  // Find corresponding base object
   const baseObject = objects.value.find((obj) => obj.id === objectData.objectId)
 
   if (baseObject) {
@@ -184,6 +319,9 @@ const createTicketForObject = (objectData) => {
 // Lifecycle hooks
 onMounted(async () => {
   await loadObjects()
+
+  // Load real-time data immediately
+  await loadRealTimeData()
 
   // Load real-time data only for active objects
   const activeObjects = objects.value.filter((obj) => obj.status === 'active')
@@ -215,5 +353,35 @@ onUnmounted(() => {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Controls container */
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Filter buttons styling - ВИПРАВЛЕНО */
+.filter-buttons-wrapper {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  gap: 2px; /* Додаємо відступ між кнопками */
+  background: rgba(0, 0, 0, 0.05); /* Фон для відступу */
+}
+
+.filter-btn-left {
+  border-radius: 4px !important; /* Повний радіус для лівої кнопки */
+}
+
+.filter-btn-right {
+  border-radius: 4px !important; /* Повний радіус для правої кнопки */
+}
+
+.filter-btn-left:not(.q-btn--flat),
+.filter-btn-right:not(.q-btn--flat) {
+  box-shadow: none;
 }
 </style>

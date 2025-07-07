@@ -5,6 +5,7 @@ export default {
     financial: 'Financial Statistics',
     inventory: 'Inventory Status',
     tickets: 'Support Tickets',
+    welcome: 'Welcome',
   },
   metrics: {
     totalOverdue: 'Total Overdue',
@@ -111,4 +112,18 @@ export default {
   resolvedToday: 'Resolved Today',
   totalTickets: 'Total',
   avgResolutionTime: 'Avg. Resolution Time',
+  // Welcome dashboard
+  welcome: {
+    greeting: 'Welcome',
+    currentTime: 'Current time',
+    today: 'Today',
+    goodMorning: 'Good morning',
+    goodAfternoon: 'Good afternoon',
+    goodEvening: 'Good evening',
+    haveNiceDay: 'Have a nice day!',
+  },
+  // Dashboard access
+  accessDenied: 'Access Denied',
+  accessDeniedMessage: 'You do not have permission to view this dashboard',
+  goToAvailableDashboards: 'Go to Available Dashboards',
 }
