@@ -363,10 +363,10 @@ onUnmounted(() => {
   transform: translateY(-4px);
 }
 
-/* Фіксовані розміри для всіх статистичних карток */
+/* ВИПРАВЛЕНО - однакові розміри для всіх карток */
 .stat-card-size {
   width: 100%;
-  height: 200px;
+  height: 180px; /* Зменшуємо висоту */
 }
 
 .stat-card-content {
@@ -378,14 +378,14 @@ onUnmounted(() => {
   text-align: center;
 }
 
-/* Фіксовані розміри для контентних карток */
+/* ВИПРАВЛЕНО - однакові розміри для контентних карток */
 .content-card {
-  height: 300px;
+  height: 180px; /* Така сама висота як у статистичних карток */
   width: 100%;
 }
 
 .activity-list {
-  max-height: 200px;
+  max-height: 120px; /* Зменшуємо максимальну висоту списку */
   overflow-y: auto;
 }
 
@@ -406,22 +406,24 @@ onUnmounted(() => {
   }
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments - ВИПРАВЛЕНО */
 @media (max-width: 599px) {
-  .stat-card-size {
+  .stat-card-size,
+  .content-card {
     height: 160px;
   }
-  .content-card {
-    height: 250px;
+  .activity-list {
+    max-height: 100px;
   }
 }
 
 @media (min-width: 600px) and (max-width: 959px) {
-  .stat-card-size {
-    height: 180px;
-  }
+  .stat-card-size,
   .content-card {
-    height: 280px;
+    height: 170px;
+  }
+  .activity-list {
+    max-height: 110px;
   }
 }
 </style>

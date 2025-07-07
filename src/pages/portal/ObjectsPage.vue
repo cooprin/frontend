@@ -99,27 +99,19 @@
           </div>
         </div>
 
-        <!-- Loading State (for objects with loading flag) -->
-        <div v-if="systemStatus === 'active' && objectData.loading" class="text-center q-py-md">
-          <q-spinner color="primary" size="32px" />
-          <div class="text-caption text-primary q-mt-xs">
-            {{ $t('portal.messages.loading') }}
-          </div>
-        </div>
-
-        <!-- Error State (for active objects with errors) -->
-        <div v-else-if="systemStatus === 'active' && objectData.error" class="text-center q-py-md">
-          <q-icon name="error" color="negative" size="32px" />
-          <div class="text-caption text-negative q-mt-xs">
-            {{ $t('portal.pages.objects.dataUnavailable') }}
-          </div>
+        <!-- Error State -->
+        <div v-if="error" class="text-center q-py-md">
+          <q-icon name="error" size="48px" color="negative" />
+          <div class="q-mt-sm text-negative">{{ error }}</div>
+          <q-btn color="primary" :label="$t('common.retry')" @click="loadObjects" class="q-mt-md" />
         </div>
       </div>
     </div>
   </q-page>
 </template>
+
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { PortalApi } from 'src/api/portal'
 import ObjectRealTimeCard from 'src/components/portal/ObjectRealTimeCard.vue'
@@ -249,8 +241,8 @@ const getBaseObjectData = (objectId) => {
 }
 
 const createEmptyRealTimeData = (object) => {
-  // Якщо є Socket з'єднання і ще завантажуємо дані - показуємо loading
-  if (isSocketConnected.value && loadingRealTimeData.value) {
+  // Якщо це активний об'єкт і ще завантажуємо дані - показуємо loading
+  if (object.status === 'active' && loadingRealTimeData.value) {
     return {
       objectId: object.id,
       wialonId: object.wialon_id,
@@ -292,6 +284,11 @@ const createEmptyRealTimeData = (object) => {
     },
   }
 }
+
+// Watcher для оновлення об'єктів під час завантаження
+watch(loadingRealTimeData, () => {
+  // Коли змінюється стан завантаження, Vue автоматично перерахує computed properties
+})
 
 // Ticket creation methods
 const createTicketForObject = (objectData) => {
@@ -348,21 +345,22 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* Filter buttons styling */
+/* Filter buttons styling - ВИПРАВЛЕНО */
 .filter-buttons-wrapper {
   display: inline-flex;
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  gap: 2px; /* Додаємо відступ між кнопками */
+  background: rgba(0, 0, 0, 0.05); /* Фон для відступу */
 }
 
 .filter-btn-left {
-  border-radius: 4px 0 0 4px !important;
-  margin-right: 1px;
+  border-radius: 4px !important; /* Повний радіус для лівої кнопки */
 }
 
 .filter-btn-right {
-  border-radius: 0 4px 4px 0 !important;
+  border-radius: 4px !important; /* Повний радіус для правої кнопки */
 }
 
 .filter-btn-left:not(.q-btn--flat),
