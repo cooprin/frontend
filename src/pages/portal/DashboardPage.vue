@@ -17,7 +17,7 @@
 
       <!-- Statistics Cards -->
       <div class="col-12 col-md-3">
-        <q-card class="stat-card">
+        <q-card class="stat-card" :class="{ 'problematic-card': hasProblematicObjects }">
           <q-card-section class="text-center">
             <q-icon name="directions_car" size="48px" color="primary" />
             <div class="text-h4 text-weight-bold q-mt-sm">
@@ -25,6 +25,12 @@
             </div>
             <div class="text-subtitle2 text-grey-7">
               {{ $t('portal.pages.dashboard.objectsCount') }}
+            </div>
+            <!-- Problematic objects indicator -->
+            <div v-if="problematicObjectsCount > 0" class="q-mt-xs">
+              <q-chip color="negative" text-color="white" icon="warning" size="sm" dense>
+                {{ problematicObjectsCount }} {{ $t('portal.pages.dashboard.problematicObjects') }}
+              </q-chip>
             </div>
           </q-card-section>
         </q-card>
@@ -128,11 +134,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useAuthStore } from 'stores/auth'
 import { PortalApi } from 'src/api/portal'
 import { TicketsApi } from 'src/api/tickets'
 import { date } from 'quasar'
+import SocketService from 'src/services/socketService'
 
 const userStore = useAuthStore()
 
@@ -144,6 +151,116 @@ const statistics = ref({
 
 const recentActivity = ref([])
 const loading = ref(false)
+const objectsRealTimeData = ref([])
+const objects = ref([])
+const componentId = 'dashboard-page-' + Date.now()
+
+// Helper function to check if object is problematic
+const isObjectProblematic = (objectData, baseObjectData) => {
+  if (!baseObjectData || baseObjectData.status !== 'active' || objectData.error) return true
+  const lowSatellites = objectData.satellites < 5
+  const lastMessageMinutes = getLastMessageMinutes(objectData.lastMessage)
+  const oldMessage = lastMessageMinutes > 15
+  return lowSatellites || oldMessage
+}
+
+const getLastMessageMinutes = (lastMessage) => {
+  if (!lastMessage) return 999
+  const now = new Date()
+  const lastMsg = new Date(lastMessage)
+  return Math.floor((now - lastMsg) / (1000 * 60))
+}
+
+const createEmptyRealTimeData = (object) => {
+  return {
+    objectId: object.id,
+    wialonId: object.wialon_id,
+    name: object.name,
+    error: 'inactive_object',
+    lastMessage: null,
+    isMoving: false,
+    speed: 0,
+    satellites: 0,
+    address: 'Object inactive',
+    coordinates: { lat: 0, lon: 0 },
+    last30min: {
+      distance: 0,
+      satelliteChanges: 0,
+      messageCount: 0,
+      speedChart: [],
+      satelliteChart: [],
+    },
+  }
+}
+
+// Computed property for problematic objects count
+const problematicObjectsCount = computed(() => {
+  let count = 0
+
+  // Check real-time objects
+  objectsRealTimeData.value.forEach((objectData) => {
+    const baseObject = objects.value.find((obj) => obj.id === objectData.objectId)
+    if (baseObject && isObjectProblematic(objectData, baseObject)) {
+      count++
+    }
+  })
+
+  // Check inactive objects
+  const realTimeObjectIds = objectsRealTimeData.value.map((rtd) => rtd.objectId)
+  const inactiveObjects = objects.value.filter((obj) => !realTimeObjectIds.includes(obj.id))
+
+  inactiveObjects.forEach((object) => {
+    const emptyData = createEmptyRealTimeData(object)
+    if (isObjectProblematic(emptyData, object)) {
+      count++
+    }
+  })
+
+  return count
+})
+
+// Computed property to check if objects card should blink
+const hasProblematicObjects = computed(() => {
+  return problematicObjectsCount.value > 0
+})
+
+const handleObjectsRealTimeUpdate = (data) => {
+  if (data && data.objectsData) {
+    objectsRealTimeData.value = data.objectsData
+  }
+}
+
+const connectToSocket = () => {
+  SocketService.subscribe('objects:realtime_updated', handleObjectsRealTimeUpdate, componentId)
+}
+
+const disconnectFromSocket = () => {
+  SocketService.unsubscribeAll(componentId)
+}
+
+// Load real-time data via HTTP
+const loadRealTimeData = async () => {
+  try {
+    const response = await PortalApi.getObjectsRealTimeData()
+    if (response.data.success) {
+      objectsRealTimeData.value = response.data.objectsData
+    }
+  } catch (err) {
+    console.error('Error loading real-time data:', err)
+  }
+}
+
+// Load objects data
+const loadObjects = async () => {
+  try {
+    const response = await PortalApi.getObjects()
+    if (response.data.success) {
+      objects.value = response.data.objects
+    }
+  } catch (err) {
+    console.error('Error loading objects:', err)
+  }
+}
 
 const lastActivity = computed(() => {
   if (recentActivity.value.length > 0) {
@@ -201,11 +318,21 @@ const loadDashboardData = async () => {
   }
 }
 
-onMounted(() => {
-  loadDashboardData()
+onMounted(async () => {
+  await loadDashboardData()
+
+  // Load objects and real-time data
+  await loadObjects()
+  await loadRealTimeData()
+
+  // Connect to socket for updates
+  connectToSocket()
+})
+
+onUnmounted(() => {
+  disconnectFromSocket()
 })
 </script>
-
 <style scoped>
 .welcome-card {
   background: linear-gradient(135deg, var(--q-primary) 0%, var(--q-secondary) 100%);
@@ -218,5 +345,22 @@ onMounted(() => {
 
 .stat-card:hover {
   transform: translateY(-4px);
+}
+
+.problematic-card {
+  animation: problematicPulse 2s infinite;
+  border: 2px solid #f44336;
+}
+
+@keyframes problematicPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
 }
 </style>
