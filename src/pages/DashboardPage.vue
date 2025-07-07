@@ -17,8 +17,35 @@
 
     <!-- Dashboard System -->
     <div>
+      <!-- Welcome дашборд -->
+      <div v-if="selectedDashboard.value === 'welcome'">
+        <WelcomeDashboard />
+      </div>
+
+      <!-- Перевірка доступу до дашборду -->
+      <div v-else-if="!hasAccessToDashboard(selectedDashboard.value)">
+        <q-card class="text-center q-pa-xl">
+          <q-card-section>
+            <q-icon name="lock" size="4em" color="negative" class="q-mb-md" />
+            <div class="text-h5 q-mb-md">{{ $t('dashboard.accessDenied') }}</div>
+            <div class="text-body1 text-grey-7 q-mb-lg">
+              {{ $t('dashboard.accessDeniedMessage') }}
+            </div>
+            <q-btn
+              color="primary"
+              :label="$t('dashboard.goToAvailableDashboards')"
+              @click="
+                selectedDashboard = {
+                  value: getDefaultDashboard(),
+                  label: $t('dashboard.types.welcome'),
+                }
+              "
+            />
+          </q-card-section>
+        </q-card>
+      </div>
       <!-- Дашборд для заборгованих оплат -->
-      <div v-if="selectedDashboard.value === 'overdue'">
+      <div v-else-if="selectedDashboard.value === 'overdue' && hasAccessToDashboard('overdue')">
         <div class="row q-col-gutter-md">
           <!-- Карточка загальної заборгованості -->
           <div class="col-12 col-md-3">
@@ -331,7 +358,7 @@
         </div>
       </div>
       <!-- Дашборд для заявок -->
-      <div v-if="selectedDashboard.value === 'tickets'">
+      <div v-else-if="selectedDashboard.value === 'tickets' && hasAccessToDashboard('tickets')">
         <div class="row q-col-gutter-md">
           <!-- Карточки метрик заявок -->
           <div class="col-12 col-md-3">
@@ -445,7 +472,7 @@
         </div>
       </div>
       <!-- Дашборд для залишків товарів -->
-      <div v-if="selectedDashboard.value === 'inventory'">
+      <div v-else-if="selectedDashboard.value === 'inventory' && hasAccessToDashboard('inventory')">
         <div class="row q-col-gutter-md q-mb-md">
           <!-- Селектор складу -->
           <div class="col-12">
@@ -693,20 +720,18 @@ import { TicketsApi } from 'src/api/tickets'
 import TicketsStatusChart from 'components/dashboard/TicketsStatusChart.vue'
 import RecentTicketsTable from 'components/dashboard/RecentTicketsTable.vue'
 import TicketsCategoryTable from 'components/dashboard/TicketsCategoryTable.vue'
+import WelcomeDashboard from 'components/dashboard/WelcomeDashboard.vue'
+import { useDashboardPermissions } from 'src/composables/useDashboardPermissions'
 
 const router = useRouter()
 const $q = useQuasar()
 const { t, locale } = useI18n()
+// Логіка дозволів для дашбордів
+const { hasAccessToDashboard, availableDashboards, getDefaultDashboard } = useDashboardPermissions()
 
 // Для вибору дашборду - залишається без змін
-const dashboardOptions = computed(() => [
-  { label: t('dashboard.types.overduePayments'), value: 'overdue' },
-  { label: t('dashboard.types.tickets'), value: 'tickets' },
-  { label: t('dashboard.types.inventory'), value: 'inventory' },
-  { label: t('dashboard.types.activity'), value: 'activity' },
-  { label: t('dashboard.types.financial'), value: 'financial' },
-])
-const selectedDashboard = ref({ value: 'overdue' })
+const dashboardOptions = computed(() => availableDashboards.value)
+const selectedDashboard = ref({ value: getDefaultDashboard() })
 
 // Для даних по залишках
 const loadingInventoryData = ref(false)
@@ -1081,22 +1106,28 @@ const openProduct = (product) => {
 
 // Завантаження даних при монтуванні компонента
 onMounted(() => {
-  if (selectedDashboard.value.value === 'inventory') {
+  // Завантажуємо дані тільки для дашбордів до яких є доступ
+  const currentDashboard = selectedDashboard.value.value
+
+  if (currentDashboard === 'inventory' && hasAccessToDashboard('inventory')) {
     loadInventoryData()
-  } else if (selectedDashboard.value.value === 'overdue') {
+    loadRepairData()
+  } else if (currentDashboard === 'overdue' && hasAccessToDashboard('overdue')) {
     loadOverdueData()
-  } else if (selectedDashboard.value.value === 'tickets') {
+  } else if (currentDashboard === 'tickets' && hasAccessToDashboard('tickets')) {
     loadTicketsData()
   }
 })
-
 // Спостерігаємо за зміною дашборду
 watch(selectedDashboard, (newVal) => {
-  if (newVal.value === 'inventory') {
+  // Завантажуємо дані тільки якщо є доступ до дашборду
+  if (newVal.value === 'inventory' && hasAccessToDashboard('inventory')) {
     loadInventoryData()
     loadRepairData()
-  } else if (newVal.value === 'tickets') {
+  } else if (newVal.value === 'tickets' && hasAccessToDashboard('tickets')) {
     loadTicketsData()
+  } else if (newVal.value === 'overdue' && hasAccessToDashboard('overdue')) {
+    loadOverdueData()
   }
 })
 </script>
