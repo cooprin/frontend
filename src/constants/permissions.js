@@ -144,13 +144,13 @@ export const MENU_PERMISSIONS = {
   // Дашборди
   DASHBOARDS: {
     OVERDUE: {
-      READ: 'dashboards.overdue.read',
+      READ: 'dashboards.overdue',
     },
     TICKETS: {
-      READ: 'dashboards.tickets.read',
+      READ: 'dashboards.tickets',
     },
     INVENTORY: {
-      READ: 'dashboards.inventory.read',
+      READ: 'dashboards.inventory',
     },
   },
   // Адміністративне меню - відповідає SQL
