@@ -59,6 +59,7 @@ export default {
       noProblematicObjects: "Проблемних об'єктів не знайдено",
     },
     invoices: {
+      documents: 'Документи',
       title: 'Мої рахунки',
       description: 'Перегляд та завантаження ваших рахунків',
       noInvoices: 'У вас немає рахунків',
@@ -67,6 +68,7 @@ export default {
       downloadError: 'Помилка завантаження рахунку',
       downloadSuccess: 'Рахунок успішно завантажено',
       downloadPdf: 'Завантажити PDF',
+      downloadDocument: 'Завантажити документ',
       information: 'Інформація про рахунок',
       details: 'Деталі рахунку',
       invoiceNumber: 'Номер рахунку',
@@ -80,6 +82,11 @@ export default {
       unit: 'од.',
       unitPrice: 'Ціна за одиницю',
       totalPrice: 'Загальна ціна',
+      loadingDocuments: 'Завантаження документів...',
+      noDocuments: 'Документи відсутні',
+      noDocumentsHint: "Документи з'являться тут, коли їх завантажать наші співробітники.",
+      documentDownloadSuccess: 'Документ успішно завантажено',
+      documentDownloadError: 'Помилка завантаження документа',
       filters: {
         status: 'Статус',
         year: 'Рік',
