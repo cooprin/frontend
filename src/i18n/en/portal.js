@@ -59,6 +59,7 @@ export default {
       noProblematicObjects: 'No problematic objects found',
     },
     invoices: {
+      documents: 'Documents',
       title: 'My Invoices',
       description: 'View and download your invoices',
       noInvoices: 'You have no invoices',
@@ -67,6 +68,7 @@ export default {
       downloadError: 'Error downloading invoice',
       downloadSuccess: 'Invoice downloaded successfully',
       downloadPdf: 'Download PDF',
+      downloadDocument: 'Download Document',
       information: 'Invoice Information',
       details: 'Invoice Details',
       invoiceNumber: 'Invoice Number',
@@ -80,6 +82,11 @@ export default {
       unit: 'unit',
       unitPrice: 'Unit Price',
       totalPrice: 'Total Price',
+      loadingDocuments: 'Loading documents...',
+      noDocuments: 'No documents available',
+      noDocumentsHint: 'Documents will appear here when they are uploaded by our staff.',
+      documentDownloadSuccess: 'Document downloaded successfully',
+      documentDownloadError: 'Error downloading document',
       filters: {
         status: 'Status',
         year: 'Year',

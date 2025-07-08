@@ -363,8 +363,6 @@
                     <q-item
                       v-for="document in invoiceDocuments"
                       :key="document.id"
-                      clickable
-                      @click="downloadDocument(document)"
                       class="document-item"
                     >
                       <q-item-section avatar>
@@ -382,16 +380,30 @@
                         </q-item-label>
                       </q-item-section>
                       <q-item-section side>
-                        <q-btn
-                          flat
-                          round
-                          color="primary"
-                          icon="download"
-                          :loading="downloadingDocument === document.id"
-                          @click.stop="downloadDocument(document)"
-                        >
-                          <q-tooltip>{{ $t('portal.pages.invoices.downloadDocument') }}</q-tooltip>
-                        </q-btn>
+                        <div class="row q-gutter-xs">
+                          <q-btn
+                            v-if="canPreviewDocument(document.document_type)"
+                            flat
+                            round
+                            color="secondary"
+                            icon="visibility"
+                            @click="previewInvoiceDocument(document)"
+                          >
+                            <q-tooltip>{{ $t('common.preview') }}</q-tooltip>
+                          </q-btn>
+                          <q-btn
+                            flat
+                            round
+                            color="primary"
+                            icon="download"
+                            :loading="downloadingDocument === document.id"
+                            @click="downloadDocument(document)"
+                          >
+                            <q-tooltip>{{
+                              $t('portal.pages.invoices.downloadDocument')
+                            }}</q-tooltip>
+                          </q-btn>
+                        </div>
                       </q-item-section>
                     </q-item>
                   </q-list>
@@ -421,6 +433,69 @@
                   </div>
                 </q-card-section>
               </q-card>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+    <!-- Document Preview Dialog -->
+    <q-dialog v-model="showDocumentPreview" maximized>
+      <q-card>
+        <q-card-section class="row items-center q-pa-md bg-primary text-white">
+          <div class="text-h6">{{ previewDocument?.document_name }}</div>
+          <q-space />
+          <q-btn
+            flat
+            round
+            icon="download"
+            @click="downloadDocument(previewDocument)"
+            class="q-mr-sm"
+          />
+          <q-btn flat round icon="close" v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pa-none full-height">
+          <!-- PDF Preview -->
+          <iframe
+            v-if="previewDocument && previewDocument.document_type === 'pdf'"
+            :src="getInvoiceDocumentUrl(previewDocument)"
+            style="width: 100%; height: 70vh; border: none"
+          />
+
+          <!-- Image Preview -->
+          <div
+            v-else-if="previewDocument && isImageType(previewDocument.document_type)"
+            class="full-height flex flex-center"
+          >
+            <q-img
+              :src="getInvoiceDocumentUrl(previewDocument)"
+              style="max-width: 90%; max-height: 70vh"
+              contain
+            />
+          </div>
+
+          <!-- Text Preview -->
+          <div
+            v-else-if="previewDocument && isTextType(previewDocument.document_type)"
+            class="q-pa-md"
+            style="height: 70vh; overflow-y: auto"
+          >
+            <pre class="text-body1">{{ previewContent }}</pre>
+          </div>
+
+          <!-- Unsupported Preview -->
+          <div v-else class="full-height flex flex-center">
+            <div class="text-center">
+              <q-icon name="description" size="80px" color="grey-4" />
+              <div class="text-h6 text-grey-6 q-mt-md">
+                {{ $t('portal.pages.documents.previewNotSupported') }}
+              </div>
+              <q-btn
+                color="primary"
+                :label="$t('portal.pages.invoices.downloadDocument')"
+                @click="downloadDocument(previewDocument)"
+                class="q-mt-md"
+              />
             </div>
           </div>
         </q-card-section>
@@ -651,11 +726,14 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', {
-    style: 'currency',
-    currency: 'UAH',
-    minimumFractionDigits: 0,
-  }).format(amount)
+  return (
+    new Intl.NumberFormat('uk-UA', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+    }).format(amount) +
+    ' ' +
+    $t('common.currency')
+  )
 }
 
 const formatDate = (dateString) => {
@@ -684,6 +762,45 @@ const getDocumentIcon = (type) => {
   }
   return icons[type?.toLowerCase()] || 'insert_drive_file'
 }
+// Функції для перегляду документів
+const showDocumentPreview = ref(false)
+const previewDocument = ref(null)
+const previewContent = ref('')
+
+const previewInvoiceDocument = async (document) => {
+  previewDocument.value = document
+  showDocumentPreview.value = true
+
+  // Load text content for text files
+  if (isTextType(document.document_type)) {
+    try {
+      const response = await fetch(getInvoiceDocumentUrl(document))
+      previewContent.value = await response.text()
+    } catch (error) {
+      console.error('Error loading text content:', error)
+      previewContent.value = 'Помилка завантаження вмісту файлу'
+    }
+  }
+}
+
+const getInvoiceDocumentUrl = (document) => {
+  return PortalApi.getDocumentUrl(document.file_path)
+}
+
+const canPreviewDocument = (type) => {
+  const previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'txt']
+  return previewableTypes.includes(type.toLowerCase())
+}
+
+const isImageType = (type) => {
+  const imageTypes = ['jpg', 'jpeg', 'png', 'gif']
+  return imageTypes.includes(type.toLowerCase())
+}
+
+const isTextType = (type) => {
+  const textTypes = ['txt']
+  return textTypes.includes(type.toLowerCase())
+}
 
 // Lifecycle
 onMounted(() => {
@@ -707,5 +824,18 @@ onMounted(() => {
 
 .document-item:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Preview dialog styles */
+.q-dialog__inner {
+  padding: 0 !important;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
 }
 </style>
