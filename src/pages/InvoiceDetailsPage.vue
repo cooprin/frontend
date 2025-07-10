@@ -70,6 +70,14 @@
                 {{ $t('invoices.markAsCancelled') }}
               </q-item-section>
             </q-item>
+            <q-item clickable v-close-popup @click="sendEmailToClient">
+              <q-item-section avatar>
+                <q-icon name="email" color="info" />
+              </q-item-section>
+              <q-item-section>
+                {{ $t('invoices.sendEmail') }}
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-btn-dropdown>
       </div>
@@ -638,6 +646,35 @@ const downloadDocument = (document) => {
     $q.notify({
       color: 'negative',
       message: t('common.errors.fileNotFound'),
+      icon: 'error',
+    })
+  }
+}
+
+const sendEmailToClient = async () => {
+  try {
+    if (!invoice.value || !invoice.value.id) {
+      $q.notify({
+        color: 'negative',
+        message: t('common.errors.idNotFound'),
+        icon: 'error',
+      })
+      return
+    }
+
+    const response = await InvoicesApi.sendInvoiceEmail(invoice.value.id)
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.emailSent'),
+      caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
+      icon: 'email',
+    })
+  } catch (error) {
+    console.error('Error sending invoice email:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.emailSending'),
       icon: 'error',
     })
   }

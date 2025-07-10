@@ -64,4 +64,8 @@ export const ServicesApi = {
       },
     })
   },
+  // Відправка email сповіщення про рахунок
+  sendInvoiceEmail: (invoiceId) => {
+    return api.post(`/services/invoices/${invoiceId}/send-email`)
+  },
 }

@@ -20,6 +20,8 @@
 
         <q-tab name="wialonIntegration" :label="$t('company.tabs.wialonIntegration')" />
         <q-tab name="settings" :label="$t('company.tabs.settings')" />
+        <q-tab name="emailSettings" :label="$t('company.emailSettings.title')" />
+        <q-tab name="emailTemplates" :label="$t('company.emailTemplates.title')" />
       </q-tabs>
 
       <q-separator />
@@ -45,6 +47,12 @@
           <div class="text-h6 q-mb-md">{{ $t('company.settings.title') }}</div>
           <p class="text-grey">{{ $t('common.comingSoon') }}</p>
         </q-tab-panel>
+        <q-tab-panel name="emailSettings">
+          <email-settings-card />
+        </q-tab-panel>
+        <q-tab-panel name="emailTemplates">
+          <email-templates-card />
+        </q-tab-panel>
       </q-tab-panels>
     </q-card>
   </q-page>
@@ -56,6 +64,8 @@ import CompanyDetailsCard from 'components/company/CompanyDetailsCard.vue'
 import BankAccountsCard from 'components/company/BankAccountsCard.vue'
 import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
 import WialonIntegrationCard from 'components/company/WialonIntegrationCard.vue'
+import EmailSettingsCard from 'components/company/EmailSettingsCard.vue'
+import EmailTemplatesCard from 'components/company/EmailTemplatesCard.vue'
 
 // Стани
 const tab = ref('details')

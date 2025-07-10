@@ -165,6 +165,16 @@
               >
                 <q-tooltip>{{ $t('invoices.print') }}</q-tooltip>
               </q-btn>
+              <q-btn
+                flat
+                round
+                dense
+                color="info"
+                icon="email"
+                @click="sendEmailToClient(props.row)"
+              >
+                <q-tooltip>{{ $t('invoices.sendEmail') }}</q-tooltip>
+              </q-btn>
             </q-td>
           </template>
         </q-table>
@@ -374,6 +384,25 @@ const loadInvoices = async () => {
   }
 }
 
+const sendEmailToClient = async (invoice) => {
+  try {
+    await InvoicesApi.sendInvoiceEmail(invoice.id)
+
+    $q.notify({
+      color: 'positive',
+      message: t('invoices.emailSent'),
+      caption: `Рахунок ${invoice.invoice_number} відправлено клієнту`,
+      icon: 'email',
+    })
+  } catch (error) {
+    console.error('Error sending invoice email:', error)
+    $q.notify({
+      color: 'negative',
+      message: error.response?.data?.message || t('common.errors.emailSending'),
+      icon: 'error',
+    })
+  }
+}
 const clearFilters = () => {
   filters.value = {
     search: '',
