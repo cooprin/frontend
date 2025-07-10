@@ -79,4 +79,9 @@ export const InvoicesApi = {
   async deleteInvoiceDocument(invoiceId, documentId) {
     return await api.delete(`/services/invoices/${invoiceId}/documents/${documentId}`)
   },
+
+  // Відправка email сповіщення про рахунок
+  sendInvoiceEmail: (invoiceId) => {
+    return api.post(`/services/invoices/${invoiceId}/send-email`)
+  },
 }
