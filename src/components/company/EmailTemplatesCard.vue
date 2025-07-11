@@ -31,6 +31,15 @@
           </q-chip>
         </q-td>
       </template>
+      <!-- Слот для модуля -->
+      <template v-slot:body-cell-module_type="props">
+        <q-td :props="props">
+          <q-chip v-if="props.row.module_type" dense color="primary" text-color="white">
+            {{ getModuleLabel(props.row.module_type) }}
+          </q-chip>
+          <span v-else class="text-grey">-</span>
+        </q-td>
+      </template>
 
       <!-- Слот для дій -->
       <template v-slot:body-cell-actions="props">
@@ -91,6 +100,20 @@
                   outlined
                   dense
                   :hint="editingTemplate ? $t('company.emailTemplates.codeReadOnly') : ''"
+                />
+              </div>
+              <!-- Модуль -->
+              <div class="col-12 col-md-6">
+                <q-select
+                  v-model="templateForm.module_type"
+                  :options="moduleOptions"
+                  :label="$t('company.emailTemplates.moduleType')"
+                  outlined
+                  dense
+                  emit-value
+                  map-options
+                  clearable
+                  :hint="$t('company.emailTemplates.moduleTypeHint')"
                 />
               </div>
 
@@ -242,6 +265,7 @@ const templateForm = ref({
   body_html: '',
   body_text: '',
   description: '',
+  module_type: '',
   is_active: true,
 })
 
@@ -259,6 +283,14 @@ const availableVariables = {
   company_phone: 'Телефон компанії',
   company_email: 'Email компанії',
 }
+// Доступні модулі для шаблонів
+const moduleOptions = [
+  { label: 'Рахунки', value: 'invoice' },
+  { label: 'Платежі', value: 'payment' },
+  { label: 'Послуги', value: 'service' },
+  { label: 'Клієнти', value: 'client' },
+  { label: 'Система', value: 'system' },
+]
 
 // Computed
 const columns = computed(() => [
@@ -285,6 +317,13 @@ const columns = computed(() => [
     sortable: true,
   },
   {
+    name: 'module_type',
+    label: 'Модуль',
+    align: 'center',
+    field: 'module_type',
+    sortable: true,
+  },
+  {
     name: 'is_active',
     label: t('common.status'),
     align: 'center',
@@ -298,7 +337,6 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
-
 const renderedPreview = computed(() => {
   let preview = templateForm.value.body_html
 
@@ -338,6 +376,7 @@ const resetForm = () => {
     body_html: '',
     body_text: '',
     description: '',
+    module_type: '',
     is_active: true,
   }
   editingTemplate.value = null
@@ -351,7 +390,10 @@ const openCreateDialog = () => {
 
 const openEditDialog = (template) => {
   editingTemplate.value = template
-  templateForm.value = { ...template }
+  templateForm.value = {
+    ...template,
+    module_type: template.module_type || '',
+  }
   showDialog.value = true
 }
 
@@ -437,6 +479,11 @@ const getVariableExample = (variable) => {
 
 const formatVariable = (variable) => {
   return `{{${variable}}}`
+}
+
+const getModuleLabel = (moduleType) => {
+  const moduleOption = moduleOptions.find((option) => option.value === moduleType)
+  return moduleOption ? moduleOption.label : moduleType
 }
 
 // Lifecycle

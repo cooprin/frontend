@@ -7,6 +7,8 @@ export default {
     invoiceTemplates: 'Invoice Templates',
     wialonIntegration: 'Wialon Integration',
     settings: 'System Settings',
+    emailSettings: 'Email Settings',
+    emailTemplates: 'Email Templates',
   },
   details: {
     title: 'Company Information',
@@ -237,7 +239,7 @@ export default {
     ifHelper: 'Conditional operator',
     formatCurrencyHelper: 'Format amount as currency',
   },
-  // Email settings
+  // Email settings - EXTENDED
   emailSettings: {
     title: 'Email Settings',
     description: 'Configure SMTP settings for sending emails from the system',
@@ -251,8 +253,12 @@ export default {
     testConnection: 'Test Connection',
     sendTestEmail: 'Send Test Email',
     testEmailAddress: 'Test Email Address',
+    connectionStatus: 'Connection Status',
     connectionSuccess: 'Connection successful!',
     connectionError: 'Connection failed',
+    notConnected: 'Not connected',
+    testing: 'Testing...',
+    connected: 'Connected',
     testEmailSent: 'Test email sent successfully',
     testEmailError: 'Error sending test email',
     saveSuccess: 'Email settings saved successfully',
@@ -275,6 +281,8 @@ export default {
     code: 'Code',
     subject: 'Subject',
     description: 'Description',
+    moduleType: 'Module',
+    moduleTypeHint: 'Select the module this template is intended for',
     isActive: 'Active',
     htmlTemplate: 'HTML Template',
     preview: 'Preview',

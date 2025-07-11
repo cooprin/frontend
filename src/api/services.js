@@ -65,7 +65,8 @@ export const ServicesApi = {
     })
   },
   // Відправка email сповіщення про рахунок
-  sendInvoiceEmail: (invoiceId) => {
-    return api.post(`/services/invoices/${invoiceId}/send-email`)
+  sendInvoiceEmail: (invoiceId, templateCode = null) => {
+    const data = templateCode ? { templateCode } : {}
+    return api.post(`/services/invoices/${invoiceId}/send-email`, data)
   },
 }

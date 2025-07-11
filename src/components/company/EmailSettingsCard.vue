@@ -260,9 +260,9 @@ const statusColor = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (testing.value) return 'Тестування...'
-  if (connectionStatus.value) return t('company.emailSettings.connectionSuccess')
-  return 'Не підключено'
+  if (testing.value) return t('company.emailSettings.testing')
+  if (connectionStatus.value) return t('company.emailSettings.connected')
+  return t('company.emailSettings.notConnected')
 })
 
 // Methods
@@ -288,6 +288,11 @@ const loadSettings = async () => {
       }
 
       hasPassword.value = !!settings.smtp_password
+
+      // Перевіряємо статус підключення якщо є налаштування
+      if (settings.email_address && settings.smtp_server) {
+        await testConnection()
+      }
     }
   } catch (error) {
     console.error('Error loading email settings:', error)
@@ -311,6 +316,9 @@ const saveSettings = async () => {
       icon: 'check',
     })
     hasPassword.value = true
+
+    // Після успішного збереження тестуємо підключення
+    await testConnection()
   } catch (error) {
     console.error('Error saving email settings:', error)
     $q.notify({

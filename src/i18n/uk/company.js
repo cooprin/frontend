@@ -7,6 +7,8 @@ export default {
     invoiceTemplates: 'Шаблони рахунків',
     wialonIntegration: 'Інтеграція з Wialon',
     settings: 'Системні налаштування',
+    emailSettings: 'Налаштування пошти',
+    emailTemplates: 'Шаблони Email',
   },
   details: {
     title: 'Інформація про компанію',
@@ -237,7 +239,7 @@ export default {
     ifHelper: 'Умовний оператор',
     formatCurrencyHelper: 'Форматування суми у валюті',
   },
-  // Email settings
+  // Email settings - ДОПОВНЕНО
   emailSettings: {
     title: 'Налаштування електронної пошти',
     description: 'Налаштуйте SMTP для відправки електронних листів з системи',
@@ -251,8 +253,12 @@ export default {
     testConnection: "Тестувати з'єднання",
     sendTestEmail: 'Відправити тестовий лист',
     testEmailAddress: 'Адреса для тесту',
+    connectionStatus: "Статус з'єднання",
     connectionSuccess: "З'єднання успішне!",
     connectionError: "Помилка з'єднання",
+    notConnected: 'Не підключено',
+    testing: 'Тестування...',
+    connected: 'Підключено',
     testEmailSent: 'Тестовий лист відправлено успішно',
     testEmailError: 'Помилка відправки тестового листа',
     saveSuccess: 'Налаштування електронної пошти збережено успішно',
@@ -275,6 +281,8 @@ export default {
     code: 'Код',
     subject: 'Тема',
     description: 'Опис',
+    moduleType: 'Модуль',
+    moduleTypeHint: 'Оберіть модуль для якого призначений цей шаблон',
     isActive: 'Активний',
     htmlTemplate: 'HTML шаблон',
     preview: 'Попередній перегляд',

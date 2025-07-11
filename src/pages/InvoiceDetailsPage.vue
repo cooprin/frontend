@@ -652,32 +652,49 @@ const downloadDocument = (document) => {
 }
 
 const sendEmailToClient = async () => {
-  try {
-    if (!invoice.value || !invoice.value.id) {
+  // Показуємо діалог вибору шаблону
+  $q.dialog({
+    title: 'Відправити email',
+    message: 'Оберіть шаблон для відправки:',
+    options: {
+      type: 'radio',
+      model: 'new_invoice_created',
+      items: [
+        { label: 'Новий рахунок створено', value: 'new_invoice_created' },
+        { label: 'Нагадування про оплату', value: 'payment_reminder' },
+        { label: 'Рахунок оплачено', value: 'invoice_paid' },
+      ],
+    },
+    cancel: true,
+    persistent: true,
+  }).onOk(async (templateCode) => {
+    try {
+      if (!invoice.value || !invoice.value.id) {
+        $q.notify({
+          color: 'negative',
+          message: t('common.errors.idNotFound'),
+          icon: 'error',
+        })
+        return
+      }
+
+      const response = await InvoicesApi.sendInvoiceEmail(invoice.value.id, templateCode)
+
+      $q.notify({
+        color: 'positive',
+        message: t('invoices.emailSent'),
+        caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
+        icon: 'email',
+      })
+    } catch (error) {
+      console.error('Error sending invoice email:', error)
       $q.notify({
         color: 'negative',
-        message: t('common.errors.idNotFound'),
+        message: error.response?.data?.message || t('common.errors.emailSending'),
         icon: 'error',
       })
-      return
     }
-
-    const response = await InvoicesApi.sendInvoiceEmail(invoice.value.id)
-
-    $q.notify({
-      color: 'positive',
-      message: t('invoices.emailSent'),
-      caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
-      icon: 'email',
-    })
-  } catch (error) {
-    console.error('Error sending invoice email:', error)
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.message || t('common.errors.emailSending'),
-      icon: 'error',
-    })
-  }
+  })
 }
 
 const markAsPaid = () => {

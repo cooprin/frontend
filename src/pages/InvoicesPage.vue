@@ -385,23 +385,40 @@ const loadInvoices = async () => {
 }
 
 const sendEmailToClient = async (invoice) => {
-  try {
-    await InvoicesApi.sendInvoiceEmail(invoice.id)
+  // Показуємо діалог вибору шаблону
+  $q.dialog({
+    title: 'Відправити email',
+    message: `Оберіть шаблон для відправки рахунку ${invoice.invoice_number}:`,
+    options: {
+      type: 'radio',
+      model: 'new_invoice_created',
+      items: [
+        { label: 'Новий рахунок створено', value: 'new_invoice_created' },
+        { label: 'Нагадування про оплату', value: 'payment_reminder' },
+        { label: 'Рахунок оплачено', value: 'invoice_paid' },
+      ],
+    },
+    cancel: true,
+    persistent: true,
+  }).onOk(async (templateCode) => {
+    try {
+      await InvoicesApi.sendInvoiceEmail(invoice.id, templateCode)
 
-    $q.notify({
-      color: 'positive',
-      message: t('invoices.emailSent'),
-      caption: `Рахунок ${invoice.invoice_number} відправлено клієнту`,
-      icon: 'email',
-    })
-  } catch (error) {
-    console.error('Error sending invoice email:', error)
-    $q.notify({
-      color: 'negative',
-      message: error.response?.data?.message || t('common.errors.emailSending'),
-      icon: 'error',
-    })
-  }
+      $q.notify({
+        color: 'positive',
+        message: t('invoices.emailSent'),
+        caption: `Рахунок ${invoice.invoice_number} відправлено клієнту`,
+        icon: 'email',
+      })
+    } catch (error) {
+      console.error('Error sending invoice email:', error)
+      $q.notify({
+        color: 'negative',
+        message: error.response?.data?.message || t('common.errors.emailSending'),
+        icon: 'error',
+      })
+    }
+  })
 }
 const clearFilters = () => {
   filters.value = {
