@@ -19,6 +19,13 @@
         <q-btn flat icon="arrow_back" color="primary" @click="goBack" />
         <div class="text-h6 q-ml-sm">{{ $t('payments.details') }}</div>
         <q-space />
+        <q-btn
+          color="info"
+          icon="email"
+          :label="$t('common.sendEmail')"
+          @click="sendEmailToClient"
+          class="q-mr-sm"
+        />
         <q-btn color="warning" icon="edit" :label="$t('common.edit')" @click="openEditDialog" />
         <q-btn
           color="negative"
@@ -250,6 +257,7 @@ import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import PaymentDialog from 'components/payments/PaymentDialog.vue'
+import { EmailTemplatesApi } from 'src/api/email-templates'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -280,6 +288,66 @@ const loadPayment = async () => {
     payment.value = null
   } finally {
     loading.value = false
+  }
+}
+
+const sendEmailToClient = async () => {
+  try {
+    const templatesResponse = await EmailTemplatesApi.getTemplates()
+    const paymentTemplates = templatesResponse.data.templates
+      .filter((template) => template.module_type === 'payment' && template.is_active)
+      .map((template) => ({
+        label: template.name,
+        value: template.code,
+      }))
+
+    if (paymentTemplates.length === 0) {
+      $q.notify({
+        color: 'warning',
+        message: t('payments.noActiveTemplates'),
+        icon: 'warning',
+      })
+      return
+    }
+
+    $q.dialog({
+      title: t('payments.sendEmail'),
+      message: t('payments.selectTemplateForPayment', {
+        amount: formatCurrency(payment.value.amount),
+      }),
+      options: {
+        type: 'radio',
+        model: paymentTemplates[0].value,
+        items: paymentTemplates,
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk(async (templateCode) => {
+      try {
+        const response = await PaymentsApi.sendPaymentEmail(payment.value.id, templateCode)
+
+        $q.notify({
+          color: 'positive',
+          message: t('payments.emailSent'),
+          caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
+          icon: 'email',
+        })
+      } catch (error) {
+        console.error('Error sending payment email:', error)
+        $q.notify({
+          color: 'negative',
+          message: error.response?.data?.message || t('common.errors.emailSending'),
+          icon: 'error',
+        })
+      }
+    })
+  } catch (error) {
+    console.error('Error loading email templates:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('payments.errorLoadingTemplates'),
+      icon: 'error',
+    })
   }
 }
 

@@ -224,6 +224,16 @@
                   flat
                   round
                   dense
+                  color="info"
+                  icon="email"
+                  @click="sendEmailToClient(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.sendEmail') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
                   color="warning"
                   icon="edit"
                   @click="openEditDialog(props.row)"
@@ -445,6 +455,7 @@ import { ClientsApi } from 'src/api/clients'
 import PaymentDialog from 'components/payments/PaymentDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
+import { EmailTemplatesApi } from 'src/api/email-templates'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -573,6 +584,64 @@ const columns = computed(() => [
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
+const sendEmailToClient = async (payment) => {
+  try {
+    const templatesResponse = await EmailTemplatesApi.getTemplates()
+    const paymentTemplates = templatesResponse.data.templates
+      .filter((template) => template.module_type === 'payment' && template.is_active)
+      .map((template) => ({
+        label: template.name,
+        value: template.code,
+      }))
+
+    if (paymentTemplates.length === 0) {
+      $q.notify({
+        color: 'warning',
+        message: t('payments.noActiveTemplates'),
+        icon: 'warning',
+      })
+      return
+    }
+
+    $q.dialog({
+      title: t('payments.sendEmail'),
+      message: t('payments.selectTemplateForPayment', { amount: formatCurrency(payment.amount) }),
+      options: {
+        type: 'radio',
+        model: paymentTemplates[0].value,
+        items: paymentTemplates,
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk(async (templateCode) => {
+      try {
+        await PaymentsApi.sendPaymentEmail(payment.id, templateCode)
+
+        $q.notify({
+          color: 'positive',
+          message: t('payments.emailSent'),
+          caption: t('payments.emailSentToClient', { client: payment.client_name }),
+          icon: 'email',
+        })
+      } catch (error) {
+        console.error('Error sending payment email:', error)
+        $q.notify({
+          color: 'negative',
+          message: error.response?.data?.message || t('common.errors.emailSending'),
+          icon: 'error',
+        })
+      }
+    })
+  } catch (error) {
+    console.error('Error loading email templates:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('payments.errorLoadingTemplates'),
+      icon: 'error',
+    })
+  }
 }
 
 const loadPayments = async () => {

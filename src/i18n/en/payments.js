@@ -88,4 +88,11 @@ export default {
     totalPaid: 'Total Paid',
     currentTariff: 'Current Tariff',
   },
+  // Email
+  sendEmail: 'Send Email',
+  emailSent: 'Email sent successfully',
+  selectTemplateForPayment: 'Select template for payment confirmation {amount}:',
+  noActiveTemplates: 'No active templates for payments',
+  errorLoadingTemplates: 'Error loading templates',
+  emailSentToClient: 'Email sent to client {client}',
 }
