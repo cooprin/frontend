@@ -119,4 +119,12 @@ export default {
     plan: 'Tariff plan',
     parentAccount: 'Parent account',
   },
+  // Email
+  sendEmail: 'Send Email',
+  emailSent: 'Email sent successfully',
+  selectTemplateForClient: 'Select template for sending to client {name}:',
+  noActiveTemplates: 'No active templates for clients',
+  errorLoadingTemplates: 'Error loading templates',
+  emailSentToClient: 'Email sent to client {name}',
+  noEmail: 'Client has no email address specified',
 }

@@ -399,7 +399,7 @@ const sendEmailToClient = async (invoice) => {
     if (invoiceTemplates.length === 0) {
       $q.notify({
         color: 'warning',
-        message: 'Немає активних шаблонів для рахунків',
+        message: t('invoices.noActiveTemplates'),
         icon: 'warning',
       })
       return
@@ -407,8 +407,8 @@ const sendEmailToClient = async (invoice) => {
 
     // Показуємо діалог вибору шаблону
     $q.dialog({
-      title: 'Відправити email',
-      message: `Оберіть шаблон для відправки рахунку ${invoice.invoice_number}:`,
+      title: t('invoices.sendEmail'),
+      message: t('invoices.selectTemplateForInvoice', { number: invoice.invoice_number }),
       options: {
         type: 'radio',
         model: invoiceTemplates[0].value, // перший як дефолтний
@@ -439,7 +439,7 @@ const sendEmailToClient = async (invoice) => {
     console.error('Error loading email templates:', error)
     $q.notify({
       color: 'negative',
-      message: 'Помилка завантаження шаблонів',
+      message: t('invoices.errorLoadingTemplates'),
       icon: 'error',
     })
   }

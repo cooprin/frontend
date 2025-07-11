@@ -63,4 +63,9 @@ export const ClientsApi = {
       },
     })
   },
+  // Відправка email клієнту
+  sendClientEmail: (clientId, templateCode = null) => {
+    const data = templateCode ? { templateCode } : {}
+    return api.post(`/clients/${clientId}/send-email`, data)
+  },
 }
