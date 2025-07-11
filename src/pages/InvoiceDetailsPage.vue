@@ -432,6 +432,7 @@ import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import { date } from 'quasar'
 import InvoiceEditDialog from 'src/components/invoices/InvoiceEditDialog.vue'
+import { EmailTemplatesApi } from 'src/api/email-templates'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -652,49 +653,72 @@ const downloadDocument = (document) => {
 }
 
 const sendEmailToClient = async () => {
-  // Показуємо діалог вибору шаблону
-  $q.dialog({
-    title: 'Відправити email',
-    message: 'Оберіть шаблон для відправки:',
-    options: {
-      type: 'radio',
-      model: 'new_invoice_created',
-      items: [
-        { label: 'Новий рахунок створено', value: 'new_invoice_created' },
-        { label: 'Нагадування про оплату', value: 'payment_reminder' },
-        { label: 'Рахунок оплачено', value: 'invoice_paid' },
-      ],
-    },
-    cancel: true,
-    persistent: true,
-  }).onOk(async (templateCode) => {
-    try {
-      if (!invoice.value || !invoice.value.id) {
+  // Спочатку завантажуємо шаблони для модуля "invoice"
+  try {
+    const templatesResponse = await EmailTemplatesApi.getTemplates()
+    const invoiceTemplates = templatesResponse.data.templates
+      .filter((template) => template.module_type === 'invoice' && template.is_active)
+      .map((template) => ({
+        label: template.name,
+        value: template.code,
+      }))
+
+    if (invoiceTemplates.length === 0) {
+      $q.notify({
+        color: 'warning',
+        message: 'Немає активних шаблонів для рахунків',
+        icon: 'warning',
+      })
+      return
+    }
+
+    // Показуємо діалог вибору шаблону
+    $q.dialog({
+      title: 'Відправити email',
+      message: 'Оберіть шаблон для відправки:',
+      options: {
+        type: 'radio',
+        model: invoiceTemplates[0].value, // перший як дефолтний
+        items: invoiceTemplates,
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk(async (templateCode) => {
+      try {
+        if (!invoice.value || !invoice.value.id) {
+          $q.notify({
+            color: 'negative',
+            message: t('common.errors.idNotFound'),
+            icon: 'error',
+          })
+          return
+        }
+
+        const response = await InvoicesApi.sendInvoiceEmail(invoice.value.id, templateCode)
+
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.emailSent'),
+          caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
+          icon: 'email',
+        })
+      } catch (error) {
+        console.error('Error sending invoice email:', error)
         $q.notify({
           color: 'negative',
-          message: t('common.errors.idNotFound'),
+          message: error.response?.data?.message || t('common.errors.emailSending'),
           icon: 'error',
         })
-        return
       }
-
-      const response = await InvoicesApi.sendInvoiceEmail(invoice.value.id, templateCode)
-
-      $q.notify({
-        color: 'positive',
-        message: t('invoices.emailSent'),
-        caption: response.data.recipient ? `Відправлено на: ${response.data.recipient}` : '',
-        icon: 'email',
-      })
-    } catch (error) {
-      console.error('Error sending invoice email:', error)
-      $q.notify({
-        color: 'negative',
-        message: error.response?.data?.message || t('common.errors.emailSending'),
-        icon: 'error',
-      })
-    }
-  })
+    })
+  } catch (error) {
+    console.error('Error loading email templates:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка завантаження шаблонів',
+      icon: 'error',
+    })
+  }
 }
 
 const markAsPaid = () => {

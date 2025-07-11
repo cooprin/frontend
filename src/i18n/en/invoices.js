@@ -129,4 +129,13 @@ export default {
   editTitle: 'Edit Invoice',
   updateSuccess: 'Invoice updated successfully',
   editLimitations: 'You can only edit basic invoice information. Items cannot be modified.',
+  // Email
+  sendEmail: 'Send Email',
+  emailSent: 'Email sent successfully',
+  selectEmailTemplate: 'Select template for sending',
+  selectTemplateForInvoice: 'Select template for sending invoice {number}:',
+  noActiveTemplates: 'No active templates for invoices',
+  errorLoadingTemplates: 'Error loading templates',
+  emailSentToClient: 'Invoice {number} sent to client',
+  sentTo: 'Sent to: {email}',
 }

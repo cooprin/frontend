@@ -199,6 +199,7 @@ import { date } from 'quasar'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
+import { EmailTemplatesApi } from 'src/api/email-templates'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -385,40 +386,63 @@ const loadInvoices = async () => {
 }
 
 const sendEmailToClient = async (invoice) => {
-  // Показуємо діалог вибору шаблону
-  $q.dialog({
-    title: 'Відправити email',
-    message: `Оберіть шаблон для відправки рахунку ${invoice.invoice_number}:`,
-    options: {
-      type: 'radio',
-      model: 'new_invoice_created',
-      items: [
-        { label: 'Новий рахунок створено', value: 'new_invoice_created' },
-        { label: 'Нагадування про оплату', value: 'payment_reminder' },
-        { label: 'Рахунок оплачено', value: 'invoice_paid' },
-      ],
-    },
-    cancel: true,
-    persistent: true,
-  }).onOk(async (templateCode) => {
-    try {
-      await InvoicesApi.sendInvoiceEmail(invoice.id, templateCode)
+  // Спочатку завантажуємо шаблони для модуля "invoice"
+  try {
+    const templatesResponse = await EmailTemplatesApi.getTemplates()
+    const invoiceTemplates = templatesResponse.data.templates
+      .filter((template) => template.module_type === 'invoice' && template.is_active)
+      .map((template) => ({
+        label: template.name,
+        value: template.code,
+      }))
 
+    if (invoiceTemplates.length === 0) {
       $q.notify({
-        color: 'positive',
-        message: t('invoices.emailSent'),
-        caption: `Рахунок ${invoice.invoice_number} відправлено клієнту`,
-        icon: 'email',
+        color: 'warning',
+        message: 'Немає активних шаблонів для рахунків',
+        icon: 'warning',
       })
-    } catch (error) {
-      console.error('Error sending invoice email:', error)
-      $q.notify({
-        color: 'negative',
-        message: error.response?.data?.message || t('common.errors.emailSending'),
-        icon: 'error',
-      })
+      return
     }
-  })
+
+    // Показуємо діалог вибору шаблону
+    $q.dialog({
+      title: 'Відправити email',
+      message: `Оберіть шаблон для відправки рахунку ${invoice.invoice_number}:`,
+      options: {
+        type: 'radio',
+        model: invoiceTemplates[0].value, // перший як дефолтний
+        items: invoiceTemplates,
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk(async (templateCode) => {
+      try {
+        await InvoicesApi.sendInvoiceEmail(invoice.id, templateCode)
+
+        $q.notify({
+          color: 'positive',
+          message: t('invoices.emailSent'),
+          caption: `Рахунок ${invoice.invoice_number} відправлено клієнту`,
+          icon: 'email',
+        })
+      } catch (error) {
+        console.error('Error sending invoice email:', error)
+        $q.notify({
+          color: 'negative',
+          message: error.response?.data?.message || t('common.errors.emailSending'),
+          icon: 'error',
+        })
+      }
+    })
+  } catch (error) {
+    console.error('Error loading email templates:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Помилка завантаження шаблонів',
+      icon: 'error',
+    })
+  }
 }
 const clearFilters = () => {
   filters.value = {
