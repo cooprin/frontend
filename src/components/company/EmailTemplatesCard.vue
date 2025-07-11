@@ -245,6 +245,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useI18n } from 'vue-i18n'
 import { EmailTemplatesApi } from 'src/api/email-templates'
+import { MODULE_TYPES } from 'src/constants/moduleTypes'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -284,13 +285,12 @@ const availableVariables = {
   company_email: 'Email компанії',
 }
 // Доступні модулі для шаблонів
-const moduleOptions = [
-  { label: 'Рахунки', value: 'invoice' },
-  { label: 'Платежі', value: 'payment' },
-  { label: 'Послуги', value: 'service' },
-  { label: 'Клієнти', value: 'client' },
-  { label: 'Система', value: 'system' },
-]
+const moduleOptions = computed(() => {
+  return MODULE_TYPES.map((module) => ({
+    label: t(`company.${module.labelKey}`),
+    value: module.value,
+  }))
+})
 
 // Computed
 const columns = computed(() => [
@@ -482,7 +482,7 @@ const formatVariable = (variable) => {
 }
 
 const getModuleLabel = (moduleType) => {
-  const moduleOption = moduleOptions.find((option) => option.value === moduleType)
+  const moduleOption = moduleOptions.value.find((option) => option.value === moduleType)
   return moduleOption ? moduleOption.label : moduleType
 }
 

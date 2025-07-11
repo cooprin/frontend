@@ -310,4 +310,11 @@ export default {
     daysBefore: 'Days before due',
     saveSuccess: 'Notification settings saved',
   },
+  moduleTypes: {
+    invoice: 'Invoices',
+    payment: 'Payments',
+    service: 'Services',
+    client: 'Clients',
+    system: 'System',
+  },
 }

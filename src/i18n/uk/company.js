@@ -310,4 +310,11 @@ export default {
     daysBefore: 'Днів до оплати',
     saveSuccess: 'Налаштування сповіщень збережено',
   },
+  moduleTypes: {
+    invoice: 'Рахунки',
+    payment: 'Платежі',
+    service: 'Послуги',
+    client: 'Клієнти',
+    system: 'Система',
+  },
 }
