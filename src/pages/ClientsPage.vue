@@ -110,6 +110,16 @@
                   flat
                   round
                   dense
+                  color="info"
+                  icon="email"
+                  @click="sendEmailToClient(props.row)"
+                >
+                  <q-tooltip>{{ $t('common.sendEmail') }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  dense
                   color="warning"
                   icon="edit"
                   @click="openEditDialog(props.row)"
@@ -168,6 +178,7 @@ import { useI18n } from 'vue-i18n'
 import { ClientsApi } from 'src/api/clients'
 import ClientDialog from 'components/clients/ClientDialog.vue'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
+import { EmailTemplatesApi } from 'src/api/email-templates'
 
 const $q = useQuasar()
 const router = useRouter()
@@ -261,6 +272,74 @@ const columns = computed(() => [
 // Methods
 const paginationLabel = (firstRowIndex, endRowIndex, totalRowsNumber) => {
   return `${firstRowIndex}-${endRowIndex} ${t('common.of')} ${totalRowsNumber}`
+}
+
+const sendEmailToClient = async (client) => {
+  // Перевіряємо чи є email у клієнта
+  if (!client.email) {
+    $q.notify({
+      color: 'warning',
+      message: t('clients.noEmail'),
+      icon: 'warning',
+    })
+    return
+  }
+
+  try {
+    const templatesResponse = await EmailTemplatesApi.getTemplates()
+    const clientTemplates = templatesResponse.data.templates
+      .filter((template) => template.module_type === 'client' && template.is_active)
+      .map((template) => ({
+        label: template.name,
+        value: template.code,
+      }))
+
+    if (clientTemplates.length === 0) {
+      $q.notify({
+        color: 'warning',
+        message: t('clients.noActiveTemplates'),
+        icon: 'warning',
+      })
+      return
+    }
+
+    $q.dialog({
+      title: t('clients.sendEmail'),
+      message: t('clients.selectTemplateForClient', { name: client.name }),
+      options: {
+        type: 'radio',
+        model: clientTemplates[0].value,
+        items: clientTemplates,
+      },
+      cancel: true,
+      persistent: true,
+    }).onOk(async (templateCode) => {
+      try {
+        await ClientsApi.sendClientEmail(client.id, templateCode)
+
+        $q.notify({
+          color: 'positive',
+          message: t('clients.emailSent'),
+          caption: t('clients.emailSentToClient', { name: client.name }),
+          icon: 'email',
+        })
+      } catch (error) {
+        console.error('Error sending client email:', error)
+        $q.notify({
+          color: 'negative',
+          message: error.response?.data?.message || t('common.errors.emailSending'),
+          icon: 'error',
+        })
+      }
+    })
+  } catch (error) {
+    console.error('Error loading email templates:', error)
+    $q.notify({
+      color: 'negative',
+      message: t('clients.errorLoadingTemplates'),
+      icon: 'error',
+    })
+  }
 }
 
 const loadClients = async () => {

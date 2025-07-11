@@ -94,4 +94,25 @@ export const CompanyApi = {
     if (!filePath) return null
     return `${process.env.API_URL}/uploads/${filePath}`
   },
+  // Email налаштування
+  getEmailSettings: () => {
+    return api.get('/company/email-settings')
+  },
+
+  updateEmailSettings: (data) => {
+    return api.put('/company/email-settings', data)
+  },
+
+  testEmailConnection: (data) => {
+    return api.post('/company/test-email', data)
+  },
+
+  // Налаштування сповіщень
+  getNotificationSettings: () => {
+    return api.get('/company/notification-settings')
+  },
+
+  updateNotificationSettings: (data) => {
+    return api.put('/company/notification-settings', data)
+  },
 }

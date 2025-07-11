@@ -88,4 +88,10 @@ export const PaymentsApi = {
   getOverdueByMonth: () => {
     return api.get('/billing/payments/overdue/monthly')
   },
+
+  // Відправка email про платіж
+  sendPaymentEmail: (paymentId, templateCode = null) => {
+    const data = templateCode ? { templateCode } : {}
+    return api.post(`/billing/payments/${paymentId}/send-email`, data)
+  },
 }

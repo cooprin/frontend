@@ -119,4 +119,12 @@ export default {
     plan: 'Тарифний план',
     parentAccount: 'Батьківський акаунт',
   },
+  // Email
+  sendEmail: 'Відправити email',
+  emailSent: 'Email успішно відправлено',
+  selectTemplateForClient: 'Оберіть шаблон для відправки клієнту {name}:',
+  noActiveTemplates: 'Немає активних шаблонів для клієнтів',
+  errorLoadingTemplates: 'Помилка завантаження шаблонів',
+  emailSentToClient: 'Email відправлено клієнту {name}',
+  noEmail: 'У клієнта не вказано email адресу',
 }

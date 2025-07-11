@@ -106,4 +106,5 @@ export default {
   currency: 'грн',
   days: 'днів',
   day: 'день',
+  emailSending: 'Помилка відправки email',
 }

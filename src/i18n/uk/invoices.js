@@ -130,4 +130,13 @@ export default {
   updateSuccess: 'Рахунок успішно оновлено',
   editLimitations:
     'Можна редагувати тільки основну інформацію рахунку. Позиції змінювати не можна.',
+  // Email
+  sendEmail: 'Відправити email',
+  emailSent: 'Email успішно відправлено',
+  selectEmailTemplate: 'Оберіть шаблон для відправки',
+  selectTemplateForInvoice: 'Оберіть шаблон для відправки рахунку {number}:',
+  noActiveTemplates: 'Немає активних шаблонів для рахунків',
+  errorLoadingTemplates: 'Помилка завантаження шаблонів',
+  emailSentToClient: 'Рахунок {number} відправлено клієнту',
+  sentTo: 'Відправлено на: {email}',
 }

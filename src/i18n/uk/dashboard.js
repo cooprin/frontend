@@ -126,4 +126,21 @@ export default {
   accessDenied: 'Немає доступу до дашборду',
   accessDeniedMessage: 'У вас немає дозволу для перегляду цього дашборду',
   goToAvailableDashboards: 'Перейти до доступних дашбордів',
+  // Online statistics
+  onlineStats: {
+    onlineStaff: 'Онлайн співробітників',
+    onlineClients: 'Онлайн клієнтів',
+    totalOnline: 'Всього онлайн',
+  },
+  // System status
+  systemStatus: {
+    title: 'Статус системи',
+    healthy: 'Працює',
+    issues: 'Проблеми',
+    database: 'База даних',
+    sockets: 'Real-time',
+    wialon: "З'єднання з Wialon",
+    connected: 'Підключено',
+    disconnected: 'Відключено',
+  },
 }

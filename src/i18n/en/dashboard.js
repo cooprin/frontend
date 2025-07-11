@@ -126,4 +126,21 @@ export default {
   accessDenied: 'Access Denied',
   accessDeniedMessage: 'You do not have permission to view this dashboard',
   goToAvailableDashboards: 'Go to Available Dashboards',
+  // Online statistics
+  onlineStats: {
+    onlineStaff: 'Online Staff',
+    onlineClients: 'Online Clients',
+    totalOnline: 'Total Online',
+  },
+  // System status
+  systemStatus: {
+    title: 'System Status',
+    healthy: 'Healthy',
+    issues: 'Issues',
+    database: 'Database',
+    sockets: 'Real-time',
+    wialon: 'Wialon Connection',
+    connected: 'Connected',
+    disconnected: 'Disconnected',
+  },
 }

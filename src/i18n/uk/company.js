@@ -7,6 +7,8 @@ export default {
     invoiceTemplates: 'Шаблони рахунків',
     wialonIntegration: 'Інтеграція з Wialon',
     settings: 'Системні налаштування',
+    emailSettings: 'Налаштування пошти',
+    emailTemplates: 'Шаблони Email',
   },
   details: {
     title: 'Інформація про компанію',
@@ -236,5 +238,133 @@ export default {
     eachHelper: 'Цикл по елементам масиву',
     ifHelper: 'Умовний оператор',
     formatCurrencyHelper: 'Форматування суми у валюті',
+  },
+  // Email settings - ДОПОВНЕНО
+  emailSettings: {
+    title: 'Налаштування електронної пошти',
+    description: 'Налаштуйте SMTP для відправки електронних листів з системи',
+    emailAddress: 'Електронна адреса',
+    displayName: "Відображуване ім'я",
+    smtpServer: 'SMTP сервер',
+    smtpPort: 'SMTP порт',
+    smtpUsername: 'SMTP користувач',
+    smtpPassword: 'SMTP пароль',
+    useSsl: 'Використовувати SSL/TLS',
+    testConnection: "Тестувати з'єднання",
+    sendTestEmail: 'Відправити тестовий лист',
+    testEmailAddress: 'Адреса для тесту',
+    connectionStatus: "Статус з'єднання",
+    connectionSuccess: "З'єднання успішне!",
+    connectionError: "Помилка з'єднання",
+    notConnected: 'Не підключено',
+    testing: 'Тестування...',
+    connected: 'Підключено',
+    testEmailSent: 'Тестовий лист відправлено успішно',
+    testEmailError: 'Помилка відправки тестового листа',
+    saveSuccess: 'Налаштування електронної пошти збережено успішно',
+    passwordPlaceholder: 'Залиште порожнім щоб зберегти поточний пароль',
+    gmailSetup: 'Налаштування Gmail',
+    gmailInstructions:
+      'Для Gmail використовуйте smtp.gmail.com:587 та увімкніть 2-факторну автентифікацію з паролем додатку',
+  },
+  sendEmail: 'Відправити Email',
+  emailSent: 'Email успішно відправлено',
+  emailTemplates: {
+    title: 'Email Templates',
+    desc: 'Manage templates for automatic email notifications',
+
+    // Кнопки та дії
+    addTemplate: 'Add Template',
+    editTemplate: 'Edit Template',
+    createTemplate: 'Create Template',
+    saveTemplate: 'Save Template',
+
+    // Основні поля
+    name: 'Name',
+    code: 'Code',
+    subject: 'Subject',
+    description: 'Description',
+    moduleType: 'Module',
+    moduleTypeHint: 'Select the module this template is intended for',
+    isActive: 'Active',
+
+    // Секції
+    basicInfo: 'Basic Information',
+    templateContent: 'Template Content',
+    preview: 'Preview',
+    availableVariables: 'Available Variables',
+    variablesDescription: 'Available variables for template',
+
+    // Контент
+    htmlContent: 'HTML Content',
+    textContent: 'Text Content',
+    htmlPlaceholder: 'Enter HTML code for email...',
+    textPlaceholder: 'Text version of email (optional)',
+
+    // Таби
+    htmlTab: 'HTML Template',
+    textTab: 'Text Version',
+    previewTab: 'Preview',
+    variablesTab: 'Variables',
+
+    // Таблиця змінних
+    variableName: 'Variable Name',
+    variableDescription: 'Description',
+    variableExample: 'Example',
+
+    // Повідомлення
+    updateSuccess: 'Template updated successfully',
+    createSuccess: 'Template created successfully',
+    deleteSuccess: 'Template deleted successfully',
+    deleteConfirm: 'Are you sure you want to delete template "{name}"?',
+    noTemplates: 'No templates',
+
+    // Підказки
+    codeReadOnly: 'Template code cannot be changed after creation',
+
+    // Змінні для шаблонів
+    variables: {
+      invoice_number: 'Invoice number',
+      invoice_date: 'Invoice date',
+      client_name: 'Client name',
+      company_name: 'Company name',
+      company_address: 'Company address',
+      company_phone: 'Company phone',
+      company_email: 'Company email',
+      company_website: 'Company website',
+      company_logo_url: 'Company logo URL',
+      billing_period: 'Billing period',
+      total_amount: 'Total amount',
+      due_date: 'Due date',
+      portal_url: 'Portal URL',
+      payment_amount: 'Payment amount',
+      payment_date: 'Payment date',
+      contact_person: 'Contact person',
+      registration_date: 'Registration date',
+    },
+  },
+  emailNotifications: {
+    title: 'Сповіщення Email',
+    desc: 'Налаштування автоматичних email сповіщень для різних подій',
+    automaticNotifications: 'Автоматичні сповіщення',
+    newInvoiceCreated: 'Новий рахунок створено',
+    newInvoiceDescription: 'Відправляти клієнту email при створенні нового рахунку',
+    invoiceStatusChanged: 'Статус рахунку змінено',
+    invoiceStatusDescription: 'Сповіщати клієнта про зміну статусу рахунку (оплачено, скасовано)',
+    paymentReminder: 'Нагадування про оплату',
+    paymentReminderDescription: 'Відправляти нагадування про несплачені рахунки',
+    selectTemplate: 'Оберіть шаблон',
+    sendAutomatically: 'Відправляти автоматично',
+    sendAutomaticallyDescription: 'Якщо вимкнено, email потрібно буде відправляти вручну',
+    statusTemplates: 'Шаблони для статусів',
+    daysBefore: 'Днів до оплати',
+    saveSuccess: 'Налаштування сповіщень збережено',
+  },
+  moduleTypes: {
+    invoice: 'Рахунки',
+    payment: 'Платежі',
+    service: 'Послуги',
+    client: 'Клієнти',
+    system: 'Система',
   },
 }

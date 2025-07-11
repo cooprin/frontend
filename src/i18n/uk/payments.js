@@ -88,4 +88,11 @@ export default {
     totalPaid: 'Всього оплачено',
     currentTariff: 'Поточний тариф',
   },
+  // Email
+  sendEmail: 'Відправити email',
+  emailSent: 'Email успішно відправлено',
+  selectTemplateForPayment: 'Оберіть шаблон для підтвердження платежу {amount}:',
+  noActiveTemplates: 'Немає активних шаблонів для платежів',
+  errorLoadingTemplates: 'Помилка завантаження шаблонів',
+  emailSentToClient: 'Email відправлено клієнту {client}',
 }

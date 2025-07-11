@@ -106,4 +106,5 @@ export default {
   currency: 'UAH',
   days: 'days',
   day: 'day',
+  emailSending: 'Error sending email',
 }
