@@ -270,28 +270,78 @@ export default {
   sendEmail: 'Відправити Email',
   emailSent: 'Email успішно відправлено',
   emailTemplates: {
-    title: 'Шаблони Email',
-    desc: 'Керування шаблонами для автоматичної відправки email повідомлень',
-    addTemplate: 'Додати шаблон',
-    noTemplates: 'Немає шаблонів',
-    editTemplate: 'Редагувати шаблон',
-    createTemplate: 'Створити шаблон',
-    basicInfo: 'Основна інформація',
-    name: 'Назва',
-    code: 'Код',
-    subject: 'Тема',
-    description: 'Опис',
-    moduleType: 'Модуль',
-    moduleTypeHint: 'Оберіть модуль для якого призначений цей шаблон',
-    isActive: 'Активний',
-    htmlTemplate: 'HTML шаблон',
-    preview: 'Попередній перегляд',
-    htmlPlaceholder: 'Введіть HTML код для email...',
-    codeReadOnly: 'Код шаблону не можна змінювати після створення',
-    updateSuccess: 'Шаблон успішно оновлено',
-    createSuccess: 'Шаблон успішно створено',
-    deleteSuccess: 'Шаблон успішно видалено',
-    deleteConfirm: 'Ви впевнені, що хочете видалити шаблон "{name}"?',
+    title: 'Email Templates',
+    desc: 'Manage templates for automatic email notifications',
+
+    // Кнопки та дії
+    addTemplate: 'Add Template',
+    editTemplate: 'Edit Template',
+    createTemplate: 'Create Template',
+    saveTemplate: 'Save Template',
+
+    // Основні поля
+    name: 'Name',
+    code: 'Code',
+    subject: 'Subject',
+    description: 'Description',
+    moduleType: 'Module',
+    moduleTypeHint: 'Select the module this template is intended for',
+    isActive: 'Active',
+
+    // Секції
+    basicInfo: 'Basic Information',
+    templateContent: 'Template Content',
+    preview: 'Preview',
+    availableVariables: 'Available Variables',
+    variablesDescription: 'Available variables for template',
+
+    // Контент
+    htmlContent: 'HTML Content',
+    textContent: 'Text Content',
+    htmlPlaceholder: 'Enter HTML code for email...',
+    textPlaceholder: 'Text version of email (optional)',
+
+    // Таби
+    htmlTab: 'HTML Template',
+    textTab: 'Text Version',
+    previewTab: 'Preview',
+    variablesTab: 'Variables',
+
+    // Таблиця змінних
+    variableName: 'Variable Name',
+    variableDescription: 'Description',
+    variableExample: 'Example',
+
+    // Повідомлення
+    updateSuccess: 'Template updated successfully',
+    createSuccess: 'Template created successfully',
+    deleteSuccess: 'Template deleted successfully',
+    deleteConfirm: 'Are you sure you want to delete template "{name}"?',
+    noTemplates: 'No templates',
+
+    // Підказки
+    codeReadOnly: 'Template code cannot be changed after creation',
+
+    // Змінні для шаблонів
+    variables: {
+      invoice_number: 'Invoice number',
+      invoice_date: 'Invoice date',
+      client_name: 'Client name',
+      company_name: 'Company name',
+      company_address: 'Company address',
+      company_phone: 'Company phone',
+      company_email: 'Company email',
+      company_website: 'Company website',
+      company_logo_url: 'Company logo URL',
+      billing_period: 'Billing period',
+      total_amount: 'Total amount',
+      due_date: 'Due date',
+      portal_url: 'Portal URL',
+      payment_amount: 'Payment amount',
+      payment_date: 'Payment date',
+      contact_person: 'Contact person',
+      registration_date: 'Registration date',
+    },
   },
   emailNotifications: {
     title: 'Сповіщення Email',

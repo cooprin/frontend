@@ -159,10 +159,10 @@
               align="justify"
               narrow-indicator
             >
-              <q-tab name="html" :label="$t('company.emailTemplates.htmlTemplate')" />
-              <q-tab name="text" label="Текстова версія" />
-              <q-tab name="preview" :label="$t('company.emailTemplates.preview')" />
-              <q-tab name="variables" label="Змінні" />
+              <q-tab name="html" :label="$t('company.emailTemplates.htmlTab')" />
+              <q-tab name="text" :label="$t('company.emailTemplates.textTab')" />
+              <q-tab name="preview" :label="$t('company.emailTemplates.previewTab')" />
+              <q-tab name="variables" :label="$t('company.emailTemplates.variablesTab')" />
             </q-tabs>
 
             <q-tab-panels v-model="contentTab" animated>
@@ -170,7 +170,7 @@
               <q-tab-panel name="html">
                 <q-input
                   v-model="templateForm.body_html"
-                  :label="$t('company.emailTemplates.htmlTemplate')"
+                  :label="$t('company.emailTemplates.htmlContent')"
                   type="textarea"
                   outlined
                   autogrow
@@ -184,12 +184,12 @@
               <q-tab-panel name="text">
                 <q-input
                   v-model="templateForm.body_text"
-                  label="Текстова версія"
+                  :label="$t('company.emailTemplates.textContent')"
                   type="textarea"
                   outlined
                   autogrow
                   rows="15"
-                  placeholder="Текстова версія email (опціонально)"
+                  :placeholder="$t('company.emailTemplates.textPlaceholder')"
                 />
               </q-tab-panel>
 
@@ -198,7 +198,9 @@
                 <div class="text-subtitle2 q-mb-md">{{ $t('company.emailTemplates.preview') }}</div>
                 <q-card flat bordered>
                   <q-card-section>
-                    <div class="text-weight-bold q-mb-sm">Тема: {{ templateForm.subject }}</div>
+                    <div class="text-weight-bold q-mb-sm">
+                      {{ $t('company.emailTemplates.subject') }}: {{ templateForm.subject }}
+                    </div>
                     <div v-html="renderedPreview" class="email-preview"></div>
                   </q-card-section>
                 </q-card>
@@ -206,13 +208,17 @@
 
               <!-- Змінні -->
               <q-tab-panel name="variables">
-                <div class="text-subtitle2 q-mb-md">Доступні змінні для шаблону</div>
+                <div class="text-subtitle2 q-mb-md">
+                  {{ $t('company.emailTemplates.variablesDescription') }}
+                </div>
                 <q-markup-table flat bordered>
                   <thead>
                     <tr>
-                      <th class="text-left">Змінна</th>
-                      <th class="text-left">Опис</th>
-                      <th class="text-left">Приклад</th>
+                      <th class="text-left">{{ $t('company.emailTemplates.variableName') }}</th>
+                      <th class="text-left">
+                        {{ $t('company.emailTemplates.variableDescription') }}
+                      </th>
+                      <th class="text-left">{{ $t('company.emailTemplates.variableExample') }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -220,7 +226,7 @@
                       <td>
                         <code>{{ formatVariable(variable) }}</code>
                       </td>
-                      <td>{{ desc }}</td>
+                      <td>{{ $t(`company.emailTemplates.variables.${variable}`) }}</td>
                       <td class="text-grey">{{ getVariableExample(variable) }}</td>
                     </tr>
                   </tbody>
@@ -272,18 +278,25 @@ const templateForm = ref({
 
 // Доступні змінні для шаблонів
 const availableVariables = {
-  invoice_number: 'Номер рахунку',
-  invoice_date: 'Дата рахунку',
-  client_name: "Ім'я клієнта",
-  company_name: 'Назва компанії',
-  billing_period: 'Період розрахунку',
-  total_amount: 'Загальна сума',
-  due_date: 'Дата оплати',
-  portal_url: 'Посилання на портал',
-  company_address: 'Адреса компанії',
-  company_phone: 'Телефон компанії',
-  company_email: 'Email компанії',
+  invoice_number: 'invoice_number',
+  invoice_date: 'invoice_date',
+  client_name: 'client_name',
+  company_name: 'company_name',
+  company_address: 'company_address',
+  company_phone: 'company_phone',
+  company_email: 'company_email',
+  company_website: 'company_website',
+  company_logo_url: 'company_logo_url',
+  billing_period: 'billing_period',
+  total_amount: 'total_amount',
+  due_date: 'due_date',
+  portal_url: 'portal_url',
+  payment_amount: 'payment_amount',
+  payment_date: 'payment_date',
+  contact_person: 'contact_person',
+  registration_date: 'registration_date',
 }
+
 // Доступні модулі для шаблонів
 const moduleOptions = computed(() => {
   return MODULE_TYPES.map((module) => ({
@@ -311,14 +324,14 @@ const columns = computed(() => [
   },
   {
     name: 'subject',
-    label: 'Тема',
+    label: t('company.emailTemplates.subject'),
     align: 'left',
     field: 'subject',
     sortable: true,
   },
   {
     name: 'module_type',
-    label: 'Модуль',
+    label: t('company.emailTemplates.moduleType'),
     align: 'center',
     field: 'module_type',
     sortable: true,
@@ -337,6 +350,7 @@ const columns = computed(() => [
     sortable: false,
   },
 ])
+
 const renderedPreview = computed(() => {
   let preview = templateForm.value.body_html
 
@@ -466,13 +480,19 @@ const getVariableExample = (variable) => {
     invoice_date: '15.03.2024',
     client_name: 'ТОВ "Приклад"',
     company_name: 'Наша Компанія',
+    company_address: 'вул. Приклад, 1, Київ',
+    company_phone: '+380 44 123 45 67',
+    company_email: 'info@example.com',
+    company_website: 'https://example.com',
+    company_logo_url: 'https://example.com/logo.png',
     billing_period: 'Березень 2024',
     total_amount: '1 500,00',
     due_date: '15.04.2024',
     portal_url: 'https://portal.example.com',
-    company_address: 'вул. Приклад, 1, Київ',
-    company_phone: '+380 44 123 45 67',
-    company_email: 'info@example.com',
+    payment_amount: '1 200,00',
+    payment_date: '10.03.2024',
+    contact_person: 'Іван Петренко',
+    registration_date: '01.01.2024',
   }
   return examples[variable] || `[${variable}]`
 }

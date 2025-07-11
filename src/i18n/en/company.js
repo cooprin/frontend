@@ -292,6 +292,45 @@ export default {
     createSuccess: 'Template created successfully',
     deleteSuccess: 'Template deleted successfully',
     deleteConfirm: 'Are you sure you want to delete template "{name}"?',
+    // Кнопки та дії
+    saveTemplate: 'Save Template',
+
+    // Секції
+    templateContent: 'Template Content',
+    variables: 'Available Variables',
+    variablesFor: 'Variables for {module}',
+
+    // Поля
+    templateName: 'Template Name',
+    templateCode: 'Template Code',
+    templateSubject: 'Email Subject',
+    htmlContent: 'HTML Content',
+    textContent: 'Text Content',
+
+    // Таби
+    htmlTab: 'HTML Template',
+    textTab: 'Text Version',
+    previewTab: 'Preview',
+    variablesTab: 'Variables',
+
+    // Повідомлення
+    templateSaved: 'Template saved successfully',
+    templateDeleted: 'Template deleted successfully',
+    noTemplatesFound: 'No email templates found',
+
+    // Підказки
+    codeHint: 'Unique code for template identification',
+    subjectHint: 'Email subject line with variables',
+    moduleHint: 'Select the module this template is for',
+
+    // Змінні
+    variableExample: 'Example',
+    variableDescription: 'Description',
+
+    textPlaceholder: 'Text version of email (optional)',
+
+    // Опис змінних
+    variablesDescription: 'Available variables for template',
   },
   emailNotifications: {
     title: 'Email Notifications',
