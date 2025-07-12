@@ -6,6 +6,7 @@
 import { ref, onMounted, watch, toRefs } from 'vue'
 import Chart from 'chart.js/auto'
 import { useI18n } from 'vue-i18n'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   data: {
@@ -22,6 +23,7 @@ const { data, showSplit } = toRefs(props)
 const chartRef = ref(null)
 const { t, locale } = useI18n() // Добавили locale здесь
 let chart = null
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 const createChart = () => {
   if (chart) {
@@ -107,11 +109,7 @@ const createChart = () => {
           beginAtZero: true,
           ticks: {
             callback: function (value) {
-              return new Intl.NumberFormat('uk-UA', {
-                style: 'currency',
-                currency: 'UAH',
-                maximumFractionDigits: 0,
-              }).format(value)
+              return formatCurrencyFromComposable(value)
             },
           },
         },
@@ -120,14 +118,7 @@ const createChart = () => {
         tooltip: {
           callbacks: {
             label: function (context) {
-              return (
-                context.dataset.label +
-                ': ' +
-                new Intl.NumberFormat('uk-UA', {
-                  style: 'currency',
-                  currency: 'UAH',
-                }).format(context.raw)
-              )
+              return context.dataset.label + ': ' + formatCurrencyFromComposable(context.raw)
             },
           },
         },

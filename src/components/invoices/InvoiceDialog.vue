@@ -179,10 +179,10 @@
                               v-model.number="item.unit_price"
                               :label="$t('invoices.items.unitPrice')"
                               type="number"
+                              :prefix="$t('common.currency')"
                               :rules="[(val) => val > 0 || t('validation.minValue', { min: 1 })]"
                               outlined
                               dense
-                              prefix="₴"
                               @update:model-value="updateItemTotal(item)"
                             />
                           </div>
@@ -193,9 +193,9 @@
                               v-model.number="item.total_price"
                               :label="$t('invoices.items.totalPrice')"
                               type="number"
+                              :prefix="$t('common.currency')"
                               outlined
                               dense
-                              prefix="₴"
                               readonly
                             />
                           </div>
@@ -246,6 +246,7 @@ import { ClientsApi } from 'src/api/clients'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   modelValue: {
@@ -258,7 +259,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 // State
 const loading = ref(false)
 const loadingClients = ref(false)
@@ -469,7 +470,7 @@ const calculateTotal = () => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const onSubmit = async () => {

@@ -367,4 +367,27 @@ export default {
     client: 'Клієнти',
     system: 'Система',
   },
+  currencySettings: {
+    title: 'Налаштування валюти',
+    description: 'Оберіть валюту за замовчуванням для відображення в системі',
+    currentCurrency: 'Поточна валюта',
+    selectCurrency: 'Оберіть валюту',
+    displayFormat: 'Формат відображення',
+    preview: 'Попередній перегляд',
+    smallAmount: 'Мала сума',
+    largeAmount: 'Велика сума',
+    zeroAmount: 'Нуль',
+    advancedSettings: 'Розширені налаштування',
+    decimalPlaces: 'Десяткових знаків',
+    useThousandsSeparator: 'Використовувати роздільник тисяч',
+    changeWarning:
+      'Зміна валюти вплине на відображення всіх сум в системі. Самі дані в базі не зміняться.',
+    resetToUAH: 'Скинути до гривні',
+    saveSuccess: 'Налаштування валюти збережено',
+    formats: {
+      symbolBefore: 'Символ перед сумою (₴100)',
+      symbolAfter: 'Символ після суми (100 ₴)',
+      codeAfter: 'Код після суми (100 UAH)',
+    },
+  },
 }

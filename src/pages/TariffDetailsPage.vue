@@ -198,11 +198,13 @@ import { TariffsApi } from 'src/api/tariffs'
 import { date } from 'quasar'
 import TariffDialog from 'components/tariffs/TariffDialog.vue'
 import TariffAssignDialog from 'components/tariffs/TariffAssignDialog.vue'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const tariff = ref(null)
@@ -297,7 +299,7 @@ const openClientDetails = (object) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const formatDate = (dateString) => {

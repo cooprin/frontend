@@ -206,10 +206,12 @@ import { ServicesApi } from 'src/api/services'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -370,7 +372,7 @@ const getServiceTypeColor = (type) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const openDetails = (service) => {

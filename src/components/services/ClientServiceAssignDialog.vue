@@ -64,6 +64,7 @@ import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   modelValue: {
@@ -80,6 +81,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -135,7 +137,7 @@ const loadServices = async () => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const onSubmit = async () => {

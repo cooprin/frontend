@@ -156,7 +156,7 @@
               icon="wifi_protected_setup"
               :loading="testing"
               :disable="!form.email_address || !form.smtp_server"
-              @click="testConnection"
+              @click="testConnection(false)"
             />
 
             <!-- Тестовий email -->
@@ -291,7 +291,7 @@ const loadSettings = async () => {
 
       // Перевіряємо статус підключення якщо є налаштування
       if (settings.email_address && settings.smtp_server) {
-        await testConnection()
+        await testConnection(true)
       }
     }
   } catch (error) {
@@ -306,6 +306,51 @@ const loadSettings = async () => {
   }
 }
 
+const testConnection = async (silent = false) => {
+  if (!silent) testing.value = true
+
+  try {
+    const response = await EmailApi.testConnection()
+    connectionStatus.value = response.data.success
+
+    if (response.data.success) {
+      // ЗАВЖДИ показувати notification при success, навіть якщо статус не змінився
+      if (!silent) {
+        $q.notify({
+          color: 'positive',
+          message: t('company.emailSettings.connectionSuccess'),
+          caption: response.data.message,
+          icon: 'wifi',
+        })
+      }
+    } else {
+      if (!silent) {
+        $q.notify({
+          color: 'negative',
+          message: t('company.emailSettings.connectionError'),
+          caption: response.data.message,
+          icon: 'wifi_off',
+        })
+      }
+    }
+  } catch (error) {
+    connectionStatus.value = false
+    console.error('Error testing connection:', error)
+
+    if (!silent) {
+      $q.notify({
+        color: 'negative',
+        message: t('company.emailSettings.connectionError'),
+        caption: error.response?.data?.message,
+        icon: 'wifi_off',
+      })
+    }
+  } finally {
+    if (!silent) testing.value = false
+  }
+}
+
+// Оновлений метод saveSettings з silent викликом testConnection
 const saveSettings = async () => {
   saving.value = true
   try {
@@ -317,8 +362,8 @@ const saveSettings = async () => {
     })
     hasPassword.value = true
 
-    // Після успішного збереження тестуємо підключення
-    await testConnection()
+    // Після успішного збереження тестуємо підключення (silent)
+    await testConnection(true)
   } catch (error) {
     console.error('Error saving email settings:', error)
     $q.notify({
@@ -330,35 +375,6 @@ const saveSettings = async () => {
     saving.value = false
   }
 }
-
-const testConnection = async () => {
-  testing.value = true
-  try {
-    const response = await EmailApi.testConnection()
-    connectionStatus.value = response.data.success
-
-    $q.notify({
-      color: response.data.success ? 'positive' : 'negative',
-      message: response.data.success
-        ? t('company.emailSettings.connectionSuccess')
-        : t('company.emailSettings.connectionError'),
-      caption: response.data.message,
-      icon: response.data.success ? 'wifi' : 'wifi_off',
-    })
-  } catch (error) {
-    connectionStatus.value = false
-    console.error('Error testing connection:', error)
-    $q.notify({
-      color: 'negative',
-      message: t('company.emailSettings.connectionError'),
-      caption: error.response?.data?.message,
-      icon: 'wifi_off',
-    })
-  } finally {
-    testing.value = false
-  }
-}
-
 const sendTestEmail = async () => {
   sendingTest.value = true
   try {

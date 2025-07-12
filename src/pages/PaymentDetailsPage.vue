@@ -258,6 +258,7 @@ import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import PaymentDialog from 'components/payments/PaymentDialog.vue'
 import { EmailTemplatesApi } from 'src/api/email-templates'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -270,6 +271,7 @@ const loading = ref(true)
 const deleting = ref(false)
 const showDialog = ref(false)
 const deleteDialog = ref(false)
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // Methods
 const loadPayment = async () => {
@@ -403,9 +405,8 @@ const formatDate = (dateString) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
-
 const getPaymentTypeColor = (type) => {
   const colors = {
     regular: 'primary',

@@ -509,6 +509,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { PortalApi } from 'src/api/portal'
 import { date, Notify } from 'quasar'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const { t: $t } = useI18n()
 
@@ -724,16 +725,11 @@ const getStatusColor = (status) => {
   return colors[status] || 'grey'
 }
 
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
+
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return (
-    new Intl.NumberFormat('uk-UA', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-    }).format(amount) +
-    ' ' +
-    $t('common.currency')
-  )
+  return formatCurrencyFromComposable(amount)
 }
 
 const formatDate = (dateString) => {

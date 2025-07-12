@@ -41,7 +41,7 @@
                 $t('common.validation.required'),
               (val) => val > 0 || $t('common.validation.minValue', { min: 0.01 }),
             ]"
-            prefix="₴"
+            :prefix="$t('common.currency')"
           />
 
           <!-- Дата платежу -->
@@ -211,6 +211,7 @@ import { ClientsApi } from 'src/api/clients'
 import { InvoicesApi } from 'src/api/invoices'
 import { WialonApi } from 'src/api/wialon'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   modelValue: {
@@ -227,6 +228,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -799,7 +801,7 @@ const updateTotalAmount = () => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 // Відстеження змін editData

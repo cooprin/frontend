@@ -214,10 +214,12 @@ import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -408,7 +410,7 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const openDetails = (obj) => {

@@ -722,6 +722,7 @@ import RecentTicketsTable from 'components/dashboard/RecentTicketsTable.vue'
 import TicketsCategoryTable from 'components/dashboard/TicketsCategoryTable.vue'
 import WelcomeDashboard from 'components/dashboard/WelcomeDashboard.vue'
 import { useDashboardPermissions } from 'src/composables/useDashboardPermissions'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -732,6 +733,7 @@ const { hasAccessToDashboard, availableDashboards, getDefaultDashboard } = useDa
 // Для вибору дашборду - залишається без змін
 const dashboardOptions = computed(() => availableDashboards.value)
 const selectedDashboard = ref({ value: getDefaultDashboard() })
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // Для даних по залишках
 const loadingInventoryData = ref(false)
@@ -1074,15 +1076,7 @@ watch(locale, () => {
 // Форматування валюти
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return (
-    new Intl.NumberFormat('uk-UA', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount) +
-    ' ' +
-    t('common.currency')
-  )
+  return formatCurrencyFromComposable(amount)
 }
 
 // Навігація до клієнта

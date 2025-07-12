@@ -6,6 +6,7 @@
 import { ref, onMounted, watch, toRefs } from 'vue'
 import Chart from 'chart.js/auto'
 import { useI18n } from 'vue-i18n' // Добавили импорт useI18n
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   chartData: {
@@ -18,6 +19,7 @@ const { chartData } = toRefs(props)
 const pieChartRef = ref(null)
 const { locale } = useI18n() // Добавили получение locale
 let chart = null
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 const createChart = () => {
   if (chart) {
@@ -43,10 +45,7 @@ const createChart = () => {
               const total = context.dataset.data.reduce((acc, val) => acc + val, 0)
               const percentage = Math.round((value / total) * 100)
 
-              return `${label}: ${new Intl.NumberFormat('uk-UA', {
-                style: 'currency',
-                currency: 'UAH',
-              }).format(value)} (${percentage}%)`
+              return `${label}: ${formatCurrencyFromComposable(value)} (${percentage}%)`
             },
           },
         },

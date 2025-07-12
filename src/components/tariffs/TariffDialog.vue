@@ -30,7 +30,7 @@
             ]"
             type="number"
             outlined
-            prefix="₴"
+            :prefix="$t('common.currency')"
             :readonly="isEdit"
             :hint="isEdit ? t('tariffs.priceEditDisabled') : ''"
           />
