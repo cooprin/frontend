@@ -367,6 +367,7 @@ const saveIntegration = async () => {
 }
 
 const testConnection = async (silent = false) => {
+  console.log('Silent parameter:', silent, typeof silent)
   if (!silent) testing.value = true
 
   try {
@@ -376,6 +377,7 @@ const testConnection = async (silent = false) => {
       connectionStatus.value = true
       // ЗАВЖДИ показувати notification при success, навіть якщо статус не змінився
       if (!silent) {
+        console.log('Silent mode - no notification')
         $q.notify({
           color: 'positive',
           message: response.data.message || t('company.wialonIntegration.connectionSuccess'),
@@ -384,6 +386,7 @@ const testConnection = async (silent = false) => {
         })
       }
     } else {
+      console.log('Silent mode - no notification')
       connectionStatus.value = false
       if (!silent) {
         $q.notify({
