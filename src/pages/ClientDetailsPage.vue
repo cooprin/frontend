@@ -864,7 +864,8 @@ const formatDate = (dateString, format = 'DD.MM.YYYY') => {
 // Метод для генерації PDF
 const generateInvoicePdf = async (invoice) => {
   try {
-    const response = await InvoicesApi.generateInvoicePdf(invoice.id)
+    const userLanguage = localStorage.getItem('userLanguage') || 'uk'
+    const response = await InvoicesApi.generateInvoicePdf(invoice.id, userLanguage)
 
     // Створюємо URL для скачування PDF
     const blob = new Blob([response.data], { type: 'application/pdf' })
