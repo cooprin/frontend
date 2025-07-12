@@ -41,29 +41,45 @@
     <div class="row q-gutter-md q-mb-lg">
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-primary">{{ stats.total }}</div>
+          <div class="text-h6 text-primary">{{ globalStats.total }}</div>
           <div class="text-caption">{{ $t('wialonSync.sessions.stats.total') }}</div>
+          <!-- 🆕 Підказка про локальні дані -->
+          <div class="text-caption text-grey-6" v-if="stats.total !== globalStats.total">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.total }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-positive">{{ stats.completed }}</div>
+          <div class="text-h6 text-positive">{{ globalStats.completed }}</div>
           <div class="text-caption">{{ $t('wialonSync.sessions.stats.completed') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.completed !== globalStats.completed">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.completed }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-negative">{{ stats.failed }}</div>
+          <div class="text-h6 text-negative">{{ globalStats.failed }}</div>
           <div class="text-caption">{{ $t('wialonSync.sessions.stats.failed') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.failed !== globalStats.failed">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.failed }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-orange">{{ stats.pendingDiscrepancies }}</div>
+          <div class="text-h6 text-orange">{{ globalStats.pendingDiscrepancies }}</div>
           <div class="text-caption">{{ $t('wialonSync.sessions.stats.pending') }}</div>
+          <div
+            class="text-caption text-grey-6"
+            v-if="stats.pendingDiscrepancies !== globalStats.pendingDiscrepancies"
+          >
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.pendingDiscrepancies }})
+          </div>
         </q-card-section>
       </q-card>
     </div>
@@ -289,6 +305,15 @@ const stats = ref({
   failed: 0,
   pendingDiscrepancies: 0,
 })
+// Глобальна статистика
+const globalStats = ref({
+  total: 0,
+  completed: 0,
+  failed: 0,
+  running: 0,
+  cancelled: 0,
+  pendingDiscrepancies: 0,
+})
 
 // Пагінація
 const pagination = ref({
@@ -380,7 +405,13 @@ const loadSessions = async () => {
 
     sessions.value = response.data.sessions || []
     pagination.value.rowsNumber = response.data.total || 0
-    updateStats()
+
+    // 🆕 Оновити глобальну статистику з API
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+
+    updateStats() // Локальна статистика
   } catch (error) {
     console.error('Error loading sessions:', error)
     $q.notify({
@@ -403,9 +434,10 @@ const startSync = async () => {
       icon: 'sync',
     })
 
-    // Оновити список після короткої затримки
-    setTimeout(() => {
-      loadSessions()
+    // 🆕 Оновити глобальну статистику після синхронізації
+    setTimeout(async () => {
+      await loadSessions()
+      await loadGlobalStats()
     }, 1000)
   } catch (error) {
     console.error('Error starting sync:', error)
@@ -458,6 +490,23 @@ const updateStats = () => {
       (sum, s) => sum + (s.pending_discrepancies || 0),
       0,
     ),
+  }
+}
+
+// Окремий метод для завантаження тільки глобальної статистики
+const loadGlobalStats = async () => {
+  try {
+    // Запит без фільтрів для отримання загальної статистики
+    const response = await WialonSyncApi.getSessions({
+      page: 1,
+      perPage: 1, // Мінімальний запит, нас цікавить тільки globalStats
+    })
+
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+  } catch (error) {
+    console.error('Error loading global stats:', error)
   }
 }
 

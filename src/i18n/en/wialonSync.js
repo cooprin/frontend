@@ -237,5 +237,6 @@ export default {
     errorCopying: 'Error copying',
     errorLoadingClientData: 'Error loading client data',
     errorLoadingObjectData: 'Error loading object data',
+    onPage: 'on page',
   },
 }

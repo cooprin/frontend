@@ -237,5 +237,6 @@ export default {
     errorCopying: 'Помилка копіювання',
     errorLoadingClientData: 'Помилка завантаження даних клієнта',
     errorLoadingObjectData: "Помилка завантаження даних об'єкта",
+    onPage: 'на сторінці',
   },
 }
