@@ -43,7 +43,7 @@
           <wialon-integration-card />
         </q-tab-panel>
         <q-tab-panel name="settings">
-          <currency-settings-card />
+          <settings-card />
         </q-tab-panel>
         <q-tab-panel name="emailSettings">
           <email-settings-card />
@@ -64,7 +64,7 @@ import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
 import WialonIntegrationCard from 'components/company/WialonIntegrationCard.vue'
 import EmailSettingsCard from 'components/company/EmailSettingsCard.vue'
 import EmailTemplatesCard from 'components/company/EmailTemplatesCard.vue'
-import CurrencySettingsCard from 'components/company/CurrencySettingsCard.vue'
+import SettingsCard from 'components/company/SettingsCard.vue'
 
 // Стани
 const tab = ref('details')
