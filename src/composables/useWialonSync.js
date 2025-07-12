@@ -40,11 +40,13 @@ const checkActiveSync = async () => {
         startTime: null,
         lastCheck: new Date(),
       }
+      stopPolling() // ← ДОДАНО: зупиняємо polling коли немає активної синхронізації
     }
 
     return activeSession
   } catch (error) {
     console.error('Error checking active sync:', error)
+    stopPolling() // ← ДОДАНО: зупиняємо polling при помилці
     return null
   }
 }
@@ -126,12 +128,8 @@ export function useWialonSync() {
 
   // Ініціалізація при першому використанні
   const initialize = () => {
-    // Перевіряємо чи є активні сесії при завантаженні
-    checkActiveSync().then((activeSession) => {
-      if (activeSession) {
-        startPolling()
-      }
-    })
+    // ЗМІНЕНО: просто перевіряємо один раз, БЕЗ автозапуску polling
+    checkActiveSync()
   }
 
   // Cleanup
