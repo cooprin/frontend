@@ -260,11 +260,13 @@ import WialonObjectDialog from 'components/wialon/WialonObjectDialog.vue'
 import WialonObjectChangeOwnerDialog from 'components/wialon/WialonObjectChangeOwnerDialog.vue'
 import ObjectPaymentsHistory from 'components/payments/ObjectPaymentsHistory.vue'
 import { TariffsApi } from 'src/api/tariffs'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const object = ref(null)
@@ -354,7 +356,7 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const formatDate = (dateString) => {

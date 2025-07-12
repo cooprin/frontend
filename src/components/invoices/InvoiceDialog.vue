@@ -182,7 +182,6 @@
                               :rules="[(val) => val > 0 || t('validation.minValue', { min: 1 })]"
                               outlined
                               dense
-                              :prefix="getCurrencySymbol()"
                               @update:model-value="updateItemTotal(item)"
                             />
                           </div>
@@ -195,7 +194,6 @@
                               type="number"
                               outlined
                               dense
-                              :prefix="getCurrencySymbol()"
                               readonly
                             />
                           </div>
@@ -259,7 +257,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const { formatCurrency: formatCurrencyFromComposable, getCurrencySymbol } = useCurrency()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 // State
 const loading = ref(false)
 const loadingClients = ref(false)

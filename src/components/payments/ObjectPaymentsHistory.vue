@@ -247,6 +247,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { PaymentsApi } from 'src/api/payments'
 import { useQuasar } from 'quasar'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   objectId: {
@@ -258,6 +259,7 @@ const props = defineProps({
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -478,7 +480,7 @@ const formatDate = (dateString) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const getPaymentTypeColor = (type) => {

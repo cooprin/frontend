@@ -617,7 +617,7 @@
               type="number"
               outlined
               :rules="[(val) => val > 0 || t('common.validation.minValue', { min: 0.01 })]"
-              prefix="₴"
+              :prefix="$t('common.currency')"
             />
 
             <!-- Тип платежу -->
@@ -705,6 +705,7 @@ import { InvoicesApi } from 'src/api/invoices'
 import InvoiceDialog from 'components/invoices/InvoiceDialog.vue'
 import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.vue'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -715,6 +716,7 @@ const clientServices = ref([])
 const loadingServices = ref(false)
 const paymentInfo = ref(null)
 const loadingPayment = ref(false)
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // Додайте новий стан
 const showGenerateSmartInvoiceDialog = ref(false)
@@ -984,7 +986,7 @@ const openServiceDetails = (service) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 // Methods

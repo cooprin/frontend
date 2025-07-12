@@ -282,11 +282,13 @@ import { useI18n } from 'vue-i18n'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
 import ServiceDialog from 'components/services/ServiceDialog.vue'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const service = ref(null)
@@ -432,7 +434,7 @@ const getServiceTypeColor = (type) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const formatDate = (dateString) => {

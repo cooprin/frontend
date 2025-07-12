@@ -42,7 +42,7 @@
             ]"
             type="number"
             outlined
-            prefix="₴"
+            :prefix="$t('common.currency')"
           />
 
           <!-- Опис -->
