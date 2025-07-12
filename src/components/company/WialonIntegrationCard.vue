@@ -374,6 +374,7 @@ const testConnection = async (silent = false) => {
 
     if (response.data && response.data.success) {
       connectionStatus.value = true
+      // ЗАВЖДИ показувати notification при success, навіть якщо статус не змінився
       if (!silent) {
         $q.notify({
           color: 'positive',
