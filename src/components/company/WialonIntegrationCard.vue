@@ -372,12 +372,12 @@ const testConnection = async (silent = false) => {
   try {
     const response = await CompanyApi.testWialonConnection()
 
-    if (response.data.success) {
+    if (response.data && response.data.success) {
       connectionStatus.value = true
       if (!silent) {
         $q.notify({
           color: 'positive',
-          message: t('company.wialonIntegration.connectionSuccess'),
+          message: response.data.message || t('company.wialonIntegration.connectionSuccess'),
           caption: t('company.wialonIntegration.connectionSuccessDetails'),
           icon: 'wifi',
         })
@@ -387,8 +387,8 @@ const testConnection = async (silent = false) => {
       if (!silent) {
         $q.notify({
           color: 'negative',
-          message: t('company.wialonIntegration.connectionError'),
-          caption: response.data.message || t('company.wialonIntegration.connectionErrorDetails'),
+          message: response.data?.message || t('company.wialonIntegration.connectionError'),
+          caption: t('company.wialonIntegration.connectionErrorDetails'),
           icon: 'wifi_off',
         })
       }
