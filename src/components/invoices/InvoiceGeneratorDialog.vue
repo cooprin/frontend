@@ -110,7 +110,7 @@ const emit = defineEmits(['update:modelValue', 'generated'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const { formatCurrency: useCurrencyFormatting } = useCurrency()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -212,7 +212,7 @@ const form = ref({
 // Функція для форматування валюти
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return useCurrencyFormatting.formatCurrency(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 // Computed

@@ -259,8 +259,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const { formatCurrency: useCurrencyFormatting, getCurrencySymbol } = useCurrency()
-
+const { formatCurrency: formatCurrencyFromComposable, getCurrencySymbol } = useCurrency()
 // State
 const loading = ref(false)
 const loadingClients = ref(false)
@@ -471,7 +470,7 @@ const calculateTotal = () => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return useCurrencyFormatting.formatCurrency(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const onSubmit = async () => {

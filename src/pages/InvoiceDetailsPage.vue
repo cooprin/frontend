@@ -439,7 +439,7 @@ const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { formatCurrency: useCurrencyFormatting } = useCurrency()
+const { formatCurrency: formatCurrencyFromComposable } = useCurrency()
 
 const printInvoice = async () => {
   try {
@@ -587,7 +587,7 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return useCurrencyFormatting.formatCurrency(amount)
+  return formatCurrencyFromComposable(amount)
 }
 
 const formatDate = (dateString) => {
