@@ -67,29 +67,42 @@
     <div class="row q-gutter-md q-mb-lg">
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-orange">{{ stats.pending }}</div>
+          <div class="text-h6 text-orange">{{ globalStats.pending }}</div>
           <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.pending') }}</div>
+          <!-- 🆕 Підказка про локальні дані -->
+          <div class="text-caption text-grey-6" v-if="stats.pending !== globalStats.pending">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.pending }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-positive">{{ stats.approved }}</div>
+          <div class="text-h6 text-positive">{{ globalStats.approved }}</div>
           <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.approved') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.approved !== globalStats.approved">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.approved }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-negative">{{ stats.rejected }}</div>
+          <div class="text-h6 text-negative">{{ globalStats.rejected }}</div>
           <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.rejected') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.rejected !== globalStats.rejected">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.rejected }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-grey">{{ stats.ignored }}</div>
+          <div class="text-h6 text-grey">{{ globalStats.ignored }}</div>
           <div class="text-caption">{{ $t('wialonSync.discrepancies.stats.ignored') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.ignored !== globalStats.ignored">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.ignored }})
+          </div>
         </q-card-section>
       </q-card>
     </div>
@@ -386,6 +399,14 @@ const stats = ref({
   ignored: 0,
 })
 
+// Глобальна статистика
+const globalStats = ref({
+  pending: 0,
+  approved: 0,
+  rejected: 0,
+  ignored: 0,
+})
+
 // Пагінація
 const pagination = ref({
   sortBy: 'created_at',
@@ -494,7 +515,13 @@ const loadDiscrepancies = async () => {
 
     discrepancies.value = response.data.discrepancies || []
     pagination.value.rowsNumber = response.data.total || 0
-    updateStats()
+
+    // 🆕 Оновити глобальну статистику з API
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+
+    updateStats() // Локальна статистика
   } catch (error) {
     console.error('Error loading discrepancies:', error)
     $q.notify({
@@ -697,6 +724,8 @@ const markDiscrepancyAsApproved = async () => {
     currentDiscrepancy.value.status = 'approved'
     currentDiscrepancy.value.resolved_at = new Date().toISOString()
 
+    // 🆕 Оновити глобальну статистику
+    await loadGlobalStats()
     updateStats()
 
     $q.notify({
@@ -728,6 +757,8 @@ const resolveDiscrepancy = async (discrepancy, action) => {
       icon: 'check',
     })
 
+    // 🆕 Оновити глобальну статистику
+    await loadGlobalStats()
     updateStats()
     showDetailsDialog.value = false
   } catch (error) {
@@ -773,6 +804,9 @@ const resolveSelected = async (action) => {
     })
 
     selected.value = []
+
+    // 🆕 Оновити глобальну статистику
+    await loadGlobalStats()
     updateStats()
   } catch (error) {
     console.error('Error resolving discrepancies:', error)
@@ -809,6 +843,23 @@ const updateStats = () => {
     approved: discrepancies.value.filter((d) => d.status === 'approved').length,
     rejected: discrepancies.value.filter((d) => d.status === 'rejected').length,
     ignored: discrepancies.value.filter((d) => d.status === 'ignored').length,
+  }
+}
+
+// Окремий метод для завантаження тільки глобальної статистики
+const loadGlobalStats = async () => {
+  try {
+    // Запит без фільтрів для отримання загальної статистики
+    const response = await WialonSyncApi.getDiscrepancies({
+      page: 1,
+      perPage: 1, // Мінімальний запит, нас цікавить тільки globalStats
+    })
+
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+  } catch (error) {
+    console.error('Error loading global stats:', error)
   }
 }
 

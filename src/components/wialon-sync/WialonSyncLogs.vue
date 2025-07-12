@@ -87,29 +87,42 @@
     <div class="row q-gutter-md q-mb-lg">
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-primary">{{ stats.total }}</div>
+          <div class="text-h6 text-primary">{{ globalStats.total }}</div>
           <div class="text-caption">{{ $t('wialonSync.logs.stats.total') }}</div>
+          <!-- 🆕 Підказка про локальні дані -->
+          <div class="text-caption text-grey-6" v-if="stats.total !== globalStats.total">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.total }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-blue">{{ stats.info }}</div>
+          <div class="text-h6 text-blue">{{ globalStats.info }}</div>
           <div class="text-caption">{{ $t('wialonSync.logs.levels.info') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.info !== globalStats.info">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.info }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-orange">{{ stats.warning }}</div>
+          <div class="text-h6 text-orange">{{ globalStats.warning }}</div>
           <div class="text-caption">{{ $t('wialonSync.logs.levels.warning') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.warning !== globalStats.warning">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.warning }})
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="col">
         <q-card-section class="text-center">
-          <div class="text-h6 text-negative">{{ stats.error }}</div>
+          <div class="text-h6 text-negative">{{ globalStats.error }}</div>
           <div class="text-caption">{{ $t('wialonSync.logs.levels.error') }}</div>
+          <div class="text-caption text-grey-6" v-if="stats.error !== globalStats.error">
+            ({{ $t('wialonSync.common.onPage') }}: {{ stats.error }})
+          </div>
         </q-card-section>
       </q-card>
     </div>
@@ -373,6 +386,15 @@ const stats = ref({
   error: 0,
 })
 
+// 🆕 Глобальна статистика
+const globalStats = ref({
+  total: 0,
+  info: 0,
+  warning: 0,
+  error: 0,
+  debug: 0,
+})
+
 // Пагінація
 const pagination = ref({
   sortBy: 'created_at',
@@ -463,7 +485,13 @@ const loadLogs = async () => {
     const response = await WialonSyncApi.getLogs(params)
     logs.value = response.data.logs || []
     pagination.value.rowsNumber = response.data.total || 0
-    updateStats()
+
+    // 🆕 Оновити глобальну статистику з API
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+
+    updateStats() // Локальна статистика
   } catch (error) {
     console.error('Error loading logs:', error)
     $q.notify({
@@ -501,7 +529,9 @@ const clearLogs = async () => {
         icon: 'clear_all',
       })
 
-      loadLogs()
+      // 🆕 Оновити як локальні дані так і глобальну статистику
+      await loadLogs()
+      await loadGlobalStats()
     } catch (error) {
       console.error('Error clearing logs:', error)
       $q.notify({
@@ -574,6 +604,23 @@ const updateStats = () => {
     info: logs.value.filter((log) => log.log_level === 'info').length,
     warning: logs.value.filter((log) => log.log_level === 'warning').length,
     error: logs.value.filter((log) => log.log_level === 'error').length,
+  }
+}
+
+// Окремий метод для завантаження тільки глобальної статистики
+const loadGlobalStats = async () => {
+  try {
+    // Запит без фільтрів для отримання загальної статистики
+    const response = await WialonSyncApi.getLogs({
+      page: 1,
+      perPage: 1, // Мінімальний запит, нас цікавить тільки globalStats
+    })
+
+    if (response.data.globalStats) {
+      globalStats.value = response.data.globalStats
+    }
+  } catch (error) {
+    console.error('Error loading global stats:', error)
   }
 }
 
