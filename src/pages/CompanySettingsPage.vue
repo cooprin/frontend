@@ -42,10 +42,8 @@
         <q-tab-panel name="wialonIntegration">
           <wialon-integration-card />
         </q-tab-panel>
-
         <q-tab-panel name="settings">
-          <div class="text-h6 q-mb-md">{{ $t('company.settings.title') }}</div>
-          <p class="text-grey">{{ $t('common.comingSoon') }}</p>
+          <currency-settings-card />
         </q-tab-panel>
         <q-tab-panel name="emailSettings">
           <email-settings-card />
@@ -66,6 +64,7 @@ import LegalDocumentsCard from 'components/company/LegalDocumentsCard.vue'
 import WialonIntegrationCard from 'components/company/WialonIntegrationCard.vue'
 import EmailSettingsCard from 'components/company/EmailSettingsCard.vue'
 import EmailTemplatesCard from 'components/company/EmailTemplatesCard.vue'
+import CurrencySettingsCard from 'components/company/CurrencySettingsCard.vue'
 
 // Стани
 const tab = ref('details')

@@ -97,6 +97,7 @@ import { useI18n } from 'vue-i18n'
 import { InvoicesApi } from 'src/api/invoices'
 import { ClientsApi } from 'src/api/clients'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   modelValue: {
@@ -109,6 +110,7 @@ const emit = defineEmits(['update:modelValue', 'generated'])
 
 const $q = useQuasar()
 const { t } = useI18n()
+const { formatCurrency: useCurrencyFormatting } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -210,7 +212,7 @@ const form = ref({
 // Функція для форматування валюти
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return useCurrencyFormatting.formatCurrency(amount)
 }
 
 // Computed

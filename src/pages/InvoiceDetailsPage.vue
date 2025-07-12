@@ -433,11 +433,13 @@ import { InvoicesApi } from 'src/api/invoices'
 import { date } from 'quasar'
 import InvoiceEditDialog from 'src/components/invoices/InvoiceEditDialog.vue'
 import { EmailTemplatesApi } from 'src/api/email-templates'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { formatCurrency: useCurrencyFormatting } = useCurrency()
 
 const printInvoice = async () => {
   try {
@@ -585,7 +587,7 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return useCurrencyFormatting.formatCurrency(amount)
 }
 
 const formatDate = (dateString) => {

@@ -200,10 +200,12 @@ import InvoiceGeneratorDialog from 'components/invoices/InvoiceGeneratorDialog.v
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
 import ReportsFAB from 'src/components/reports/ReportsFAB.vue'
 import { EmailTemplatesApi } from 'src/api/email-templates'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const $q = useQuasar()
 const router = useRouter()
 const { t } = useI18n()
+const { formatCurrency: useCurrencyFormatting } = useCurrency()
 
 const printInvoice = async (invoice) => {
   try {
@@ -478,7 +480,7 @@ const getStatusColor = (status) => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return useCurrencyFormatting.formatCurrency(amount)
 }
 
 const formatDate = (dateString) => {

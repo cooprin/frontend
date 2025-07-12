@@ -356,4 +356,27 @@ export default {
     client: 'Clients',
     system: 'System',
   },
+  currencySettings: {
+    title: 'Currency Settings',
+    description: 'Select the default currency for display throughout the system',
+    currentCurrency: 'Current Currency',
+    selectCurrency: 'Select Currency',
+    displayFormat: 'Display Format',
+    preview: 'Preview',
+    smallAmount: 'Small Amount',
+    largeAmount: 'Large Amount',
+    zeroAmount: 'Zero',
+    advancedSettings: 'Advanced Settings',
+    decimalPlaces: 'Decimal Places',
+    useThousandsSeparator: 'Use Thousands Separator',
+    changeWarning:
+      'Changing currency will affect the display of all amounts in the system. The actual data in the database will not change.',
+    resetToUAH: 'Reset to UAH',
+    saveSuccess: 'Currency settings saved',
+    formats: {
+      symbolBefore: 'Symbol before amount (₴100)',
+      symbolAfter: 'Symbol after amount (100 ₴)',
+      codeAfter: 'Code after amount (100 UAH)',
+    },
+  },
 }

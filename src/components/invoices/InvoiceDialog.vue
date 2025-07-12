@@ -182,7 +182,7 @@
                               :rules="[(val) => val > 0 || t('validation.minValue', { min: 1 })]"
                               outlined
                               dense
-                              prefix="₴"
+                              :prefix="getCurrencySymbol()"
                               @update:model-value="updateItemTotal(item)"
                             />
                           </div>
@@ -195,7 +195,7 @@
                               type="number"
                               outlined
                               dense
-                              prefix="₴"
+                              :prefix="getCurrencySymbol()"
                               readonly
                             />
                           </div>
@@ -246,6 +246,7 @@ import { ClientsApi } from 'src/api/clients'
 import { ServicesApi } from 'src/api/services'
 import { date } from 'quasar'
 import { useSearchableSelect } from 'src/composables/useSearchableSelect'
+import { useCurrency } from 'src/composables/useCurrency'
 
 const props = defineProps({
   modelValue: {
@@ -258,6 +259,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
+const { formatCurrency: useCurrencyFormatting, getCurrencySymbol } = useCurrency()
 
 // State
 const loading = ref(false)
@@ -469,7 +471,7 @@ const calculateTotal = () => {
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(amount)
+  return useCurrencyFormatting.formatCurrency(amount)
 }
 
 const onSubmit = async () => {

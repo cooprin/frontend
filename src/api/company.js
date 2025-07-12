@@ -115,4 +115,12 @@ export const CompanyApi = {
   updateNotificationSettings: (data) => {
     return api.put('/company/notification-settings', data)
   },
+  // Валютні налаштування
+  getCurrencySettings: () => {
+    return api.get('/company/currency-settings')
+  },
+
+  saveCurrencySettings: (data) => {
+    return api.post('/company/currency-settings', data)
+  },
 }
