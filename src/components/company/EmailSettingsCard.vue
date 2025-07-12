@@ -156,7 +156,7 @@
               icon="wifi_protected_setup"
               :loading="testing"
               :disable="!form.email_address || !form.smtp_server"
-              @click="testConnection"
+              @click="testConnection(false)"
             />
 
             <!-- Тестовий email -->
@@ -291,7 +291,7 @@ const loadSettings = async () => {
 
       // Перевіряємо статус підключення якщо є налаштування
       if (settings.email_address && settings.smtp_server) {
-        await testConnection()
+        await testConnection(true)
       }
     }
   } catch (error) {
@@ -318,7 +318,7 @@ const saveSettings = async () => {
     hasPassword.value = true
 
     // Після успішного збереження тестуємо підключення
-    await testConnection()
+    await testConnection(true)
   } catch (error) {
     console.error('Error saving email settings:', error)
     $q.notify({
