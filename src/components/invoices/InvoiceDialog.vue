@@ -520,8 +520,11 @@ watch([() => form.value.billing_year, () => form.value.billing_month], async () 
 
 // Lifecycle
 onMounted(() => {
-  loadCurrencySettings()
-  loadClients()
-  loadServices()
+  const initializeDialog = async () => {
+    await loadCurrencySettings()
+    loadClients()
+    loadServices()
+  }
+  initializeDialog()
 })
 </script>
