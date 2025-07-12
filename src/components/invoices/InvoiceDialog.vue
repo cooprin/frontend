@@ -259,11 +259,7 @@ const emit = defineEmits(['update:modelValue', 'saved'])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const {
-  formatCurrency: formatCurrencyFromComposable,
-  getCurrencySymbol,
-  loadCurrencySettings,
-} = useCurrency()
+const { formatCurrency: formatCurrencyFromComposable, getCurrencySymbol } = useCurrency()
 // State
 const loading = ref(false)
 const loadingClients = ref(false)
@@ -520,11 +516,7 @@ watch([() => form.value.billing_year, () => form.value.billing_month], async () 
 
 // Lifecycle
 onMounted(() => {
-  const initializeDialog = async () => {
-    await loadCurrencySettings()
-    loadClients()
-    loadServices()
-  }
-  initializeDialog()
+  loadClients()
+  loadServices()
 })
 </script>
