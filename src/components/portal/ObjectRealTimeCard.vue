@@ -285,6 +285,7 @@
 import { computed } from 'vue'
 import { date } from 'quasar'
 import { useI18n } from 'vue-i18n'
+import { useCurrency } from 'src/composables/useCurrency'
 const { t } = useI18n()
 
 const props = defineProps({
@@ -399,8 +400,11 @@ const formatDate = (dateString) => {
   return date.formatDate(dateString, 'DD.MM.YYYY')
 }
 
+const { formatCurrency } = useCurrency()
+
 const formatPrice = (price) => {
-  return `${price} ${t('portal.pages.objects.currency')}`
+  if (price === null || price === undefined) return '-'
+  return formatCurrency(price)
 }
 
 const createTicket = () => {

@@ -179,6 +179,7 @@
                               v-model.number="item.unit_price"
                               :label="$t('invoices.items.unitPrice')"
                               type="number"
+                              :prefix="$t('common.currency')"
                               :rules="[(val) => val > 0 || t('validation.minValue', { min: 1 })]"
                               outlined
                               dense
@@ -192,6 +193,7 @@
                               v-model.number="item.total_price"
                               :label="$t('invoices.items.totalPrice')"
                               type="number"
+                              :prefix="$t('common.currency')"
                               outlined
                               dense
                               readonly
